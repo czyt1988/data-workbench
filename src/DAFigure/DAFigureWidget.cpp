@@ -1545,6 +1545,8 @@ bool DAFigureWidget::exportChartToFile(DAChartWidget* chart, const QString& file
     }
     switch (format) {
     case DAFigureExportFormat::Png: {
+        // 说明：HiDPI 屏幕上 grab() 的像素尺寸 = 逻辑尺寸 × devicePixelRatio，与 SVG/PDF 的
+        // 逻辑尺寸不一致；量化导出按设备像素保留清晰度（需要固定尺寸时可在导出前调整子图尺寸）
         const QPixmap pixmap = chart->grab();
         if (pixmap.isNull()) {
             return false;
@@ -1562,8 +1564,9 @@ bool DAFigureWidget::exportChartToFile(DAChartWidget* chart, const QString& file
             return false;
         }
         chart->render(&painter);
-        painter.end();
-        return true;
+        const bool paintOk = painter.end();
+        // QSvgGenerator 的文件在 painter.end() 时才写完，end 失败或文件未生成都视为失败
+        return paintOk && QFileInfo::exists(filePath);
     }
     case DAFigureExportFormat::Pdf: {
         QPdfWriter writer(filePath);
@@ -1577,8 +1580,8 @@ bool DAFigureWidget::exportChartToFile(DAChartWidget* chart, const QString& file
             return false;
         }
         chart->render(&painter);
-        painter.end();
-        return true;
+        const bool paintOk = painter.end();
+        return paintOk && QFileInfo::exists(filePath);
     }
     }
     return false;

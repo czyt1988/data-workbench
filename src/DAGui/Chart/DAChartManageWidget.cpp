@@ -395,6 +395,8 @@ void DAChartManageWidget::addManagedFigure(DAFigureWidget* fig)
     ui->stackedWidget->addWidget(figTreeview);
 
     ui->comboBoxFigure->addItem(fig->windowTitle(), reinterpret_cast< quintptr >(fig));
+    // figure 对象先于管理树销毁时（外部模式下插件 figure 可能重建）移除管理项，避免裸指针悬空
+    connect(fig, &QObject::destroyed, this, &DAChartManageWidget::onManagedFigureDestroyed);
 }
 
 /**
@@ -420,12 +422,60 @@ void DAChartManageWidget::clearManagedFigures()
     d_ptr->mContextItem         = nullptr;
 }
 
+/**
+ * @brief 从管理树移除单个figure
+ *
+ * 只清理管理项（树视图、combobox项、两张关系表），不删除figure本身。销毁路径下
+ * 传入的figure成员可能已失效，因此这里不解引用fig，只按指针地址比较。
+ * @param fig 要移除的figure
+ */
+void DAChartManageWidget::removeManagedFigure(DAFigureWidget* fig)
+{
+    if (!fig) {
+        return;
+    }
+    {
+        QSignalBlocker blocker(ui->comboBoxFigure);
+        if (DAFigureTreeView* tree = d_ptr->mFigureWidgetToTree.take(fig)) {
+            ui->stackedWidget->removeWidget(tree);
+            tree->deleteLater();
+        }
+        const int comboCount = ui->comboBoxFigure->count();
+        for (int i = 0; i < comboCount; ++i) {
+            if (getComboboxFigure(i) == fig) {
+                ui->comboBoxFigure->removeItem(i);
+                break;
+            }
+        }
+    }
+    // QwtFigure*→DAFigureWidget* 反向映射：按值查找（不调用 fig->figure()，销毁路径下成员可能已失效）
+    for (auto it = d_ptr->mFigToFigWidget.begin(); it != d_ptr->mFigToFigWidget.end();) {
+        if (it.value() == fig) {
+            it = d_ptr->mFigToFigWidget.erase(it);
+        } else {
+            ++it;
+        }
+    }
+    if (d_ptr->mContextFigureWidget == fig) {
+        d_ptr->mContextTree         = nullptr;
+        d_ptr->mContextFigureWidget = nullptr;
+        d_ptr->mContextItem         = nullptr;
+    }
+}
+
+/**
+ * @brief figure对象被销毁时清除管理项
+ * @param obj 被销毁的对象（DAFigureWidget）
+ */
+void DAChartManageWidget::onManagedFigureDestroyed(QObject* obj)
+{
+    removeManagedFigure(reinterpret_cast< DAFigureWidget* >(obj));
+}
+
 void DAChartManageWidget::setCurrentChartOnItemClicked(bool on)
 {
     d_ptr->mSetCurrentChartOnClicked = on;
-}
-
-bool DAChartManageWidget::isSetCurrentChartOnItemClicked() const
+}bool DAChartManageWidget::isSetCurrentChartOnItemClicked() const
 {
     return d_ptr->mSetCurrentChartOnClicked;
 }

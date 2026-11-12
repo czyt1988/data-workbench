@@ -1,4 +1,5 @@
 #include "DASettingContextProviderRegistry.h"
+#include <QScopedValueRollback>
 #include <QUndoStack>
 #include <QWidget>
 
@@ -13,7 +14,8 @@ namespace DA
  */
 void DASettingContextProviderRegistry::dropStaleEntry(QHash< QWidget*, Entry >::iterator it)
 {
-    if (mCurrentProvider && mCurrentProvider == it->provider) {
+    // 同一提供者可能注册给多个 dock 内容，必须同时比较内容，避免清理非当前条目时误清当前状态
+    if (mCurrentProvider && mCurrentProvider == it->provider && mCurrentContent == it.key()) {
         mCurrentProvider = nullptr;
         mCurrentContent.clear();
     }
@@ -53,8 +55,8 @@ void DASettingContextProviderRegistry::registerProvider(QWidget* dockContent, DA
         if (it->provider == provider && !it->content.isNull()) {
             return;
         }
-        // 同一内容换提供者：旧的是当前提供者时先失活
-        if (mCurrentProvider && mCurrentProvider == it->provider) {
+        // 同一内容换提供者：旧的是当前提供者（且当前内容就是它）时先失活
+        if (mCurrentProvider && mCurrentProvider == it->provider && mCurrentContent == dockContent) {
             deactivateCurrent();
         }
         it->content  = dockContent;
@@ -84,7 +86,7 @@ void DASettingContextProviderRegistry::unregisterProvider(QWidget* dockContent)
         }
         return;
     }
-    if (mCurrentProvider && mCurrentProvider == it->provider) {
+    if (mCurrentProvider && mCurrentProvider == it->provider && mCurrentContent == dockContent) {
         deactivateCurrent();
     }
     mProviders.erase(it);
@@ -133,6 +135,11 @@ DASettingContextProvider* DASettingContextProviderRegistry::providerFor(QWidget*
  */
 bool DASettingContextProviderRegistry::activateFor(QWidget* dockContent)
 {
+    // 重入保护：提供者在 activateSettingContext() 里 raise 自己/其它已注册 dock 时，
+    // 会经由 dockWidgetRaised → 路由层再次进入本函数；此时不重复激活，直接返回是否已注册。
+    if (mActivating) {
+        return providerFor(dockContent) != nullptr;
+    }
     DASettingContextProvider* provider = providerFor(dockContent);
     if (nullptr == provider) {
         return false;
@@ -142,6 +149,8 @@ bool DASettingContextProviderRegistry::activateFor(QWidget* dockContent)
         mCurrentProvider = provider;
         mCurrentContent  = dockContent;
     }
+    // 激活回调可能触发程序化 raise（重入），用回滚守卫保证异常/重入路径下标志复位
+    QScopedValueRollback< bool > activatingGuard(mActivating, true);
     provider->activateSettingContext();
     if (QUndoStack* stack = provider->contextUndoStack()) {
         if (!stack->isActive()) {

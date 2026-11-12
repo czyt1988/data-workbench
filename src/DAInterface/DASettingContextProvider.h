@@ -14,6 +14,10 @@ namespace DA
  *
  * 说明：本接口为纯抽象接口（无 out-of-line 成员、无静态数据），插件派生与跨库虚调用
  * 不需要导出符号，因此不加 DAINTERFACE_API，便于注册表逻辑被单元测试直接编译覆盖。
+ *
+ * 生命周期：实现方必须保证对象在注册期内有效，并在自身销毁前调用
+ * DADockingAreaInterface::unregisterSettingContextProvider()（否则注册表后续回调会
+ * 解引用已销毁的 provider）。
  */
 class DASettingContextProvider
 {

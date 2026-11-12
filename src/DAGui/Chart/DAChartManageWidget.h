@@ -104,6 +104,8 @@ private:
     void addManagedFigure(DA::DAFigureWidget* fig);
     // 清空管理树（树视图、combobox项、hash、堆叠窗口）
     void clearManagedFigures();
+    // 从管理树移除单个figure（不删除figure本身；销毁路径下不解引用fig）
+    void removeManagedFigure(DA::DAFigureWidget* fig);
     // 设置当前显示的fig对应的view
     void setCurrentDisplayView(DA::DAFigureWidget* fig);
     DAFigureWidget* getComboboxFigure(int index) const;
@@ -112,6 +114,8 @@ private:
 private Q_SLOTS:
     void onFigureCreated(DA::DAFigureWidget* fig);
     void onFigureCloseing(DA::DAFigureWidget* fig);
+    // figure 对象被销毁时清除管理项（外部模式下插件figure可能先于setFigures销毁）
+    void onManagedFigureDestroyed(QObject* obj);
     void onCurrentFigureChanged(DA::DAFigureWidget* fig, int index);
     // 点击了plotitem，这里要把信号转发出去
     void onPlotClicked(QwtPlot* plot, QStandardItem* treeItem);

@@ -105,7 +105,8 @@ public:
     void registerSettingContextProvider(QWidget* dockContent, DASettingContextProvider* provider);
     // 注销 dock 内容的设置上下文提供者（注册方应在内容销毁前调用）
     void unregisterSettingContextProvider(QWidget* dockContent);
-    // 激活 dock 内容对应的设置上下文：命中返回 true（先失活上一个并激活其撤销栈），未命中失活上一个并返回 false
+    // 激活 dock 内容对应的设置上下文：命中返回 true（先失活上一个并激活其撤销栈）；未命中返回 false 且不改变当前状态
+    //（失活时机由调用方决定：APP 在焦点丢失或回到固定操作窗口时调用 deactivateSettingContextProvider()）
     bool activateSettingContextForWidget(QWidget* dockContent);
     // 失活当前的设置上下文提供者
     void deactivateSettingContextProvider();

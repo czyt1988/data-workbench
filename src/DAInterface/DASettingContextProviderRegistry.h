@@ -15,9 +15,12 @@ namespace DA
  * 用它判断是否由插件接管设置上下文，并负责「失活上一个提供者 + 激活当前提供者 +
  * 激活其撤销栈」。与具体 dock 管理器解耦，便于单独测试。
  *
- * 生命周期约定：注册方必须在 dock 内容销毁前调用 unregisterProvider()（否则注册表
- * 只清理映射、不回调已失效的提供者）。dock 内容先被销毁时，注册表在下一次查询时
- * 惰性清理对应条目。
+ * 生命周期约定：
+ * - provider 的生命周期必须长于注册期：**注册方必须在 provider 销毁前调用
+ *   unregisterProvider()**（否则注册表后续回调会解引用已销毁的 provider）；
+ * - dock 内容先于 provider 销毁时，注册表用 QPointer 惰性清理条目、只清状态不回调
+ *   （提供者可能随之失效）；
+ * - 同一 provider 可以注册给多个 dock 内容，注册表按「内容 + 提供者」共同判断当前项。
  */
 class DASettingContextProviderRegistry
 {
@@ -60,6 +63,7 @@ private:
     QHash< QWidget*, Entry > mProviders;
     QPointer< QWidget > mCurrentContent;
     DASettingContextProvider* mCurrentProvider { nullptr };
+    bool mActivating { false };  ///< 激活回调中的重入保护
 };
 }  // namespace DA
 #endif  // DASETTINGCONTEXTPROVIDERREGISTRY_H

@@ -38,6 +38,7 @@
 #include "DAAppCore.h"
 #include "Ribbon/DAAppRibbonArea.h"
 #include "DAAppDockingArea.h"
+#include "Controller/DAAppContextRoutePolicy.h"
 #include "DAChartOperateWidget.h"
 #include "DAAppCommand.h"
 #include "DAUndoHistoryWidget.h"
@@ -786,49 +787,69 @@ void DAAppController::activateContextCategoryForWidget(QWidget* widget)
         mRibbon->hideContextCategory(DAAppRibbonArea::AllContextCategory);
         return;
     }
-    // 插件注册的设置上下文提供者优先接管：命中后由提供者自己显示设置页/上下文标签，
-    // 此路径不再执行后面的固定窗口路由与 hideContextCategory(All)（修复插件 raise 自己
-    // dock 时把 Chart 上下文标签清空的问题）。
-    if (mDock && mDock->activateSettingContextForWidget(widget)) {
+    // 路由判定抽成纯函数（可单测）：插件设置上下文提供者 > 数据/工作流/绘图操作窗口 > 数据管理 > 工具 dock
+    const DAAppContextRoutePolicy route = resolveAppContextRoutePolicy(
+        widget,
+        mDock && mDock->settingContextProviderFor(widget) != nullptr,
+        getDataOperateWidget(),
+        getWorkFlowOperateWidget(),
+        getChartOperateWidget(),
+        getDataManageWidget());
+    if (DAAppContextRoutePolicy::SettingContextProvider == route) {
+        // 插件提供者接管：由 provider 自己显示设置页/上下文标签，不执行 hide-all
+        //（修复插件 raise 自己 dock 时把 Chart 上下文标签清空的问题）
+        if (mDock) {
+            mDock->activateSettingContextForWidget(widget);
+        }
         return;
     }
     // 焦点回到固定操作窗口：失活插件注册的设置上下文（恢复宿主的设置面板/图元树/上下文标签）。
-    // 其它工具 dock（设置、日志、图元树等）激活时保持插件上下文不变——与固定上下文标签
-    // 只随三个操作窗口切换的既有语义一致，也避免插件在 activateSettingContext() 里
-    // raiseDockByWidget(设置面板) 时被自身的程序化 raise 误判为「切走」。
+    // 工具 dock（设置、日志、图元树等）激活时保持插件上下文不变——与固定上下文标签只随三个
+    // 操作窗口切换的既有语义一致，也避免插件在 activateSettingContext() 里 raiseDockByWidget
+    // (设置面板) 时被自身的程序化 raise 误判为「切走」。
     if (mDock
-        && (widget == getDataOperateWidget() || widget == getWorkFlowOperateWidget()
-            || widget == getChartOperateWidget())) {
+        && (DAAppContextRoutePolicy::DataOperate == route || DAAppContextRoutePolicy::WorkFlowOperate == route
+            || DAAppContextRoutePolicy::ChartOperate == route)) {
         mDock->deactivateSettingContextProvider();
     }
-    // 数据操作窗口激活时，检查是否需要显示m_contextDataFrame
-    if (widget == getDataOperateWidget()) {
+    switch (route) {
+    case DAAppContextRoutePolicy::DataOperate: {
         // 数据窗口激活
         mLastFocusedOpertateWidget = LastFocusedOnDataOpt;
         // 激活当前数据页的undo栈，保证全局undo/redo action状态同步
         activateUndoStackForWidget(getDataOperateWidget());
         mRibbon->showContextCategory(DAAppRibbonArea::ContextCategoryData);
-    } else if (widget == getWorkFlowOperateWidget()) {
+        break;
+    }
+    case DAAppContextRoutePolicy::WorkFlowOperate: {
         // 工作流窗口激活
         mLastFocusedOpertateWidget = LastFocusedOnWorkflowOpt;
         // 此函数会激活当前窗口的stack
         getWorkFlowOperateWidget()->setUndoStackActive();
         mRibbon->showContextCategory(DAAppRibbonArea::ContextCategoryWorkflow);
         getSettingContainerWidget()->showWorkFlowNodeItemSettingWidget();
-    } else if (widget == getChartOperateWidget()) {
+        break;
+    }
+    case DAAppContextRoutePolicy::ChartOperate: {
         // 绘图窗口激活
         mLastFocusedOpertateWidget = LastFocusedOnChartOpt;
         // 激活当前figure的undo栈，保证全局undo/redo action状态同步
         activateUndoStackForWidget(getChartOperateWidget());
         mRibbon->showContextCategory(DAAppRibbonArea::ContextCategoryChart);
         getSettingContainerWidget()->showChartSettingWidget();
-    } else if (widget == getDataManageWidget()) {
+        break;
+    }
+    case DAAppContextRoutePolicy::DataManage: {
         if (mCommand) {
             QUndoStack* stack = mCommand->getDataManagerStack();
             if (stack && !(stack->isActive())) {  // Data 相关的窗口 undostack激活
                 stack->setActive();
             }
         }
+        break;
+    }
+    default:
+        break;
     }
 }
 

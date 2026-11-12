@@ -1,5 +1,6 @@
 #include "DAAppProjectActionPolicy.h"
 #include "DAAppWindowStateSerializer.h"
+#include "Controller/DAAppContextRoutePolicy.h"
 #include "DASettingContextProvider.h"
 #include "DASettingContextProviderRegistry.h"
 #include <QApplication>
@@ -7,6 +8,7 @@
 #include <QUndoStack>
 #include <QWidget>
 #include <QtTest/QtTest>
+#include <functional>
 
 namespace
 {
@@ -19,10 +21,15 @@ public:
     int activateCount { 0 };
     int deactivateCount { 0 };
     QUndoStack* undoStack { nullptr };
+    // 激活回调内追加动作（用于验证重入保护/程序化 raise）
+    std::function< void() > onActivate;
 
     void activateSettingContext() override
     {
         ++activateCount;
+        if (onActivate) {
+            onActivate();
+        }
     }
     void deactivateSettingContext() override
     {
@@ -64,6 +71,13 @@ private Q_SLOTS:
     void testSettingContextProvider_destroyedContentCleanedUp();
     void testSettingContextProvider_replaceProviderForSameContent();
     void testSettingContextProvider_nullArguments();
+    void testSettingContextProvider_sameProviderMultipleContents();
+    void testSettingContextProvider_reentrantActivateGuarded();
+    // T6：APP 上下文路由判定（provider 优先 / 固定窗口 / 工具 dock）
+    void testContextRoute_providerTakesPrecedence();
+    void testContextRoute_fixedOperateWindows();
+    void testContextRoute_utilityDockKeepsProvider();
+    void testContextRoute_nullWidget();
 };
 
 void APPRefactorTest::testCloseAction_cleanProject()
@@ -388,6 +402,154 @@ void APPRefactorTest::testSettingContextProvider_nullArguments()
     registry.registerProvider(&content, &provider);
     registry.unregisterProvider(nullptr);
     QCOMPARE(registry.providerCount(), 1);
+}
+
+// 同一 provider 注册给多个 dock 内容：注销/替换非当前内容不得误失活当前内容
+void APPRefactorTest::testSettingContextProvider_sameProviderMultipleContents()
+{
+    using namespace DA;
+    DASettingContextProviderRegistry registry;
+    QWidget contentA;
+    QWidget contentB;
+    FakeSettingContextProvider provider;
+    registry.registerProvider(&contentA, &provider);
+    registry.registerProvider(&contentB, &provider);
+    QCOMPARE(registry.providerCount(), 2);
+    QVERIFY(registry.activateFor(&contentA));
+    QCOMPARE(registry.currentDockContent(), &contentA);
+
+    // 非当前内容注销：当前上下文保持不变、不失活
+    registry.unregisterProvider(&contentB);
+    QCOMPARE(provider.deactivateCount, 0);
+    QCOMPARE(registry.currentProvider(), &provider);
+    QCOMPARE(registry.currentDockContent(), &contentA);
+
+    // 非当前内容销毁（QPointer 惰性清理）：同样不影响当前内容
+    QWidget* contentC = new QWidget();
+    registry.registerProvider(contentC, &provider);
+    delete contentC;
+    QCOMPARE(registry.providerCount(), 1);
+    QCOMPARE(provider.deactivateCount, 0);
+    QCOMPARE(registry.currentDockContent(), &contentA);
+
+    // 当前内容注销：失活一次
+    registry.unregisterProvider(&contentA);
+    QCOMPARE(provider.deactivateCount, 1);
+    QCOMPARE(registry.currentProvider(), nullptr);
+}
+
+// 激活回调内重入（provider 程序化 raise 自己/已注册 dock）：不重复激活、不递归
+void APPRefactorTest::testSettingContextProvider_reentrantActivateGuarded()
+{
+    using namespace DA;
+    DASettingContextProviderRegistry registry;
+    QWidget content;
+    FakeSettingContextProvider provider;
+    registry.registerProvider(&content, &provider);
+    int nestedResult = -1;
+    provider.onActivate = [&registry, &content, &nestedResult]() {
+        nestedResult = registry.activateFor(&content) ? 1 : 0;
+    };
+
+    QVERIFY(registry.activateFor(&content));
+    QCOMPARE(provider.activateCount, 1);  // 重入不再触发 activateSettingContext
+    QCOMPARE(nestedResult, 1);            // 重入调用返回「已命中/已接管」
+    QCOMPARE(provider.deactivateCount, 0);
+    QCOMPARE(registry.currentProvider(), &provider);
+}
+
+// 路由判定：插件设置上下文提供者优先，命中即由 provider 接管（不进入 hide-all 分支）
+void APPRefactorTest::testContextRoute_providerTakesPrecedence()
+{
+    using namespace DA;
+    QWidget pluginPage;
+    QWidget dataOperate;
+    QWidget workflowOperate;
+    QWidget chartOperate;
+    QWidget dataManage;
+
+    // 注册 + 激活：模拟 dock 激活后的路由路径（命中 → 回调被调用 → 控制器 return，不 hide-all）
+    DASettingContextProviderRegistry registry;
+    FakeSettingContextProvider provider;
+    registry.registerProvider(&pluginPage, &provider);
+    const DAAppContextRoutePolicy route = resolveAppContextRoutePolicy(
+        &pluginPage, registry.providerFor(&pluginPage) != nullptr, &dataOperate, &workflowOperate, &chartOperate, &dataManage);
+    QCOMPARE(static_cast< int >(route), static_cast< int >(DAAppContextRoutePolicy::SettingContextProvider));
+    QVERIFY(registry.activateFor(&pluginPage));
+    QCOMPARE(provider.activateCount, 1);
+    QCOMPARE(provider.deactivateCount, 0);
+    QCOMPARE(registry.currentProvider(), &provider);
+}
+
+// 路由判定：三个固定操作窗口 + 数据管理窗口；焦点回到固定窗口时才失活插件上下文
+void APPRefactorTest::testContextRoute_fixedOperateWindows()
+{
+    using namespace DA;
+    QWidget dataOperate;
+    QWidget workflowOperate;
+    QWidget chartOperate;
+    QWidget dataManage;
+    QWidget pluginPage;
+
+    QCOMPARE(static_cast< int >(resolveAppContextRoutePolicy(
+                 &dataOperate, false, &dataOperate, &workflowOperate, &chartOperate, &dataManage)),
+             static_cast< int >(DAAppContextRoutePolicy::DataOperate));
+    QCOMPARE(static_cast< int >(resolveAppContextRoutePolicy(
+                 &workflowOperate, false, &dataOperate, &workflowOperate, &chartOperate, &dataManage)),
+             static_cast< int >(DAAppContextRoutePolicy::WorkFlowOperate));
+    QCOMPARE(static_cast< int >(resolveAppContextRoutePolicy(
+                 &chartOperate, false, &dataOperate, &workflowOperate, &chartOperate, &dataManage)),
+             static_cast< int >(DAAppContextRoutePolicy::ChartOperate));
+    QCOMPARE(static_cast< int >(resolveAppContextRoutePolicy(
+                 &dataManage, false, &dataOperate, &workflowOperate, &chartOperate, &dataManage)),
+             static_cast< int >(DAAppContextRoutePolicy::DataManage));
+
+    // 插件上下文激活后切回绘图窗口：控制器会对固定窗口调用 deactivateSettingContextProvider()
+    DASettingContextProviderRegistry registry;
+    FakeSettingContextProvider provider;
+    registry.registerProvider(&pluginPage, &provider);
+    QVERIFY(registry.activateFor(&pluginPage));
+    const DAAppContextRoutePolicy route =
+        resolveAppContextRoutePolicy(&chartOperate, false, &dataOperate, &workflowOperate, &chartOperate, &dataManage);
+    QCOMPARE(static_cast< int >(route), static_cast< int >(DAAppContextRoutePolicy::ChartOperate));
+    registry.deactivateCurrent();
+    QCOMPARE(provider.deactivateCount, 1);
+}
+
+// 路由判定：工具 dock（设置/日志/图元树等）激活不改变插件上下文
+void APPRefactorTest::testContextRoute_utilityDockKeepsProvider()
+{
+    using namespace DA;
+    QWidget dataOperate;
+    QWidget workflowOperate;
+    QWidget chartOperate;
+    QWidget dataManage;
+    QWidget settingDock;
+    QWidget pluginPage;
+
+    const DAAppContextRoutePolicy route = resolveAppContextRoutePolicy(
+        &settingDock, false, &dataOperate, &workflowOperate, &chartOperate, &dataManage);
+    QCOMPARE(static_cast< int >(route), static_cast< int >(DAAppContextRoutePolicy::UtilityDock));
+
+    // 工具 dock 激活后（控制器不调用 deactivate），插件上下文仍保持
+    DASettingContextProviderRegistry registry;
+    FakeSettingContextProvider provider;
+    registry.registerProvider(&pluginPage, &provider);
+    QVERIFY(registry.activateFor(&pluginPage));
+    if (DAAppContextRoutePolicy::UtilityDock == route) {
+        // 控制器不做任何处理
+    }
+    QCOMPARE(provider.deactivateCount, 0);
+    QCOMPARE(registry.currentProvider(), &provider);
+}
+
+// 路由判定：nullptr（焦点离开全部 dock 内容）由控制器先走 hide-all，本函数返回工具 dock
+void APPRefactorTest::testContextRoute_nullWidget()
+{
+    using namespace DA;
+    QWidget dataOperate;
+    QCOMPARE(static_cast< int >(resolveAppContextRoutePolicy(nullptr, false, &dataOperate, nullptr, nullptr, nullptr)),
+             static_cast< int >(DAAppContextRoutePolicy::UtilityDock));
 }
 
 QTEST_MAIN(APPRefactorTest)

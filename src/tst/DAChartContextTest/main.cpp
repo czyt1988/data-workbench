@@ -372,6 +372,8 @@ void TSTDAChartContextTest::testExportWithEmptyArguments()
              "exporting with an empty file path must fail");
     QVERIFY2(!fig->exportChartToFile(chart, QString(), DAFigureExportFormat::Svg),
              "exporting SVG with an empty file path must fail");
+    QVERIFY2(!fig->exportChartToFile(chart, QString(), DAFigureExportFormat::Pdf),
+             "exporting PDF with an empty file path must fail");
     QVERIFY(chart->width() > 0 && chart->height() > 0);
 }
 

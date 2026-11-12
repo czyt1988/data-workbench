@@ -1111,8 +1111,10 @@ void DAAppChartActionHandler::onActionCopyFigureToClipboardTriggered()
 /**
  * @brief 导出当前子图到图片文件
  *
- * 目标为当前figure的当前子图；格式由用户输入的后缀决定（.png/.svg/.pdf，
- * 未输入后缀时默认png），成功/失败都用da*消息反馈（用户可见，必须翻译）。
+ * 目标为当前figure的当前子图；格式由用户输入的后缀决定（.png/.svg/.pdf），
+ * 后缀缺失或用户输入了未知后缀时按文件对话框所选过滤器补正确后缀，避免
+ * 「内容与后缀不一致」（例如选 SVG 却存成 .png）。成功/失败都用da*消息反馈
+ * （用户可见，必须翻译）。
  */
 void DAAppChartActionHandler::onActionExportChartToFileTriggered()
 {
@@ -1126,17 +1128,26 @@ void DAAppChartActionHandler::onActionExportChartToFileTriggered()
         daWarning << tr("There is no sub-chart to export");  // cn:没有可导出的子图
         return;
     }
+    QString selectedFilter;
     QString filePath = QFileDialog::getSaveFileName(
         mDeps.controller->app(),
         tr("Export Chart"),  // cn:导出当前子图
         QStringLiteral("chart.png"),
-        DAFigureWidget::exportFileFilter());
+        DAFigureWidget::exportFileFilter(),
+        &selectedFilter);
     if (filePath.isEmpty()) {
         return;
     }
-    // 用户未输入后缀时默认保存为png
-    if (QFileInfo(filePath).suffix().isEmpty()) {
-        filePath += QStringLiteral(".png");
+    // 后缀缺失或未知：按所选过滤器补真实后缀（.svg/.pdf/默认 .png）
+    const QString suffix = QFileInfo(filePath).suffix().toLower();
+    if (suffix != QLatin1String("png") && suffix != QLatin1String("svg") && suffix != QLatin1String("pdf")) {
+        if (selectedFilter.contains(QLatin1String("*.svg"))) {
+            filePath += QStringLiteral(".svg");
+        } else if (selectedFilter.contains(QLatin1String("*.pdf"))) {
+            filePath += QStringLiteral(".pdf");
+        } else {
+            filePath += QStringLiteral(".png");
+        }
     }
     const DAFigureExportFormat format = DAFigureWidget::exportFormatFromFilePath(filePath);
     if (fig->exportChartToFile(chart, filePath, format)) {
