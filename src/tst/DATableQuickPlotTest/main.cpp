@@ -38,6 +38,7 @@
 #include "DAPyScripts.h"
 #include "DAPybind11InQt.h"
 #include <pybind11/eval.h>
+#include "pandas/DAPyDataFrame.h"
 #include "DAData.h"
 #include "DATableDataBlock.h"
 #include "DATableDataSource.h"
@@ -313,6 +314,8 @@ private Q_SLOTS:
     void testSamplerBudgetStopsSampling();
     // 默认预算下正常采样不应被标记受限（避免误报）
     void testSamplerDefaultBudgetNotLimited();
+    // 回归：真实 pandas 大表（10 万行 × 2 列）折线采样必须覆盖整段，而不是只出列数个点
+    void testLargePandasLineSample();
     void testSpecEquality();
     void testRenderLineAndHistogram();
     void testRenderBarSampled();
@@ -751,6 +754,57 @@ void DATableQuickPlotTest::testSamplerDefaultBudgetNotLimited()
         request, -1, 0, DA::DAChartSeriesSampler::kMaxLinePoints);
     QVERIFY(!sample.info.limited);  // 正常采样不应被标成受限
     QCOMPARE(DA::DAChartSeriesSampler::SampleBudget().maxFetchCalls, 128);
+}
+
+/**
+ * @brief 回归：真实 pandas 大表（10 万行 × 2 列）折线采样必须覆盖整段
+ *
+ * 背景：pandas 数据源按列取数曾误用 DataFrame.iloc[整数]（取行），一列只能取到
+ * 「列数」个值，10 万行 × 2 列的数据画折线只剩 2 个点（用户反馈的「10 万点只画 2 点」）。
+ * 采样正常时目标点数约为 kMaxLinePoints（2000 量级）。
+ */
+void DATableQuickPlotTest::testLargePandasLineSample()
+{
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"x": range(100000), "y": [float(i) * 0.5 for i in range(100000)]})
+)",
+                   pybind11::globals(),
+                   scope);
+    DA::DAPyDataFrame df(scope[ "df" ]);
+    const DA::DAData data(df);
+    QVERIFY(data.isDataFrame());
+
+    DA::DATableChartRequest request;
+    request.data     = data;
+    request.rowCount = data.tableSource()->tableRowCount();
+    request.columns.append(DA::DATableChartPlanner::makeColumn(data, 0, 0));
+    request.columns.append(DA::DATableChartPlanner::makeColumn(data, 1, 0));
+    QCOMPARE(request.rowCount, static_cast< std::size_t >(100000));
+
+    const DA::DATableChartSpec spec = DA::DATableChartPlanner::defaultSpec(request, DA::DATableChartType::Line);
+    QCOMPARE(spec.xColumn, 0);
+    QCOMPARE(spec.valueColumns.size(), 1);
+    QCOMPARE(spec.valueColumns.first(), 1);
+
+    // 采样层：应得到约 2000 个点（按行误取时只有 2 个点）
+    const auto sample = DA::DAChartSeriesSampler::sampleXY(
+        request, spec.xColumn, 1, DA::DAChartSeriesSampler::kMaxLinePoints);
+    QVERIFY(sample.info.sampled);
+    QVERIFY2(sample.points.size() > 1000,
+             qPrintable(QStringLiteral("sampled points=%1").arg(sample.points.size())));
+    QVERIFY(sample.points.size() <= DA::DAChartSeriesSampler::kMaxLinePoints);
+
+    // 渲染整条链路：构建信息中的采样行数应与采样点数一致
+    DA::DAChartWidget chart;
+    DA::DATableChartBuildInfo info;
+    QString error;
+    QVERIFY2(DA::DAChartQuickPlot::render(request, spec, &chart, &info, &error), qPrintable(error));
+    QVERIFY(!chart.itemList().isEmpty());
+    QCOMPARE(info.totalRows, 100000);
+    QVERIFY2(info.sampledRows > 1000,
+             qPrintable(QStringLiteral("rendered sample rows=%1").arg(info.sampledRows)));
 }
 
 void DATableQuickPlotTest::testSpecEquality()

@@ -483,6 +483,25 @@ DAPySeries DAPyDataFrame::iloc(std::size_t c) const
 }
 
 /**
+ * @brief 按列号取整列（位置索引）
+ *
+ * pandas 的 DataFrame.iloc[整数] 是取「行」，取列必须用 iloc[:, c]；
+ * 按位置取列还能避开重名列（同名列用 operator[] 会返回 DataFrame 而不是 Series）。
+ * @param c 列号（从0开始），越界时由 pandas 抛异常，这里返回无效 Series
+ * @return 对应列的 DAPySeries
+ */
+DAPySeries DAPyDataFrame::columnAt(std::size_t c) const
+{
+    try {
+        pybind11::object obj_series = attr("iloc")[ pybind11::make_tuple(pybind11::ellipsis(), pybind11::int_(c)) ];
+        return DAPySeries(obj_series);
+    } catch (const std::exception& e) {
+        qCritical().noquote() << e.what();
+    }
+    return DAPySeries();
+}
+
+/**
  * @brief DADataFrame::loc
  * @param n
  * @return
