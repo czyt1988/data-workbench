@@ -1,21 +1,123 @@
 #include <QtTest>
 #include <QCoreApplication>
+#include <QGuiApplication>
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QOpenGLContext>
 #include <QSignalSpy>
 #include <QMetaType>
 #include <QStringList>
+#include <QSurfaceFormat>
 #include <QVariantMap>
 #include <cmath>
+#include <memory>
 #include "Analysis/DASignalAmplitude.h"
 #include "Analysis/DASignalAnalysisParams.h"
 #include "Analysis/DASignalMemoryEstimate.h"
 #include "Analysis/DAPeakTableModel.h"
 #include "Form/DASignalFormSpecBuilder.h"
 #include "Page/DAPeakCurvePlotSamples.h"
+#include "Page/DASignalAnalysisView.h"
 #include "Render/DAStftRasterData.h"
+#include "DAChart3DWidget.h"
+#include "DAChartWidget.h"
+#include "DAFigureWidget.h"
+#include "qwt_figure_grid.h"
 #include "qwt_interval.h"
+#include "qwt_plot_curve.h"
+#include "qwt_plot_intervalcurve.h"
+#include "qwt_plot_marker.h"
+#include "qwt_plot_shapeitem.h"
+#include "qwt_plot_spectrogram.h"
+
+namespace
+{
+/**
+ * @brief 测试用信号来源：不读真实文件，按请求长度返回 0 值样本
+ */
+class FakeSignalSource : public DA::DASignalSource
+{
+public:
+    FakeSignalSource(int channels, qint64 sampleCount, double sampleRate)
+        : m_channels(channels), m_sampleCount(sampleCount), m_sampleRate(sampleRate)
+    {
+    }
+    SourceType type() const override
+    {
+        return FileSource;
+    }
+    bool readRange(int channel, qint64 start, qint64 count, QVector< float >& out, QString* error) const override
+    {
+        Q_UNUSED(channel)
+        Q_UNUSED(error)
+        if (start < 0 || start >= m_sampleCount) {
+            out.clear();
+            return true;
+        }
+        out.resize(int(qBound< qint64 >(0, count, m_sampleCount - start)));
+        out.fill(0.0f);
+        return true;
+    }
+    int channelCount() const override
+    {
+        return m_channels;
+    }
+    QStringList channelNames() const override
+    {
+        QStringList names;
+        for (int i = 0; i < m_channels; ++i) {
+            names.append(QStringLiteral("CH%1").arg(i + 1));
+        }
+        return names;
+    }
+    qint64 sampleCount() const override
+    {
+        return m_sampleCount;
+    }
+    double sampleRate() const override
+    {
+        return m_sampleRate;
+    }
+    QString playbackFilePath() const override
+    {
+        return QString();
+    }
+    QString sourceDescription() const override
+    {
+        return QStringLiteral("fake-source");
+    }
+    void setSampleRate(double fs) override
+    {
+        m_sampleRate = fs;
+    }
+
+private:
+    int m_channels;
+    qint64 m_sampleCount;
+    double m_sampleRate;
+};
+
+/// 构造测试信号（默认单通道 1000 点 @1000 Hz）
+DA::DASignalPtr makeTestSignal(int channels = 1, qint64 sampleCount = 1000, double sampleRate = 1000.0)
+{
+    auto source = std::make_shared< FakeSignalSource >(channels, sampleCount, sampleRate);
+    return std::make_shared< DA::DASignal >(QStringLiteral("unit"), source);
+}
+
+/// 无 OpenGL（离屏/无 GL）时跳过依赖 3D 子图的用例
+bool openGLAvailable()
+{
+    if (QGuiApplication::platformName().contains(QStringLiteral("offscreen"), Qt::CaseInsensitive)) {
+        return false;
+    }
+    if (QSurfaceFormat::defaultFormat().majorVersion() < 2) {
+        return false;
+    }
+    QOpenGLContext ctx;
+    return ctx.create();
+}
+}  // namespace
 
 namespace
 {
@@ -77,6 +179,12 @@ private Q_SLOTS:
     void peakCurveJumpThreshold();
     // 峰值曲线渲染：连续段才连线，跳变/缺峰处插入 NaN 断开（其余帧仍以点保留）
     void peakCurvePlotSamples();
+    // T7：视图 figure 为 2×2 网格，波形跨两列，热图与三维瀑布同格
+    void signalViewFigureGrid();
+    // T7：分析结果图元标 transient，峰值标记保持非 transient
+    void signalViewTransientItems();
+    // T7：瀑布模式切换热图/三维瀑布显隐与当前子图判定
+    void signalViewWaterfallMode();
 };
 
 /**
@@ -692,6 +800,176 @@ void DASignalAnalysisTest::peakCurvePlotSamples()
     // rank 越界 / 空结果：返回空采样
     QVERIFY(DA::daPeakCurvePlotSamples(curves, 1, threshold).dotXs.isEmpty());
     QVERIFY(DA::daPeakCurvePlotSamples(DA::DAPeakCurveResult(), 0, threshold).lineXs.isEmpty());
+}
+
+/**
+ * @brief T7：信号视图使用 DAFigureWidget 2×2 网格，子图网格坐标正确
+ */
+void DASignalAnalysisTest::signalViewFigureGrid()
+{
+    if (!openGLAvailable()) {
+        QSKIP("OpenGL is not available: skip the signal view grid test");
+    }
+    DA::DASignalAnalysisView view(makeTestSignal());
+    DA::DAFigureWidget* fig = view.figure();
+    QVERIFY(fig);
+    QVERIFY(fig->isGridLayoutEnabled());
+    QwtFigureGrid* grid = fig->grid();
+    QVERIFY(grid);
+    QCOMPARE(grid->rowCount(), 2);
+    QCOMPARE(grid->columnCount(), 2);
+
+    auto checkCell = [grid](QWidget* w, int expectRow, int expectCol, int expectRowSpan, int expectColSpan) {
+        QVERIFY(w);
+        int row = -1, col = -1, rowSpan = 0, colSpan = 0;
+        const bool ok = grid->gridPosition(w, &row, &col, &rowSpan, &colSpan);
+        QVERIFY(ok);
+        QCOMPARE(row, expectRow);
+        QCOMPARE(col, expectCol);
+        QCOMPARE(rowSpan, expectRowSpan);
+        QCOMPARE(colSpan, expectColSpan);
+    };
+    // 波形跨两列，频谱/热图各占一格；热图与三维瀑布同格（显隐切换）
+    checkCell(view.waveChart(), 0, 0, 1, 2);
+    checkCell(view.spectrumChart(), 1, 0, 1, 1);
+    checkCell(view.heatmapChart(), 1, 1, 1, 1);
+    checkCell(view.waterfall3DChart(), 1, 1, 1, 1);
+
+    // figure id 由信号派生
+    QCOMPARE(view.figureId(), QStringLiteral("sig-unit"));
+    // 当前 2D 子图可显式设置
+    view.setCurrentChart(view.waveChart());
+    QCOMPARE(view.currentChart(), view.waveChart());
+    QVERIFY(!view.is3DChartActive());
+}
+
+/**
+ * @brief T7：分析结果图元 transient（序列化跳过），峰值标记保持非 transient
+ */
+void DASignalAnalysisTest::signalViewTransientItems()
+{
+    if (!openGLAvailable()) {
+        QSKIP("OpenGL is not available: skip the signal view item test");
+    }
+    DA::DASignalAnalysisView view(makeTestSignal());
+
+    QVector< double > xs { 0.0, 1.0, 2.0 };
+    QVector< double > mins { -1.0, -2.0, -1.5 };
+    QVector< double > maxs { 1.0, 2.0, 1.5 };
+    view.setEnvelope(xs, mins, maxs);
+
+    DA::DASpectrumResult spectrum;
+    spectrum.freqs       = { 0.0, 10.0, 20.0 };
+    spectrum.amplitudes  = { 1.0, 2.0, 3.0 };
+    spectrum.resolutionHz = 10.0;
+    view.setSpectrum(spectrum);
+
+    DA::DAStftResult stft;
+    stft.rows          = 2;
+    stft.columns       = 3;
+    stft.times         = { 0.0, 0.5, 1.0 };
+    stft.freqs         = { 0.0, 10.0 };
+    stft.values        = { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 };
+    stft.windowSeconds = 0.1;
+    view.setStft(stft);
+
+    DA::DAPeakResult peaks;
+    peaks.frequencies = { 10.0 };
+    peaks.magnitudes  = { 2.0 };
+    view.setPeaks(peaks);
+
+    // 波形：包络曲线 / 播放头 / STFT 窗口矩形均为 transient
+    QwtPlotIntervalCurve* envelope = nullptr;
+    QwtPlotMarker* playhead        = nullptr;
+    QwtPlotShapeItem* stftWindow   = nullptr;
+    const QList< QwtPlotItem* > waveItems = view.waveChart()->itemList();
+    for (QwtPlotItem* item : waveItems) {
+        if (auto* c = dynamic_cast< QwtPlotIntervalCurve* >(item)) {
+            envelope = c;
+            QVERIFY(view.waveChart()->isItemTransient(item));
+        } else if (auto* m = dynamic_cast< QwtPlotMarker* >(item)) {
+            playhead = m;
+            QVERIFY(view.waveChart()->isItemTransient(item));
+        } else if (auto* s = dynamic_cast< QwtPlotShapeItem* >(item)) {
+            stftWindow = s;
+            QVERIFY(view.waveChart()->isItemTransient(item));
+        }
+    }
+    QVERIFY(envelope);
+    QVERIFY(playhead);
+    QVERIFY(stftWindow);
+
+    // 频谱：曲线 transient；峰值标记非 transient（T9 写入 chart-data）
+    int spectrumCurves = 0;
+    int peakMarkers    = 0;
+    const QList< QwtPlotItem* > spectrumItems = view.spectrumChart()->itemList();
+    for (QwtPlotItem* item : spectrumItems) {
+        if (dynamic_cast< QwtPlotCurve* >(item) || dynamic_cast< QwtPlotIntervalCurve* >(item)) {
+            ++spectrumCurves;
+            QVERIFY(view.spectrumChart()->isItemTransient(item));
+        } else if (dynamic_cast< QwtPlotMarker* >(item)) {
+            ++peakMarkers;
+            QVERIFY(!view.spectrumChart()->isItemTransient(item));
+        }
+    }
+    QCOMPARE(spectrumCurves, 1);  // 未开启峰值标记时只有幅值谱曲线
+    QCOMPARE(peakMarkers, 0);
+
+    view.setPeakMarkersVisible(true);
+    peakMarkers = 0;
+    const QList< QwtPlotItem* > spectrumItemsWithPeaks = view.spectrumChart()->itemList();
+    for (QwtPlotItem* item : spectrumItemsWithPeaks) {
+        if (dynamic_cast< QwtPlotMarker* >(item)) {
+            ++peakMarkers;
+            QVERIFY(!view.spectrumChart()->isItemTransient(item));
+        }
+    }
+    QCOMPARE(peakMarkers, 1);
+
+    // 热图：时频栅格 transient
+    bool hasSpectrogram = false;
+    const QList< QwtPlotItem* > heatmapItems = view.heatmapChart()->itemList();
+    for (QwtPlotItem* item : heatmapItems) {
+        if (dynamic_cast< QwtPlotSpectrogram* >(item)) {
+            hasSpectrogram = true;
+            QVERIFY(view.heatmapChart()->isItemTransient(item));
+        }
+    }
+    QVERIFY(hasSpectrogram);
+}
+
+/**
+ * @brief T7：瀑布模式切换热图/三维瀑布显隐与当前子图判定
+ */
+void DASignalAnalysisTest::signalViewWaterfallMode()
+{
+    if (!openGLAvailable()) {
+        QSKIP("OpenGL is not available: skip the signal view waterfall test");
+    }
+    DA::DASignalAnalysisView view(makeTestSignal());
+    DA::DAChartWidget* heatmap = view.heatmapChart();
+    DA::DAChart3DWidget* waterfall = view.waterfall3DChart();
+    QVERIFY(heatmap);
+    QVERIFY(waterfall);
+
+    // 默认二维
+    view.setWaterfallMode(0);
+    QVERIFY(heatmap->isVisibleTo(&view));
+    QVERIFY(!waterfall->isVisibleTo(&view));
+    QVERIFY(!view.is3DChartActive());
+
+    // 三维：热图隐藏、瀑布可见、当前子图为 3D
+    view.setWaterfallMode(1);
+    QVERIFY(!heatmap->isVisibleTo(&view));
+    QVERIFY(waterfall->isVisibleTo(&view));
+    QVERIFY(view.is3DChartActive());
+    QCOMPARE(view.current3DChart(), waterfall);
+
+    // 隐藏：两者都不可见
+    view.setWaterfallMode(2);
+    QVERIFY(!heatmap->isVisibleTo(&view));
+    QVERIFY(!waterfall->isVisibleTo(&view));
+    QVERIFY(!view.is3DChartActive());
 }
 
 QTEST_MAIN(DASignalAnalysisTest)

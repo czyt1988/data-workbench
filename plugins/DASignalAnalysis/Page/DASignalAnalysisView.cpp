@@ -3,9 +3,11 @@
 #include <limits>
 #include <utility>
 #include <QApplication>
+#include <QCheckBox>
 #include <QComboBox>
+#include <QDoubleSpinBox>
 #include <QEvent>
-#include <QHBoxLayout>
+#include <QFrame>
 #include <QLabel>
 #include <QMouseEvent>
 #include <QPainter>
@@ -13,35 +15,34 @@
 #include <QResizeEvent>
 #include <QShowEvent>
 #include <QSlider>
-#include <QCheckBox>
-#include <QDoubleSpinBox>
-#include <QSplitter>
-#include <QStackedWidget>
 #include <QTimer>
+#include <QToolBar>
 #include <QVBoxLayout>
 #include <QDebug>
 // qwt
-#include "qwt_plot_curve.h"
-#include "qwt_plot_spectrogram.h"
-#include "qwt_scale_widget.h"
 #include "qwt_colormap.h"
 #include "qwt_colormap_preset.h"
-#include "qwt_raster_data.h"
+#include "qwt_figure.h"
+#include "qwt_figure_grid.h"
+#include "qwt_picker_machine.h"
+#include "qwt_plot_curve.h"
 #include "qwt_plot_intervalcurve.h"
 #include "qwt_plot_marker.h"
-#include "qwt_plot_shapeitem.h"
-#include "qwt_scale_engine.h"
 #include "qwt_plot_picker.h"
-#include "qwt_picker_machine.h"
+#include "qwt_plot_shapeitem.h"
+#include "qwt_plot_spectrogram.h"
+#include "qwt_raster_data.h"
 #include "qwt_samples.h"
+#include "qwt_scale_engine.h"
+#include "qwt_scale_widget.h"
 #include "qwt_symbol.h"
 // DA
+#include "DAChart3DWidget.h"
 #include "DAChartWidget.h"
-#include "DASignalChartPanel.h"
+#include "DAFigureWidget.h"
 #include "Analysis/DASignalAmplitude.h"
 #include "Render/DAStftRasterData.h"
 #include "Render/DAWaterfallBuilder.h"
-#include "DAChart3DWidget.h"
 #include "qwt3d_waterfall.h"
 
 namespace DA
@@ -58,9 +59,9 @@ QwtColorMap* cloneLinearColorMap(const QwtLinearColorMap* src)
     }
     auto* dst = new QwtLinearColorMap(src->format());
     dst->setMode(src->mode());
-    const QVector< double > pos   = src->stopPos();
-    const QVector< QColor > cols  = src->stopColors();
-    const int n                   = qMin(pos.size(), cols.size());
+    const QVector< double > pos  = src->stopPos();
+    const QVector< QColor > cols = src->stopColors();
+    const int n                  = qMin(pos.size(), cols.size());
     for (int i = 0; i < n; ++i) {
         dst->addColorStop(pos[ i ], cols[ i ]);
     }
@@ -79,7 +80,7 @@ void clearPeakMarkers(QVector< QwtPlotMarker* >& markers)
     markers.clear();
 }
 
-constexpr double cEps = 1e-30;
+constexpr double cEps             = 1e-30;
 constexpr int cEnvelopeDebounceMs = 200;
 }  // namespace
 
@@ -88,6 +89,7 @@ DASignalAnalysisView::DASignalAnalysisView(const DASignalPtr& signal, QWidget* p
 {
     buildUI();
     retranslateUi();
+    syncTemporaryToolbar();
 }
 
 DASignalAnalysisView::~DASignalAnalysisView()
@@ -131,9 +133,9 @@ void DASignalAnalysisView::setEnvelope(const QVector< double >& xs,
                                        const QVector< double >& mins,
                                        const QVector< double >& maxs)
 {
-    mEnvXs    = xs;
-    mEnvMins  = mins;
-    mEnvMaxs  = maxs;
+    mEnvXs         = xs;
+    mEnvMins       = mins;
+    mEnvMaxs       = maxs;
     mEnvelopeValid = !xs.isEmpty();
     // 信号峰值（波形范围 + dBFS 参考；两者口径不同，见 updateSignalPeaks）
     updateSignalPeaks();
@@ -155,16 +157,16 @@ void DASignalAnalysisView::setEnvelope(const QVector< double >& xs,
  */
 void DASignalAnalysisView::updateSignalPeaks()
 {
-    const int n = qMin(mEnvMins.size(), mEnvMaxs.size());
+    const int n    = qMin(mEnvMins.size(), mEnvMaxs.size());
     double rawPeak = 0.0;
     for (int i = 0; i < n; ++i) {
         rawPeak = qMax(rawPeak, qMax(std::fabs(mEnvMins[ i ]), std::fabs(mEnvMaxs[ i ])));
     }
     mSignalPeak = rawPeak;
 
-    const QString detrend = mParams.detrend.toLower();
-    const bool removeLinear = (detrend == QLatin1String("linear"));
-    const bool removeLevel  = mParams.removeDc || removeLinear || (detrend == QLatin1String("constant"));
+    const QString detrend     = mParams.detrend.toLower();
+    const bool removeLinear   = (detrend == QLatin1String("linear"));
+    const bool removeLevel    = mParams.removeDc || removeLinear || (detrend == QLatin1String("constant"));
     if (!removeLevel || n <= 0) {
         mDbfsReferencePeak = rawPeak;
         return;
@@ -192,161 +194,28 @@ void DASignalAnalysisView::updateSignalPeaks()
         }
     }
     const double intercept = meanCenter - slope * 0.5 * double(n - 1);
-    double peak = 0.0;
+    double peak            = 0.0;
     for (int i = 0; i < n; ++i) {
         const double base = intercept + slope * double(i);
-        peak = qMax(peak, qMax(std::fabs(mEnvMins[ i ] - base), std::fabs(mEnvMaxs[ i ] - base)));
+        peak              = qMax(peak, qMax(std::fabs(mEnvMins[ i ] - base), std::fabs(mEnvMaxs[ i ] - base)));
     }
     mDbfsReferencePeak = (peak > 0.0) ? peak : rawPeak;
 }
 
 /**
- * @brief 构建三图布局（方案 §8.2 / D25）
+ * @brief 构建视图布局：figure 网格 + T7 临时底部工具栏
  */
 void DASignalAnalysisView::buildUI()
 {
-    mVerticalSplitter   = new QSplitter(Qt::Vertical, this);
-    mVerticalSplitter->setChildrenCollapsible(false);
-
-    // ---------- 上半：波形 ----------
-    mWavePanel = new DASignalChartPanel(QStringLiteral("Waveform"), mVerticalSplitter);  // cn:波形
-    // 多通道下拉：一次分析一个通道（方案 §2.1）
-    mChannelCombo = new QComboBox(mWavePanel);
-    mChannelCombo->setObjectName(QStringLiteral("da-signal-channel-combo"));
-    const QStringList chNames = (mSignal ? mSignal->channelNamesOrDefaults() : QStringList());
-    for (int i = 0; i < chNames.size(); ++i) {
-        mChannelCombo->addItem(chNames.at(i), i);
-    }
-    mChannelCombo->setEnabled(chNames.size() > 1);
-    mWavePanel->addTitleBarWidget(mChannelCombo);
-    connect(mChannelCombo, QOverload< int >::of(&QComboBox::currentIndexChanged), this, [this](int) {
-        // 通道切换：清空缓存并重新请求包络/频谱/热图
-        mEnvelopeValid = false;
-        mEnvXs.clear();
-        mEnvMins.clear();
-        mEnvMaxs.clear();
-        mStft = DAStftResult();
-        requestEnvelopeRefresh();
-        if (mSignal) {
-            Q_EMIT spectrumRequested(mSignal, currentChannel());
-        }
-        requestHeatmapRefresh();
-        Q_EMIT channelChanged(currentChannel());
-    });
-    mTimeSlider = new QSlider(Qt::Horizontal, mWavePanel);
-    // 滑块以毫秒为范围（评审 U13：固定 0–1000 时 1 小时信号单步 3.6 秒，定位精度差）
-    const int durationMs = mSignal ? qMax(1, int(qRound64(mSignal->duration() * 1000.0))) : 1000;
-    mTimeSlider->setRange(0, durationMs);
-    mTimeSlider->setValue(0);
-    mWavePanel->setBottomWidget(mTimeSlider);
-    connect(mTimeSlider, &QSlider::valueChanged, this, &DASignalAnalysisView::onSliderMoved);
-
-    // 播放头（垂直线）
-    mPlayhead = new QwtPlotMarker();
-    mPlayhead->setLineStyle(QwtPlotMarker::VLine);
-    mPlayhead->setLinePen(QPen(QColor(206, 96, 67), 1.5, Qt::DashLine));  // 橙红（危险/标记色）
-    mPlayhead->setXValue(0.0);
-    mPlayhead->attach(mWavePanel->chart());
-
-    // STFT 窗口矩形（M6 填充数据）
-    mStftWindow = new QwtPlotShapeItem();
-    QPen rectPen(QColor(82, 128, 193), 1.0, Qt::SolidLine);  // 主蓝
-    QBrush rectBrush(QColor(189, 205, 232, 60));             // 浅蓝半透明
-    mStftWindow->setPen(rectPen);
-    mStftWindow->setBrush(rectBrush);
-    mStftWindow->setVisible(false);
-    mStftWindow->attach(mWavePanel->chart());
-
-    // 点击波形定位（评审 U1：QwtPicker 不设状态机时 transition() 直接返回，点击无效）
-    auto* wavePicker = new QwtPlotPicker(QwtPlot::xBottom, QwtPlot::yLeft,
-                                         QwtPlotPicker::NoRubberBand, QwtPicker::AlwaysOff,
-                                         mWavePanel->chart()->canvas());
-    wavePicker->setTrackerMode(QwtPicker::AlwaysOff);
-    wavePicker->setStateMachine(new QwtPickerClickPointMachine());
-    connect(wavePicker, QOverload< const QPointF& >::of(&QwtPlotPicker::selected), this, [this](const QPointF& p) {
-        setCurrentTime(p.x() - (mSignal ? mSignal->timeOrigin() : 0.0));
-    });
-    // STFT 窗口矩形整体拖动（D30）：在画布上监听鼠标，命中矩形内才进入拖动
-    mWavePanel->chart()->canvas()->installEventFilter(this);
-
-    // ---------- 下半：频谱 + 右侧叠置 ----------
-    mHorizontalSplitter = new QSplitter(Qt::Horizontal, mVerticalSplitter);
-    mHorizontalSplitter->setChildrenCollapsible(false);
-
-    mSpectrumPanel = new DASignalChartPanel(QStringLiteral("Spectrum"), mHorizontalSplitter);  // cn:频谱
-    // 频率轴线性/对数切换（方案 D16）
-    mFreqAxisCombo = new QComboBox(mSpectrumPanel);
-    mFreqAxisCombo->addItem(QStringLiteral("Linear"), false);  // cn:线性
-    mFreqAxisCombo->addItem(QStringLiteral("Log"), true);      // cn:对数
-    mSpectrumPanel->addTitleBarWidget(mFreqAxisCombo);
-    // 整段 / 跟随滑块（D13：默认整段）
-    mFollowSliderCheck = new QCheckBox(mSpectrumPanel);
-    mSpectrumPanel->addTitleBarWidget(mFollowSliderCheck);
-    connect(mFollowSliderCheck, &QCheckBox::toggled, this, [this](bool on) {
-        mFollowSlider = on;
-        rebuildSpectrumPlot();
-        // 专用信号（不用 currentTimeChanged）：避免被外部当作 seek 而暂停播放（评审 §七-2）
-        Q_EMIT followSliderToggled(on);
-    });
-    connect(mFreqAxisCombo, QOverload< int >::of(&QComboBox::currentIndexChanged), this, [this](int idx) {
-        mLogFrequency = mFreqAxisCombo->itemData(idx).toBool();
-        if (mLogFrequency) {
-            mSpectrumPanel->chart()->setAxisScaleEngine(QwtPlot::xBottom, new QwtLogScaleEngine());
-        } else {
-            mSpectrumPanel->chart()->setAxisScaleEngine(QwtPlot::xBottom, new QwtLinearScaleEngine());
-        }
-        rebuildSpectrumPlot();
-    });
-
-    // 右侧叠置：二维热图（M6）/ 三维瀑布（M8）/ 隐藏
-    mRightStack   = new QStackedWidget(mHorizontalSplitter);
-    mHeatmapPanel = new DASignalChartPanel(tr("Time-Frequency"), mRightStack);  // cn:时频
-    // 色带选择（默认 Viridis）与 dB 动态范围下限
-    mColormapCombo = new QComboBox(mHeatmapPanel);
-    const QStringList presets = QwtColorMapPreset::availablePresets();
-    for (const QString& names : presets) {
-        mColormapCombo->addItem(names, names);
-    }
-    const int viridisIdx = mColormapCombo->findData(QStringLiteral("viridis"));
-    if (viridisIdx >= 0) {
-        mColormapCombo->setCurrentIndex(viridisIdx);
-    }
-    mHeatmapPanel->addTitleBarWidget(mColormapCombo);
-    mDbFloorSpin = new QDoubleSpinBox(mHeatmapPanel);
-    mDbFloorSpin->setRange(-200.0, 0.0);
-    mDbFloorSpin->setDecimals(0);
-    mDbFloorSpin->setSingleStep(5.0);
-    mDbFloorSpin->setValue(mDbFloor);
-    mHeatmapPanel->addTitleBarWidget(mDbFloorSpin);
-    connect(mColormapCombo, QOverload< int >::of(&QComboBox::currentIndexChanged), this, [this](int) {
-        applyHeatmapColors();
-    });
-    connect(mDbFloorSpin, QOverload< double >::of(&QDoubleSpinBox::valueChanged), this, [this](double v) {
-        mDbFloor = v;
-        applyHeatmapColors();
-    });
-    // 热图随播放滚动（D27，默认关）
-    mAutoScrollCheck = new QCheckBox(mHeatmapPanel);
-    mHeatmapPanel->addTitleBarWidget(mAutoScrollCheck);
-    connect(mAutoScrollCheck, &QCheckBox::toggled, this, [this](bool on) { setHeatmapAutoScroll(on); });
-    mRightStack->addWidget(mHeatmapPanel);
-    // 三维曲面瀑布（qwt 现成 Qwt3DWaterfall，叠置第 2 页）
-    mWaterfallChart = new DAChart3DWidget(mRightStack);
-    mRightStack->addWidget(mWaterfallChart);
-
-    mHorizontalSplitter->addWidget(mSpectrumPanel);
-    mHorizontalSplitter->addWidget(mRightStack);
-    mHorizontalSplitter->setStretchFactor(0, 1);
-    mHorizontalSplitter->setStretchFactor(1, 1);
-
-    mVerticalSplitter->addWidget(mWavePanel);
-    mVerticalSplitter->addWidget(mHorizontalSplitter);
-    mVerticalSplitter->setStretchFactor(0, 1);
-    mVerticalSplitter->setStretchFactor(1, 1);
-
     QVBoxLayout* lay = new QVBoxLayout(this);
     lay->setContentsMargins(0, 0, 0, 0);
-    lay->addWidget(mVerticalSplitter);
+    lay->setSpacing(0);
+
+    buildFigure();
+    lay->addWidget(mFigure, 1);
+
+    buildTemporaryToolbar();
+    lay->addWidget(mTempToolbar);
 
     // 尺寸变化防抖后重算包络
     mResizeDebounce = new QTimer(this);
@@ -359,13 +228,168 @@ void DASignalAnalysisView::buildUI()
 }
 
 /**
+ * @brief 创建 figure 并登记 2×2 网格子图（波形跨两列；热图与三维瀑布同格显隐切换）
+ */
+void DASignalAnalysisView::buildFigure()
+{
+    mFigure = new DAFigureWidget(this);
+    mFigure->setFrameShape(QFrame::NoFrame);
+    mFigure->setObjectName(QStringLiteral("da-signal-figure"));
+    // figure id 由信号派生（T9 存档按此往返；名称仅作可读标识）
+    mFigure->setFigureId(QStringLiteral("sig-%1").arg(mSignal ? mSignal->name() : QStringLiteral("unknown")));
+    if (!mFigure->enableGridLayout(2, 2)) {
+        qWarning() << "DASignalAnalysisView::buildFigure: failed to enable the 2x2 grid layout";
+    }
+    // 默认比例：按原 QSplitter 上下 1:1 换算后微调（波形需要更多高度），左右 1:1（方案 §8）
+    mFigure->setGridSizes({ 0.56, 0.44 }, { 0.50, 0.50 });
+
+    mWaveChart     = mFigure->createChart();
+    mSpectrumChart = mFigure->createChart();
+    mHeatmapChart  = mFigure->createChart();
+    mWaterfallChart = mFigure->create3DChart();
+    if (!mWaveChart || !mSpectrumChart || !mHeatmapChart || !mWaterfallChart) {
+        qWarning() << "DASignalAnalysisView::buildFigure: failed to create one or more sub charts";
+        return;
+    }
+    mFigure->setGridCell(mWaveChart, 0, 0, 1, 2);
+    mFigure->setGridCell(mSpectrumChart, 1, 0);
+    mFigure->setGridCell(mHeatmapChart, 1, 1);
+    mFigure->setGridCell(mWaterfallChart, 1, 1);
+
+    // 默认二维热图（D12）：三维瀑布隐藏
+    mHeatmapChart->setVisible(true);
+    mWaterfallChart->setVisible(false);
+
+    connect(mFigure, &DAFigureWidget::currentChartChanged, this, &DASignalAnalysisView::onFigureCurrentChartChanged);
+    connect(mFigure, &DAFigureWidget::current3DChartChanged, this, &DASignalAnalysisView::onFigureCurrent3DChartChanged);
+
+    // ---------- 波形：播放头 + STFT 窗口矩形 + 点击定位 ----------
+    mPlayhead = new QwtPlotMarker();
+    mPlayhead->setLineStyle(QwtPlotMarker::VLine);
+    mPlayhead->setLinePen(QPen(QColor(206, 96, 67), 1.5, Qt::DashLine));  // 橙红（危险/标记色）
+    mPlayhead->setXValue(0.0);
+    mPlayhead->attach(mWaveChart);
+    mWaveChart->setItemTransient(mPlayhead);  // 交互装饰：不进存档
+
+    mStftWindow = new QwtPlotShapeItem();
+    QPen rectPen(QColor(82, 128, 193), 1.0, Qt::SolidLine);  // 主蓝
+    QBrush rectBrush(QColor(189, 205, 232, 60));             // 浅蓝半透明
+    mStftWindow->setPen(rectPen);
+    mStftWindow->setBrush(rectBrush);
+    mStftWindow->setVisible(false);
+    mStftWindow->attach(mWaveChart);
+    mWaveChart->setItemTransient(mStftWindow);  // 交互装饰：不进存档
+
+    // 点击波形定位（评审 U1：QwtPicker 不设状态机时 transition() 直接返回，点击无效）
+    auto* wavePicker = new QwtPlotPicker(QwtPlot::xBottom,
+                                         QwtPlot::yLeft,
+                                         QwtPlotPicker::NoRubberBand,
+                                         QwtPicker::AlwaysOff,
+                                         mWaveChart->canvas());
+    wavePicker->setTrackerMode(QwtPicker::AlwaysOff);
+    wavePicker->setStateMachine(new QwtPickerClickPointMachine());
+    connect(wavePicker, QOverload< const QPointF& >::of(&QwtPlotPicker::selected), this, [this](const QPointF& p) {
+        setCurrentTime(p.x() - (mSignal ? mSignal->timeOrigin() : 0.0));
+    });
+    // STFT 窗口矩形整体拖动（D30）：在画布上监听鼠标，命中矩形内才进入拖动
+    mWaveChart->canvas()->installEventFilter(this);
+}
+
+/**
+ * @brief T7 临时底部工具栏：承载原标题行/波形底部的内联控件
+ *
+ * TODO(T8)：删除本函数与 mTempToolbar 相关成员，控件迁到 Ribbon 上下文标签与窗口底部工具栏。
+ * 所有控件只读写成员状态，删除后 setter/getter 语义不变。
+ */
+void DASignalAnalysisView::buildTemporaryToolbar()
+{
+    mTempToolbar = new QToolBar(this);
+    mTempToolbar->setObjectName(QStringLiteral("da-signal-view-temporary-toolbar"));
+    mTempToolbar->setMovable(false);
+    mTempToolbar->setFloatable(false);
+    mTempToolbar->setIconSize(QSize(16, 16));
+
+    // 通道选择：一次分析一个通道（方案 §2.1）
+    mChannelCombo = new QComboBox(mTempToolbar);
+    mChannelCombo->setObjectName(QStringLiteral("da-signal-channel-combo"));
+    const QStringList chNames = channelNames();
+    for (int i = 0; i < chNames.size(); ++i) {
+        mChannelCombo->addItem(chNames.at(i), i);
+    }
+    mChannelCombo->setEnabled(chNames.size() > 1);
+    mChannelCombo->setToolTip(tr("Channel"));  // cn:通道
+    mTempToolbar->addWidget(mChannelCombo);
+    connect(mChannelCombo, QOverload< int >::of(&QComboBox::currentIndexChanged), this, [this](int) {
+        if (mChannelCombo) {
+            setCurrentChannel(mChannelCombo->currentData().toInt());
+        }
+    });
+
+    // 频率轴线性/对数切换（方案 D16）
+    mFreqAxisCombo = new QComboBox(mTempToolbar);
+    mFreqAxisCombo->addItem(QStringLiteral("Linear"), false);  // cn:线性
+    mFreqAxisCombo->addItem(QStringLiteral("Log"), true);      // cn:对数
+    mFreqAxisCombo->setToolTip(tr("Frequency axis"));          // cn:频率轴
+    mTempToolbar->addWidget(mFreqAxisCombo);
+    connect(mFreqAxisCombo, QOverload< int >::of(&QComboBox::currentIndexChanged), this, [this](int) {
+        if (mFreqAxisCombo) {
+            setLogFrequency(mFreqAxisCombo->currentData().toBool());
+        }
+    });
+
+    // 色带选择（默认 Viridis）与 dB 动态范围下限
+    mColormapCombo = new QComboBox(mTempToolbar);
+    const QStringList presets = QwtColorMapPreset::availablePresets();
+    for (const QString& name : presets) {
+        mColormapCombo->addItem(name, name);
+    }
+    mColormapCombo->setToolTip(tr("Color map"));  // cn:色带
+    mTempToolbar->addWidget(mColormapCombo);
+    connect(mColormapCombo, QOverload< int >::of(&QComboBox::currentIndexChanged), this, [this](int) {
+        if (mColormapCombo) {
+            setColormapName(mColormapCombo->currentData().toString());
+        }
+    });
+
+    mDbFloorSpin = new QDoubleSpinBox(mTempToolbar);
+    mDbFloorSpin->setRange(-200.0, 0.0);
+    mDbFloorSpin->setDecimals(0);
+    mDbFloorSpin->setSingleStep(5.0);
+    mDbFloorSpin->setToolTip(tr("Lower dB limit"));  // cn:dB 下限
+    mTempToolbar->addWidget(mDbFloorSpin);
+    connect(mDbFloorSpin, QOverload< double >::of(&QDoubleSpinBox::valueChanged), this, [this](double v) {
+        setDbFloor(v);
+    });
+
+    // 跟随滑块（频谱显示当前帧）与热图随播放滚动（D13 / D27，默认关）
+    mFollowSliderCheck = new QCheckBox(tr("Follow slider"), mTempToolbar);  // cn:跟随滑块
+    mTempToolbar->addWidget(mFollowSliderCheck);
+    connect(mFollowSliderCheck, &QCheckBox::toggled, this, [this](bool on) { setFollowSlider(on); });
+
+    mAutoScrollCheck = new QCheckBox(tr("Follow playback"), mTempToolbar);  // cn:随播放滚动
+    mTempToolbar->addWidget(mAutoScrollCheck);
+    connect(mAutoScrollCheck, &QCheckBox::toggled, this, [this](bool on) { setHeatmapAutoScroll(on); });
+
+    // 时间滑块：以毫秒为范围（评审 U13：固定 0–1000 时 1 小时信号单步 3.6 秒，定位精度差）
+    mTimeSlider = new QSlider(Qt::Horizontal, mTempToolbar);
+    const int durationMs = mSignal ? qMax(1, int(qRound64(mSignal->duration() * 1000.0))) : 1000;
+    mTimeSlider->setRange(0, durationMs);
+    mTimeSlider->setValue(0);
+    mTimeSlider->setMinimumWidth(240);
+    mTempToolbar->addWidget(mTimeSlider);
+    connect(mTimeSlider, &QSlider::valueChanged, this, [this](int value) { setCurrentTime(value / 1000.0); });
+}
+
+/**
  * @brief 重绘波形（包络 min/max 填充区间 + 播放头）
  */
 void DASignalAnalysisView::rebuildWavePlot()
 {
-    DAChartWidget* chart = mWavePanel->chart();
+    if (!mWaveChart) {
+        return;
+    }
     if (!mEnvelopeValid) {
-        chart->replot();
+        mWaveChart->replot();
         return;
     }
     if (!mEnvelopeCurve) {
@@ -374,10 +398,12 @@ void DASignalAnalysisView::rebuildWavePlot()
         QBrush brush(QColor(189, 205, 232, 200));                   // 浅蓝
         mEnvelopeCurve->setPen(pen);
         mEnvelopeCurve->setBrush(brush);
-        mEnvelopeCurve->attach(chart);
+        mEnvelopeCurve->attach(mWaveChart);
+        // 分析结果图元：transient（序列化跳过，加载后重算重建）
+        mWaveChart->setItemTransient(mEnvelopeCurve);
     }
     // 采样点下标 → 时间秒（含时间原点）
-    const double fs        = mSignal ? mSignal->sampleRate() : 0.0;
+    const double fs         = mSignal ? mSignal->sampleRate() : 0.0;
     const double timeOrigin = mSignal ? mSignal->timeOrigin() : 0.0;
     QVector< QwtIntervalSample > samples;
     samples.reserve(mEnvXs.size());
@@ -388,24 +414,29 @@ void DASignalAnalysisView::rebuildWavePlot()
     }
     mEnvelopeCurve->setSamples(samples);
     updateAxisTitles();
-    chart->replot();
+    mWaveChart->replot();
 }
 
 /**
- * @brief 重绘频谱（按当前幅值模式与频率轴模式）
+ * @brief 重绘频谱曲线（峰值标记由 rebuildPeakMarkers 独立维护）
  */
 void DASignalAnalysisView::rebuildSpectrumPlot()
 {
-    DAChartWidget* chart = mSpectrumPanel->chart();
+    if (!mSpectrumChart) {
+        return;
+    }
     if (!mSpectrum.isValid()) {
-        chart->replot();
+        rebuildPeakMarkers();
+        mSpectrumChart->replot();
         return;
     }
     if (!mSpectrumCurve) {
         mSpectrumCurve = new QwtPlotCurve(tr("Amplitude spectrum"));  // cn:幅值谱
         QPen pen(QColor(82, 128, 193), 1.2);                          // 主蓝
         mSpectrumCurve->setPen(pen);
-        mSpectrumCurve->attach(chart);
+        mSpectrumCurve->attach(mSpectrumChart);
+        // 分析结果图元：transient（峰值标记则非 transient，见 rebuildPeakMarkers）
+        mSpectrumChart->setItemTransient(mSpectrumCurve);
     }
     // 跟随滑块：用 STFT 当前时间所在列的幅值谱（D13）；未算 STFT 时回退整段频谱
     QVector< double > srcFreqs = mSpectrum.freqs;
@@ -442,32 +473,46 @@ void DASignalAnalysisView::rebuildSpectrumPlot()
         values[ i - startIdx ] = (i < srcAmps.size()) ? srcAmps[ i ] : 0.0;
     }
     mSpectrumCurve->setSamples(freqs, values);
-    // 峰值标记（按当前幅值口径定位；第 1 名橙红，其余主蓝）
-    clearPeakMarkers(mPeakMarkers);
-    if (mPeakMarkersVisible && mPeaks.isValid()) {
-        const double signalPeakCal = signalPeak() * mParams.calibration;
-        for (int i = 0; i < mPeaks.frequencies.size(); ++i) {
-            const double f = mPeaks.frequencies.at(i);
-            const double y = DASignalAmplitude::toDisplay(mPeaks.magnitudes.value(i),
-                                                          f <= 0.0,
-                                                          mParams.amplitudeMode,
-                                                          mParams.dbReference,
-                                                          mParams.calibration,
-                                                          signalPeakCal);
-            auto* marker = new QwtPlotMarker();
-            marker->setXValue(f);
-            marker->setYValue(y);
-            marker->setSymbol(new QwtSymbol(QwtSymbol::Ellipse,
-                                            QBrush(i == 0 ? QColor(206, 96, 67) : QColor(82, 128, 193)),
-                                            QPen(Qt::NoPen),
-                                            QSize(7, 7)));
-            marker->attach(chart);
-            mPeakMarkers.append(marker);
-        }
-    }
+    rebuildPeakMarkers();
     updateAxisTitles();
-    chart->setAxisAutoScale(QwtPlot::yLeft, true);
-    chart->replot();
+    mSpectrumChart->setAxisAutoScale(QwtPlot::yLeft, true);
+    mSpectrumChart->replot();
+}
+
+/**
+ * @brief 重建频谱峰值标记（峰值标记非 transient：T9 会写入 chart-data）
+ *
+ * 只在峰值数据或显隐变化时调用；曲线数据更新不重建标记，避免闪烁。
+ */
+void DASignalAnalysisView::rebuildPeakMarkers()
+{
+    if (!mSpectrumChart) {
+        return;
+    }
+    clearPeakMarkers(mPeakMarkers);
+    if (!mPeakMarkersVisible || !mPeaks.isValid()) {
+        return;
+    }
+    const double signalPeakCal = signalPeak() * mParams.calibration;
+    for (int i = 0; i < mPeaks.frequencies.size(); ++i) {
+        const double f = mPeaks.frequencies.at(i);
+        const double y = DASignalAmplitude::toDisplay(mPeaks.magnitudes.value(i),
+                                                      f <= 0.0,
+                                                      mParams.amplitudeMode,
+                                                      mParams.dbReference,
+                                                      mParams.calibration,
+                                                      signalPeakCal);
+        auto* marker = new QwtPlotMarker();
+        marker->setXValue(f);
+        marker->setYValue(y);
+        marker->setSymbol(new QwtSymbol(QwtSymbol::Ellipse,
+                                        QBrush(i == 0 ? QColor(206, 96, 67) : QColor(82, 128, 193)),
+                                        QPen(Qt::NoPen),
+                                        QSize(7, 7)));
+        marker->attach(mSpectrumChart);
+        // 峰值标记不标 transient：T9 会把它写入 chart-data（inline 持久化）
+        mPeakMarkers.append(marker);
+    }
 }
 
 /**
@@ -490,22 +535,29 @@ void DASignalAnalysisView::setStft(const DAStftResult& result)
 
 /**
  * @brief 瀑布模式切换：0=二维 / 1=三维 / 2=隐藏（D12 / D25）
+ *
+ * 热图与三维瀑布登记在同一网格 (1,1)，这里按模式切显隐（隐藏者不参与布局重算）。
  */
 void DASignalAnalysisView::setWaterfallMode(int mode)
 {
     mWaterfallMode = qBound(0, mode, 2);
-    if (!mRightStack) {
+    if (!mHeatmapChart || !mWaterfallChart || !mFigure) {
         return;
     }
-    if (mWaterfallMode == 2) {
-        mRightStack->setVisible(false);
-        return;
-    }
-    mRightStack->setVisible(true);
-    mRightStack->setCurrentIndex(mWaterfallMode);
+    mHeatmapChart->setVisible(mWaterfallMode == 0);
+    mWaterfallChart->setVisible(mWaterfallMode == 1);
     if (mWaterfallMode == 1) {
+        // 切到三维：当前子图 = 三维（T8 设置面板切 3D 页）
+        mCurrentIs3D = true;
+        mFigure->setCurrent3DChart(mWaterfallChart);
         rebuildWaterfall();
+    } else {
+        mCurrentIs3D = false;
+        if (mWaterfallMode == 0) {
+            mFigure->setCurrentChart(mHeatmapChart);
+        }
     }
+    Q_EMIT currentSubChartChanged();
 }
 
 /**
@@ -525,18 +577,26 @@ bool DASignalAnalysisView::isLogFrequency() const
 }
 
 /**
- * @brief 设置频率轴线性/对数（同步下拉，触发重绘）
+ * @brief 设置频率轴线性/对数（同步临时工具栏下拉，触发重绘）
  */
 void DASignalAnalysisView::setLogFrequency(bool on)
 {
-    if (mFreqAxisCombo) {
-        const int idx = mFreqAxisCombo->findData(on);
-        if (idx >= 0) {
-            mFreqAxisCombo->setCurrentIndex(idx);  // 触发 currentIndexChanged → 引擎切换 + 重绘
-            return;
+    mLogFrequency = on;
+    if (mSpectrumChart) {
+        if (on) {
+            mSpectrumChart->setAxisScaleEngine(QwtPlot::xBottom, new QwtLogScaleEngine());
+        } else {
+            mSpectrumChart->setAxisScaleEngine(QwtPlot::xBottom, new QwtLinearScaleEngine());
         }
     }
-    mLogFrequency = on;
+    if (mFreqAxisCombo) {
+        const int idx = mFreqAxisCombo->findData(on);
+        if (idx >= 0 && idx != mFreqAxisCombo->currentIndex()) {
+            const bool blocked = mFreqAxisCombo->blockSignals(true);
+            mFreqAxisCombo->setCurrentIndex(idx);
+            mFreqAxisCombo->blockSignals(blocked);
+        }
+    }
     rebuildSpectrumPlot();
 }
 
@@ -545,21 +605,27 @@ void DASignalAnalysisView::setLogFrequency(bool on)
  */
 QString DASignalAnalysisView::colormapName() const
 {
-    return mColormapCombo ? mColormapCombo->currentData().toString() : QStringLiteral("viridis");
+    return mColormapName;
 }
 
 /**
- * @brief 设置色带（同步下拉）
+ * @brief 设置色带（同步临时工具栏下拉）
  */
 void DASignalAnalysisView::setColormapName(const QString& name)
 {
-    if (!mColormapCombo) {
+    if (name.isEmpty() || mColormapName == name) {
         return;
     }
-    const int idx = mColormapCombo->findData(name);
-    if (idx >= 0) {
-        mColormapCombo->setCurrentIndex(idx);
+    mColormapName = name;
+    if (mColormapCombo) {
+        const int idx = mColormapCombo->findData(name);
+        if (idx >= 0 && idx != mColormapCombo->currentIndex()) {
+            const bool blocked = mColormapCombo->blockSignals(true);
+            mColormapCombo->setCurrentIndex(idx);
+            mColormapCombo->blockSignals(blocked);
+        }
     }
+    applyHeatmapColors();
 }
 
 /**
@@ -577,60 +643,11 @@ void DASignalAnalysisView::setDbFloor(double dbFloor)
 {
     mDbFloor = dbFloor;
     if (mDbFloorSpin) {
+        const bool blocked = mDbFloorSpin->blockSignals(true);
         mDbFloorSpin->setValue(dbFloor);
+        mDbFloorSpin->blockSignals(blocked);
     }
     applyHeatmapColors();
-}
-
-/**
- * @brief 上下分割比例（波形 / 下半区）
- */
-QList< int > DASignalAnalysisView::verticalSplitterSizes() const
-{
-    return mVerticalSplitter ? mVerticalSplitter->sizes() : QList< int >();
-}
-
-/**
- * @brief 左右分割比例（频谱 / 热图）
- */
-QList< int > DASignalAnalysisView::horizontalSplitterSizes() const
-{
-    return mHorizontalSplitter ? mHorizontalSplitter->sizes() : QList< int >();
-}
-
-/**
- * @brief 恢复分割比例（空列表/尺寸不符时忽略）
- */
-void DASignalAnalysisView::setSplitterSizes(const QList< int >& vertical, const QList< int >& horizontal)
-{
-    if (mVerticalSplitter && vertical.size() == mVerticalSplitter->count()) {
-        mVerticalSplitter->setSizes(vertical);
-        mDefaultSplitterSizesApplied = true;  // 存档值优先，首次显示的默认比例不再覆盖
-    }
-    if (mHorizontalSplitter && horizontal.size() == mHorizontalSplitter->count()) {
-        mHorizontalSplitter->setSizes(horizontal);
-        mDefaultSplitterSizesApplied = true;
-    }
-}
-
-/**
- * @brief 首次显示时显式设定分割比例（上下、左右各 1:1，方案 §8.2）
- *
- * 只设 stretchFactor 时初次布局按子控件 sizeHint 分配，波形区会被频谱图的
- * 标题栏/坐标轴挤得比例失真；这里在网络布局有尺寸后显式 setSizes（评审 §七-1）。
- */
-void DASignalAnalysisView::applyDefaultSplitterSizes()
-{
-    // 页面隐藏/尚未布局时尺寸可能为 0，用保底高度避免 setSizes 无效；
-    // 真正显示后 QSplitter 会按比例缩放，用户拖动后不再覆盖
-    if (mVerticalSplitter) {
-        const int h = qMax(240, mVerticalSplitter->height());
-        mVerticalSplitter->setSizes({ h / 2, h - h / 2 });
-    }
-    if (mHorizontalSplitter) {
-        const int w = qMax(320, mHorizontalSplitter->width());
-        mHorizontalSplitter->setSizes({ w / 2, w - w / 2 });
-    }
 }
 
 /**
@@ -664,18 +681,41 @@ void DASignalAnalysisView::setHeatmapAutoScroll(bool on)
         mAutoScrollCheck->setChecked(on);
         mAutoScrollCheck->blockSignals(blocked);
     }
-    if (mHeatmapPanel) {
-        DAChartWidget* heatChart = mHeatmapPanel->chart();
+    if (mHeatmapChart) {
         if (!on) {
-            heatChart->setAxisAutoScale(QwtPlot::xBottom, true);
+            mHeatmapChart->setAxisAutoScale(QwtPlot::xBottom, true);
         }
-        heatChart->replot();
+        mHeatmapChart->replot();
     }
 }
 
 bool DASignalAnalysisView::isHeatmapAutoScroll() const
 {
     return mHeatmapAutoScroll;
+}
+
+/**
+ * @brief 跟随滑块（频谱显示当前帧而不是整段，D13）
+ */
+void DASignalAnalysisView::setFollowSlider(bool on)
+{
+    if (mFollowSlider == on) {
+        return;
+    }
+    mFollowSlider = on;
+    if (mFollowSliderCheck && mFollowSliderCheck->isChecked() != on) {
+        const bool blocked = mFollowSliderCheck->blockSignals(true);
+        mFollowSliderCheck->setChecked(on);
+        mFollowSliderCheck->blockSignals(blocked);
+    }
+    rebuildSpectrumPlot();
+    // 专用信号（不用 currentTimeChanged）：避免被外部当作 seek 而暂停播放（评审 §七-2）
+    Q_EMIT followSliderToggled(on);
+}
+
+bool DASignalAnalysisView::isFollowSlider() const
+{
+    return mFollowSlider;
 }
 
 /**
@@ -687,15 +727,14 @@ bool DASignalAnalysisView::isHeatmapAutoScroll() const
  */
 bool DASignalAnalysisView::eventFilter(QObject* watched, QEvent* e)
 {
-    if (!mWavePanel || !mWavePanel->chart()) {
+    if (!mWaveChart) {
         return QWidget::eventFilter(watched, e);
     }
-    DAChartWidget* chart = mWavePanel->chart();
-    if (watched != chart->canvas()) {
+    if (watched != mWaveChart->canvas()) {
         return QWidget::eventFilter(watched, e);
     }
     // 鼠标位置是否落在 STFT 窗口矩形内（X 与 Y 都要命中，评审 N-U5）
-    auto hitWindowRect = [this, chart](const QPoint& pos) -> bool {
+    auto hitWindowRect = [this](const QPoint& pos) -> bool {
         if (!mStftWindow || !mStftWindow->isVisible() || !mStft.isValid()) {
             return false;
         }
@@ -703,8 +742,8 @@ bool DASignalAnalysisView::eventFilter(QObject* watched, QEvent* e)
         if (!rect.isValid()) {
             return false;
         }
-        const QPointF plotPos(chart->invTransform(QwtPlot::xBottom, pos.x()),
-                              chart->invTransform(QwtPlot::yLeft, pos.y()));
+        const QPointF plotPos(mWaveChart->invTransform(QwtPlot::xBottom, pos.x()),
+                              mWaveChart->invTransform(QwtPlot::yLeft, pos.y()));
         return rect.contains(plotPos);
     };
     switch (e->type()) {
@@ -724,20 +763,20 @@ bool DASignalAnalysisView::eventFilter(QObject* watched, QEvent* e)
             const int moveDist = (me->pos() - mDragPressPos).manhattanLength();
             if (moveDist >= QApplication::startDragDistance()) {
                 mDraggingWindow = true;
-                chart->canvas()->setCursor(Qt::SizeAllCursor);
+                mWaveChart->canvas()->setCursor(Qt::SizeAllCursor);
             }
         }
         if (mDraggingWindow) {
-            const double curTimeAtPixel = chart->invTransform(QwtPlot::xBottom, me->pos().x());
-            const double delta          = curTimeAtPixel - chart->invTransform(QwtPlot::xBottom, mDragPressPos.x());
+            const double curTimeAtPixel = mWaveChart->invTransform(QwtPlot::xBottom, me->pos().x());
+            const double delta = curTimeAtPixel - mWaveChart->invTransform(QwtPlot::xBottom, mDragPressPos.x());
             setCurrentTime(mDragPressTime + delta);
             return true;
         }
         // 悬停提示：命中矩形内显示移动光标
         if (mStftWindow && mStftWindow->isVisible() && mStft.isValid()) {
             const Qt::CursorShape want = hitWindowRect(me->pos()) ? Qt::SizeAllCursor : Qt::ArrowCursor;
-            if (chart->canvas()->cursor().shape() != want) {
-                chart->canvas()->setCursor(want);
+            if (mWaveChart->canvas()->cursor().shape() != want) {
+                mWaveChart->canvas()->setCursor(want);
             }
         }
         break;
@@ -748,7 +787,7 @@ bool DASignalAnalysisView::eventFilter(QObject* watched, QEvent* e)
             const bool wasDragging = mDraggingWindow;
             mPressCandidate        = false;
             mDraggingWindow        = false;
-            chart->canvas()->setCursor(Qt::ArrowCursor);
+            mWaveChart->canvas()->setCursor(Qt::ArrowCursor);
             if (wasDragging) {
                 return true;  // 拖动结束：不再当作点击定位
             }
@@ -799,12 +838,11 @@ void DASignalAnalysisView::rebuildWaterfall()
  */
 void DASignalAnalysisView::rebuildHeatmap()
 {
-    if (!mHeatmapPanel) {
+    if (!mHeatmapChart) {
         return;
     }
-    DAChartWidget* chart = mHeatmapPanel->chart();
     if (!mStft.isValid()) {
-        chart->replot();
+        mHeatmapChart->replot();
         return;
     }
     double peak = 0.0;
@@ -820,13 +858,13 @@ void DASignalAnalysisView::rebuildHeatmap()
     for (int i = 0; i < mStft.values.size(); ++i) {
         const double v = mStft.values[ i ];
         dbValues[ i ]  = std::isfinite(v) ? 20.0 * std::log10(qMax(v / peak, 1e-30))
-                                         : std::numeric_limits< double >::quiet_NaN();
+                                          : std::numeric_limits< double >::quiet_NaN();
     }
     // 栅格所有权归 QwtPlotSpectrogram（setData 接管）；若图表被清空导致谱图图元已销毁，
     // 指针必须一起置空，避免继续写已释放的栅格（评审 H3/A5）
     if (mSpectrogramItem) {
-        bool itemStillAttached = false;
-        const QList< QwtPlotItem* > items = chart->itemList();
+        bool itemStillAttached           = false;
+        const QList< QwtPlotItem* > items = mHeatmapChart->itemList();
         for (QwtPlotItem* item : items) {
             if (item == mSpectrogramItem) {
                 itemStillAttached = true;
@@ -851,26 +889,28 @@ void DASignalAnalysisView::rebuildHeatmap()
     mStftRaster->setValueRange(mDbFloor, 0.0);
 
     if (!mSpectrogramItem) {
-        mSpectrogramItem = chart->addSpectrogram(static_cast< QwtRasterData* >(mStftRaster),
-                                                 tr("Spectrogram"));  // cn:时频图
+        mSpectrogramItem = mHeatmapChart->addSpectrogram(static_cast< QwtRasterData* >(mStftRaster),
+                                                         tr("Spectrogram"));  // cn:时频图
         if (mSpectrogramItem) {
             mSpectrogramItem->setRenderThreadCount(0);
             mSpectrogramItem->setCachePolicy(QwtPlotRasterItem::PaintCache);
+            // 分析结果图元：transient（序列化跳过，加载后重算重建）
+            mHeatmapChart->setItemTransient(mSpectrogramItem);
         }
     } else {
         mSpectrogramItem->setData(static_cast< QwtRasterData* >(mStftRaster));
-        mSpectrogramItem->attach(chart);
+        mSpectrogramItem->attach(mHeatmapChart);
     }
-    chart->enableAxis(QwtPlot::yRight);
-    if (QwtScaleWidget* colorBar = chart->axisWidget(QwtPlot::yRight)) {
+    mHeatmapChart->enableAxis(QwtPlot::yRight);
+    if (QwtScaleWidget* colorBar = mHeatmapChart->axisWidget(QwtPlot::yRight)) {
         colorBar->setColorBarEnabled(true);
         colorBar->setColorBarWidth(18);
         colorBar->setTitle(tr("dB"));  // cn:分贝
     }
-    chart->setAxisTitle(QwtPlot::xBottom, tr("Time (s)"));      // cn:时间（秒）
-    chart->setAxisTitle(QwtPlot::yLeft, tr("Frequency (Hz)"));  // cn:频率（赫兹）
+    mHeatmapChart->setAxisTitle(QwtPlot::xBottom, tr("Time (s)"));      // cn:时间（秒）
+    mHeatmapChart->setAxisTitle(QwtPlot::yLeft, tr("Frequency (Hz)"));  // cn:频率（赫兹）
     applyHeatmapColors();
-    chart->replot();
+    mHeatmapChart->replot();
 }
 
 /**
@@ -878,15 +918,13 @@ void DASignalAnalysisView::rebuildHeatmap()
  */
 void DASignalAnalysisView::applyHeatmapColors()
 {
-    if (!mHeatmapPanel || !mSpectrogramItem) {
+    if (!mHeatmapChart || !mSpectrogramItem) {
         return;
     }
-    DAChartWidget* chart  = mHeatmapPanel->chart();
-    const QString cmapName = mColormapCombo ? mColormapCombo->currentData().toString() : QStringLiteral("viridis");
-    auto cmap              = QwtColorMapPreset::create(cmapName);
+    auto cmap = QwtColorMapPreset::create(mColormapName);
     if (cmap) {
         mSpectrogramItem->setColorMap(cloneLinearColorMap(cmap.get()));
-        if (QwtScaleWidget* colorBar = chart->axisWidget(QwtPlot::yRight)) {
+        if (QwtScaleWidget* colorBar = mHeatmapChart->axisWidget(QwtPlot::yRight)) {
             // setColorMap 同时设定色标区间与色带（接管所有权）
             colorBar->setColorMap(QwtInterval(mDbFloor, 0.0), cloneLinearColorMap(cmap.get()));
         }
@@ -894,7 +932,7 @@ void DASignalAnalysisView::applyHeatmapColors()
     if (mStftRaster) {
         mStftRaster->setValueRange(mDbFloor, 0.0);
     }
-    chart->replot();
+    mHeatmapChart->replot();
 }
 
 /**
@@ -902,11 +940,11 @@ void DASignalAnalysisView::applyHeatmapColors()
  */
 void DASignalAnalysisView::requestHeatmapRefresh()
 {
-    if (!mSignal || !mSignal->isValid() || !mHeatmapPanel) {
+    if (!mSignal || !mSignal->isValid() || !mHeatmapChart) {
         return;
     }
-    const int columns = qMax(64, mHeatmapPanel->chart()->canvas()->width());
-    const int rows    = qMax(64, mHeatmapPanel->chart()->canvas()->height());
+    const int columns = qMax(64, mHeatmapChart->canvas()->width());
+    const int rows    = qMax(64, mHeatmapChart->canvas()->height());
     Q_EMIT heatmapRequested(columns, rows);
 }
 
@@ -928,7 +966,9 @@ void DASignalAnalysisView::updateStftWindowRect()
     const QRectF rect(center - half, -yTop, mStft.windowSeconds, 2.0 * yTop);
     mStftWindow->setRect(rect);
     mStftWindow->setVisible(true);
-    mWavePanel->chart()->replot();
+    if (mWaveChart) {
+        mWaveChart->replot();
+    }
 }
 
 /**
@@ -937,7 +977,10 @@ void DASignalAnalysisView::updateStftWindowRect()
 void DASignalAnalysisView::setPeaks(const DAPeakResult& peaks)
 {
     mPeaks = peaks;
-    rebuildSpectrumPlot();
+    rebuildPeakMarkers();
+    if (mSpectrumChart) {
+        mSpectrumChart->replot();
+    }
 }
 
 /**
@@ -945,8 +988,14 @@ void DASignalAnalysisView::setPeaks(const DAPeakResult& peaks)
  */
 void DASignalAnalysisView::setPeakMarkersVisible(bool on)
 {
+    if (mPeakMarkersVisible == on) {
+        return;
+    }
     mPeakMarkersVisible = on;
-    rebuildSpectrumPlot();
+    rebuildPeakMarkers();
+    if (mSpectrumChart) {
+        mSpectrumChart->replot();
+    }
 }
 
 /**
@@ -985,28 +1034,29 @@ double DASignalAnalysisView::dbReferenceValue() const
  */
 void DASignalAnalysisView::updateAxisTitles()
 {
-    DAChartWidget* waveChart = mWavePanel->chart();
-    waveChart->setAxisTitle(QwtPlot::xBottom, tr("Time (s)"));  // cn:时间（秒）
-    QString ampTitle = tr("Amplitude");                          // cn:幅值
-    if (!mParams.unit.isEmpty()) {
-        ampTitle += QStringLiteral(" [%1]").arg(mParams.unit);
+    if (mWaveChart) {
+        mWaveChart->setAxisTitle(QwtPlot::xBottom, tr("Time (s)"));  // cn:时间（秒）
+        QString ampTitle = tr("Amplitude");                          // cn:幅值
+        if (!mParams.unit.isEmpty()) {
+            ampTitle += QStringLiteral(" [%1]").arg(mParams.unit);
+        }
+        mWaveChart->setAxisTitle(QwtPlot::yLeft, ampTitle);
     }
-    waveChart->setAxisTitle(QwtPlot::yLeft, ampTitle);
-
-    DAChartWidget* specChart = mSpectrumPanel->chart();
-    specChart->setAxisTitle(QwtPlot::xBottom, tr("Frequency (Hz)"));  // cn:频率（赫兹）
-    QString specY = tr("Amplitude");                                   // cn:幅值
-    if (mParams.amplitudeMode == QLatin1String("dbFS")) {
-        specY = tr("dB (FS)");  // cn:dB（满量程）
-    } else if (mParams.amplitudeMode == QLatin1String("dbRef1")) {
-        specY = tr("dB (re 1.0)");  // cn:dB（相对 1.0）
-    } else if (mParams.amplitudeMode == QLatin1String("rms")) {
-        specY = tr("RMS");  // cn:均方根
+    if (mSpectrumChart) {
+        mSpectrumChart->setAxisTitle(QwtPlot::xBottom, tr("Frequency (Hz)"));  // cn:频率（赫兹）
+        QString specY = tr("Amplitude");                                       // cn:幅值
+        if (mParams.amplitudeMode == QLatin1String("dbFS")) {
+            specY = tr("dB (FS)");  // cn:dB（满量程）
+        } else if (mParams.amplitudeMode == QLatin1String("dbRef1")) {
+            specY = tr("dB (re 1.0)");  // cn:dB（相对 1.0）
+        } else if (mParams.amplitudeMode == QLatin1String("rms")) {
+            specY = tr("RMS");  // cn:均方根
+        }
+        if (!mParams.unit.isEmpty()) {
+            specY += QStringLiteral(" [%1]").arg(mParams.unit);
+        }
+        mSpectrumChart->setAxisTitle(QwtPlot::yLeft, specY);
     }
-    if (!mParams.unit.isEmpty()) {
-        specY += QStringLiteral(" [%1]").arg(mParams.unit);
-    }
-    specChart->setAxisTitle(QwtPlot::yLeft, specY);
 }
 
 /**
@@ -1042,22 +1092,60 @@ int DASignalAnalysisView::currentStftColumn() const
 
 int DASignalAnalysisView::currentChannel() const
 {
-    if (!mChannelCombo) {
-        return 0;
-    }
-    return qMax(0, mChannelCombo->currentData().toInt());
+    return mCurrentChannel;
 }
 
+/**
+ * @brief 切换当前通道：清空通道相关缓存并重发分析请求（幂等）
+ */
 void DASignalAnalysisView::setCurrentChannel(int channel)
 {
-    if (mChannelCombo && channel >= 0 && channel < mChannelCombo->count()) {
-        mChannelCombo->setCurrentIndex(channel);
+    if (!mSignal) {
+        return;
     }
+    const int count = qMax(1, mSignal->channelCount());
+    channel         = qBound(0, channel, count - 1);
+    if (mChannelCombo) {
+        const int idx = mChannelCombo->findData(channel);
+        if (idx >= 0 && idx != mChannelCombo->currentIndex()) {
+            const bool blocked = mChannelCombo->blockSignals(true);
+            mChannelCombo->setCurrentIndex(idx);
+            mChannelCombo->blockSignals(blocked);
+        }
+    }
+    if (channel == mCurrentChannel) {
+        return;
+    }
+    mCurrentChannel = channel;
+    // 通道切换：清空缓存并重新请求包络/频谱/热图
+    mEnvelopeValid = false;
+    mEnvXs.clear();
+    mEnvMins.clear();
+    mEnvMaxs.clear();
+    mStft = DAStftResult();
+    if (mEnvelopeCurve) {
+        mEnvelopeCurve->setSamples(QVector< QwtIntervalSample >());
+        mWaveChart->replot();
+    }
+    if (mSpectrumCurve) {
+        mSpectrumCurve->setSamples(QVector< double >(), QVector< double >());
+    }
+    clearPeakMarkers(mPeakMarkers);
+    requestEnvelopeRefresh();
+    Q_EMIT spectrumRequested(mSignal, mCurrentChannel);
+    requestHeatmapRefresh();
+    Q_EMIT channelChanged(mCurrentChannel);
 }
 
-bool DASignalAnalysisView::isFollowSlider() const
+/**
+ * @brief 通道名列表（Ribbon 通道菜单用）
+ */
+QStringList DASignalAnalysisView::channelNames() const
 {
-    return mFollowSlider;
+    if (!mSignal) {
+        return QStringList();
+    }
+    return mSignal->channelNamesOrDefaults();
 }
 
 /**
@@ -1068,10 +1156,10 @@ bool DASignalAnalysisView::isFollowSlider() const
  */
 bool DASignalAnalysisView::visibleTimeRange(double* startSec, double* endSec) const
 {
-    if (!mWavePanel || !mWavePanel->chart() || !mSignal) {
+    if (!mWaveChart || !mSignal) {
         return false;
     }
-    const QwtInterval interval = mWavePanel->chart()->axisScaleDiv(QwtPlot::xBottom).interval();
+    const QwtInterval interval = mWaveChart->axisScaleDiv(QwtPlot::xBottom).interval();
     if (!interval.isValid() || interval.width() <= 0.0) {
         return false;
     }
@@ -1089,12 +1177,11 @@ double DASignalAnalysisView::currentTime() const
     if (!mSignal || mSignal->duration() <= 0.0) {
         return 0.0;
     }
-    // 滑块以毫秒为单位（评审 U13）
-    return mTimeSlider->value() / 1000.0;
+    return mCurrentTimeSeconds;
 }
 
 /**
- * @brief 设置当前时间（秒）：同步滑块与播放头
+ * @brief 设置当前时间（秒）：同步临时工具栏滑块与播放头
  */
 void DASignalAnalysisView::setCurrentTime(double seconds)
 {
@@ -1103,14 +1190,17 @@ void DASignalAnalysisView::setCurrentTime(double seconds)
     }
     const double dur = mSignal->duration();
     seconds          = qBound(0.0, seconds, dur);
-    const int value  = int(qRound(seconds * 1000.0));
-    if (mTimeSlider->value() != value) {
-        mTimeSlider->blockSignals(true);
-        mTimeSlider->setValue(value);
-        mTimeSlider->blockSignals(false);
+    mCurrentTimeSeconds = seconds;
+    if (mTimeSlider) {
+        const int value = int(qRound(seconds * 1000.0));
+        if (mTimeSlider->value() != value) {
+            const bool blocked = mTimeSlider->blockSignals(true);
+            mTimeSlider->setValue(value);
+            mTimeSlider->blockSignals(blocked);
+        }
     }
     updatePlayhead();
-    Q_EMIT currentTimeChanged(currentTime());
+    Q_EMIT currentTimeChanged(mCurrentTimeSeconds);
 }
 
 /**
@@ -1123,20 +1213,16 @@ void DASignalAnalysisView::setPlayheadFromPlayback(double seconds)
     }
     const double dur = mSignal->duration();
     seconds          = qBound(0.0, seconds, dur);
-    const int value  = int(qRound(seconds * 1000.0));
-    if (mTimeSlider->value() != value) {
-        mTimeSlider->blockSignals(true);
-        mTimeSlider->setValue(value);
-        mTimeSlider->blockSignals(false);
+    mCurrentTimeSeconds = seconds;
+    if (mTimeSlider) {
+        const int value = int(qRound(seconds * 1000.0));
+        if (mTimeSlider->value() != value) {
+            const bool blocked = mTimeSlider->blockSignals(true);
+            mTimeSlider->setValue(value);
+            mTimeSlider->blockSignals(blocked);
+        }
     }
     updatePlayhead();
-}
-
-void DASignalAnalysisView::onSliderMoved(int value)
-{
-    Q_UNUSED(value)
-    updatePlayhead();
-    Q_EMIT currentTimeChanged(currentTime());
 }
 
 /**
@@ -1148,19 +1234,20 @@ void DASignalAnalysisView::updatePlayhead()
         return;
     }
     const double t = currentTime() + mSignal->timeOrigin();
-    mPlayhead->setXValue(t);
+    if (mPlayhead) {
+        mPlayhead->setXValue(t);
+    }
     updateStftWindowRect();
     if (mFollowSlider) {
         rebuildSpectrumPlot();  // 跟随模式下频谱随滑块更新
     }
     // 热图随播放滚动（D27）：只平移 X 轴范围，不改数据
-    if (mHeatmapAutoScroll && mStft.isValid() && mHeatmapPanel) {
-        DAChartWidget* heatChart = mHeatmapPanel->chart();
-        const double duration    = qMax(mSignal->duration(), 1e-9);
-        const double origin      = mSignal->timeOrigin();
-        const double winSeconds  = (mStft.windowSeconds > 0.0) ? mStft.windowSeconds : 1.0;
+    if (mHeatmapAutoScroll && mStft.isValid() && mHeatmapChart) {
+        const double duration   = qMax(mSignal->duration(), 1e-9);
+        const double origin     = mSignal->timeOrigin();
+        const double winSeconds = (mStft.windowSeconds > 0.0) ? mStft.windowSeconds : 1.0;
         // 可视跨度：优先沿用当前轴跨度；若等于整段（自动缩放）则先放大到 1/5 段，让滚动可见
-        double span = heatChart->axisScaleDiv(QwtPlot::xBottom).interval().width();
+        double span = mHeatmapChart->axisScaleDiv(QwtPlot::xBottom).interval().width();
         if (!(span > 0.0) || span >= 0.9 * duration) {
             span = qMax(5.0 * winSeconds, duration / 5.0);
             span = qMin(span, duration);
@@ -1169,10 +1256,12 @@ void DASignalAnalysisView::updatePlayhead()
         const double minLeft = origin;
         const double maxLeft = origin + duration - span;
         left                 = qBound(minLeft, left, qMax(minLeft, maxLeft));
-        heatChart->setAxisScale(QwtPlot::xBottom, left, left + span);
-        heatChart->replot();
+        mHeatmapChart->setAxisScale(QwtPlot::xBottom, left, left + span);
+        mHeatmapChart->replot();
     }
-    mWavePanel->chart()->replot();
+    if (mWaveChart) {
+        mWaveChart->replot();
+    }
 }
 
 /**
@@ -1180,11 +1269,11 @@ void DASignalAnalysisView::updatePlayhead()
  */
 void DASignalAnalysisView::requestEnvelopeRefresh()
 {
-    if (!mSignal || !mSignal->isValid()) {
+    if (!mSignal || !mSignal->isValid() || !mWaveChart) {
         return;
     }
     const qint64 total = mSignal->sampleCount();
-    const int width    = qMax(100, mWavePanel->chart()->canvas()->width());
+    const int width    = qMax(100, mWaveChart->canvas()->width());
     Q_EMIT envelopeRequested(0, total, width);
 }
 
@@ -1200,8 +1289,166 @@ void DASignalAnalysisView::requestInitialAnalysis()
         return;
     }
     requestEnvelopeRefresh();
-    Q_EMIT spectrumRequested(mSignal, currentChannel());
+    Q_EMIT spectrumRequested(mSignal, mCurrentChannel);
     requestHeatmapRefresh();
+}
+
+// ---------------------------------------------------------------- 图表文档（T6/T8）
+
+DAFigureWidget* DASignalAnalysisView::figure() const
+{
+    return mFigure;
+}
+
+QList< DAFigureWidget* > DASignalAnalysisView::figures() const
+{
+    QList< DAFigureWidget* > res;
+    if (mFigure) {
+        res.append(mFigure);
+    }
+    return res;
+}
+
+DAChartWidget* DASignalAnalysisView::waveChart() const
+{
+    return mWaveChart;
+}
+
+DAChartWidget* DASignalAnalysisView::spectrumChart() const
+{
+    return mSpectrumChart;
+}
+
+DAChartWidget* DASignalAnalysisView::heatmapChart() const
+{
+    return mHeatmapChart;
+}
+
+DAChart3DWidget* DASignalAnalysisView::waterfall3DChart() const
+{
+    return mWaterfallChart;
+}
+
+/**
+ * @brief 当前 2D 子图；无当前或当前不可见时回退波形
+ */
+DAChartWidget* DASignalAnalysisView::currentChart() const
+{
+    if (!mFigure) {
+        return nullptr;
+    }
+    DAChartWidget* chart = mFigure->getCurrentChart();
+    if (chart == mHeatmapChart && (!mHeatmapChart || !mHeatmapChart->isVisible())) {
+        chart = nullptr;
+    }
+    return chart ? chart : mWaveChart;
+}
+
+DAChart3DWidget* DASignalAnalysisView::current3DChart() const
+{
+    return mFigure ? mFigure->getCurrent3DChart() : nullptr;
+}
+
+bool DASignalAnalysisView::is3DChartActive() const
+{
+    return mCurrentIs3D && mWaterfallMode == 1;
+}
+
+void DASignalAnalysisView::setCurrentChart(DAChartWidget* chart)
+{
+    if (mFigure && chart) {
+        mFigure->setCurrentChart(chart);
+    }
+}
+
+QString DASignalAnalysisView::figureId() const
+{
+    return mFigure ? mFigure->getFigureId() : QString();
+}
+
+QList< qreal > DASignalAnalysisView::gridRowSizes() const
+{
+    return mFigure ? mFigure->gridRowSizes() : QList< qreal >();
+}
+
+QList< qreal > DASignalAnalysisView::gridColumnSizes() const
+{
+    return mFigure ? mFigure->gridColumnSizes() : QList< qreal >();
+}
+
+/**
+ * @brief 恢复网格比例（尺寸不符/非法值忽略）
+ */
+void DASignalAnalysisView::setGridSizes(const QList< qreal >& rows, const QList< qreal >& cols)
+{
+    if (!mFigure) {
+        return;
+    }
+    if (mFigure->setGridSizes(rows, cols)) {
+        mGridSizesApplied = true;
+    }
+}
+
+/**
+ * @brief 兼容旧存档接口：行比例换算为千分比整数（T7 临时保留，T8 删除）
+ */
+QList< int > DASignalAnalysisView::verticalSplitterSizes() const
+{
+    QList< int > res;
+    for (qreal v : gridRowSizes()) {
+        res.append(qRound(v * 1000.0));
+    }
+    return res;
+}
+
+/**
+ * @brief 兼容旧存档接口：列比例换算为千分比整数（T7 临时保留，T8 删除）
+ */
+QList< int > DASignalAnalysisView::horizontalSplitterSizes() const
+{
+    QList< int > res;
+    for (qreal v : gridColumnSizes()) {
+        res.append(qRound(v * 1000.0));
+    }
+    return res;
+}
+
+/**
+ * @brief 兼容旧存档接口：按比例（旧存档可能是像素值，内部归一化）恢复网格比例（T7 临时保留，T8 删除）
+ */
+void DASignalAnalysisView::setSplitterSizes(const QList< int >& vertical, const QList< int >& horizontal)
+{
+    QList< qreal > rows;
+    rows.reserve(vertical.size());
+    for (int v : vertical) {
+        rows.append(qreal(v));
+    }
+    QList< qreal > cols;
+    cols.reserve(horizontal.size());
+    for (int v : horizontal) {
+        cols.append(qreal(v));
+    }
+    if (!rows.isEmpty() && !cols.isEmpty()) {
+        setGridSizes(rows, cols);
+    }
+}
+
+void DASignalAnalysisView::onFigureCurrentChartChanged(DA::DAChartWidget* chart)
+{
+    if (!chart) {
+        return;
+    }
+    mCurrentIs3D = false;
+    Q_EMIT currentSubChartChanged();
+}
+
+void DASignalAnalysisView::onFigureCurrent3DChartChanged(DA::DAChart3DWidget* chart)
+{
+    if (!chart || chart != mWaterfallChart || mWaterfallMode != 1) {
+        return;
+    }
+    mCurrentIs3D = true;
+    Q_EMIT currentSubChartChanged();
 }
 
 /**
@@ -1212,8 +1459,9 @@ void DASignalAnalysisView::requestInitialAnalysis()
  */
 QPixmap DASignalAnalysisView::grabForExport()
 {
-    QPixmap page = grab();
-    if (mWaterfallMode != 1 || !mWaterfallChart || !mWaterfallChart->isVisible()) {
+    QwtFigure* fig = mFigure ? mFigure->figure() : nullptr;
+    QPixmap page   = fig ? fig->grab() : grab();
+    if (mWaterfallMode != 1 || !mWaterfallChart || !mWaterfallChart->isVisible() || !fig) {
         return page;
     }
     const QPixmap gl = mWaterfallChart->renderPixmap(mWaterfallChart->width(), mWaterfallChart->height());
@@ -1221,7 +1469,7 @@ QPixmap DASignalAnalysisView::grabForExport()
         return page;
     }
     QPainter painter(&page);
-    const QPoint topLeft = mWaterfallChart->mapTo(this, QPoint(0, 0));
+    const QPoint topLeft = mWaterfallChart->mapTo(fig, QPoint(0, 0));
     painter.drawPixmap(topLeft, gl);
     painter.end();
     return page;
@@ -1230,7 +1478,7 @@ QPixmap DASignalAnalysisView::grabForExport()
 void DASignalAnalysisView::resizeEvent(QResizeEvent* e)
 {
     QWidget::resizeEvent(e);
-    if (mSignal && mSignal->isValid()) {
+    if (mSignal && mSignal->isValid() && mResizeDebounce) {
         mResizeDebounce->start();  // 防抖：尺寸稳定后再重算包络
     }
 }
@@ -1238,11 +1486,6 @@ void DASignalAnalysisView::resizeEvent(QResizeEvent* e)
 void DASignalAnalysisView::showEvent(QShowEvent* e)
 {
     QWidget::showEvent(e);
-    // 首次显示显式设定默认分割比例（恢复存档时由 setSplitterSizes 覆盖，评审 §七-1）
-    if (!mDefaultSplitterSizesApplied) {
-        mDefaultSplitterSizesApplied = true;
-        applyDefaultSplitterSizes();
-    }
     if (!mEnvelopeValid) {
         requestInitialAnalysis();
     }
@@ -1256,14 +1499,62 @@ void DASignalAnalysisView::changeEvent(QEvent* e)
     QWidget::changeEvent(e);
 }
 
+/**
+ * @brief 让临时工具栏控件反映当前成员状态（程序化 setter 与控件同步用）
+ */
+void DASignalAnalysisView::syncTemporaryToolbar()
+{
+    if (mChannelCombo) {
+        const int idx = mChannelCombo->findData(mCurrentChannel);
+        if (idx >= 0 && idx != mChannelCombo->currentIndex()) {
+            const bool blocked = mChannelCombo->blockSignals(true);
+            mChannelCombo->setCurrentIndex(idx);
+            mChannelCombo->blockSignals(blocked);
+        }
+    }
+    if (mFreqAxisCombo) {
+        const int idx = mFreqAxisCombo->findData(mLogFrequency);
+        if (idx >= 0 && idx != mFreqAxisCombo->currentIndex()) {
+            const bool blocked = mFreqAxisCombo->blockSignals(true);
+            mFreqAxisCombo->setCurrentIndex(idx);
+            mFreqAxisCombo->blockSignals(blocked);
+        }
+    }
+    if (mColormapCombo) {
+        const int idx = mColormapCombo->findData(mColormapName);
+        if (idx >= 0 && idx != mColormapCombo->currentIndex()) {
+            const bool blocked = mColormapCombo->blockSignals(true);
+            mColormapCombo->setCurrentIndex(idx);
+            mColormapCombo->blockSignals(blocked);
+        }
+    }
+    if (mDbFloorSpin) {
+        const bool blocked = mDbFloorSpin->blockSignals(true);
+        mDbFloorSpin->setValue(mDbFloor);
+        mDbFloorSpin->blockSignals(blocked);
+    }
+    if (mFollowSliderCheck && mFollowSliderCheck->isChecked() != mFollowSlider) {
+        const bool blocked = mFollowSliderCheck->blockSignals(true);
+        mFollowSliderCheck->setChecked(mFollowSlider);
+        mFollowSliderCheck->blockSignals(blocked);
+    }
+    if (mAutoScrollCheck && mAutoScrollCheck->isChecked() != mHeatmapAutoScroll) {
+        const bool blocked = mAutoScrollCheck->blockSignals(true);
+        mAutoScrollCheck->setChecked(mHeatmapAutoScroll);
+        mAutoScrollCheck->blockSignals(blocked);
+    }
+    if (mTimeSlider) {
+        const int value = int(qRound(mCurrentTimeSeconds * 1000.0));
+        if (mTimeSlider->value() != value) {
+            const bool blocked = mTimeSlider->blockSignals(true);
+            mTimeSlider->setValue(value);
+            mTimeSlider->blockSignals(blocked);
+        }
+    }
+}
+
 void DASignalAnalysisView::retranslateUi()
 {
-    if (mWavePanel) {
-        mWavePanel->setTitle(tr("Waveform"));  // cn:波形
-    }
-    if (mSpectrumPanel) {
-        mSpectrumPanel->setTitle(tr("Spectrum"));  // cn:频谱
-    }
     if (mFreqAxisCombo) {
         mFreqAxisCombo->setItemText(0, tr("Linear"));  // cn:线性
         mFreqAxisCombo->setItemText(1, tr("Log"));     // cn:对数
@@ -1278,14 +1569,17 @@ void DASignalAnalysisView::retranslateUi()
         mAutoScrollCheck->setToolTip(tr("Scroll the time-frequency view while playback advances"));
         // cn:播放推进时平移时频图的时间轴
     }
-    if (mHeatmapPanel) {
-        mHeatmapPanel->setTitle(tr("Time-Frequency"));  // cn:时频
-    }
     if (mEnvelopeCurve) {
         mEnvelopeCurve->setTitle(tr("Envelope"));  // cn:包络
     }
     if (mSpectrumCurve) {
         mSpectrumCurve->setTitle(tr("Amplitude spectrum"));  // cn:幅值谱
+    }
+    if (mSpectrogramItem) {
+        mSpectrogramItem->setTitle(tr("Spectrogram"));  // cn:时频图
+    }
+    if (mWaterfallItem) {
+        mWaterfallItem->setTitle(tr("Waterfall"));  // cn:三维瀑布
     }
     updateAxisTitles();
 }
