@@ -1,0 +1,385 @@
+// DAChartContextTest 的测试实现
+//
+// T6 WP4：把「图元树目标抽象 + 通用回退图元面板 + 当前子图导出」的能力固化为 chart 域回归测试。
+// 覆盖点：
+// 1. DAChartManageWidget::setFigures / setCurrentFigure / figures() / 清空重建（不依赖 APP）；
+// 2. 未注册 rtti 的图元：工厂回退 DAChartGenericItemSettingPanel，setPlotItem 安全；
+// 3. DAChartCommonItemsSettingWidget::updateUI 在已注册/未注册 rtti 之间切换面板（不再停留上一个）；
+// 4. DAFigureWidget::exportChartToFile 的 PNG/SVG/PDF 与 copyChartToClipboard；
+// 5. 空参数/空路径导出返回 false 且不崩溃。
+
+#include <QtTest/QtTest>
+#include <QApplication>
+#include <QClipboard>
+#include <QFile>
+#include <QFileInfo>
+#include <QImage>
+#include <QList>
+#include <QPixmap>
+#include <QScopedPointer>
+#include <QTemporaryDir>
+
+// DAGui
+#include "Chart/DAChartManageWidget.h"
+#include "Chart/Setting/DAChartCommonItemsSettingWidget.h"
+#include "Chart/Setting/DAChartGenericItemSettingPanel.h"
+#include "Chart/Setting/DAChartItemSettingPanel.h"
+#include "Chart/Setting/DAChartItemSettingPanelFactory.h"
+// DAFigure
+#include "DAChartWidget.h"
+#include "DAFigureWidget.h"
+// qwt
+#include "qwt_plot_item.h"
+#include "qwt_plot_marker.h"
+#include "qwt_text.h"
+
+namespace DA
+{
+/**
+ * @brief 未注册 rtti 的自定义图元（模拟插件自定义图元）
+ *
+ * rtti 取 0x7F00（>= QwtPlotItem::Rtti_PlotUserItem 的保留区），且从不注册到
+ * DAChartItemSettingPanelFactory，用于验证工厂/公共面板的回退路径。
+ */
+class TSTUnregisteredPlotItem : public QwtPlotItem
+{
+public:
+    // 未注册的 RTTI 值
+    static constexpr int RttValue = 0x7F00;
+
+    explicit TSTUnregisteredPlotItem(const QString& title = QString()) : QwtPlotItem(title)
+    {
+    }
+
+    int rtti() const override
+    {
+        return RttValue;
+    }
+
+    void draw(QPainter*, const QwtScaleMap&, const QwtScaleMap&, const QRectF&) const override
+    {
+    }
+};
+
+/**
+ * @brief T6 WP4 图元树目标抽象、通用回退图元面板与当前子图导出测试
+ */
+class TSTDAChartContextTest : public QObject
+{
+    Q_OBJECT
+private Q_SLOTS:
+    // 注册内置图元面板，保证「已注册 rtti」用例可复现
+    void initTestCase();
+    // setFigures/setCurrentFigure/figures()/清空
+    void testChartManageSetFigures();
+    // 未注册 rtti → 工厂回退通用面板
+    void testUnregisteredRttiFallback();
+    // updateUI 在已注册/未注册 rtti 之间切换 currentItemPanel
+    void testCommonItemsSettingWidgetSwitchesPanel();
+    // 导出 PNG/SVG/PDF 到文件
+    void testExportChartToFile();
+    // 复制当前子图到剪贴板
+    void testCopyChartToClipboard();
+    // 空 chart/空路径导出返回 false 且不崩溃
+    void testExportWithEmptyArguments();
+
+private:
+    // 创建并显示指定尺寸的 figure，等待窗口暴露与布局完成
+    static bool initFigure(DAFigureWidget* fig, int width = 800, int height = 600);
+    // 处理事件并短暂等待，让布局与渲染状态稳定
+    static void settle(DAFigureWidget* fig, int ms = 30);
+};
+
+//===================================================
+// 辅助函数
+//===================================================
+
+bool TSTDAChartContextTest::initFigure(DAFigureWidget* fig, int width, int height)
+{
+    if (!fig) {
+        return false;
+    }
+    fig->resize(width, height);
+    fig->show();
+    if (!QTest::qWaitForWindowExposed(fig)) {
+        return false;
+    }
+    settle(fig);
+    return true;
+}
+
+void TSTDAChartContextTest::settle(DAFigureWidget* fig, int ms)
+{
+    Q_UNUSED(fig);
+    QApplication::processEvents();
+    QTest::qWait(ms);
+    QApplication::processEvents();
+}
+
+//===================================================
+// 用例实现
+//===================================================
+
+/**
+ * @brief 注册内置图元设置面板
+ *
+ * 生产环境由 DAChartSettingWidget 构造函数调用；测试不构造该窗口，这里显式注册，
+ * 使「已注册 rtti 使用专属面板」的用例可复现。
+ */
+void TSTDAChartContextTest::initTestCase()
+{
+    DAChartItemSettingPanelFactory::instance().registerAllKnownPanels();
+    QVERIFY2(DAChartItemSettingPanelFactory::instance().isRegistered(QwtPlotItem::Rtti_PlotMarker),
+             "the built-in marker panel should be registered");
+    QVERIFY2(!DAChartItemSettingPanelFactory::instance().isRegistered(TSTUnregisteredPlotItem::RttValue),
+             "the custom rtti must stay unregistered in this test");
+}
+
+/**
+ * @brief setFigures 按给定列表重建管理树；setCurrentFigure 生效；清空后不崩
+ */
+void TSTDAChartContextTest::testChartManageSetFigures()
+{
+    DAChartManageWidget manager;
+    QScopedPointer< DAFigureWidget > first(new DAFigureWidget());
+    QScopedPointer< DAFigureWidget > second(new DAFigureWidget());
+    QVERIFY(first->createChart());
+    QVERIFY(second->createChart());
+
+    // 传入 current：列表顺序与当前项都应生效
+    manager.setFigures({ first.data(), second.data() }, second.data());
+    QCOMPARE(manager.figures().size(), 2);
+    QVERIFY(manager.figures().at(0) == first.data());
+    QVERIFY(manager.figures().at(1) == second.data());
+    QVERIFY2(manager.getCurrentFigure() == second.data(), "the explicit current figure should be applied");
+
+    // setCurrentFigure 切到另一个已纳管的 figure
+    manager.setCurrentFigure(first.data());
+    QVERIFY2(manager.getCurrentFigure() == first.data(), "setCurrentFigure() should switch the current figure");
+
+    // 空指针 / 不在列表内的 figure 视为空操作，不崩溃也不改变当前项
+    manager.setCurrentFigure(nullptr);
+    QVERIFY(manager.getCurrentFigure() == first.data());
+    QScopedPointer< DAFigureWidget > other(new DAFigureWidget());
+    manager.setCurrentFigure(other.data());
+    QVERIFY2(manager.getCurrentFigure() == first.data(),
+             "setCurrentFigure() with an unmanaged figure should be a no-op");
+
+    // 不传 current 时取列表首项
+    manager.setFigures({ first.data(), second.data() });
+    QVERIFY2(manager.getCurrentFigure() == first.data(), "the first figure should become current when current is null");
+
+    // 清空：列表为空，不崩溃
+    manager.setFigures({}, nullptr);
+    QVERIFY(manager.figures().isEmpty());
+    QVERIFY2(manager.getCurrentFigure() == nullptr, "the current figure should be cleared with the managed list");
+    // 清空后再次操作不崩溃
+    manager.setCurrentFigure(first.data());
+    QVERIFY(manager.figures().isEmpty());
+    manager.expandCurrentTree();
+    manager.collapseCurrentTree();
+}
+
+/**
+ * @brief 未注册 rtti 的图元：工厂回退 DAChartGenericItemSettingPanel，setPlotItem 安全
+ */
+void TSTDAChartContextTest::testUnregisteredRttiFallback()
+{
+    // 图元先于 figure 声明：figure 析构时图元仍存活，qwt 能安全 detach
+    QScopedPointer< TSTUnregisteredPlotItem > item(new TSTUnregisteredPlotItem(QStringLiteral("custom item")));
+    QScopedPointer< DAFigureWidget > fig(new DAFigureWidget());
+    QVERIFY(initFigure(fig.data()));
+    DAChartWidget* chart = fig->createChart();
+    QVERIFY(chart);
+    settle(fig.data());
+
+    // 构造并挂载一个未注册 rtti 的自定义图元
+    item->setZ(12.5);
+    item->attach(chart);
+    QCOMPARE(item->rtti(), TSTUnregisteredPlotItem::RttValue);
+    QVERIFY2(!DAChartItemSettingPanelFactory::instance().isRegistered(item->rtti()),
+             "the custom rtti must not be registered");
+
+    // 工厂必须返回非空的通用回退面板（而不是 nullptr / 上一个 item 的面板）
+    QScopedPointer< DAChartItemSettingPanel > panel(
+        DAChartItemSettingPanelFactory::instance().createPanel(item->rtti()));
+    QVERIFY2(panel.data() != nullptr, "createPanel() must not return null for an unregistered rtti");
+    DAChartGenericItemSettingPanel* generic = dynamic_cast< DAChartGenericItemSettingPanel* >(panel.data());
+    QVERIFY2(generic != nullptr, "an unregistered rtti must fall back to DAChartGenericItemSettingPanel");
+
+    // setPlotItem 不崩溃并能正确持有图元
+    panel->setPlotItem(item.data());
+    QVERIFY(panel->getPlotItem() == item.data());
+    QVERIFY(panel->isHaveItem());
+
+    // 已注册 rtti 仍走向专属面板（回退不吞掉正常注册）
+    QScopedPointer< DAChartItemSettingPanel > markerPanel(
+        DAChartItemSettingPanelFactory::instance().createPanel(QwtPlotItem::Rtti_PlotMarker));
+    QVERIFY(markerPanel.data() != nullptr);
+    QVERIFY2(dynamic_cast< DAChartGenericItemSettingPanel* >(markerPanel.data()) == nullptr,
+             "a registered rtti should not use the generic fallback panel");
+
+    item->detach();
+}
+
+/**
+ * @brief updateUI 从未注册 rtti 切回已注册 rtti 时，currentItemPanel 跟着切换
+ */
+void TSTDAChartContextTest::testCommonItemsSettingWidgetSwitchesPanel()
+{
+    // 图元先于 figure 声明：figure 析构时图元仍存活，qwt 能安全 detach
+    QScopedPointer< QwtPlotMarker > marker(new QwtPlotMarker());
+    QScopedPointer< TSTUnregisteredPlotItem > custom(new TSTUnregisteredPlotItem(QStringLiteral("custom item")));
+    QScopedPointer< DAFigureWidget > fig(new DAFigureWidget());
+    QVERIFY(initFigure(fig.data()));
+    DAChartWidget* chart = fig->createChart();
+    QVERIFY(chart);
+    settle(fig.data());
+
+    marker->attach(chart);
+    custom->attach(chart);
+
+    DAChartCommonItemsSettingWidget panelWidget;
+
+    // 先给已注册 rtti：应使用专属面板
+    panelWidget.updateUI(marker.data());
+    DAChartItemSettingPanel* markerItemPanel = panelWidget.currentItemPanel();
+    QVERIFY2(markerItemPanel != nullptr, "updateUI() should display a panel for a registered rtti");
+    QVERIFY2(dynamic_cast< DAChartGenericItemSettingPanel* >(markerItemPanel) == nullptr,
+             "a registered rtti should display its dedicated panel");
+    QVERIFY(markerItemPanel->getPlotItem() == marker.data());
+
+    // 再给未注册 rtti：必须切换到通用面板，而不是停留上一个面板
+    panelWidget.updateUI(custom.data());
+    DAChartItemSettingPanel* customItemPanel = panelWidget.currentItemPanel();
+    QVERIFY2(customItemPanel != nullptr, "updateUI() should display the generic panel for an unregistered rtti");
+    QVERIFY2(customItemPanel != markerItemPanel, "the panel must switch away from the previous item panel");
+    QVERIFY2(dynamic_cast< DAChartGenericItemSettingPanel* >(customItemPanel) != nullptr,
+             "an unregistered rtti must switch to DAChartGenericItemSettingPanel");
+    QVERIFY(customItemPanel->getPlotItem() == custom.data());
+
+    // 再切回已注册 rtti：回到专属面板（面板按 rtti 缓存复用）
+    panelWidget.updateUI(marker.data());
+    QVERIFY2(panelWidget.currentItemPanel() == markerItemPanel,
+             "switching back to the registered rtti should restore its cached panel");
+
+    marker->detach();
+    custom->detach();
+}
+
+/**
+ * @brief 导出当前 2D 子图到 PNG/SVG/PDF 文件
+ */
+void TSTDAChartContextTest::testExportChartToFile()
+{
+    QScopedPointer< DAFigureWidget > fig(new DAFigureWidget());
+    QVERIFY(initFigure(fig.data(), 800, 600));
+    DAChartWidget* chart = fig->createChart();
+    QVERIFY(chart);
+    settle(fig.data());
+    QVERIFY2(chart->width() > 0 && chart->height() > 0,
+             qPrintable(QStringLiteral("the chart should have a non-empty size, got %1x%2")
+                            .arg(chart->width())
+                            .arg(chart->height())));
+
+    QTemporaryDir tmpDir;
+    QVERIFY(tmpDir.isValid());
+
+    // PNG：文件存在、非空、能作为图片读回
+    const QString pngPath = tmpDir.filePath(QStringLiteral("chart.png"));
+    QVERIFY2(fig->exportChartToFile(chart, pngPath, DAFigureExportFormat::Png), "PNG export should succeed");
+    const QFileInfo pngInfo(pngPath);
+    QVERIFY2(pngInfo.exists(), "the PNG file should exist");
+    QVERIFY2(pngInfo.size() > 0, "the PNG file should not be empty");
+    QVERIFY2(!QImage(pngPath).isNull(), "the PNG file should be a readable image");
+
+    // SVG：文件存在且包含根 <svg 标记
+    const QString svgPath = tmpDir.filePath(QStringLiteral("chart.svg"));
+    QVERIFY2(fig->exportChartToFile(chart, svgPath, DAFigureExportFormat::Svg), "SVG export should succeed");
+    QFile svgFile(svgPath);
+    QVERIFY2(svgFile.open(QIODevice::ReadOnly), "the SVG file should be readable");
+    const QByteArray svgData = svgFile.readAll();
+    svgFile.close();
+    QVERIFY2(svgData.contains("<svg"), "the SVG content should contain the <svg element");
+
+    // PDF：文件存在、非空、以 %PDF 开头
+    const QString pdfPath = tmpDir.filePath(QStringLiteral("chart.pdf"));
+    QVERIFY2(fig->exportChartToFile(chart, pdfPath, DAFigureExportFormat::Pdf), "PDF export should succeed");
+    QFile pdfFile(pdfPath);
+    QVERIFY2(pdfFile.open(QIODevice::ReadOnly), "the PDF file should be readable");
+    const QByteArray pdfData = pdfFile.readAll();
+    pdfFile.close();
+    QVERIFY2(pdfData.startsWith("%PDF"), "the PDF content should start with the %PDF header");
+
+    // 后缀 → 格式推断与文件对话框过滤器
+    QCOMPARE(static_cast< int >(DAFigureWidget::exportFormatFromFilePath(QStringLiteral("a.svg"))),
+             static_cast< int >(DAFigureExportFormat::Svg));
+    QCOMPARE(static_cast< int >(DAFigureWidget::exportFormatFromFilePath(QStringLiteral("a.PDF"))),
+             static_cast< int >(DAFigureExportFormat::Pdf));
+    QCOMPARE(static_cast< int >(DAFigureWidget::exportFormatFromFilePath(QStringLiteral("a.unknown"))),
+             static_cast< int >(DAFigureExportFormat::Png));
+    const QString filter = DAFigureWidget::exportFileFilter();
+    QVERIFY2(filter.contains(QStringLiteral("*.png")) && filter.contains(QStringLiteral("*.svg"))
+                 && filter.contains(QStringLiteral("*.pdf")),
+             "the export file filter should contain png/svg/pdf entries");
+}
+
+/**
+ * @brief 复制当前 2D 子图到剪贴板
+ */
+void TSTDAChartContextTest::testCopyChartToClipboard()
+{
+    QScopedPointer< DAFigureWidget > fig(new DAFigureWidget());
+    QVERIFY(initFigure(fig.data(), 640, 480));
+    DAChartWidget* chart = fig->createChart();
+    QVERIFY(chart);
+    settle(fig.data());
+    QVERIFY2(chart->width() > 0 && chart->height() > 0, "the chart should have a non-empty size");
+
+    QVERIFY2(fig->copyChartToClipboard(chart), "copying the chart to the clipboard should succeed");
+    const QPixmap clipboardPixmap = QApplication::clipboard()->pixmap();
+    QVERIFY2(!clipboardPixmap.isNull(), "the clipboard should contain a non-null pixmap");
+
+    // 传 nullptr 时使用当前子图
+    QVERIFY2(fig->copyChartToClipboard(), "copyChartToClipboard(nullptr) should use the current chart");
+    QVERIFY(!QApplication::clipboard()->pixmap().isNull());
+}
+
+/**
+ * @brief 空 chart/空路径导出返回 false，不崩溃
+ */
+void TSTDAChartContextTest::testExportWithEmptyArguments()
+{
+    QTemporaryDir tmpDir;
+    QVERIFY(tmpDir.isValid());
+
+    // 没有任何子图的 figure：为空参数与「无当前子图」提供现场
+    QScopedPointer< DAFigureWidget > emptyFig(new DAFigureWidget());
+    QVERIFY2(!emptyFig->exportChartToFile(nullptr, tmpDir.filePath(QStringLiteral("null.png")),
+                                         DAFigureExportFormat::Png),
+             "exporting a null chart must fail");
+    QVERIFY2(!emptyFig->exportChartToFile(nullptr, QString(), DAFigureExportFormat::Png),
+             "exporting a null chart with an empty path must fail");
+    QVERIFY2(!emptyFig->copyChartToClipboard(), "copying without any chart must fail");
+
+    // 有子图但路径为空：返回 false 且不写文件
+    QScopedPointer< DAFigureWidget > fig(new DAFigureWidget());
+    QVERIFY(initFigure(fig.data(), 400, 300));
+    DAChartWidget* chart = fig->createChart();
+    QVERIFY(chart);
+    settle(fig.data());
+    QVERIFY2(!fig->exportChartToFile(chart, QString(), DAFigureExportFormat::Png),
+             "exporting with an empty file path must fail");
+    QVERIFY2(!fig->exportChartToFile(chart, QString(), DAFigureExportFormat::Svg),
+             "exporting SVG with an empty file path must fail");
+    QVERIFY(chart->width() > 0 && chart->height() > 0);
+}
+
+}  // namespace DA
+
+//===================================================
+// main
+//===================================================
+QTEST_MAIN(DA::TSTDAChartContextTest)
+
+#include "main.moc"

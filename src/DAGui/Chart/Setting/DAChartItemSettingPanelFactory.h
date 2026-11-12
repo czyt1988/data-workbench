@@ -38,7 +38,7 @@ public:
     // 注册面板创建函数
     void registerPanel(int rtti, FpCreatePanel creator);
 
-    // 根据RTTI创建对应面板
+    // 根据RTTI创建对应面板（未注册的rtti回退到DAChartGenericItemSettingPanel）
     DAChartItemSettingPanel* createPanel(int rtti) const;
 
     // 检查RTTI类型是否已注册

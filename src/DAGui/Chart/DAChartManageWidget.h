@@ -2,6 +2,7 @@
 #define DACHARTMANAGEWIDGET_H
 #include "DAGuiAPI.h"
 #include <QWidget>
+#include <QList>
 #include "DAFigureElementSelection.h"
 #include "qwt_axis_id.h"
 namespace Ui
@@ -35,8 +36,14 @@ class DAGUI_API DAChartManageWidget : public QWidget
 public:
     DAChartManageWidget(QWidget* parent = nullptr);
     ~DAChartManageWidget();
-    // 设置绘图操作窗口，只有设置了绘图操作窗口，管理窗口才可以工作
+    // 设置绘图操作窗口，只有设置了绘图操作窗口，管理窗口才可以工作（内部模式，可清空重建）
     void setChartOperateWidget(DAChartOperateWidget* cow);
+    // 用给定的figure列表重建管理树（外部模式，不依赖DAChartOperateWidget）
+    void setFigures(const QList< DAFigureWidget* >& figures, DAFigureWidget* current = nullptr);
+    // 切换当前figure（只影响管理树/树视图）
+    void setCurrentFigure(DAFigureWidget* figure);
+    // 当前管理树里的figure列表（按combobox顺序；测试与插件查询用）
+    QList< DAFigureWidget* > figures() const;
     // 设置item点击时如果不是当前chart，设置为当前chart
     void setCurrentChartOnItemClicked(bool on);
     bool isSetCurrentChartOnItemClicked() const;
@@ -93,6 +100,10 @@ protected:
     DAFigureTreeView* currentTreeView() const;
 
 private:
+    // 把单个figure纳入管理（建树视图、combobox项、维护hash）
+    void addManagedFigure(DA::DAFigureWidget* fig);
+    // 清空管理树（树视图、combobox项、hash、堆叠窗口）
+    void clearManagedFigures();
     // 设置当前显示的fig对应的view
     void setCurrentDisplayView(DA::DAFigureWidget* fig);
     DAFigureWidget* getComboboxFigure(int index) const;

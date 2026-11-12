@@ -218,6 +218,7 @@ public:
     QAction* actionChartLinkAllPickerEnabled;   ///< 联动所有绘图
     QAction* actionChartEnableLegend;           ///< legend
     QAction* actionCopyFigureInClipboard;       ///< 把图片复制到剪切板
+    QAction* actionExportChartToFile { nullptr };  ///< 导出当前子图到图片文件（PNG/SVG/PDF）
     QActionGroup* actionGroupChartLegendPosition;  ///< 图例位置actionGroup
     QAction* actionChartLegendAtTop;               ///< 图例在上
     QAction* actionChartLegendAtBottom;            ///< 图例在下

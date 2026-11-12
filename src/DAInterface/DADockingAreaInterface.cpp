@@ -1,4 +1,5 @@
 #include "DADockingAreaInterface.h"
+#include "DASettingContextProviderRegistry.h"
 #include <QMap>
 #include <QDebug>
 #include <QApplication>
@@ -29,6 +30,7 @@ public:
 public:
     ads::CDockManager* mDockManager { nullptr };
     ads::CDockAreaWidget* mCenterArea { nullptr };
+    DASettingContextProviderRegistry mSettingContextProviders;  ///< dock内容 -> 设置上下文提供者注册表
 };
 
 //===================================================
@@ -342,6 +344,69 @@ bool DADockingAreaInterface::isDockingAreaFocused(DockingArea area) const
         return (dw == fd);
     }
     return false;
+}
+
+/**
+ * @brief 注册 dock 内容的设置上下文提供者
+ *
+ * 注册后，该 dock 内容被激活时 APP 会优先调用 provider->activateSettingContext()，
+ * 由提供者接管右侧设置页与 Ribbon 上下文标签，不再走固定的数据/绘图/工作流路由。
+ * 注册方应在 dock 内容销毁前调用 unregisterSettingContextProvider()。
+ * @param dockContent dock 内部维护的内容窗口
+ * @param provider 设置上下文提供者（不接管所有权）
+ */
+void DADockingAreaInterface::registerSettingContextProvider(QWidget* dockContent, DASettingContextProvider* provider)
+{
+    d_ptr->mSettingContextProviders.registerProvider(dockContent, provider);
+}
+
+/**
+ * @brief 注销 dock 内容的设置上下文提供者
+ * @param dockContent dock 内部维护的内容窗口
+ */
+void DADockingAreaInterface::unregisterSettingContextProvider(QWidget* dockContent)
+{
+    d_ptr->mSettingContextProviders.unregisterProvider(dockContent);
+}
+
+/**
+ * @brief 激活 dock 内容对应的设置上下文
+ * @param dockContent dock 内部维护的内容窗口
+ * @return 命中并接管返回 true；未命中返回 false（调用方继续走固定窗口路由）
+ */
+bool DADockingAreaInterface::activateSettingContextForWidget(QWidget* dockContent)
+{
+    return d_ptr->mSettingContextProviders.activateFor(dockContent);
+}
+
+/**
+ * @brief 失活当前的设置上下文提供者
+ */
+void DADockingAreaInterface::deactivateSettingContextProvider()
+{
+    d_ptr->mSettingContextProviders.deactivateCurrent();
+}
+
+/**
+ * @brief 查询 dock 内容对应的设置上下文提供者
+ * @param dockContent dock 内部维护的内容窗口
+ * @return 提供者指针，未注册返回 nullptr
+ */
+DASettingContextProvider* DADockingAreaInterface::settingContextProviderFor(QWidget* dockContent)
+{
+    return d_ptr->mSettingContextProviders.providerFor(dockContent);
+}
+
+/**
+ * @brief 广播 dock 内容被激活
+ *
+ * 由 APP 路由层在焦点变化/程序化 raise 时、执行上下文路由之前调用；插件可据此
+ * 同步自身状态（如刷新当前会话）。与 dockWidgetRaised 不同，它覆盖焦点切换路径。
+ * @param dockContent 被激活的 dock 内容窗口（焦点离开全部 dock 时为 nullptr）
+ */
+void DADockingAreaInterface::notifyDockWidgetActivated(QWidget* dockContent)
+{
+    Q_EMIT dockWidgetActivated(dockContent);
 }
 
 /**

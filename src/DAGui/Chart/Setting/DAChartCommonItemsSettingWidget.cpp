@@ -57,7 +57,8 @@ void DAChartCommonItemsSettingWidget::updateUI(QwtPlotItem* item)
 	if (nullptr == panel) {
 		panel = DAChartItemSettingPanelFactory::instance().createPanel(rtti);
 		if (nullptr == panel) {
-			// 未注册的RTTI类型，不做处理
+			// 防御性判断：工厂已保证返回非空（未注册rtti回退通用面板），此处理论上不会命中
+			qWarning("DAChartCommonItemsSettingWidget::updateUI: factory returned null panel for rtti %d", rtti);
 			return;
 		}
 		d->mPanelCache[rtti] = panel;
@@ -67,6 +68,15 @@ void DAChartCommonItemsSettingWidget::updateUI(QwtPlotItem* item)
 	// 3. 切换到对应面板并设置item
 	ui->stackedWidget->setCurrentWidget(panel);
 	panel->setPlotItem(item);
+}
+
+/**
+ * @brief 获取当前显示的图元设置面板
+ * @return 当前面板指针，堆叠窗口为空时返回nullptr
+ */
+DAChartItemSettingPanel* DAChartCommonItemsSettingWidget::currentItemPanel() const
+{
+	return qobject_cast< DAChartItemSettingPanel* >(ui->stackedWidget->currentWidget());
 }
 
 }  // end DA

@@ -30,6 +30,8 @@ public:
 	~DAChartCommonItemsSettingWidget() override;
 	//
     virtual void updateUI(QwtPlotItem* item) override;
+    // 当前显示的图元设置面板（可能为空；测试与外部查询用）
+    DAChartItemSettingPanel* currentItemPanel() const;
 
 private:
 	Ui::DAChartCommonItemsSettingWidget* ui;

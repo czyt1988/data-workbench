@@ -217,6 +217,7 @@ void DAAppChartActionHandler::initConnections()
     DAAPP_CHART_BIND(mDeps.actions->actionChartLinkAllPickerEnabled, onActionChartLinkAllPickerEnabledTriggered);
     DAAPP_CHART_BIND(mDeps.actions->actionChartEnableLegend, onActionChartEnableLegendTriggered);
     DAAPP_CHART_BIND(mDeps.actions->actionCopyFigureInClipboard, onActionCopyFigureToClipboardTriggered);
+    DAAPP_CHART_BIND(mDeps.actions->actionExportChartToFile, onActionExportChartToFileTriggered);
     DAAPP_CHART_BIND(mDeps.actions->actionChartDataPickerSetting, onActionChartDataPickerSettingTriggered);
     // 拾取器文字位置
     connect(mDeps.actions->actionGroupChartPickerTextRegion,
@@ -1105,6 +1106,44 @@ void DAAppChartActionHandler::onActionCopyFigureToClipboardTriggered()
         return;
     }
     fig->copyToClipboard();
+}
+
+/**
+ * @brief 导出当前子图到图片文件
+ *
+ * 目标为当前figure的当前子图；格式由用户输入的后缀决定（.png/.svg/.pdf，
+ * 未输入后缀时默认png），成功/失败都用da*消息反馈（用户可见，必须翻译）。
+ */
+void DAAppChartActionHandler::onActionExportChartToFileTriggered()
+{
+    DAFigureWidget* fig = mDeps.controller->getCurrentFigure();
+    if (nullptr == fig) {
+        daWarning << tr("There is no figure to export");  // cn:没有可导出的绘图窗口
+        return;
+    }
+    DAChartWidget* chart = fig->getCurrentChart();
+    if (nullptr == chart) {
+        daWarning << tr("There is no sub-chart to export");  // cn:没有可导出的子图
+        return;
+    }
+    QString filePath = QFileDialog::getSaveFileName(
+        mDeps.controller->app(),
+        tr("Export Chart"),  // cn:导出当前子图
+        QStringLiteral("chart.png"),
+        DAFigureWidget::exportFileFilter());
+    if (filePath.isEmpty()) {
+        return;
+    }
+    // 用户未输入后缀时默认保存为png
+    if (QFileInfo(filePath).suffix().isEmpty()) {
+        filePath += QStringLiteral(".png");
+    }
+    const DAFigureExportFormat format = DAFigureWidget::exportFormatFromFilePath(filePath);
+    if (fig->exportChartToFile(chart, filePath, format)) {
+        daInfo << tr("Chart exported to \"%1\"").arg(filePath);  // cn:子图已导出到“%1”
+    } else {
+        daWarning << tr("Failed to export the chart to \"%1\"").arg(filePath);  // cn:导出子图到“%1”失败
+    }
 }
 
 /**

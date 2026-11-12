@@ -258,6 +258,7 @@ constexpr char ChartPickerTextFollowMouse[]    = "actionChartPickerTextFollowMou
 constexpr char ChartYPickerShowXValueEnabled[] = "actionChartYPickerShowXValueEnabled";
 constexpr char ChartEnableLegend[]             = "actionChartEnableLegend";
 constexpr char CopyFigureInClipboard[]         = "actionCopyFigureInClipboard";
+constexpr char ExportChartToFile[]             = "actionExportChartToFile";
 constexpr char ChartLegendAtTop[]              = "actionChartLegendAtTop";
 constexpr char ChartLegendAtBottom[]           = "actionChartLegendAtBottom";
 constexpr char ChartLegendAtLeft[]             = "actionChartLegendAtLeft";

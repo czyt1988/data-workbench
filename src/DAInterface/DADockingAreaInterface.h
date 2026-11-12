@@ -29,6 +29,7 @@ class DAPyWorkFlowNodeListWidget;
 class DAPyWorkFlowOperateWidget;
 class DAPyWorkFlowGraphicsScene;
 class DASettingContainerWidget;
+class DASettingContextProvider;
 
 /**
  * @brief 此接口负责整个app的dock区域
@@ -99,6 +100,19 @@ public:
 
     // 判断是否处于焦点
     bool isDockingAreaFocused(DockingArea area) const;
+
+    // 注册 dock 内容的设置上下文提供者（插件用它接管设置面板/上下文标签）
+    void registerSettingContextProvider(QWidget* dockContent, DASettingContextProvider* provider);
+    // 注销 dock 内容的设置上下文提供者（注册方应在内容销毁前调用）
+    void unregisterSettingContextProvider(QWidget* dockContent);
+    // 激活 dock 内容对应的设置上下文：命中返回 true（先失活上一个并激活其撤销栈），未命中失活上一个并返回 false
+    bool activateSettingContextForWidget(QWidget* dockContent);
+    // 失活当前的设置上下文提供者
+    void deactivateSettingContextProvider();
+    // 查询 dock 内容对应的设置上下文提供者（未注册返回 nullptr）
+    DASettingContextProvider* settingContextProviderFor(QWidget* dockContent);
+    // 广播 dock 内容被激活（框架内部在焦点变化/程序化 raise 路由前调用）
+    void notifyDockWidgetActivated(QWidget* dockContent);
 
     // 获取中心区域
     ads::CDockAreaWidget* getCenterArea() const;
@@ -180,6 +194,9 @@ public:
 Q_SIGNALS:
     // dock窗口被程序化唤起时发射，参数为dock内部维护的widget
     void dockWidgetRaised(QWidget* w);
+
+    // 任意 dock 内容被激活时发射（焦点变化或程序化 raise，在上下文路由前发出）
+    void dockWidgetActivated(QWidget* dockContent);
 
 public:
     // 获取当前的场景

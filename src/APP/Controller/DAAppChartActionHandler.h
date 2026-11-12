@@ -51,6 +51,8 @@ public Q_SLOTS:
     void onStatsTransferToFigureRequested();
     // 复制到剪切板
     void onActionCopyFigureToClipboardTriggered();
+    // 导出当前子图到图片文件（PNG/SVG/PDF）
+    void onActionExportChartToFileTriggered();
 
 private Q_SLOTS:
     // 添加绘图

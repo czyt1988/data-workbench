@@ -25,6 +25,11 @@
 #include <QUuid>
 #include <QTimer>
 #include <QShortcut>
+#include <QFileInfo>
+#include <QPixmap>
+#include <QPdfWriter>
+#include <QPageSize>
+#include <QSvgGenerator>
 // chart
 #include "DAChartUtil.h"
 #include "DAChartWidget.h"
@@ -1515,6 +1520,115 @@ void DAFigureWidget::copyToClipboard()
     QPixmap screenshot = figure()->grab();
     // 将截图放到剪贴板
     QApplication::clipboard()->setPixmap(screenshot);
+}
+
+/**
+ * @brief 把指定2D子图导出到文件
+ *
+ * - Png：用QWidget::grab取得子图位图后保存
+ * - Svg：用QSvgGenerator把子图渲染为矢量图
+ * - Pdf：用QPdfWriter把子图渲染为PDF（页面尺寸按96dpi换算成点，避免裁切）
+ * @param chart 要导出的2D子图
+ * @param filePath 目标文件路径
+ * @param format 导出格式
+ * @return 成功返回true；chart为空、路径为空、尺寸为0或保存失败返回false
+ */
+bool DAFigureWidget::exportChartToFile(DAChartWidget* chart, const QString& filePath, DAFigureExportFormat format)
+{
+    if (nullptr == chart || filePath.isEmpty()) {
+        return false;
+    }
+    const QSize chartSize = chart->size();
+    if (chartSize.isEmpty()) {
+        qWarning() << "DAFigureWidget::exportChartToFile: the chart size is empty, file path is" << filePath;
+        return false;
+    }
+    switch (format) {
+    case DAFigureExportFormat::Png: {
+        const QPixmap pixmap = chart->grab();
+        if (pixmap.isNull()) {
+            return false;
+        }
+        return pixmap.save(filePath, "PNG");
+    }
+    case DAFigureExportFormat::Svg: {
+        QSvgGenerator generator;
+        generator.setFileName(filePath);
+        generator.setSize(chartSize);
+        generator.setViewBox(QRect(QPoint(0, 0), chartSize));
+        generator.setResolution(96);
+        QPainter painter;
+        if (!painter.begin(&generator)) {
+            return false;
+        }
+        chart->render(&painter);
+        painter.end();
+        return true;
+    }
+    case DAFigureExportFormat::Pdf: {
+        QPdfWriter writer(filePath);
+        writer.setResolution(96);
+        // 96dpi的像素尺寸换算为点（1pt = 1/72 inch），页面与外框一致，避免渲染被裁切
+        const QSizeF pageSizeInPoint(chartSize.width() * 72.0 / 96.0, chartSize.height() * 72.0 / 96.0);
+        writer.setPageSize(QPageSize(pageSizeInPoint, QPageSize::Point));
+        writer.setPageMargins(QMarginsF(0, 0, 0, 0));
+        QPainter painter;
+        if (!painter.begin(&writer)) {
+            return false;
+        }
+        chart->render(&painter);
+        painter.end();
+        return true;
+    }
+    }
+    return false;
+}
+
+/**
+ * @brief 把指定2D子图复制到剪贴板
+ * @param chart 要复制的2D子图，为空时使用当前子图
+ * @return 成功返回true；没有可用子图或抓取失败返回false
+ */
+bool DAFigureWidget::copyChartToClipboard(DAChartWidget* chart)
+{
+    if (nullptr == chart) {
+        chart = getCurrentChart();
+    }
+    if (nullptr == chart) {
+        return false;
+    }
+    const QPixmap pixmap = chart->grab();
+    if (pixmap.isNull()) {
+        return false;
+    }
+    QApplication::clipboard()->setPixmap(pixmap);
+    return true;
+}
+
+/**
+ * @brief 根据文件后缀推断导出格式
+ * @param filePath 文件路径
+ * @return .svg返回Svg，.pdf返回Pdf，其它（含无后缀）按Png处理
+ */
+DAFigureExportFormat DAFigureWidget::exportFormatFromFilePath(const QString& filePath)
+{
+    const QString suffix = QFileInfo(filePath).suffix().toLower();
+    if (suffix == QLatin1String("svg")) {
+        return DAFigureExportFormat::Svg;
+    }
+    if (suffix == QLatin1String("pdf")) {
+        return DAFigureExportFormat::Pdf;
+    }
+    return DAFigureExportFormat::Png;
+}
+
+/**
+ * @brief 导出动作的文件对话框过滤器
+ * @return 文件对话框过滤器字符串（PNG/SVG/PDF）
+ */
+QString DAFigureWidget::exportFileFilter()
+{
+    return tr("PNG Image (*.png);;SVG Image (*.svg);;PDF Document (*.pdf)");  // cn:PNG 图片 (*.png);;SVG 图片 (*.svg);;PDF 文档 (*.pdf)
 }
 
 /**

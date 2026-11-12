@@ -265,6 +265,8 @@ void DAAppActions::buildChartAction()
 
     actionChartEnableLegend = createAction(UiNames::Action::ChartEnableLegend, ":/app/bright/Icon/chart-legend.svg", true, false);
     actionCopyFigureInClipboard = createAction(UiNames::Action::CopyFigureInClipboard, ":/app/bright/Icon/copy-figure.svg");
+    // 导出当前子图（PNG/SVG/PDF），图标复用已有的导出图标
+    actionExportChartToFile = createAction(UiNames::Action::ExportChartToFile, ":/app/bright/Icon/exportToPng.svg");
 
     // 图例位置（checkable 互斥组）
     actionGroupChartLegendPosition = new QActionGroup(this);
@@ -632,6 +634,8 @@ void DAAppActions::retranslateUi()
     actionChartEnableLegend->setToolTip(tr("Enable or disable legend in the chart"));  // cn:启用或禁用图表中的图例
     actionCopyFigureInClipboard->setText(tr("Copy To Clipboard"));                     // cn:复制到\n剪贴板
     actionCopyFigureInClipboard->setToolTip(tr("Copy the figure to the clipboard"));   // cn:将绘图复制到剪贴板
+    actionExportChartToFile->setText(tr("Export Chart"));                              // cn:导出当前子图
+    actionExportChartToFile->setToolTip(tr("Export the current sub-chart to an image file"));  // cn:把当前子图导出为图片文件
     actionChartLegendAtTop->setText(tr("Legend Top"));                                  // cn:图例在上
     actionChartLegendAtTop->setToolTip(tr("Place the legend at the top of the chart"));  // cn:图例置于图表上方
     actionChartLegendAtBottom->setText(tr("Legend Bottom"));                            // cn:图例在下

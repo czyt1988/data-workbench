@@ -33,6 +33,15 @@ class DAFigureWidgetOverlay;
 class DADataProbeMarker;
 class DAChart3DWidget;
 /**
+ * @brief 2D子图的导出格式
+ */
+enum class DAFigureExportFormat
+{
+    Png,  ///< PNG位图
+    Svg,  ///< SVG矢量图
+    Pdf   ///< PDF矢量文档
+};
+/**
  * @brief 绘图窗口
  *
  * - 绘图窗口默认会构建一个QwtFigure
@@ -197,6 +206,14 @@ public:
     DAColorTheme& colorTheme();
     // 把当前绘图复制到剪切板
     void copyToClipboard();
+    // 导出指定2D子图到文件（Png/Svg/Pdf），失败返回false
+    bool exportChartToFile(DAChartWidget* chart, const QString& filePath, DAFigureExportFormat format);
+    // 把指定2D子图复制到剪贴板（nullptr用当前子图），失败返回false
+    bool copyChartToClipboard(DAChartWidget* chart = nullptr);
+    // 根据文件后缀推断导出格式（.png/.svg/.pdf，其它按Png）
+    static DAFigureExportFormat exportFormatFromFilePath(const QString& filePath);
+    // 导出动作的文件对话框过滤器
+    static QString exportFileFilter();
     // 开始进行矩形选框交互
     void beginChartEditor(ChartEditorType type);
     // 结束chart editor

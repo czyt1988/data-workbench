@@ -30,7 +30,8 @@ da_add_library(
             ${DA_LIB_QT_UI_FILES}
             ${DA_LIB_QT_RC_FILES}
             ${CMAKE_CURRENT_SOURCE_DIR}/../DAGlobals.h
-    QT_PUBLIC Core Gui Widgets PrintSupport Concurrent OpenGL
+    # Svg: 导出当前子图时用 QSvgGenerator 生成矢量图
+    QT_PUBLIC Core Gui Widgets PrintSupport Concurrent OpenGL Svg
     LINK_PUBLIC DAPyBindQt
     LINK_PRIVATE DAUtils DAMessageHandler
     # DAWidgets 提供 DAFontEditPannelWidget/DAColorPickerButton 等基础 UI 控件，

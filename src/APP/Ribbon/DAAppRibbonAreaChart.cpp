@@ -112,6 +112,8 @@ void DAAppRibbonArea::buildContextCategoryChartStyle(SARibbonContextCategory* co
     group1->setIconSize(QSize(120, 50));
     group1->setGridSize(QSize(120, 60));
     mPanelFigureTheme->addAction(mActions->actionCopyFigureInClipboard);
+    // 导出当前子图（PNG/SVG/PDF）
+    mPanelFigureTheme->addAction(mActions->actionExportChartToFile);
     // 手动设置才能刷新当前界面的配置
     mFigureThemeGallery->setCurrentViewGroup(group1);
     mCategoryChartStyle->addPanel(mPanelFigureTheme);
@@ -166,6 +168,8 @@ void DAAppRibbonArea::updateFigureAboutRibbon(DAFigureWidget* fig)
     DAChartWidget* chart = fig->getCurrentChart();
     updateChartAboutRibbon(chart);
     mActions->actionChartLinkAllPickerEnabled->setChecked(fig->isDataPickerGroupEnabled());
+    // 网格布局下子图几何由网格轨道比例决定，自由调整子图大小不可用（Resize Chart 置灰）
+    mActions->actionChartEditorResizeSubChart->setEnabled(!fig->isGridLayoutEnabled());
 }
 
 /**

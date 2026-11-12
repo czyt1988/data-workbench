@@ -1,8 +1,10 @@
 #include "DAChartManageWidget.h"
 #include "ui_DAChartManageWidget.h"
 #include <functional>
+#include <utility>
 #include <QTreeView>
 #include <QPointer>
+#include <QSignalBlocker>
 #include <QDebug>
 #include <QMenu>
 #include <QAction>
@@ -44,6 +46,7 @@ public:
 
 public:
     QPointer< DAChartOperateWidget > mChartOptWidget;
+    bool mExternalMode { false };  ///< 外部figure列表模式：由setFigures接管，不联动DAChartOperateWidget
     bool mSetCurrentChartOnClicked { true };
     bool mSetCurrentChartOnDbClicked { true };
     QHash< QwtFigure*, DAFigureWidget* > mFigToFigWidget;             ///< 建立figure和figureWidget的关系
@@ -198,7 +201,8 @@ void DAChartManageWidget::PrivateData::updateContextMenuActions(int nodeType)
 bool DAChartManageWidget::PrivateData::rebuildTransferMenu(DAChartManageWidget* q)
 {
     mMenuTransfer->clear();
-    if (!mChartOptWidget || !mContextFigureWidget) {
+    // 外部figure列表模式下不允许跨容器转移（目标只能来自 DAChartOperateWidget，与当前管理树不一致）
+    if (mExternalMode || !mChartOptWidget || !mContextFigureWidget) {
         return false;
     }
     const QList< DAFigureWidget* > figures = mChartOptWidget->getFigureList();
@@ -260,6 +264,13 @@ DAChartManageWidget::~DAChartManageWidget()
     delete ui;
 }
 
+/**
+ * @brief 设置绘图操作窗口（内部模式）
+ *
+ * 先断开旧的绘图操作窗口并清空管理树，再按 cow 当前的 figure 列表重建。
+ * 这样启动时（列表为空）行为不变，而插件失活后用它恢复 APP 的图元树也能重建。
+ * @param cow 绘图操作窗口，可为 nullptr（等价于清空并断开）
+ */
 void DAChartManageWidget::setChartOperateWidget(DAChartOperateWidget* cow)
 {
     if (d_ptr->mChartOptWidget) {
@@ -267,9 +278,146 @@ void DAChartManageWidget::setChartOperateWidget(DAChartOperateWidget* cow)
         disconnect(old, nullptr, this, nullptr);
     }
     d_ptr->mChartOptWidget = cow;
+    d_ptr->mExternalMode   = false;
+    // 清空后按当前figure列表重建（启动时列表为空，行为与旧实现一致）
+    clearManagedFigures();
+    if (!cow) {
+        return;
+    }
     connect(cow, &DAChartOperateWidget::figureCreated, this, &DAChartManageWidget::onFigureCreated);
     connect(cow, &DAChartOperateWidget::figureRemoving, this, &DAChartManageWidget::onFigureCloseing);
     connect(cow, &DAChartOperateWidget::currentFigureChanged, this, &DAChartManageWidget::onCurrentFigureChanged);
+    const QList< DAFigureWidget* > figures = cow->getFigureList();
+    QSignalBlocker blocker(ui->comboBoxFigure);  // 重建期间不逐项触发下拉框槽
+    for (DAFigureWidget* fig : std::as_const(figures)) {
+        addManagedFigure(fig);
+    }
+    setCurrentDisplayView(cow->getCurrentFigure());
+}
+
+/**
+ * @brief 用给定的figure列表重建管理树（外部模式）
+ *
+ * 进入外部模式后会断开（但保留指针）与 DAChartOperateWidget 的连接，
+ * 之后下拉框切换只影响管理树本身，不会改 APP 绘图区的当前 figure。
+ * 插件图表面板停靠/失活时用它注入自己的 figure 列表或恢复 APP 的列表。
+ * @param figures 要管理的figure列表（按顺序进入combobox）
+ * @param current 当前figure，为空或不在列表内时取列表首项
+ */
+void DAChartManageWidget::setFigures(const QList< DAFigureWidget* >& figures, DAFigureWidget* current)
+{
+    d_ptr->mExternalMode = true;
+    if (d_ptr->mChartOptWidget) {
+        // 外部模式不监听绘图操作窗口，但保留指针，便于后续切回内部模式
+        disconnect(d_ptr->mChartOptWidget, nullptr, this, nullptr);
+    }
+    {
+        QSignalBlocker blocker(ui->comboBoxFigure);
+        clearManagedFigures();
+        for (DAFigureWidget* fig : std::as_const(figures)) {
+            addManagedFigure(fig);
+        }
+    }
+    // 当前figure：优先传入值（必须在列表内），否则取列表首项
+    DAFigureWidget* target = current;
+    if (!target || !d_ptr->mFigureWidgetToTree.contains(target)) {
+        const QList< DAFigureWidget* > managed = this->figures();
+        target = managed.isEmpty() ? nullptr : managed.first();
+    }
+    if (!target) {
+        return;
+    }
+    setCurrentDisplayView(target);
+    Q_EMIT selectFigureChanged(target);
+}
+
+/**
+ * @brief 切换当前figure（只影响管理树/树视图）
+ *
+ * 空指针或不在此管理树内的figure视为空操作，不修改 DAChartOperateWidget 的当前figure。
+ * @param figure 目标figure
+ */
+void DAChartManageWidget::setCurrentFigure(DAFigureWidget* figure)
+{
+    if (!figure) {
+        return;
+    }
+    if (!d_ptr->mFigureWidgetToTree.contains(figure)) {
+        return;
+    }
+    setCurrentDisplayView(figure);
+}
+
+/**
+ * @brief 获取当前管理树里的figure列表
+ * @return 按combobox顺序（即添加顺序）的figure列表
+ */
+QList< DAFigureWidget* > DAChartManageWidget::figures() const
+{
+    const int c = ui->comboBoxFigure->count();
+    QList< DAFigureWidget* > res;
+    res.reserve(c);
+    for (int i = 0; i < c; ++i) {
+        DAFigureWidget* fig = getComboboxFigure(i);
+        if (fig) {
+            res.append(fig);
+        }
+    }
+    return res;
+}
+
+/**
+ * @brief 把单个figure纳入管理
+ *
+ * 建树视图并挂入堆叠窗口、追加combobox项、维护 QwtFigure*→DAFigureWidget* 和
+ * DAFigureWidget*→DAFigureTreeView 两张表。重复figure会被忽略。
+ * @param fig 要纳管的figure
+ */
+void DAChartManageWidget::addManagedFigure(DAFigureWidget* fig)
+{
+    if (!fig || d_ptr->mFigureWidgetToTree.contains(fig)) {
+        return;
+    }
+    DAFigureTreeView* figTreeview = new DAFigureTreeView(this);
+    figTreeview->setFigureWidget(fig);
+    if (fig->figure()) {
+        d_ptr->mFigToFigWidget[ fig->figure() ] = fig;
+    }
+    d_ptr->mFigureWidgetToTree[ fig ] = figTreeview;
+    connect(figTreeview, &DAFigureTreeView::itemCliecked, this, &DAChartManageWidget::figureElementClicked);
+    connect(figTreeview, &DAFigureTreeView::itemDbCliecked, this, &DAChartManageWidget::figureElementDbClicked);
+    // 设置右键菜单策略
+    figTreeview->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(figTreeview, &QWidget::customContextMenuRequested, this, [ this, figTreeview ](const QPoint& pos) {
+        onTreeViewContextMenuRequested(figTreeview, pos);
+    });
+    // combobox/stackedWidget 顺序 = 添加顺序（稳定），不再依赖停靠布局索引
+    ui->stackedWidget->addWidget(figTreeview);
+
+    ui->comboBoxFigure->addItem(fig->windowTitle(), reinterpret_cast< quintptr >(fig));
+}
+
+/**
+ * @brief 清空管理树
+ *
+ * 清空combobox、堆叠窗口、两张关系表以及右键菜单上下文指针。
+ */
+void DAChartManageWidget::clearManagedFigures()
+{
+    QSignalBlocker blocker(ui->comboBoxFigure);
+    ui->comboBoxFigure->clear();
+    while (ui->stackedWidget->count() > 0) {
+        QWidget* w = ui->stackedWidget->widget(0);
+        ui->stackedWidget->removeWidget(w);
+        if (w) {
+            w->deleteLater();
+        }
+    }
+    d_ptr->mFigToFigWidget.clear();
+    d_ptr->mFigureWidgetToTree.clear();
+    d_ptr->mContextTree         = nullptr;
+    d_ptr->mContextFigureWidget = nullptr;
+    d_ptr->mContextItem         = nullptr;
 }
 
 void DAChartManageWidget::setCurrentChartOnItemClicked(bool on)
@@ -499,34 +647,23 @@ void DAChartManageWidget::setComboboxCurrentFigure(DAFigureWidget* fig)
 void DAChartManageWidget::onFigureCreated(DAFigureWidget* fig)
 {
     // figure 在 ADS 嵌套停靠下不再有稳定的线性布局索引，这里仅做存在性校验后追加
-    if (!fig || d_ptr->mChartOptWidget->getFigureIndex(fig) < 0) {
+    if (!fig || (d_ptr->mChartOptWidget && d_ptr->mChartOptWidget->getFigureIndex(fig) < 0)) {
         daCritical << tr("received figure create signal, but cannot find figure");  // cn:获取了绘图创建的信号，但无法找到绘图
         return;
     }
-
-    DAFigureTreeView* figTreeview = new DAFigureTreeView(this);
-    figTreeview->setFigureWidget(fig);
-    d_ptr->mFigToFigWidget[ fig->figure() ] = fig;
-    d_ptr->mFigureWidgetToTree[ fig ]       = figTreeview;
-    connect(figTreeview, &DAFigureTreeView::itemCliecked, this, &DAChartManageWidget::figureElementClicked);
-    connect(figTreeview, &DAFigureTreeView::itemDbCliecked, this, &DAChartManageWidget::figureElementDbClicked);
-    // 设置右键菜单策略
-    figTreeview->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(figTreeview, &QWidget::customContextMenuRequested, this, [ this, figTreeview ](const QPoint& pos) {
-        onTreeViewContextMenuRequested(figTreeview, pos);
-    });
-    // combobox/stackedWidget 顺序 = 创建顺序（稳定），不再依赖停靠布局索引
-    ui->stackedWidget->addWidget(figTreeview);
-
-    ui->comboBoxFigure->addItem(fig->windowTitle(), reinterpret_cast< quintptr >(fig));
+    addManagedFigure(fig);
 }
 
 void DAChartManageWidget::onFigureCloseing(DAFigureWidget* fig)
 {
-    DAFigureTreeView* tree = d_ptr->mFigureWidgetToTree.value(fig, nullptr);
+    DAFigureTreeView* tree = d_ptr->mFigureWidgetToTree.take(fig);
     if (!tree) {
         daCritical << tr("received figure close signal, but cannot find figure index");  // cn:获取了绘图关闭的信号，但无法找到绘图的索引
         return;
+    }
+    // 保持 QwtFigure*→DAFigureWidget* 映射与增删一致，否则 plotToFigureWidget 会失效
+    if (fig && fig->figure()) {
+        d_ptr->mFigToFigWidget.remove(fig->figure());
     }
     ui->stackedWidget->removeWidget(tree);
     tree->deleteLater();
@@ -540,6 +677,9 @@ void DAChartManageWidget::onFigureCloseing(DAFigureWidget* fig)
             break;
         }
     }
+    d_ptr->mContextTree         = nullptr;
+    d_ptr->mContextFigureWidget = nullptr;
+    d_ptr->mContextItem         = nullptr;
 }
 
 void DAChartManageWidget::onCurrentFigureChanged(DAFigureWidget* fig, int index)
@@ -607,7 +747,10 @@ void DAChartManageWidget::onComboboxCurrentIndexChanged(int index)
     if (!fig) {
         return;
     }
-    d_ptr->mChartOptWidget->setCurrentFigure(fig);
+    // 外部figure列表模式下不能联动 DAChartOperateWidget，否则会把 APP 绘图区的当前figure改成插件figure
+    if (!d_ptr->mExternalMode && d_ptr->mChartOptWidget) {
+        d_ptr->mChartOptWidget->setCurrentFigure(fig);
+    }
     setStackCurrentFigure(fig);
     Q_EMIT selectFigureChanged(fig);
 }

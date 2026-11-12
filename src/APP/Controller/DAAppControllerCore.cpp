@@ -779,8 +779,27 @@ void DAAppController::activateContextCategoryForWidget(QWidget* widget)
         mTableHandler->updateSortActionState();
     }
     if (nullptr == widget) {
+        // 焦点离开全部 dock 内容：先失活插件注册的设置上下文，再清空固定上下文标签
+        if (mDock) {
+            mDock->deactivateSettingContextProvider();
+        }
         mRibbon->hideContextCategory(DAAppRibbonArea::AllContextCategory);
         return;
+    }
+    // 插件注册的设置上下文提供者优先接管：命中后由提供者自己显示设置页/上下文标签，
+    // 此路径不再执行后面的固定窗口路由与 hideContextCategory(All)（修复插件 raise 自己
+    // dock 时把 Chart 上下文标签清空的问题）。
+    if (mDock && mDock->activateSettingContextForWidget(widget)) {
+        return;
+    }
+    // 焦点回到固定操作窗口：失活插件注册的设置上下文（恢复宿主的设置面板/图元树/上下文标签）。
+    // 其它工具 dock（设置、日志、图元树等）激活时保持插件上下文不变——与固定上下文标签
+    // 只随三个操作窗口切换的既有语义一致，也避免插件在 activateSettingContext() 里
+    // raiseDockByWidget(设置面板) 时被自身的程序化 raise 误判为「切走」。
+    if (mDock
+        && (widget == getDataOperateWidget() || widget == getWorkFlowOperateWidget()
+            || widget == getChartOperateWidget())) {
+        mDock->deactivateSettingContextProvider();
     }
     // 数据操作窗口激活时，检查是否需要显示m_contextDataFrame
     if (widget == getDataOperateWidget()) {
@@ -840,7 +859,12 @@ void DAAppController::activateUndoStackForWidget(DAAbstractOperateWidget* w)
 void DAAppController::onFocusedDockWidgetChanged(ads::CDockWidget* old, ads::CDockWidget* now)
 {
     Q_UNUSED(old);
-    activateContextCategoryForWidget(now ? now->widget() : nullptr);
+    QWidget* content = now ? now->widget() : nullptr;
+    // 路由前广播 dock 内容激活，插件可据此同步自身状态
+    if (mDock) {
+        mDock->notifyDockWidgetActivated(content);
+    }
+    activateContextCategoryForWidget(content);
 }
 
 /**
@@ -849,6 +873,10 @@ void DAAppController::onFocusedDockWidgetChanged(ads::CDockWidget* old, ads::CDo
  */
 void DAAppController::onDockWidgetRaised(QWidget* w)
 {
+    // 路由前广播 dock 内容激活（程序化 raise 时焦点可能未变化，此路径补齐广播）
+    if (mDock) {
+        mDock->notifyDockWidgetActivated(w);
+    }
     activateContextCategoryForWidget(w);
 }
 

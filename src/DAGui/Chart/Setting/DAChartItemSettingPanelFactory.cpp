@@ -20,6 +20,7 @@
 #include "Chart/Setting/DAChartLegendSettingPanel.h"
 #include "Chart/Setting/DAChartDataProbeMarkerSettingPanel.h"
 #include "Chart/Setting/DAChartTextMarkerSettingPanel.h"
+#include "Chart/Setting/DAChartGenericItemSettingPanel.h"
 #include "DADataProbeMarker.h"
 #include "DAChartTextMarker.h"
 #include "qwt_plot_item.h"
@@ -50,16 +51,22 @@ void DAChartItemSettingPanelFactory::registerPanel(int rtti, FpCreatePanel creat
 
 /**
  * @brief 根据RTTI创建对应面板
+ *
+ * 未注册的RTTI（如插件自定义图元）不会返回nullptr，而是回退到
+ * @ref DAChartGenericItemSettingPanel 通用面板，避免设置面板停留在上一个图元。
  * @param rtti QwtPlotItem的RTTI类型值
- * @return 创建的面板实例，失败返回nullptr
+ * @return 创建的面板实例（未注册时返回通用回退面板）
  */
 DAChartItemSettingPanel* DAChartItemSettingPanelFactory::createPanel(int rtti) const
 {
     auto it = mCreators.constFind(rtti);
     if (it != mCreators.constEnd() && it.value()) {
-        return it.value()();
+        if (DAChartItemSettingPanel* panel = it.value()()) {
+            return panel;
+        }
     }
-    return nullptr;
+    // 未注册（或注册的创建函数失效）：回退到通用图元面板
+    return new DAChartGenericItemSettingPanel();
 }
 
 /**
