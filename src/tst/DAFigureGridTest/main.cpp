@@ -64,6 +64,10 @@ private Q_SLOTS:
     void testSubChartEditorWorksWithoutGrid();
     // 非绘图控件通过 setGridCell 登记进网格
     void testNonPlotWidgetGridCell();
+    // 未加入 figure 的 QwtPlot 通过 setGridCell 直接按网格坐标加入
+    void testSetGridCellFreshPlot();
+    // 非法单元格：返回 false 且保持原有网格登记与几何不变
+    void testSetGridCellInvalidKeepsRegistration();
     // 3D 子图登记进网格（OpenGL 不可用时跳过）
     void testChart3DGridCell();
 
@@ -230,6 +234,23 @@ void TSTDAFigureGridTest::testEnableGridLayout()
         QVERIFY2(fuzzyEqual(v, 1.0 / 3.0),
                  qPrintable(QStringLiteral("column sizes should be 1/3, got %1").arg(sizesText(cols23))));
     }
+
+    // 幂等：行列数不变时保留当前轨道比例（不会重建为等分）
+    QVERIFY(fig->setGridSizes(QList< qreal > { 0.2, 0.8 }, QList< qreal > { 0.1, 0.2, 0.7 }));
+    QVERIFY2(fig->enableGridLayout(2, 3), "enabling the same dimensions again should be idempotent");
+    const QList< qreal > rowsIdem = fig->gridRowSizes();
+    const QList< qreal > colsIdem = fig->gridColumnSizes();
+    QVERIFY2(fuzzyEqual(rowsIdem.at(0), 0.2) && fuzzyEqual(rowsIdem.at(1), 0.8),
+             qPrintable(QStringLiteral("idempotent enableGridLayout must keep row ratios, got %1").arg(sizesText(rowsIdem))));
+    QVERIFY2(fuzzyEqual(colsIdem.at(0), 0.1) && fuzzyEqual(colsIdem.at(1), 0.2) && fuzzyEqual(colsIdem.at(2), 0.7),
+             qPrintable(QStringLiteral("idempotent enableGridLayout must keep column ratios, got %1")
+                            .arg(sizesText(colsIdem))));
+
+    // 已启用时传入非法参数：返回 false，且不破坏已启用状态与轨道
+    QVERIFY(!fig->enableGridLayout(0, 3));
+    QVERIFY(fig->isGridLayoutEnabled());
+    QCOMPARE(fig->grid()->rowCount(), 2);
+    QCOMPARE(fig->grid()->columnCount(), 3);
 }
 
 /**
@@ -649,6 +670,78 @@ void TSTDAFigureGridTest::testNonPlotWidgetGridCell()
     QVERIFY2(fuzzyRect(plain->geometry(), expectedMoved),
              qPrintable(QStringLiteral("moved widget actual=%1 expected=%2")
                             .arg(rectText(plain->geometry()), rectText(expectedMoved))));
+}
+
+/**
+ * @brief 尚未加入 figure 的 QwtPlot 通过 setGridCell 直接按网格坐标加入
+ *
+ * 覆盖 setGridCell 的「新 QwtPlot」分支（与 createChart() 后再登记的在 figure 分支不同）。
+ */
+void TSTDAFigureGridTest::testSetGridCellFreshPlot()
+{
+    QScopedPointer< DAFigureWidget > fig(new DAFigureWidget());
+    QVERIFY(initFigure(fig.data()));
+    QVERIFY(fig->enableGridLayout(2, 2));
+
+    QSignalSpy addedSpy(fig.data(), &DAFigureWidget::chartAdded);
+    QVERIFY(addedSpy.isValid());
+    // 新建但尚未加入 figure 的 chart
+    DAChartWidget* chart = new DAChartWidget();
+    QVERIFY2(chart->parentWidget() != fig->figure(), "a fresh chart should not be part of the figure yet");
+    QVERIFY2(fig->setGridCell(chart, 0, 1), "setGridCell should add a chart that is not yet in the figure");
+    QCOMPARE(chart->parentWidget(), fig->figure());
+    QVERIFY(fig->hasPlot(chart, false));
+    QCOMPARE(addedSpy.count(), 1);
+    int row = -1, col = -1;
+    QVERIFY(fig->grid()->gridPosition(chart, &row, &col, nullptr, nullptr));
+    QCOMPARE(row, 0);
+    QCOMPARE(col, 1);
+    settle(fig.data());
+    const QRect expected = expectedCellGeometry(fig.data(), 0, 1);
+    QVERIFY2(fuzzyRect(chart->geometry(), expected),
+             qPrintable(QStringLiteral("fresh chart actual=%1 expected=%2")
+                            .arg(rectText(chart->geometry()), rectText(expected))));
+
+    // 再移动到其它单元格：已在 figure 中，走网格重登记分支
+    QVERIFY(fig->setGridCell(chart, 1, 0));
+    settle(fig.data());
+    const QRect moved = expectedCellGeometry(fig.data(), 1, 0);
+    QVERIFY2(fuzzyRect(chart->geometry(), moved),
+             qPrintable(QStringLiteral("moved fresh chart actual=%1 expected=%2")
+                            .arg(rectText(chart->geometry()), rectText(moved))));
+}
+
+/**
+ * @brief 非法单元格：返回 false，且保持原有网格登记与几何不变
+ *
+ * 回归保护：setGridCell 必须先校验目标单元格再注销旧登记，否则一次越界调用就会
+ * 把子图踢出网格并让它按旧自由布局矩形叠压其它单元格。
+ */
+void TSTDAFigureGridTest::testSetGridCellInvalidKeepsRegistration()
+{
+    QScopedPointer< DAFigureWidget > fig(new DAFigureWidget());
+    QVERIFY(initFigure(fig.data()));
+    QVERIFY(fig->enableGridLayout(2, 2));
+    QWidget* plain = new QWidget();
+    QVERIFY(fig->setGridCell(plain, 0, 0));
+    settle(fig.data());
+    const QRect before = plain->geometry();
+    int row = -1, col = -1;
+    QVERIFY(fig->grid()->gridPosition(plain, &row, &col, nullptr, nullptr));
+    QCOMPARE(row, 0);
+    QCOMPARE(col, 0);
+
+    // 越界行列 / 非法跨度：全部返回 false
+    QVERIFY(!fig->setGridCell(plain, 5, 5));
+    QVERIFY(!fig->setGridCell(plain, 1, 1, 2, 1));  // 1 + 2 行 > 2
+    QVERIFY(!fig->setGridCell(plain, 0, 0, 1, 3));  // 0 + 3 列 > 2
+    QVERIFY(!fig->setGridCell(plain, -1, 0));
+    QVERIFY(!fig->setGridCell(plain, 0, 0, 0, 1));
+    // 原有登记与几何保持不变
+    QVERIFY(fig->grid()->gridPosition(plain, &row, &col, nullptr, nullptr));
+    QCOMPARE(row, 0);
+    QCOMPARE(col, 0);
+    QCOMPARE(plain->geometry(), before);
 }
 
 /**

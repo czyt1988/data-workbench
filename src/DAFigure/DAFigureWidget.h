@@ -130,7 +130,7 @@ public:
 
     // ========== 保留式网格布局（支持拖拽分隔条调整子图比例） ==========
 
-    // 启用网格布局（行/列轨道等分）；返回false表示行列数非法
+    // 启用网格布局（行列数不变时幂等；改变行列数会重建等分轨道并清空已有网格成员登记）
     bool enableGridLayout(int rows, int cols);
     // 是否已启用网格布局
     bool isGridLayoutEnabled() const;

@@ -711,27 +711,10 @@ void DAFigureWidget::remove3DChart(DAChart3DWidget* chart3d)
     chart3d->removeEventFilter(this);
     // 断开 destroyed 信号连接（add3DChart 中建立），避免 undo/redo 场景下重复连接累积
     disconnect(chart3d, &QObject::destroyed, this, nullptr);
-    // 显式从 QwtFigureLayout 中移除 layout item（参考 QwtFigure::takeAxes() 的做法）
-    // QwtFigure 没有提供 removeWidget(QWidget*) 方法，只有 removeAxes(QwtPlot*)
-    QwtFigure* fig = figure();
-    QLayout* lay = fig->layout();
-    if (lay) {
-        for (int i = 0; i < lay->count(); ++i) {
-            QLayoutItem* item = lay->itemAt(i);
-            if (!item) {
-                continue;
-            }
-            QWidget* w = item->widget();
-            if (w == chart3d) {
-                lay->removeItem(item);
-                delete item;
-                break;
-            }
-        }
+    // 从figure中移除：qwt负责注销网格登记、移除layout item、隐藏并从父窗口分离
+    if (QwtFigure* fig = figure()) {
+        fig->removeWidget(chart3d);
     }
-    // 从父窗口分离
-    chart3d->setParent(nullptr);
-    chart3d->hide();
     // 从跟踪列表中移除
     d_ptr->m_3dCharts.removeAll(chart3d);
     // 清理 current 指针
@@ -871,7 +854,9 @@ int DAFigureWidget::get3DChartCount() const
  * @return 行列数非法或figure不存在时返回false
  * @note 会重置QwtFigure的最小/最大尺寸：DAFigureWidgetSettingPanel会把qwtfig的
  *       min/max尺寸写入配置，遗留的0值会让网格子图无法铺满
- * @note 重复调用会按新的行列重建等分轨道（此前登记的网格成员被清空）
+ * @note 行列数不变时幂等（保留当前轨道比例与成员登记）；改变行列数会经qwt重建
+ *       等分轨道并清空已有网格成员登记，旧成员退回自由布局，且此前的比例撤销命令
+ *       因行列数不匹配而变成空操作
  */
 bool DAFigureWidget::enableGridLayout(int rows, int cols)
 {
@@ -880,14 +865,25 @@ bool DAFigureWidget::enableGridLayout(int rows, int cols)
     if (!fig) {
         return false;
     }
+    // 先校验参数，避免非法调用改坏已启用的状态
+    if (rows <= 0 || cols <= 0) {
+        qWarning() << "DAFigureWidget::enableGridLayout: row and column count must be positive, got" << rows << cols;
+        return false;
+    }
+    // 幂等：行列数不变时保留当前轨道比例与成员登记
+    if (d->mGridLayoutEnabled && fig->grid() && fig->grid()->rowCount() == rows
+        && fig->grid()->columnCount() == cols) {
+        return true;
+    }
+    // 重建网格前先复位figure尺寸约束：qwt enableGrid会activate布局，
+    // 若保留DAFigureWidgetSettingPanel写入的塌陷值(如max=0)会导致网格子图无法铺满
+    fig->setMinimumSize(0, 0);
+    fig->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
     d->mGridLayoutEnabled = false;
     d->mGridChangeActive = false;
     if (!fig->enableGrid(rows, cols)) {
         return false;
     }
-    // 规避DAFigureWidgetSettingPanel把qwtfig的min/max写成塌陷值后网格无法铺满
-    fig->setMinimumSize(0, 0);
-    fig->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
     // 网格接管分隔带拖拽
     fig->setGridEditable(true);
     // 网格模式由轨道决定几何，退出自由缩放编辑器
@@ -954,15 +950,26 @@ void DAFigureWidget::updateGridGeometry()
  * @param col 起始列（0基）
  * @param rowSpan 行跨度
  * @param colSpan 列跨度
- * @return 登记成功返回true；网格未启用或位置越界返回false
+ * @return 登记成功返回true；网格未启用、控件为空或位置越界返回false（失败时不改变已有登记）
  */
 bool DAFigureWidget::setGridCell(QWidget* chartOrWidget, int row, int col, int rowSpan, int colSpan)
 {
     DA_D(d);
+    if (!chartOrWidget) {
+        qWarning() << "DAFigureWidget::setGridCell: null widget";
+        return false;
+    }
     QwtFigure* fig = figure();
     QwtFigureGrid* g = fig ? fig->grid() : nullptr;
-    if (!chartOrWidget || !g || !g->isEnabled()) {
-        qWarning() << "DAFigureWidget::setGridCell: the grid layout is not enabled or the widget is null";
+    if (!g || !g->isEnabled()) {
+        qWarning() << "DAFigureWidget::setGridCell: the grid layout is not enabled";
+        return false;
+    }
+    // 先校验目标单元格：非法时保持原有网格登记不变（否则先注销再失败会丢掉原登记）
+    if (row < 0 || col < 0 || rowSpan <= 0 || colSpan <= 0 || row + rowSpan > g->rowCount()
+        || col + colSpan > g->columnCount()) {
+        qWarning() << "DAFigureWidget::setGridCell: cell" << row << col << rowSpan << colSpan << "does not fit the grid"
+                   << g->rowCount() << "x" << g->columnCount();
         return false;
     }
     const bool inFigure = (chartOrWidget->parentWidget() == fig);
@@ -972,6 +979,10 @@ bool DAFigureWidget::setGridCell(QWidget* chartOrWidget, int row, int col, int r
         // 已在figure中：只更新网格登记，不重建layout item
         const bool ok = g->addItem(chartOrWidget, row, col, rowSpan, colSpan);
         if (ok) {
+            // qwt只在addWidget/removeWidget时重扫分隔条监视的成员控件，移动单元格后需强制刷新
+            if (fig->isGridEditable()) {
+                fig->setGridEditable(true);
+            }
             updateGridGeometry();
         }
         return ok;
@@ -992,9 +1003,9 @@ bool DAFigureWidget::setGridCell(QWidget* chartOrWidget, int row, int col, int r
         return ok;
     }
     if (DAChart3DWidget* chart3d = qobject_cast< DAChart3DWidget* >(chartOrWidget)) {
-        // 复用add3DChart完成3D激活/事件过滤/信号等登记，再改为网格成员
+        // 复用add3DChart完成3D激活/事件过滤/信号等登记，再改为网格成员；
+        // 单元格已在上方校验过，add3DChart之后不会出现网格登记失败
         add3DChart(chart3d, g->normRectFor(row, col, rowSpan, colSpan));
-        g->removeItem(chart3d);
         const bool ok = g->addItem(chart3d, row, col, rowSpan, colSpan);
         if (ok) {
             updateGridGeometry();
