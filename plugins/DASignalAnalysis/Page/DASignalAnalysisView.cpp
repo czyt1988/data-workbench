@@ -3,20 +3,14 @@
 #include <limits>
 #include <utility>
 #include <QApplication>
-#include <QCheckBox>
-#include <QComboBox>
-#include <QDoubleSpinBox>
 #include <QEvent>
 #include <QFrame>
-#include <QLabel>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QPixmap>
 #include <QResizeEvent>
 #include <QShowEvent>
-#include <QSlider>
 #include <QTimer>
-#include <QToolBar>
 #include <QVBoxLayout>
 #include <QDebug>
 // qwt
@@ -89,7 +83,6 @@ DASignalAnalysisView::DASignalAnalysisView(const DASignalPtr& signal, QWidget* p
 {
     buildUI();
     retranslateUi();
-    syncTemporaryToolbar();
 }
 
 DASignalAnalysisView::~DASignalAnalysisView()
@@ -203,7 +196,7 @@ void DASignalAnalysisView::updateSignalPeaks()
 }
 
 /**
- * @brief 构建视图布局：figure 网格 + T7 临时底部工具栏
+ * @brief 构建视图布局：figure 网格（T8 起控件的入口在 Ribbon 上下文标签与窗口底部工具栏）
  */
 void DASignalAnalysisView::buildUI()
 {
@@ -213,9 +206,6 @@ void DASignalAnalysisView::buildUI()
 
     buildFigure();
     lay->addWidget(mFigure, 1);
-
-    buildTemporaryToolbar();
-    lay->addWidget(mTempToolbar);
 
     // 尺寸变化防抖后重算包络
     mResizeDebounce = new QTimer(this);
@@ -293,91 +283,6 @@ void DASignalAnalysisView::buildFigure()
     });
     // STFT 窗口矩形整体拖动（D30）：在画布上监听鼠标，命中矩形内才进入拖动
     mWaveChart->canvas()->installEventFilter(this);
-}
-
-/**
- * @brief T7 临时底部工具栏：承载原标题行/波形底部的内联控件
- *
- * TODO(T8)：删除本函数与 mTempToolbar 相关成员，控件迁到 Ribbon 上下文标签与窗口底部工具栏。
- * 所有控件只读写成员状态，删除后 setter/getter 语义不变。
- */
-void DASignalAnalysisView::buildTemporaryToolbar()
-{
-    mTempToolbar = new QToolBar(this);
-    mTempToolbar->setObjectName(QStringLiteral("da-signal-view-temporary-toolbar"));
-    mTempToolbar->setMovable(false);
-    mTempToolbar->setFloatable(false);
-    mTempToolbar->setIconSize(QSize(16, 16));
-
-    // 通道选择：一次分析一个通道（方案 §2.1）
-    mChannelCombo = new QComboBox(mTempToolbar);
-    mChannelCombo->setObjectName(QStringLiteral("da-signal-channel-combo"));
-    const QStringList chNames = channelNames();
-    for (int i = 0; i < chNames.size(); ++i) {
-        mChannelCombo->addItem(chNames.at(i), i);
-    }
-    mChannelCombo->setEnabled(chNames.size() > 1);
-    mChannelCombo->setToolTip(tr("Channel"));  // cn:通道
-    mTempToolbar->addWidget(mChannelCombo);
-    connect(mChannelCombo, QOverload< int >::of(&QComboBox::currentIndexChanged), this, [this](int) {
-        if (mChannelCombo) {
-            setCurrentChannel(mChannelCombo->currentData().toInt());
-        }
-    });
-
-    // 频率轴线性/对数切换（方案 D16）
-    mFreqAxisCombo = new QComboBox(mTempToolbar);
-    mFreqAxisCombo->addItem(QStringLiteral("Linear"), false);  // cn:线性
-    mFreqAxisCombo->addItem(QStringLiteral("Log"), true);      // cn:对数
-    mFreqAxisCombo->setToolTip(tr("Frequency axis"));          // cn:频率轴
-    mTempToolbar->addWidget(mFreqAxisCombo);
-    connect(mFreqAxisCombo, QOverload< int >::of(&QComboBox::currentIndexChanged), this, [this](int) {
-        if (mFreqAxisCombo) {
-            setLogFrequency(mFreqAxisCombo->currentData().toBool());
-        }
-    });
-
-    // 色带选择（默认 Viridis）与 dB 动态范围下限
-    mColormapCombo = new QComboBox(mTempToolbar);
-    const QStringList presets = QwtColorMapPreset::availablePresets();
-    for (const QString& name : presets) {
-        mColormapCombo->addItem(name, name);
-    }
-    mColormapCombo->setToolTip(tr("Color map"));  // cn:色带
-    mTempToolbar->addWidget(mColormapCombo);
-    connect(mColormapCombo, QOverload< int >::of(&QComboBox::currentIndexChanged), this, [this](int) {
-        if (mColormapCombo) {
-            setColormapName(mColormapCombo->currentData().toString());
-        }
-    });
-
-    mDbFloorSpin = new QDoubleSpinBox(mTempToolbar);
-    mDbFloorSpin->setRange(-200.0, 0.0);
-    mDbFloorSpin->setDecimals(0);
-    mDbFloorSpin->setSingleStep(5.0);
-    mDbFloorSpin->setToolTip(tr("Lower dB limit"));  // cn:dB 下限
-    mTempToolbar->addWidget(mDbFloorSpin);
-    connect(mDbFloorSpin, QOverload< double >::of(&QDoubleSpinBox::valueChanged), this, [this](double v) {
-        setDbFloor(v);
-    });
-
-    // 跟随滑块（频谱显示当前帧）与热图随播放滚动（D13 / D27，默认关）
-    mFollowSliderCheck = new QCheckBox(tr("Follow slider"), mTempToolbar);  // cn:跟随滑块
-    mTempToolbar->addWidget(mFollowSliderCheck);
-    connect(mFollowSliderCheck, &QCheckBox::toggled, this, [this](bool on) { setFollowSlider(on); });
-
-    mAutoScrollCheck = new QCheckBox(tr("Follow playback"), mTempToolbar);  // cn:随播放滚动
-    mTempToolbar->addWidget(mAutoScrollCheck);
-    connect(mAutoScrollCheck, &QCheckBox::toggled, this, [this](bool on) { setHeatmapAutoScroll(on); });
-
-    // 时间滑块：以毫秒为范围（评审 U13：固定 0–1000 时 1 小时信号单步 3.6 秒，定位精度差）
-    mTimeSlider = new QSlider(Qt::Horizontal, mTempToolbar);
-    const int durationMs = mSignal ? qMax(1, int(qRound64(mSignal->duration() * 1000.0))) : 1000;
-    mTimeSlider->setRange(0, durationMs);
-    mTimeSlider->setValue(0);
-    mTimeSlider->setMinimumWidth(240);
-    mTempToolbar->addWidget(mTimeSlider);
-    connect(mTimeSlider, &QSlider::valueChanged, this, [this](int value) { setCurrentTime(value / 1000.0); });
 }
 
 /**
@@ -589,14 +494,6 @@ void DASignalAnalysisView::setLogFrequency(bool on)
             mSpectrumChart->setAxisScaleEngine(QwtPlot::xBottom, new QwtLinearScaleEngine());
         }
     }
-    if (mFreqAxisCombo) {
-        const int idx = mFreqAxisCombo->findData(on);
-        if (idx >= 0 && idx != mFreqAxisCombo->currentIndex()) {
-            const bool blocked = mFreqAxisCombo->blockSignals(true);
-            mFreqAxisCombo->setCurrentIndex(idx);
-            mFreqAxisCombo->blockSignals(blocked);
-        }
-    }
     rebuildSpectrumPlot();
 }
 
@@ -617,14 +514,6 @@ void DASignalAnalysisView::setColormapName(const QString& name)
         return;
     }
     mColormapName = name;
-    if (mColormapCombo) {
-        const int idx = mColormapCombo->findData(name);
-        if (idx >= 0 && idx != mColormapCombo->currentIndex()) {
-            const bool blocked = mColormapCombo->blockSignals(true);
-            mColormapCombo->setCurrentIndex(idx);
-            mColormapCombo->blockSignals(blocked);
-        }
-    }
     applyHeatmapColors();
 }
 
@@ -642,11 +531,6 @@ double DASignalAnalysisView::dbFloor() const
 void DASignalAnalysisView::setDbFloor(double dbFloor)
 {
     mDbFloor = dbFloor;
-    if (mDbFloorSpin) {
-        const bool blocked = mDbFloorSpin->blockSignals(true);
-        mDbFloorSpin->setValue(dbFloor);
-        mDbFloorSpin->blockSignals(blocked);
-    }
     applyHeatmapColors();
 }
 
@@ -676,11 +560,6 @@ double DASignalAnalysisView::signalPeak() const
 void DASignalAnalysisView::setHeatmapAutoScroll(bool on)
 {
     mHeatmapAutoScroll = on;
-    if (mAutoScrollCheck && mAutoScrollCheck->isChecked() != on) {
-        const bool blocked = mAutoScrollCheck->blockSignals(true);
-        mAutoScrollCheck->setChecked(on);
-        mAutoScrollCheck->blockSignals(blocked);
-    }
     if (mHeatmapChart) {
         if (!on) {
             mHeatmapChart->setAxisAutoScale(QwtPlot::xBottom, true);
@@ -703,11 +582,6 @@ void DASignalAnalysisView::setFollowSlider(bool on)
         return;
     }
     mFollowSlider = on;
-    if (mFollowSliderCheck && mFollowSliderCheck->isChecked() != on) {
-        const bool blocked = mFollowSliderCheck->blockSignals(true);
-        mFollowSliderCheck->setChecked(on);
-        mFollowSliderCheck->blockSignals(blocked);
-    }
     rebuildSpectrumPlot();
     // 专用信号（不用 currentTimeChanged）：避免被外部当作 seek 而暂停播放（评审 §七-2）
     Q_EMIT followSliderToggled(on);
@@ -1105,14 +979,6 @@ void DASignalAnalysisView::setCurrentChannel(int channel)
     }
     const int count = qMax(1, mSignal->channelCount());
     channel         = qBound(0, channel, count - 1);
-    if (mChannelCombo) {
-        const int idx = mChannelCombo->findData(channel);
-        if (idx >= 0 && idx != mChannelCombo->currentIndex()) {
-            const bool blocked = mChannelCombo->blockSignals(true);
-            mChannelCombo->setCurrentIndex(idx);
-            mChannelCombo->blockSignals(blocked);
-        }
-    }
     if (channel == mCurrentChannel) {
         return;
     }
@@ -1191,14 +1057,6 @@ void DASignalAnalysisView::setCurrentTime(double seconds)
     const double dur = mSignal->duration();
     seconds          = qBound(0.0, seconds, dur);
     mCurrentTimeSeconds = seconds;
-    if (mTimeSlider) {
-        const int value = int(qRound(seconds * 1000.0));
-        if (mTimeSlider->value() != value) {
-            const bool blocked = mTimeSlider->blockSignals(true);
-            mTimeSlider->setValue(value);
-            mTimeSlider->blockSignals(blocked);
-        }
-    }
     updatePlayhead();
     Q_EMIT currentTimeChanged(mCurrentTimeSeconds);
 }
@@ -1214,14 +1072,6 @@ void DASignalAnalysisView::setPlayheadFromPlayback(double seconds)
     const double dur = mSignal->duration();
     seconds          = qBound(0.0, seconds, dur);
     mCurrentTimeSeconds = seconds;
-    if (mTimeSlider) {
-        const int value = int(qRound(seconds * 1000.0));
-        if (mTimeSlider->value() != value) {
-            const bool blocked = mTimeSlider->blockSignals(true);
-            mTimeSlider->setValue(value);
-            mTimeSlider->blockSignals(blocked);
-        }
-    }
     updatePlayhead();
 }
 
@@ -1384,53 +1234,7 @@ void DASignalAnalysisView::setGridSizes(const QList< qreal >& rows, const QList<
     if (!mFigure) {
         return;
     }
-    if (mFigure->setGridSizes(rows, cols)) {
-        mGridSizesApplied = true;
-    }
-}
-
-/**
- * @brief 兼容旧存档接口：行比例换算为千分比整数（T7 临时保留，T8 删除）
- */
-QList< int > DASignalAnalysisView::verticalSplitterSizes() const
-{
-    QList< int > res;
-    for (qreal v : gridRowSizes()) {
-        res.append(qRound(v * 1000.0));
-    }
-    return res;
-}
-
-/**
- * @brief 兼容旧存档接口：列比例换算为千分比整数（T7 临时保留，T8 删除）
- */
-QList< int > DASignalAnalysisView::horizontalSplitterSizes() const
-{
-    QList< int > res;
-    for (qreal v : gridColumnSizes()) {
-        res.append(qRound(v * 1000.0));
-    }
-    return res;
-}
-
-/**
- * @brief 兼容旧存档接口：按比例（旧存档可能是像素值，内部归一化）恢复网格比例（T7 临时保留，T8 删除）
- */
-void DASignalAnalysisView::setSplitterSizes(const QList< int >& vertical, const QList< int >& horizontal)
-{
-    QList< qreal > rows;
-    rows.reserve(vertical.size());
-    for (int v : vertical) {
-        rows.append(qreal(v));
-    }
-    QList< qreal > cols;
-    cols.reserve(horizontal.size());
-    for (int v : horizontal) {
-        cols.append(qreal(v));
-    }
-    if (!rows.isEmpty() && !cols.isEmpty()) {
-        setGridSizes(rows, cols);
-    }
+    mFigure->setGridSizes(rows, cols);
 }
 
 void DASignalAnalysisView::onFigureCurrentChartChanged(DA::DAChartWidget* chart)
@@ -1499,76 +1303,8 @@ void DASignalAnalysisView::changeEvent(QEvent* e)
     QWidget::changeEvent(e);
 }
 
-/**
- * @brief 让临时工具栏控件反映当前成员状态（程序化 setter 与控件同步用）
- */
-void DASignalAnalysisView::syncTemporaryToolbar()
-{
-    if (mChannelCombo) {
-        const int idx = mChannelCombo->findData(mCurrentChannel);
-        if (idx >= 0 && idx != mChannelCombo->currentIndex()) {
-            const bool blocked = mChannelCombo->blockSignals(true);
-            mChannelCombo->setCurrentIndex(idx);
-            mChannelCombo->blockSignals(blocked);
-        }
-    }
-    if (mFreqAxisCombo) {
-        const int idx = mFreqAxisCombo->findData(mLogFrequency);
-        if (idx >= 0 && idx != mFreqAxisCombo->currentIndex()) {
-            const bool blocked = mFreqAxisCombo->blockSignals(true);
-            mFreqAxisCombo->setCurrentIndex(idx);
-            mFreqAxisCombo->blockSignals(blocked);
-        }
-    }
-    if (mColormapCombo) {
-        const int idx = mColormapCombo->findData(mColormapName);
-        if (idx >= 0 && idx != mColormapCombo->currentIndex()) {
-            const bool blocked = mColormapCombo->blockSignals(true);
-            mColormapCombo->setCurrentIndex(idx);
-            mColormapCombo->blockSignals(blocked);
-        }
-    }
-    if (mDbFloorSpin) {
-        const bool blocked = mDbFloorSpin->blockSignals(true);
-        mDbFloorSpin->setValue(mDbFloor);
-        mDbFloorSpin->blockSignals(blocked);
-    }
-    if (mFollowSliderCheck && mFollowSliderCheck->isChecked() != mFollowSlider) {
-        const bool blocked = mFollowSliderCheck->blockSignals(true);
-        mFollowSliderCheck->setChecked(mFollowSlider);
-        mFollowSliderCheck->blockSignals(blocked);
-    }
-    if (mAutoScrollCheck && mAutoScrollCheck->isChecked() != mHeatmapAutoScroll) {
-        const bool blocked = mAutoScrollCheck->blockSignals(true);
-        mAutoScrollCheck->setChecked(mHeatmapAutoScroll);
-        mAutoScrollCheck->blockSignals(blocked);
-    }
-    if (mTimeSlider) {
-        const int value = int(qRound(mCurrentTimeSeconds * 1000.0));
-        if (mTimeSlider->value() != value) {
-            const bool blocked = mTimeSlider->blockSignals(true);
-            mTimeSlider->setValue(value);
-            mTimeSlider->blockSignals(blocked);
-        }
-    }
-}
-
 void DASignalAnalysisView::retranslateUi()
 {
-    if (mFreqAxisCombo) {
-        mFreqAxisCombo->setItemText(0, tr("Linear"));  // cn:线性
-        mFreqAxisCombo->setItemText(1, tr("Log"));     // cn:对数
-    }
-    if (mFollowSliderCheck) {
-        mFollowSliderCheck->setText(tr("Follow slider"));  // cn:跟随滑块
-        mFollowSliderCheck->setToolTip(tr("Show the current frame instead of the whole signal"));
-        // cn:显示当前帧而不是整段信号
-    }
-    if (mAutoScrollCheck) {
-        mAutoScrollCheck->setText(tr("Follow playback"));  // cn:随播放滚动
-        mAutoScrollCheck->setToolTip(tr("Scroll the time-frequency view while playback advances"));
-        // cn:播放推进时平移时频图的时间轴
-    }
     if (mEnvelopeCurve) {
         mEnvelopeCurve->setTitle(tr("Envelope"));  // cn:包络
     }

@@ -3,8 +3,13 @@
 #include <QMenu>
 #include <QActionGroup>
 #include <cmath>
+#include <limits>
 #include <utility>
+#include <QCheckBox>
+#include <QColor>
+#include <QComboBox>
 #include <QDebug>
+#include <QDoubleSpinBox>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QIcon>
@@ -12,9 +17,13 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QMainWindow>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QSignalBlocker>
+#include <QSlider>
 #include <QStandardPaths>
+#include <QToolBar>
 #include "DAPybind11InQt.h"
 #include "DAPyModule.h"
 #include "DAPyObjectWrapper.h"
@@ -24,7 +33,9 @@
 // SARibbon
 #include "SARibbonBar.h"
 #include "SARibbonCategory.h"
+#include "SARibbonContextCategory.h"
 #include "SARibbonPanel.h"
+#include "SARibbonTabBar.h"
 // ADS
 #include "DockManager.h"
 #include "DockWidget.h"
@@ -38,9 +49,16 @@
 #include "DAProjectInterface.h"
 #include "DAStatusBarInterface.h"
 #include "DockAreaWidget.h"
+// DAFigure / DAGui / qwt
+#include "DAChartWidget.h"
+#include "DAFigureWidget.h"
+#include "DADialogChartGuide.h"
+#include "qwt_colormap_preset.h"
+#include "qwt_plot_item.h"
 // DASignalAnalysis
 #include "Page/DASignalAnalysisPage.h"
 #include "Page/DASignalAnalysisView.h"
+#include "Page/DASignalAnalysisSettingContext.h"
 #include "Page/DAPeakDockWidget.h"
 #include "Dialogs/DASignalImportDialog.h"
 #include "Dialogs/DASignalAnalysisSettingDialog.h"
@@ -62,12 +80,19 @@ const char* const cPanelSignalName         = "da-panel-signal.signal";
 const char* const cPanelPlaybackName       = "da-panel-signal.playback";
 const char* const cPanelAnalysisName       = "da-panel-signal.analysis";
 const char* const cPanelPeaksName          = "da-panel-signal.peaks";
-const char* const cPanelDisplayName        = "da-panel-signal.display";
 const char* const cPanelExportName         = "da-panel-signal.export";
 const char* const cPageDockObjectName      = "da-dock-signal-analysis-page";
+// 插件自建的 Ribbon 上下文标签（SARibbon 按 objectName 查找，任务卡固定值）
+const char* const cContextCategoryObjectName = "ContextCategorySignalAnalysis";
+const char* const cContextPageObjectName     = "da-category-signal-context";
+const char* const cPanelContextDisplayName   = "da-panel-signal-context.display";
+const char* const cPanelContextToolsName     = "da-panel-signal-context.tools";
+// 窗口底部播放工具栏
+const char* const cToolbarObjectName = "da-signal-playback-toolbar";
 
 // 图标资源前缀
-const char* const cIconPrefix = ":/DASignalAnalysis/icon/";
+const char* const cIconPrefix  = ":/DASignalAnalysis/icon/";
+const char* const cAppIconPath = ":/app/bright/Icon/";
 // 内存预算（方案 §11 / 评审 D5 / N-C1c）：频谱、峰值表、包络与热图共用同一预算门
 constexpr qint64 cAnalysisBudgetBytes = qint64(1.5 * 1024 * 1024 * 1024);
 // 内存预算判定（QHash 值）：0=未询问 / 1=用户已确认继续 / 2=用户拒绝
@@ -152,31 +177,25 @@ bool DASignalAnalysisUI::initialize(DACoreInterface* core)
     if (actionExportImage) {
         connect(actionExportImage, &QAction::triggered, this, &DASignalAnalysisUI::exportImage);
     }
-    // 瀑布模式切换（二维 / 三维 / 隐藏）
+    // 瀑布模式切换（二维 / 三维 / 隐藏；动作位于上下文标签 Display 组）
     if (actionWaterfall2D) {
         connect(actionWaterfall2D, &QAction::triggered, this, [this]() {
-            if (mPage) {
-                if (DASignalAnalysisView* v = mPage->viewForSignal(mPage->currentSignal().get())) {
-                    v->setWaterfallMode(0);
-                }
+            if (DASignalAnalysisView* view = currentView()) {
+                view->setWaterfallMode(0);
             }
         });
     }
     if (actionWaterfall3D) {
         connect(actionWaterfall3D, &QAction::triggered, this, [this]() {
-            if (mPage) {
-                if (DASignalAnalysisView* v = mPage->viewForSignal(mPage->currentSignal().get())) {
-                    v->setWaterfallMode(1);
-                }
+            if (DASignalAnalysisView* view = currentView()) {
+                view->setWaterfallMode(1);
             }
         });
     }
     if (actionWaterfallHide) {
         connect(actionWaterfallHide, &QAction::triggered, this, [this]() {
-            if (mPage) {
-                if (DASignalAnalysisView* v = mPage->viewForSignal(mPage->currentSignal().get())) {
-                    v->setWaterfallMode(2);
-                }
+            if (DASignalAnalysisView* view = currentView()) {
+                view->setWaterfallMode(2);
             }
         });
     }
@@ -198,10 +217,8 @@ bool DASignalAnalysisUI::initialize(DACoreInterface* core)
     if (actionStop) {
         connect(actionStop, &QAction::triggered, this, [this]() {
             mPlayer->stop();
-            if (mPage) {
-                if (DASignalAnalysisView* v = mPage->viewForSignal(mPage->currentSignal().get())) {
-                    v->setCurrentTime(0.0);
-                }
+            if (DASignalAnalysisView* view = currentView()) {
+                view->setCurrentTime(0.0);
             }
         });
     }
@@ -264,6 +281,121 @@ bool DASignalAnalysisUI::initialize(DACoreInterface* core)
 DASignalAnalysisPage* DASignalAnalysisUI::page() const
 {
     return mPage;
+}
+
+/**
+ * @brief 当前信号对应的视图（页面未创建/无当前信号时返回 nullptr）
+ *
+ * provider 与 Ribbon 上下文标签、底部工具栏共用此入口；所有跨指针访问都要判空。
+ */
+DASignalAnalysisView* DASignalAnalysisUI::currentView() const
+{
+    if (nullptr == mPage) {
+        return nullptr;
+    }
+    const DASignalPtr sig = mPage->currentSignal();
+    if (!sig) {
+        return nullptr;
+    }
+    return mPage->viewForSignal(sig.get());
+}
+
+/**
+ * @brief 全部信号的 figure（设置上下文图元树用）
+ *
+ * 无页面/无信号时返回空列表；figure 的所有权仍在各视图，调用方不得释放。
+ */
+QList< DAFigureWidget* > DASignalAnalysisUI::signalFigures() const
+{
+    QList< DAFigureWidget* > figures;
+    if (nullptr == mPage) {
+        return figures;
+    }
+    const QList< DASignalPtr > signalList = mPage->allSignals();
+    for (const DASignalPtr& sig : signalList) {
+        if (!sig) {
+            continue;
+        }
+        if (DASignalAnalysisView* view = mPage->viewForSignal(sig.get())) {
+            if (DAFigureWidget* figure = view->figure()) {
+                figures.append(figure);
+            }
+        }
+    }
+    return figures;
+}
+
+/**
+ * @brief 宿主停靠区接口（provider 注册设置上下文/图元树/设置面板用）
+ * @return 未初始化界面时返回 nullptr
+ */
+DADockingAreaInterface* DASignalAnalysisUI::getDockingArea() const
+{
+    return mUI ? mUI->getDockingArea() : nullptr;
+}
+
+/**
+ * @brief 显示/隐藏插件 Ribbon 上下文标签
+ *
+ * 优先走宿主接口 DARibbonAreaInterface::showContextCategory/hideContextCategory(objectName)
+ * （上下文标签只能按 objectName 查找），失败时退回 SARibbonBar 的指针版本。
+ * 显示时把上下文页设为当前页（showContextCategory 只追加 tab、不切换当前页），
+ * 并同步一次控件状态，保证与当前视图一致。
+ * @param on true 显示，false 隐藏
+ */
+void DASignalAnalysisUI::setSignalContextCategoryVisible(bool on)
+{
+    if (nullptr == mContextCategory || nullptr == mUI) {
+        return;
+    }
+    DARibbonAreaInterface* ribbonArea = mUI->getRibbonArea();
+    if (nullptr == ribbonArea) {
+        return;
+    }
+    SARibbonBar* ribbon = ribbonArea->ribbonBar();
+    if (nullptr == ribbon) {
+        return;
+    }
+    const QString objName = QString::fromUtf8(cContextCategoryObjectName);
+    if (!on) {
+        if (!ribbonArea->hideContextCategory(objName)) {
+            ribbon->hideContextCategory(mContextCategory);
+        }
+        return;
+    }
+    const bool alreadyVisible = ribbon->isContextCategoryVisible(mContextCategory);
+    const QList< int > before = ribbon->currentVisibleContextCategoryTabIndexs();
+    if (!ribbonArea->showContextCategory(objName)) {
+        ribbon->showContextCategory(mContextCategory);
+    }
+    if (!alreadyVisible) {
+        const QList< int > after = ribbon->currentVisibleContextCategoryTabIndexs();
+        for (int index : after) {
+            if (!before.contains(index)) {
+                ribbon->ribbonTabBar()->setCurrentIndex(index);
+                break;
+            }
+        }
+    }
+    syncSignalContextControls();
+}
+
+/**
+ * @brief 显示/隐藏窗口底部播放工具栏
+ *
+ * 只切可见性；显示前从当前视图回填控件状态（阻断信号防回环）。工具栏在
+ * 页面惰性创建时建立，未创建页面时调用是安全的空操作。
+ * @param on true 显示，false 隐藏
+ */
+void DASignalAnalysisUI::setSignalToolbarVisible(bool on)
+{
+    if (nullptr == mSignalToolbar) {
+        return;
+    }
+    if (on) {
+        syncSignalToolbar();
+    }
+    mSignalToolbar->setVisible(on);
 }
 
 // ---------------------------------------------------------------- 导入
@@ -500,36 +632,64 @@ void DASignalAnalysisUI::connectSignalView(const DASignalPtr& sig)
     if (!mLastColormap.isEmpty()) {
         view->setColormapName(mLastColormap);  // 插件偏好：上次色带（P2）
     }
-    connect(view, &DASignalAnalysisView::spectrumRequested, this, &DASignalAnalysisUI::onViewRequestSpectrum);
-    connect(view, &DASignalAnalysisView::envelopeRequested, this, &DASignalAnalysisUI::onViewRequestEnvelope);
-    connect(view, &DASignalAnalysisView::heatmapRequested, this, &DASignalAnalysisUI::onViewRequestHeatmap);
-    connect(view, &DASignalAnalysisView::currentTimeChanged, this, &DASignalAnalysisUI::onViewTimeChanged);
-    connect(view, &DASignalAnalysisView::channelChanged, this, &DASignalAnalysisUI::onViewChannelChanged);
-    // 「跟随滑块」只刷新峰值表显示，不触发 seek；关闭方向要恢复整段峰值（评审 N-U4）
-    connect(view, &DASignalAnalysisView::followSliderToggled, this, [this](bool on) {
-        if (on) {
-            updatePeaksForCurrentFrame();
-            return;
-        }
-        DASignalPtr current = (mPage) ? mPage->currentSignal() : DASignalPtr();
-        DASignalAnalysisView* currentView =
-            (mPage && current) ? mPage->viewForSignal(current.get()) : nullptr;
-        // 关闭跟随：峰值表回整段、隐藏时间列、频谱图峰值标记恢复整段（D13/评审 N-U4）
-        DAPeakResult peaks;
-        if (current && mCurrentPeaksSignal == current.get()) {
-            peaks = mCurrentPeaks;
-        }
-        if (mPeakPanel) {
-            mPeakPanel->setShowTimeColumn(false);
-            mPeakPanel->setPeaks(peaks);
-            mPeakPanel->setPeakCurves(mCurrentCurves);
-        }
-        if (currentView) {
-            currentView->setPeaks(peaks);
-        }
-    });
+    // 峰值标记开关由 UI 记录（视图无 getter）：新视图按当前开关状态应用
+    view->setPeakMarkersVisible(mPeakMarkersVisible);
+    // 同一视图可能因重新指定来源/重复激活多次连接：成员槽用 UniqueConnection 防重复触发
+    connect(view, &DASignalAnalysisView::spectrumRequested, this, &DASignalAnalysisUI::onViewRequestSpectrum, Qt::UniqueConnection);
+    connect(view, &DASignalAnalysisView::envelopeRequested, this, &DASignalAnalysisUI::onViewRequestEnvelope, Qt::UniqueConnection);
+    connect(view, &DASignalAnalysisView::heatmapRequested, this, &DASignalAnalysisUI::onViewRequestHeatmap, Qt::UniqueConnection);
+    connect(view, &DASignalAnalysisView::currentTimeChanged, this, &DASignalAnalysisUI::onViewTimeChanged, Qt::UniqueConnection);
+    connect(view, &DASignalAnalysisView::channelChanged, this, &DASignalAnalysisUI::onViewChannelChanged, Qt::UniqueConnection);
+    // 「跟随滑块」只刷新峰值表显示，不触发 seek；同时回勾底部工具栏的「跟随播放」
+    connect(view, &DASignalAnalysisView::followSliderToggled, this, &DASignalAnalysisUI::onViewFollowSliderToggled, Qt::UniqueConnection);
+    // 当前 2D/3D 子图切换：上下文标签的工具动作/瀑布勾选跟随
+    connect(view, &DASignalAnalysisView::currentSubChartChanged, this, &DASignalAnalysisUI::onViewSubChartChanged, Qt::UniqueConnection);
+    // 视图创建/切换后与上下文标签、窗口底部工具栏对齐
+    syncSignalContextControls();
+    syncSignalToolbar();
     // 连接就绪后再发起首次计算（视图显示早于 connect，showEvent 里的请求会丢）
     view->requestInitialAnalysis();
+}
+
+/**
+ * @brief 「跟随滑块」开关变化：回勾底部工具栏，并在关闭时把峰值表恢复为整段
+ *
+ * 开启方向只刷新当前帧的峰值表；关闭方向要把整段峰值（表/曲线/频谱标记）恢复回来，
+ * 否则频谱图与峰值表会停在最后一帧（D13 / 评审 N-U4）。
+ */
+void DASignalAnalysisUI::onViewFollowSliderToggled(bool on)
+{
+    if (mToolbarFollowCheck) {
+        const QSignalBlocker blocker(mToolbarFollowCheck);
+        mToolbarFollowCheck->setChecked(on);
+    }
+    if (on) {
+        updatePeaksForCurrentFrame();
+        return;
+    }
+    const DASignalPtr current = (mPage) ? mPage->currentSignal() : DASignalPtr();
+    DASignalAnalysisView* currentSigView = (mPage && current) ? mPage->viewForSignal(current.get()) : nullptr;
+    // 关闭跟随：峰值表回整段、隐藏时间列、频谱图峰值标记恢复整段（D13/评审 N-U4）
+    DAPeakResult peaks;
+    if (current && mCurrentPeaksSignal == current.get()) {
+        peaks = mCurrentPeaks;
+    }
+    if (mPeakPanel) {
+        mPeakPanel->setShowTimeColumn(false);
+        mPeakPanel->setPeaks(peaks);
+        mPeakPanel->setPeakCurves(mCurrentCurves);
+    }
+    if (currentSigView) {
+        currentSigView->setPeaks(peaks);
+    }
+}
+
+/**
+ * @brief 当前 2D/3D 子图切换：同步上下文标签的工具动作/瀑布勾选
+ */
+void DASignalAnalysisUI::onViewSubChartChanged()
+{
+    syncSignalContextControls();
 }
 
 /**
@@ -563,6 +723,9 @@ void DASignalAnalysisUI::onSignalRemoved(const DASignalPtr& signal)
     }
     syncPlayerSource();
     updateRelinkActionState();
+    // 关闭的是当前信号时当前视图已变化：上下文标签与底部工具栏跟随
+    syncSignalContextControls();
+    syncSignalToolbar();
 }
 
 /**
@@ -576,6 +739,9 @@ void DASignalAnalysisUI::onCurrentSignalChanged()
 {
     updateRelinkActionState();
     syncPlayerSource();
+    // 切信号后当前视图整体变化：上下文标签控件与底部工具栏跟随（阻断信号防回环）
+    syncSignalContextControls();
+    syncSignalToolbar();
     if (!mPage || !mPeakPanel) {
         return;
     }
@@ -641,8 +807,18 @@ bool DASignalAnalysisUI::ensurePageCreated()
     if (mPage && mPageDock) {
         return true;
     }
-    // 页面对象存在但 dock 没建成功（极端环境）：先把孤儿页面清掉再重建（评审 N-U8）
+    // 页面对象存在但 dock 没建成功（极端环境）：先把孤儿页面清掉再重建（评审 N-U8）。
+    // 旧页面的设置上下文提供者必须先注销并销毁，否则注册表里会留下指向旧页面的条目。
     if (mPage && !mPageDock) {
+        if (mUI) {
+            if (DADockingAreaInterface* dockingArea = mUI->getDockingArea()) {
+                dockingArea->unregisterSettingContextProvider(mPage);
+            }
+        }
+        if (mSettingContext) {
+            delete mSettingContext;
+            mSettingContext = nullptr;
+        }
         delete mPage;
         mPage = nullptr;
     }
@@ -665,6 +841,13 @@ bool DASignalAnalysisUI::ensurePageCreated()
     }
     // 峰值停靠窗口与页面同批创建（创建后保持隐藏，首次导入信号成功时按偏好再决定）
     buildPeakDock();
+    // 窗口底部播放工具栏同批创建（默认隐藏，provider 激活信号分析页时显示）
+    buildSignalToolbar();
+    // 注册设置上下文提供者：该页 dock 激活时由 provider 接管设置面板/图元树/上下文标签/工具栏
+    if (DADockingAreaInterface* dockingArea = (mUI ? mUI->getDockingArea() : nullptr)) {
+        mSettingContext = new DASignalAnalysisSettingContext(this);
+        dockingArea->registerSettingContextProvider(mPage, mSettingContext);
+    }
     setSignalDependentActionsEnabled(mPage->signalCount() > 0);
     updateRelinkActionState();
     return true;
@@ -768,15 +951,9 @@ void DASignalAnalysisUI::buildSignalCategory()
     mPanelAnalysis->addMediumAction(actionCancelAnalysis);
     actionCancelAnalysis->setEnabled(false);  // 有任务在跑才可用
 
-    // ---------- Peaks：峰值标记 / 前 N / 峰值窗口 ----------
+    // ---------- Peaks：前 N / 峰值窗口（峰值标记/峰值表迁到上下文标签 Display 组） ----------
     mPanelPeaks = mCategory->addPanel(tr("Peaks"));  // cn:峰值
     mPanelPeaks->setObjectName(QString::fromUtf8(cPanelPeaksName));
-    actionPeakMarker = mActions->createAction(
-        "actionSignalPeakMarker",
-        (QString::fromUtf8(cIconPrefix) + QStringLiteral("peaks.svg")).toUtf8().constData(),
-        true,
-        false,
-        nullptr);
     actionPeakTopN = mActions->createAction(
         "actionSignalPeakTopN",
         (QString::fromUtf8(cIconPrefix) + QStringLiteral("peaks.svg")).toUtf8().constData());
@@ -786,55 +963,9 @@ void DASignalAnalysisUI::buildSignalCategory()
         true,
         false,
         nullptr);
-    mPanelPeaks->addLargeAction(actionPeakMarker);
     mPanelPeaks->addLargeAction(actionPeakTopN);
     mPanelPeaks->addLargeAction(actionPeakWindow);
     buildPeakTopNMenu();
-
-    // ---------- Display：瀑布模式 / 幅值模式 ----------
-    mPanelDisplay = mCategory->addPanel(tr("Display"));  // cn:显示
-    mPanelDisplay->setObjectName(QString::fromUtf8(cPanelDisplayName));
-    mWaterfallModeGroup = new QActionGroup(this);
-    mWaterfallModeGroup->setExclusive(true);
-    actionWaterfall2D = mActions->createAction(
-        "actionSignalWaterfall2D",
-        (QString::fromUtf8(cIconPrefix) + QStringLiteral("waterfall2d.svg")).toUtf8().constData(),
-        true,
-        false,
-        nullptr);
-    actionWaterfall3D = mActions->createAction(
-        "actionSignalWaterfall3D",
-        (QString::fromUtf8(cIconPrefix) + QStringLiteral("waterfall3d.svg")).toUtf8().constData(),
-        true,
-        false,
-        nullptr);
-    actionWaterfallHide = mActions->createAction(
-        "actionSignalWaterfallHide",
-        (QString::fromUtf8(cIconPrefix) + QStringLiteral("waterfallHide.svg")).toUtf8().constData(),
-        true,
-        false,
-        nullptr);
-    actionWaterfall2D->setActionGroup(mWaterfallModeGroup);
-    actionWaterfall3D->setActionGroup(mWaterfallModeGroup);
-    actionWaterfallHide->setActionGroup(mWaterfallModeGroup);
-    actionWaterfall2D->setChecked(true);  // 默认二维（D12）
-    mPanelDisplay->addMediumAction(actionWaterfall2D);
-    mPanelDisplay->addMediumAction(actionWaterfall3D);
-    mPanelDisplay->addMediumAction(actionWaterfallHide);
-
-    actionAmplitudeMode = mActions->createAction(
-        "actionSignalAmplitudeMode",
-        (QString::fromUtf8(cIconPrefix) + QStringLiteral("amplitude.svg")).toUtf8().constData());
-    mPanelDisplay->addLargeAction(actionAmplitudeMode);
-    // 峰值表显隐（Display 面板；评审 §七-8：actionPeakTable 之前是死成员）
-    actionPeakTable = mActions->createAction(
-        "actionSignalPeakTable",
-        (QString::fromUtf8(cIconPrefix) + QStringLiteral("peaksWindow.svg")).toUtf8().constData(),
-        true,
-        false,
-        nullptr);
-    mPanelDisplay->addMediumAction(actionPeakTable);
-    buildAmplitudeModeMenu();
 
     // ---------- Export：峰值表 / 图片 ----------
     mPanelExport = mCategory->addPanel(tr("Export"));  // cn:导出
@@ -847,6 +978,138 @@ void DASignalAnalysisUI::buildSignalCategory()
         (QString::fromUtf8(cIconPrefix) + QStringLiteral("exportImage.svg")).toUtf8().constData());
     mPanelExport->addLargeAction(actionExportPeaks);
     mPanelExport->addLargeAction(actionExportImage);
+
+    // ---------- 插件自建的上下文标签：显示类（Display）+ 工具类（Tools） ----------
+    // 原顶级「Display」面板整体取消，动作对象与连接全部保留并迁移到上下文页，避免双入口。
+    buildSignalContextCategory();
+}
+
+/**
+ * @brief 构建插件自建的 Ribbon 上下文标签（Display / Tools 两组）
+ *
+ * 上下文标签只在信号分析页 dock 激活时显示（provider 调 setSignalContextCategoryVisible），
+ * objectName 固定为 cContextCategoryObjectName，供宿主接口按名字 show/hide。
+ * 图标全部复用现有资源（插件 icon 或 :/app/bright/Icon），禁止新增 SVG。
+ */
+void DASignalAnalysisUI::buildSignalContextCategory()
+{
+    DARibbonAreaInterface* ribbonArea = (mUI ? mUI->getRibbonArea() : nullptr);
+    SARibbonBar* ribbon               = (ribbonArea ? ribbonArea->ribbonBar() : nullptr);
+    if (nullptr == ribbon) {
+        qWarning() << "DASignalAnalysisUI::buildSignalContextCategory: ribbon bar is unavailable";
+        return;
+    }
+    // 图标路径辅助：插件自带图标 / 宿主通用图标，均复用现有资源
+    auto pluginIcon = [](const char* file) -> QString {
+        return QString::fromUtf8(cIconPrefix) + QString::fromUtf8(file);
+    };
+    auto appIcon = [](const char* file) -> QString {
+        return QString::fromUtf8(cAppIconPath) + QString::fromUtf8(file);
+    };
+    // 经宿主动作管理器创建带图标的动作（checkable 动作初始未勾选，状态由同步逻辑回填）
+    auto createIconAction = [this](const char* objName, const QString& iconPath, bool checkable) -> QAction* {
+        const QByteArray iconPathUtf8 = iconPath.toUtf8();
+        return mActions->createAction(objName, iconPathUtf8.constData(), checkable, false, nullptr);
+    };
+
+    mContextCategory = ribbon->addContextCategory(tr("Signal Analysis"), QColor(), QVariant());  // cn:信号分析
+    if (nullptr == mContextCategory) {
+        qWarning() << "DASignalAnalysisUI::buildSignalContextCategory: addContextCategory failed";
+        return;
+    }
+    mContextCategory->setObjectName(QString::fromUtf8(cContextCategoryObjectName));
+    mContextPage = mContextCategory->addCategoryPage(tr("Signal Display"));  // cn:信号显示
+    if (nullptr == mContextPage) {
+        qWarning() << "DASignalAnalysisUI::buildSignalContextCategory: addCategoryPage failed";
+        return;
+    }
+    mContextPage->setObjectName(QString::fromUtf8(cContextPageObjectName));
+
+    // ---------- Display：通道 / 对数频率 / 色带 / 瀑布模式 / 峰值标记 / 幅值模式 / 峰值表 ----------
+    mContextDisplayPanel = mContextPage->addPanel(tr("Display"));  // cn:显示
+    mContextDisplayPanel->setObjectName(QString::fromUtf8(cPanelContextDisplayName));
+    // 通道选择：一次分析一个通道（多通道信号）
+    mContextChannelCombo = new QComboBox(mContextDisplayPanel);
+    mContextChannelCombo->setObjectName(QStringLiteral("da-signal-context-channel"));
+    mContextChannelCombo->setMinimumWidth(120);
+    mContextChannelCombo->setToolTip(tr("Channel"));  // cn:通道
+    connect(mContextChannelCombo,
+            QOverload< int >::of(&QComboBox::currentIndexChanged),
+            this,
+            &DASignalAnalysisUI::onContextChannelChanged);
+    mContextDisplayPanel->addWidget(mContextChannelCombo, SARibbonPanelItem::Medium);
+    mContextDisplayPanel->addSeparator();
+    // 频率轴：线性/对数（复用宿主 grid-x 图标表示频率轴）
+    actionLogFrequency = createIconAction("actionSignalLogFrequency", appIcon("chart-grid-x.svg"), true);
+    connect(actionLogFrequency, &QAction::toggled, this, &DASignalAnalysisUI::onContextLogFrequencyToggled);
+    mContextDisplayPanel->addLargeAction(actionLogFrequency);
+    // 色带：QwtColorMapPreset::availablePresets() 动态填充菜单
+    actionColormap = createIconAction("actionSignalColormap", appIcon("theme.svg"), false);
+    mColormapMenu  = new QMenu();
+    mColormapGroup = new QActionGroup(this);
+    mColormapGroup->setExclusive(true);
+    const QStringList colormapPresets = QwtColorMapPreset::availablePresets();
+    for (const QString& preset : colormapPresets) {
+        QAction* presetAction = mColormapMenu->addAction(preset);
+        presetAction->setCheckable(true);
+        presetAction->setData(preset);
+        presetAction->setActionGroup(mColormapGroup);
+        if (preset == QLatin1String("viridis")) {
+            presetAction->setChecked(true);  // 默认色带与视图默认一致
+        }
+    }
+    connect(mColormapGroup, &QActionGroup::triggered, this, &DASignalAnalysisUI::onContextColormapTriggered);
+    actionColormap->setMenu(mColormapMenu);
+    mContextDisplayPanel->addLargeAction(actionColormap);
+    mContextDisplayPanel->addSeparator();
+    // 瀑布模式：二维 / 三维 / 隐藏（互斥）
+    mWaterfallModeGroup = new QActionGroup(this);
+    mWaterfallModeGroup->setExclusive(true);
+    actionWaterfall2D = createIconAction("actionSignalWaterfall2D", pluginIcon("waterfall2d.svg"), true);
+    actionWaterfall3D = createIconAction("actionSignalWaterfall3D", pluginIcon("waterfall3d.svg"), true);
+    actionWaterfallHide = createIconAction("actionSignalWaterfallHide", pluginIcon("waterfallHide.svg"), true);
+    actionWaterfall2D->setActionGroup(mWaterfallModeGroup);
+    actionWaterfall3D->setActionGroup(mWaterfallModeGroup);
+    actionWaterfallHide->setActionGroup(mWaterfallModeGroup);
+    actionWaterfall2D->setChecked(true);  // 默认二维（D12）
+    mContextDisplayPanel->addMediumAction(actionWaterfall2D);
+    mContextDisplayPanel->addMediumAction(actionWaterfall3D);
+    mContextDisplayPanel->addMediumAction(actionWaterfallHide);
+    mContextDisplayPanel->addSeparator();
+    // 峰值标记（原顶级「峰值」面板迁入，动作连接保持不变）
+    actionPeakMarker = createIconAction("actionSignalPeakMarker", pluginIcon("peaks.svg"), true);
+    mContextDisplayPanel->addLargeAction(actionPeakMarker);
+    // 幅值模式（带菜单）
+    actionAmplitudeMode = createIconAction("actionSignalAmplitudeMode", pluginIcon("amplitude.svg"), false);
+    mContextDisplayPanel->addLargeAction(actionAmplitudeMode);
+    buildAmplitudeModeMenu();
+    // 峰值表（停靠窗口显隐；与 actionPeakWindow 共用同一开关语义）
+    actionPeakTable = createIconAction("actionSignalPeakTable", pluginIcon("peaksWindow.svg"), true);
+    mContextDisplayPanel->addMediumAction(actionPeakTable);
+
+    // ---------- Tools：缩放 / 平移 / 十字线 / 数据拾取 / 添加图元 ----------
+    mContextToolsPanel = mContextPage->addPanel(tr("Tools"));  // cn:工具
+    mContextToolsPanel->setObjectName(QString::fromUtf8(cPanelContextToolsName));
+    actionZoom        = createIconAction("actionSignalToolZoom", appIcon("chart-zoomer.svg"), true);
+    actionPan         = createIconAction("actionSignalToolPan", appIcon("chart-pan.svg"), true);
+    actionCrosshair   = createIconAction("actionSignalToolCrosshair", appIcon("chart-corss-marker.svg"), true);
+    actionDataPicking = createIconAction("actionSignalToolDataPicking", appIcon("chart-picker-xy.svg"), true);
+    connect(actionZoom, &QAction::toggled, this, &DASignalAnalysisUI::onContextToolToggled);
+    connect(actionPan, &QAction::toggled, this, &DASignalAnalysisUI::onContextToolToggled);
+    connect(actionCrosshair, &QAction::toggled, this, &DASignalAnalysisUI::onContextToolToggled);
+    connect(actionDataPicking, &QAction::toggled, this, &DASignalAnalysisUI::onContextToolToggled);
+    mContextToolsPanel->addLargeAction(actionZoom);
+    mContextToolsPanel->addLargeAction(actionPan);
+    mContextToolsPanel->addLargeAction(actionCrosshair);
+    mContextToolsPanel->addLargeAction(actionDataPicking);
+    mContextToolsPanel->addSeparator();
+    // 添加图元：复用宿主 DADialogChartGuide，目标 = 当前视图的当前子图
+    actionAddFigure = createIconAction("actionSignalAddFigure", appIcon("addFigure.svg"), false);
+    connect(actionAddFigure, &QAction::triggered, this, &DASignalAnalysisUI::onContextAddFigure);
+    mContextToolsPanel->addLargeAction(actionAddFigure);
+
+    // 初始不显示：由 provider 在信号分析页激活时显示
+    ribbon->hideContextCategory(mContextCategory);
 }
 
 /**
@@ -904,6 +1167,372 @@ void DASignalAnalysisUI::buildPeakDock()
     connect(mPeakPanel, &DAPeakDockWidget::sendToTableRequested, this, &DASignalAnalysisUI::sendPeaksToTable);
     connect(mPeakPanel, &DAPeakDockWidget::exportCsvRequested, this, &DASignalAnalysisUI::exportPeaksCsv);
     connect(mPeakPanel, &DAPeakDockWidget::settingsRequested, this, &DASignalAnalysisUI::openAnalysisSettings);
+}
+
+/**
+ * @brief 构建窗口底部播放工具栏（跟随播放 / 时间滑块 / dB 下限 / 自动滚动）
+ *
+ * 底部工具栏只在信号分析页 dock 激活时显示（provider 调 setSignalToolbarVisible）；
+ * 控件只是当前视图状态的视图层：控件变化写回视图，视图状态变化经 syncSignalToolbar() 回填。
+ * dB 下限与热图自动滚动按 T8 定稿放在本工具栏（不再做 Ribbon 弹窗）。
+ */
+void DASignalAnalysisUI::buildSignalToolbar()
+{
+    if (mSignalToolbar || nullptr == mUI) {
+        return;
+    }
+    QMainWindow* mainWindow = mUI->getMainWindow();
+    if (nullptr == mainWindow) {
+        qWarning() << "DASignalAnalysisUI::buildSignalToolbar: main window is unavailable";
+        return;
+    }
+    mSignalToolbar = new QToolBar(mainWindow);
+    mSignalToolbar->setObjectName(QString::fromUtf8(cToolbarObjectName));
+    mSignalToolbar->setMovable(false);
+    mSignalToolbar->setFloatable(false);
+
+    // 跟随播放：频谱/峰值表显示当前帧而不是整段
+    mToolbarFollowCheck = new QCheckBox(mSignalToolbar);
+    mToolbarFollowCheck->setObjectName(QStringLiteral("da-signal-toolbar-follow"));
+    mToolbarFollowCheck->setText(tr("Follow playback"));  // cn:跟随播放
+    mToolbarFollowCheck->setToolTip(tr("Show the current frame while playback advances"));
+    // cn:播放推进时显示当前帧
+    connect(mToolbarFollowCheck, &QCheckBox::toggled, this, [this](bool on) {
+        if (DASignalAnalysisView* view = currentView()) {
+            view->setFollowSlider(on);
+        }
+    });
+    mSignalToolbar->addWidget(mToolbarFollowCheck);
+    mSignalToolbar->addSeparator();
+
+    // 时间滑块：毫秒范围（0..信号时长），与视图 currentTime/时间原点口径一致
+    mToolbarTimeSlider = new QSlider(Qt::Horizontal, mSignalToolbar);
+    mToolbarTimeSlider->setObjectName(QStringLiteral("da-signal-toolbar-time"));
+    mToolbarTimeSlider->setRange(0, 1000);
+    mToolbarTimeSlider->setMinimumWidth(180);
+    mToolbarTimeSlider->setToolTip(tr("Playback position"));  // cn:播放位置
+    connect(mToolbarTimeSlider, &QSlider::valueChanged, this, [this](int value) {
+        if (DASignalAnalysisView* view = currentView()) {
+            view->setCurrentTime(value / 1000.0);
+        }
+    });
+    mSignalToolbar->addWidget(mToolbarTimeSlider);
+    mSignalToolbar->addSeparator();
+
+    // dB 下限：热图色标下限（dB）
+    mToolbarDbFloorSpin = new QDoubleSpinBox(mSignalToolbar);
+    mToolbarDbFloorSpin->setObjectName(QStringLiteral("da-signal-toolbar-dbfloor"));
+    mToolbarDbFloorSpin->setRange(-200.0, 0.0);
+    mToolbarDbFloorSpin->setDecimals(0);
+    mToolbarDbFloorSpin->setSingleStep(5.0);
+    mToolbarDbFloorSpin->setValue(-80.0);
+    mToolbarDbFloorSpin->setPrefix(QStringLiteral("dB "));
+    mToolbarDbFloorSpin->setToolTip(tr("Heatmap color scale lower limit"));  // cn:热图色标下限
+    connect(mToolbarDbFloorSpin, QOverload< double >::of(&QDoubleSpinBox::valueChanged), this, [this](double value) {
+        if (DASignalAnalysisView* view = currentView()) {
+            view->setDbFloor(value);
+        }
+    });
+    mSignalToolbar->addWidget(mToolbarDbFloorSpin);
+    mSignalToolbar->addSeparator();
+
+    // 自动滚动：热图随播放推进水平滚动
+    mToolbarAutoScrollCheck = new QCheckBox(mSignalToolbar);
+    mToolbarAutoScrollCheck->setObjectName(QStringLiteral("da-signal-toolbar-autoscroll"));
+    mToolbarAutoScrollCheck->setText(tr("Auto scroll"));  // cn:自动滚动
+    mToolbarAutoScrollCheck->setToolTip(tr("Scroll the time-frequency view while playback advances"));
+    // cn:播放推进时滚动时频视图
+    connect(mToolbarAutoScrollCheck, &QCheckBox::toggled, this, [this](bool on) {
+        if (DASignalAnalysisView* view = currentView()) {
+            view->setHeatmapAutoScroll(on);
+        }
+    });
+    mSignalToolbar->addWidget(mToolbarAutoScrollCheck);
+
+    mainWindow->addToolBar(Qt::BottomToolBarArea, mSignalToolbar);
+    mSignalToolbar->setVisible(false);  // 只在信号分析页激活时由 provider 显示
+    syncSignalToolbar();
+}
+
+/**
+ * @brief 当前视图状态 → 上下文标签控件
+ *
+ * 通道下拉/对数频率/色带/瀑布模式/峰值标记/幅值模式/工具开关全部跟随当前视图；
+ * 写控件时用 QSignalBlocker 防回环（否则回填会再触发一次写回视图）。
+ */
+void DASignalAnalysisUI::syncSignalContextControls()
+{
+    DASignalAnalysisView* view = currentView();
+    // 通道下拉：通道名变化时重建条目，选中项跟随视图当前通道
+    if (mContextChannelCombo) {
+        const QStringList channelNames = (view ? view->channelNames() : QStringList());
+        QStringList currentNames;
+        currentNames.reserve(mContextChannelCombo->count());
+        for (int i = 0; i < mContextChannelCombo->count(); ++i) {
+            currentNames.append(mContextChannelCombo->itemText(i));
+        }
+        if (currentNames != channelNames) {
+            const QSignalBlocker blocker(mContextChannelCombo);
+            mContextChannelCombo->clear();
+            for (int i = 0; i < channelNames.size(); ++i) {
+                mContextChannelCombo->addItem(channelNames.at(i), i);
+            }
+        }
+        const QSignalBlocker blocker(mContextChannelCombo);
+        const int channel    = (view ? view->currentChannel() : 0);
+        const int comboIndex = mContextChannelCombo->findData(channel);
+        if (comboIndex >= 0) {
+            mContextChannelCombo->setCurrentIndex(comboIndex);
+        } else if (mContextChannelCombo->count() > 0) {
+            mContextChannelCombo->setCurrentIndex(0);
+        }
+        mContextChannelCombo->setEnabled(view && channelNames.size() > 1);
+    }
+    // 对数频率轴
+    if (actionLogFrequency) {
+        const QSignalBlocker blocker(actionLogFrequency);
+        actionLogFrequency->setEnabled(view != nullptr);
+        actionLogFrequency->setChecked(view && view->isLogFrequency());
+    }
+    // 色带：勾选与当前视图一致的预设
+    if (actionColormap) {
+        actionColormap->setEnabled(view != nullptr);
+    }
+    if (mColormapMenu) {
+        const QString colormap            = (view ? view->colormapName() : QString());
+        const QList< QAction* > presets   = mColormapMenu->actions();
+        for (QAction* presetAction : presets) {
+            if (nullptr == presetAction || !presetAction->isCheckable()) {
+                continue;
+            }
+            const QSignalBlocker blocker(presetAction);
+            presetAction->setChecked(!colormap.isEmpty() && presetAction->data().toString() == colormap);
+        }
+    }
+    // 瀑布模式（互斥组）
+    const int waterfallMode = (view ? view->waterfallMode() : 0);
+    if (actionWaterfall2D) {
+        const QSignalBlocker blocker(actionWaterfall2D);
+        actionWaterfall2D->setEnabled(view != nullptr);
+        actionWaterfall2D->setChecked(waterfallMode == 0);
+    }
+    if (actionWaterfall3D) {
+        const QSignalBlocker blocker(actionWaterfall3D);
+        actionWaterfall3D->setEnabled(view != nullptr);
+        actionWaterfall3D->setChecked(waterfallMode == 1);
+    }
+    if (actionWaterfallHide) {
+        const QSignalBlocker blocker(actionWaterfallHide);
+        actionWaterfallHide->setEnabled(view != nullptr);
+        actionWaterfallHide->setChecked(waterfallMode == 2);
+    }
+    // 峰值标记（视图无 getter：以 UI 记录的开关状态为准）
+    if (actionPeakMarker) {
+        const QSignalBlocker blocker(actionPeakMarker);
+        actionPeakMarker->setEnabled(view != nullptr);
+        actionPeakMarker->setChecked(view && mPeakMarkersVisible);
+    }
+    if (actionPeakTable) {
+        actionPeakTable->setEnabled(view != nullptr);
+    }
+    // 幅值模式（全局状态，与 syncAmplitudeUiFromParams 同一口径）
+    QAction* amplitudeAction = actionAmpPeak;
+    if (mAmplitudeMode == QLatin1String("rms")) {
+        amplitudeAction = actionAmpRms;
+    } else if (mAmplitudeMode == QLatin1String("dbFS")) {
+        amplitudeAction = actionAmpDbFs;
+    } else if (mAmplitudeMode == QLatin1String("dbRef1")) {
+        amplitudeAction = actionAmpDbRef1;
+    }
+    if (amplitudeAction) {
+        const QSignalBlocker blocker(amplitudeAction);
+        amplitudeAction->setEnabled(view != nullptr);
+        amplitudeAction->setChecked(true);
+    }
+    // 工具开关：状态与当前 2D 子图一致；无子图（或 3D 激活取不到 2D 子图）时禁用
+    DAChartWidget* chart = (view ? view->currentChart() : nullptr);
+    const bool chartAvailable = (chart != nullptr);
+    if (actionZoom) {
+        const QSignalBlocker blocker(actionZoom);
+        actionZoom->setEnabled(chartAvailable);
+        actionZoom->setChecked(chartAvailable && chart->isZoomEnabled());
+    }
+    if (actionPan) {
+        const QSignalBlocker blocker(actionPan);
+        actionPan->setEnabled(chartAvailable);
+        actionPan->setChecked(chartAvailable && chart->isPanEnabled());
+    }
+    if (actionCrosshair) {
+        const QSignalBlocker blocker(actionCrosshair);
+        actionCrosshair->setEnabled(chartAvailable);
+        actionCrosshair->setChecked(chartAvailable && chart->isCrosshairEnabled());
+    }
+    if (actionDataPicking) {
+        const QSignalBlocker blocker(actionDataPicking);
+        actionDataPicking->setEnabled(chartAvailable);
+        actionDataPicking->setChecked(chartAvailable && chart->isXYValuePickingEnabled());
+    }
+    if (actionAddFigure) {
+        actionAddFigure->setEnabled(view && view->figure() && chartAvailable);
+    }
+}
+
+/**
+ * @brief 当前视图状态 → 底部工具栏控件（QSignalBlocker 防回环）
+ *
+ * 时间滑块范围按当前信号时长（毫秒）设置，值取视图当前时间；
+ * 无当前视图时控件全部禁用并回到默认值。
+ */
+void DASignalAnalysisUI::syncSignalToolbar()
+{
+    if (nullptr == mSignalToolbar) {
+        return;
+    }
+    DASignalAnalysisView* view = currentView();
+    const DASignalPtr sig      = (mPage ? mPage->currentSignal() : DASignalPtr());
+    const bool hasView         = (view != nullptr);
+    if (mToolbarFollowCheck) {
+        const QSignalBlocker blocker(mToolbarFollowCheck);
+        mToolbarFollowCheck->setChecked(hasView && view->isFollowSlider());
+        mToolbarFollowCheck->setEnabled(hasView);
+    }
+    if (mToolbarTimeSlider) {
+        const qint64 durationMs = (sig && sig->duration() > 0.0)
+                                      ? qBound< qint64 >(0,
+                                                         qRound64(sig->duration() * 1000.0),
+                                                         std::numeric_limits< int >::max())
+                                      : 0;
+        const QSignalBlocker blocker(mToolbarTimeSlider);
+        mToolbarTimeSlider->setRange(0, int(durationMs > 0 ? durationMs : 1));
+        int value = 0;
+        if (hasView) {
+            value = int(qBound< qint64 >(0, qRound64(view->currentTime() * 1000.0), mToolbarTimeSlider->maximum()));
+        }
+        mToolbarTimeSlider->setValue(value);
+        mToolbarTimeSlider->setEnabled(hasView && durationMs > 0);
+    }
+    if (mToolbarDbFloorSpin) {
+        const QSignalBlocker blocker(mToolbarDbFloorSpin);
+        mToolbarDbFloorSpin->setValue(hasView ? view->dbFloor() : -80.0);
+        mToolbarDbFloorSpin->setEnabled(hasView);
+    }
+    if (mToolbarAutoScrollCheck) {
+        const QSignalBlocker blocker(mToolbarAutoScrollCheck);
+        mToolbarAutoScrollCheck->setChecked(hasView && view->isHeatmapAutoScroll());
+        mToolbarAutoScrollCheck->setEnabled(hasView);
+    }
+}
+
+/**
+ * @brief 上下文标签通道选择：切到选中通道（视图内部重发该通道的分析请求）
+ */
+void DASignalAnalysisUI::onContextChannelChanged(int index)
+{
+    if (nullptr == mContextChannelCombo || index < 0) {
+        return;
+    }
+    DASignalAnalysisView* view = currentView();
+    if (nullptr == view) {
+        return;
+    }
+    view->setCurrentChannel(mContextChannelCombo->itemData(index).toInt());
+}
+
+/**
+ * @brief 上下文标签「对数频率」开关：频率轴线性/对数切换（只重绘）
+ */
+void DASignalAnalysisUI::onContextLogFrequencyToggled(bool on)
+{
+    if (DASignalAnalysisView* view = currentView()) {
+        view->setLogFrequency(on);
+    }
+}
+
+/**
+ * @brief 上下文标签色带菜单：切到选中的色带预设（只重绘热图）
+ */
+void DASignalAnalysisUI::onContextColormapTriggered(QAction* action)
+{
+    if (nullptr == action) {
+        return;
+    }
+    const QString name = action->data().toString();
+    if (name.isEmpty()) {
+        return;
+    }
+    if (DASignalAnalysisView* view = currentView()) {
+        view->setColormapName(name);
+    }
+}
+
+/**
+ * @brief 上下文标签工具开关：把开关状态映射到当前 2D 子图的交互控制
+ *
+ * 缩放/平移/十字线/XY 数据拾取互相独立，状态随当前子图同步（见 syncSignalContextControls）。
+ */
+void DASignalAnalysisUI::onContextToolToggled()
+{
+    auto* act = qobject_cast< QAction* >(sender());
+    if (nullptr == act) {
+        return;
+    }
+    DASignalAnalysisView* view = currentView();
+    DAChartWidget* chart       = (view ? view->currentChart() : nullptr);
+    if (nullptr == chart) {
+        return;
+    }
+    if (act == actionZoom) {
+        chart->enableZoom(act->isChecked());
+    } else if (act == actionPan) {
+        chart->enablePan(act->isChecked());
+    } else if (act == actionCrosshair) {
+        chart->enableCrosshair(act->isChecked());
+    } else if (act == actionDataPicking) {
+        chart->enableXYValuePicking(act->isChecked());
+    }
+}
+
+/**
+ * @brief 上下文标签「添加图元」：复用宿主绘图引导窗口，图元入 figure 的 undo 栈
+ *
+ * 目标 = 当前视图的当前 2D 子图（spec §5.2）；确认后批量添加（曲线支持 1 个 x + 多个 y），
+ * 再重新自动缩放坐标轴并重绘。
+ */
+void DASignalAnalysisUI::onContextAddFigure()
+{
+    DASignalAnalysisView* view = currentView();
+    if (nullptr == view || nullptr == view->figure()) {
+        return;
+    }
+    DAChartWidget* chart = view->currentChart();
+    if (nullptr == chart) {
+        return;
+    }
+    QWidget* parent = (mPage ? static_cast< QWidget* >(mPage.data()) : (mUI ? mUI->getMainWindow() : nullptr));
+    DADialogChartGuide dlg(parent);
+    if (mCore) {
+        if (DADataManagerInterface* dataMgrInterface = mCore->getDataManagerInterface()) {
+            dlg.setDataManager(dataMgrInterface->dataManager());
+        }
+    }
+    if (dlg.exec() != QDialog::Accepted) {
+        return;
+    }
+    QList< QwtPlotItem* > items = dlg.createPlotItems();
+    if (items.isEmpty()) {
+        // 非批量类型（如单曲线/标记线）：退回单个图元创建
+        if (QwtPlotItem* item = dlg.createPlotItem()) {
+            items.append(item);
+        }
+    }
+    if (items.isEmpty()) {
+        return;
+    }
+    for (QwtPlotItem* item : std::as_const(items)) {
+        view->figure()->addItem_(chart, item);
+    }
+    chart->rescaleAxes();
+    chart->replot();
 }
 
 /**
@@ -1187,6 +1816,10 @@ void DASignalAnalysisUI::clearAllSignals()
     setSignalDependentActionsEnabled(false);
     updateRelinkActionState();
     mFirstSignalActivated = false;
+    // 清空后无当前视图：上下文标签/底部工具栏回到空状态
+    mPeakMarkersVisible = false;
+    syncSignalContextControls();
+    syncSignalToolbar();
 }
 
 /**
@@ -1221,6 +1854,9 @@ void DASignalAnalysisUI::onProjectCleaned()
         mFirstSignalActivated = false;
     }
     updateRelinkActionState();
+    // 工程清空后无当前视图：上下文标签/底部工具栏回到空状态（页面从未创建时也是安全空操作）
+    syncSignalContextControls();
+    syncSignalToolbar();
     // 纯「关闭工程」路径也要清掉临时 WAV（评审 P5），不必等到下次加载或插件卸载
     DASignalImporter::cleanupTempFiles();
     clearProgressIfIdle();
@@ -1857,23 +2493,26 @@ QByteArray DASignalAnalysisUI::serializeState() const
             QJsonObject view;
             view[ QStringLiteral("amplitudeMode") ] = mAmplitudeMode;
             view[ QStringLiteral("dbReference") ]   = mDbReference;
-            // 视图状态（P1）：瀑布模式、对数轴、色带/色标、分割比例、热图跟随
+            // 视图状态（P1）：瀑布模式、对数轴、色带/色标、网格比例、热图跟随
             if (DASignalAnalysisView* v = mPage ? mPage->viewForSignal(sig.get()) : nullptr) {
                 view[ QStringLiteral("waterfallMode") ] = v->waterfallMode();
                 view[ QStringLiteral("logFrequency") ]  = v->isLogFrequency();
                 view[ QStringLiteral("colormap") ]      = v->colormapName();
                 view[ QStringLiteral("dbFloor") ]       = v->dbFloor();
                 view[ QStringLiteral("autoScroll") ]    = v->isHeatmapAutoScroll();
-                QJsonArray vArr;
-                for (int s : v->verticalSplitterSizes()) {
-                    vArr.append(s);
+                // T7 起布局是保留式网格：存归一化行/列比例（旧 splitter 像素比例在加载时归一化兼容）
+                QJsonArray rowsArr;
+                const QList< qreal > gridRows = v->gridRowSizes();
+                for (qreal size : gridRows) {
+                    rowsArr.append(size);
                 }
-                QJsonArray hArr;
-                for (int s : v->horizontalSplitterSizes()) {
-                    hArr.append(s);
+                QJsonArray colsArr;
+                const QList< qreal > gridCols = v->gridColumnSizes();
+                for (qreal size : gridCols) {
+                    colsArr.append(size);
                 }
-                view[ QStringLiteral("splitterVertical") ]   = vArr;
-                view[ QStringLiteral("splitterHorizontal") ] = hArr;
+                view[ QStringLiteral("gridRows") ]    = rowsArr;
+                view[ QStringLiteral("gridColumns") ] = colsArr;
             }
             o[ QStringLiteral("view") ] = view;
             arr.append(o);
@@ -2027,34 +2666,37 @@ void DASignalAnalysisUI::restoreState(const QByteArray& json)
                 v->setDbFloor(view.value(QStringLiteral("dbFloor")).toDouble(v->dbFloor()));
             }
             v->setHeatmapAutoScroll(view.value(QStringLiteral("autoScroll")).toBool(false));
-            QList< int > vs;
-            for (const QJsonValue& s : view.value(QStringLiteral("splitterVertical")).toArray()) {
-                vs.append(s.toInt());
+            // 网格比例：优先新键 gridRows/gridColumns；旧工程只有 splitterVertical/splitterHorizontal
+            // （像素值），交给 setGridSizes 内部归一化，保证旧存档仍能还原比例
+            QList< qreal > gridRows;
+            QList< qreal > gridCols;
+            const QJsonArray rowsArr = view.value(QStringLiteral("gridRows")).toArray();
+            if (!rowsArr.isEmpty()) {
+                for (const QJsonValue& s : rowsArr) {
+                    gridRows.append(s.toDouble());
+                }
+            } else {
+                for (const QJsonValue& s : view.value(QStringLiteral("splitterVertical")).toArray()) {
+                    gridRows.append(s.toDouble());
+                }
             }
-            QList< int > hs;
-            for (const QJsonValue& s : view.value(QStringLiteral("splitterHorizontal")).toArray()) {
-                hs.append(s.toInt());
+            const QJsonArray colsArr = view.value(QStringLiteral("gridColumns")).toArray();
+            if (!colsArr.isEmpty()) {
+                for (const QJsonValue& s : colsArr) {
+                    gridCols.append(s.toDouble());
+                }
+            } else {
+                for (const QJsonValue& s : view.value(QStringLiteral("splitterHorizontal")).toArray()) {
+                    gridCols.append(s.toDouble());
+                }
             }
-            v->setSplitterSizes(vs, hs);
+            v->setGridSizes(gridRows, gridCols);
             v->setAmplitudeDisplay(mAmplitudeMode, mDbReference);
         }
     }
-    // 丝带瀑布模式勾选与当前视图同步
-    if (mPage && mWaterfallModeGroup) {
-        if (DASignalAnalysisView* v = mPage->viewForSignal(mPage->currentSignal().get())) {
-            switch (v->waterfallMode()) {
-            case 1:
-                if (actionWaterfall3D) actionWaterfall3D->setChecked(true);
-                break;
-            case 2:
-                if (actionWaterfallHide) actionWaterfallHide->setChecked(true);
-                break;
-            default:
-                if (actionWaterfall2D) actionWaterfall2D->setChecked(true);
-                break;
-            }
-        }
-    }
+    // 丝带上下文标签与底部工具栏跟随恢复后的当前视图（含瀑布模式/通道/色带/工具开关）
+    syncSignalContextControls();
+    syncSignalToolbar();
     // 恢复后当前信号可能是「来源缺失」占位：刷新重新指定入口可用性（评审 U16）
     updateRelinkActionState();
     updatePlaybackActionsState();
@@ -2097,10 +2739,21 @@ void DASignalAnalysisUI::finalize()
     if (mUI && mPage) {
         QJsonObject cfg      = DASignalImporter::loadPluginConfig();
         cfg[ QStringLiteral("peakDockVisible") ] = (mPeakDock && !mPeakDock->isClosed());
-        if (DASignalAnalysisView* v = mPage->viewForSignal(mPage->currentSignal().get())) {
+        if (DASignalAnalysisView* v = currentView()) {
             cfg[ QStringLiteral("colormap") ] = v->colormapName();
         }
         DASignalImporter::savePluginConfig(cfg);
+    }
+    // 设置上下文提供者先注销（注销会触发 deactivateSettingContext：隐藏上下文标签/底部工具栏、
+    // 还原宿主设置面板与图元树），再销毁；必须在页面 dock 移除之前完成
+    if (mUI && mPage) {
+        if (DADockingAreaInterface* dockingArea = mUI->getDockingArea()) {
+            dockingArea->unregisterSettingContextProvider(mPage);
+        }
+    }
+    if (mSettingContext) {
+        delete mSettingContext;
+        mSettingContext = nullptr;
     }
     // 菜单先与动作解绑（QMenu 不随 QAction 销毁）
     if (actionPeakTopN) {
@@ -2117,6 +2770,15 @@ void DASignalAnalysisUI::finalize()
         delete mAmplitudeModeMenu;
         mAmplitudeModeMenu = nullptr;
     }
+    // 色带菜单（上下文标签 Display 组）
+    if (actionColormap) {
+        actionColormap->setMenu(nullptr);
+    }
+    if (mColormapMenu) {
+        delete mColormapMenu;
+        mColormapMenu = nullptr;
+    }
+    mColormapGroup = nullptr;
     if (actionExportPeaks) {
         actionExportPeaks->setMenu(nullptr);
     }
@@ -2139,6 +2801,38 @@ void DASignalAnalysisUI::finalize()
         delete mPlayer;
         mPlayer = nullptr;
     }
+    // 窗口底部播放工具栏：从主窗口移除并销毁（必须在页面/停靠窗口销毁之前）
+    if (mSignalToolbar) {
+        if (mUI) {
+            if (QMainWindow* mainWindow = mUI->getMainWindow()) {
+                mainWindow->removeToolBar(mSignalToolbar);
+            }
+        }
+        delete mSignalToolbar;
+        mSignalToolbar = nullptr;
+    }
+    mToolbarFollowCheck     = nullptr;
+    mToolbarTimeSlider      = nullptr;
+    mToolbarDbFloorSpin     = nullptr;
+    mToolbarAutoScrollCheck = nullptr;
+    // 插件 Ribbon 上下文标签：先隐藏再销毁（SARibbonBar 拥有上下文标签的管理权）
+    if (mContextCategory) {
+        DARibbonAreaInterface* ribbonArea = (mUI ? mUI->getRibbonArea() : nullptr);
+        SARibbonBar* ribbon               = (ribbonArea ? ribbonArea->ribbonBar() : nullptr);
+        if (ribbon) {
+            if (ribbon->isContextCategoryVisible(mContextCategory)) {
+                ribbon->hideContextCategory(mContextCategory);
+            }
+            ribbon->destroyContextCategory(mContextCategory);
+        } else {
+            qWarning() << "DASignalAnalysisUI::finalize: ribbon bar unavailable, context category left to host";
+        }
+        mContextCategory = nullptr;
+    }
+    mContextPage         = nullptr;
+    mContextDisplayPanel = nullptr;
+    mContextToolsPanel   = nullptr;
+    mContextChannelCombo = nullptr;
     // 峰值停靠窗口：创建点见 buildPeakDock，必须在这里显式移除并销毁，否则禁用插件后右侧残留
     // 「Peaks」标签页（评审 B5，M2 验收「禁用后干净移除」）
     if (mPeakDock) {
@@ -2175,15 +2869,18 @@ void DASignalAnalysisUI::finalize()
         }
     }
     mCategory = nullptr;
-    // 经宿主接口销毁全部动作
+    // 经宿主接口销毁全部动作（含上下文标签新增动作）
     if (mActions) {
         const QList< QAction* > allActions = {
-            actionOpenSignalPage, actionImportAudio,    actionImportDataFrame, actionImportVideo,
-            actionPlay,           actionPause,          actionStop,
-            actionAnalysisSetting, actionCancelAnalysis, actionPeakMarker, actionPeakTopN,
-            actionPeakWindow,     actionWaterfall2D,    actionWaterfall3D,
-            actionWaterfallHide,  actionAmplitudeMode,  actionExportPeaks,
-            actionExportImage,    actionPeakTable,      actionRelinkSource
+            actionOpenSignalPage, actionImportAudio,     actionImportDataFrame, actionImportVideo,
+            actionPlay,           actionPause,           actionStop,
+            actionAnalysisSetting, actionCancelAnalysis, actionPeakMarker,     actionPeakTopN,
+            actionPeakWindow,     actionWaterfall2D,     actionWaterfall3D,
+            actionWaterfallHide,  actionAmplitudeMode,   actionExportPeaks,
+            actionExportImage,    actionPeakTable,       actionRelinkSource,
+            actionLogFrequency,   actionColormap,        actionZoom,
+            actionPan,            actionCrosshair,       actionDataPicking,
+            actionAddFigure
         };
         for (QAction* act : allActions) {
             if (act) {
@@ -2219,13 +2916,20 @@ void DASignalAnalysisUI::finalize()
     actionExportImage       = nullptr;
     actionPeakTable         = nullptr;
     actionRelinkSource      = nullptr;
+    actionLogFrequency      = nullptr;
+    actionColormap          = nullptr;
+    actionZoom              = nullptr;
+    actionPan               = nullptr;
+    actionCrosshair         = nullptr;
+    actionDataPicking       = nullptr;
+    actionAddFigure         = nullptr;
     mPanelOpen              = nullptr;
     mPanelSignal            = nullptr;
     mPanelPlayback          = nullptr;
     mPanelAnalysis          = nullptr;
     mPanelPeaks             = nullptr;
-    mPanelDisplay           = nullptr;
     mPanelExport            = nullptr;
+    mPeakMarkersVisible     = false;
     mParamsPerSignal.clear();
     mParamsVersion.clear();
     mSpectrumCache.clear();
@@ -2506,6 +3210,8 @@ void DASignalAnalysisUI::onViewChannelChanged(int channel)
     if (current && current.get() == key) {
         const bool peakViewOpen = (mPeakDock && !mPeakDock->isClosed());
         requestPeaks(peakViewOpen);
+        // 通道切换后上下文标签/峰值标记状态跟随（视图内部已重发分析请求）
+        syncSignalContextControls();
     }
     Q_UNUSED(channel)
 }
@@ -2709,7 +3415,7 @@ void DASignalAnalysisUI::onPlayerPositionChanged(qint64 ms)
         return;
     }
     mSyncingFromPlayer = true;
-    if (DASignalAnalysisView* v = mPage->viewForSignal(mPage->currentSignal().get())) {
+    if (DASignalAnalysisView* v = currentView()) {
         // 播放头回写只更新显示，不再反发 currentTimeChanged（避免 seek 循环）
         v->setPlayheadFromPlayback(ms / 1000.0);
         if (v->isFollowSlider()) {
@@ -2717,6 +3423,17 @@ void DASignalAnalysisUI::onPlayerPositionChanged(qint64 ms)
         }
     }
     mSyncingFromPlayer = false;
+    // 播放推进时回填底部工具栏时间滑块（阻断信号防回环；此时未走 currentTimeChanged）
+    if (mToolbarTimeSlider) {
+        DASignalAnalysisView* view = currentView();
+        if (view) {
+            const QSignalBlocker blocker(mToolbarTimeSlider);
+            const qint64 value = qBound< qint64 >(0,
+                                                  qRound64(view->currentTime() * 1000.0),
+                                                  mToolbarTimeSlider->maximum());
+            mToolbarTimeSlider->setValue(int(value));
+        }
+    }
 }
 
 /**
@@ -2724,6 +3441,8 @@ void DASignalAnalysisUI::onPlayerPositionChanged(qint64 ms)
  */
 void DASignalAnalysisUI::onViewTimeChanged(double seconds)
 {
+    // 视图时间变化（上下文/底部工具栏滑块、波形点击、停止）→ 回填底部工具栏（阻断信号防回环）
+    syncSignalToolbar();
     if (mSyncingFromPlayer || !mPlayer) {
         return;
     }
@@ -2731,11 +3450,9 @@ void DASignalAnalysisUI::onViewTimeChanged(double seconds)
         mPlayer->pause();
     }
     mPlayer->seekMs(qint64(seconds * 1000.0));
-    if (mPage && mPage->currentSignal()) {
-        if (DASignalAnalysisView* view = mPage->viewForSignal(mPage->currentSignal().get())) {
-            if (view->isFollowSlider()) {
-                updatePeaksForCurrentFrame();
-            }
+    if (DASignalAnalysisView* view = currentView()) {
+        if (view->isFollowSlider()) {
+            updatePeaksForCurrentFrame();
         }
     }
 }
@@ -2960,14 +3677,16 @@ void DASignalAnalysisUI::onPeakWindowToggled(bool on)
 }
 
 /**
- * @brief 峰值标记显隐（丝带快捷键开关）
+ * @brief 峰值标记显隐（上下文标签 Display 组的快捷开关）
+ *
+ * 视图没有该状态的 getter：UI 记录 mPeakMarkersVisible，新建/切换视图时由
+ * connectSignalView 应用，保证各信号标签页口径一致。
  */
 void DASignalAnalysisUI::onPeakMarkerToggled(bool on)
 {
-    if (mPage) {
-        if (DASignalAnalysisView* view = mPage->viewForSignal(mPage->currentSignal().get())) {
-            view->setPeakMarkersVisible(on);
-        }
+    mPeakMarkersVisible = on;
+    if (DASignalAnalysisView* view = currentView()) {
+        view->setPeakMarkersVisible(on);
     }
     if (on && mCurrentPeaks.frequencies.isEmpty()) {
         requestPeaks(false);
@@ -3062,17 +3781,20 @@ void DASignalAnalysisUI::onAmplitudeModeChanged()
 }
 
 /**
- * @brief 设置依赖信号的动作是否可用（无信号时播放/分析/峰值/显示/导出全部置灰）
+ * @brief 设置依赖信号的动作是否可用（无信号时播放/分析/峰值/显示/工具/导出全部置灰）
  * @param on 是否可用
  */
 void DASignalAnalysisUI::setSignalDependentActionsEnabled(bool on)
 {
     const QList< QAction* > acts = {
-        actionPlay,          actionPause,          actionStop,
-        actionAnalysisSetting, actionPeakMarker,   actionPeakTopN,
-        actionPeakWindow,    actionWaterfall2D,    actionWaterfall3D,
-        actionWaterfallHide, actionAmplitudeMode,  actionExportPeaks,
-        actionExportImage,   actionPeakTable,      actionRelinkSource
+        actionPlay,         actionPause,         actionStop,
+        actionAnalysisSetting, actionPeakMarker, actionPeakTopN,
+        actionPeakWindow,   actionWaterfall2D,   actionWaterfall3D,
+        actionWaterfallHide, actionAmplitudeMode, actionExportPeaks,
+        actionExportImage,  actionPeakTable,     actionRelinkSource,
+        actionLogFrequency, actionColormap,      actionZoom,
+        actionPan,          actionCrosshair,     actionDataPicking,
+        actionAddFigure
     };
     for (QAction* act : acts) {
         if (act) {
@@ -3087,6 +3809,8 @@ void DASignalAnalysisUI::setSignalDependentActionsEnabled(bool on)
     if (actionAmplitudeMode) {
         actionAmplitudeMode->setEnabled(on);
     }
+    // 工具类动作还取决于当前 2D 子图是否存在：按当前视图状态再精化一次
+    syncSignalContextControls();
 }
 
 /**
@@ -3121,11 +3845,21 @@ void DASignalAnalysisUI::retranslateUi()
     if (mPanelPeaks) {
         mPanelPeaks->setPanelName(tr("Peaks"));  // cn:峰值
     }
-    if (mPanelDisplay) {
-        mPanelDisplay->setPanelName(tr("Display"));  // cn:显示
-    }
     if (mPanelExport) {
         mPanelExport->setPanelName(tr("Export"));  // cn:导出
+    }
+    // 插件上下文标签：标题 / 上下文页 / 两组面板
+    if (mContextCategory) {
+        mContextCategory->setContextTitle(tr("Signal Analysis"));  // cn:信号分析
+    }
+    if (mContextPage) {
+        mContextPage->setCategoryName(tr("Signal Display"));  // cn:信号显示
+    }
+    if (mContextDisplayPanel) {
+        mContextDisplayPanel->setPanelName(tr("Display"));  // cn:显示
+    }
+    if (mContextToolsPanel) {
+        mContextToolsPanel->setPanelName(tr("Tools"));  // cn:工具
     }
     // 窗口
     if (actionOpenSignalPage) {
@@ -3210,6 +3944,55 @@ void DASignalAnalysisUI::retranslateUi()
     }
     if (actionAmpDbRef1) {
         actionAmpDbRef1->setText(tr("dB (re 1.0)"));  // cn:dB（相对 1.0）
+    }
+    // 上下文标签新增动作（对数频率 / 色带 / 工具 / 添加图元）
+    if (actionLogFrequency) {
+        actionLogFrequency->setText(tr("Log frequency"));  // cn:对数频率
+        actionLogFrequency->setToolTip(tr("Use a logarithmic frequency axis"));  // cn:使用对数频率轴
+    }
+    if (actionColormap) {
+        actionColormap->setText(tr("Color Map"));  // cn:色带
+        actionColormap->setToolTip(tr("Heatmap color map"));  // cn:热图色带
+    }
+    if (actionZoom) {
+        actionZoom->setText(tr("Zoom"));  // cn:缩放
+        actionZoom->setToolTip(tr("Enable zoom on the current chart"));  // cn:在当前图表启用缩放
+    }
+    if (actionPan) {
+        actionPan->setText(tr("Pan"));  // cn:平移
+        actionPan->setToolTip(tr("Enable panning on the current chart"));  // cn:在当前图表启用平移
+    }
+    if (actionCrosshair) {
+        actionCrosshair->setText(tr("Crosshair"));  // cn:十字线
+        actionCrosshair->setToolTip(tr("Show a crosshair on the current chart"));  // cn:在当前图表显示十字线
+    }
+    if (actionDataPicking) {
+        actionDataPicking->setText(tr("Data Pick"));  // cn:数据拾取
+        actionDataPicking->setToolTip(tr("Pick data values on the current chart"));  // cn:在当前图表拾取数据值
+    }
+    if (actionAddFigure) {
+        actionAddFigure->setText(tr("Add Figure Item"));  // cn:添加图元
+        actionAddFigure->setToolTip(tr("Add a plot item to the current chart"));  // cn:向当前图表添加图元
+    }
+    // 窗口底部工具栏
+    if (mContextChannelCombo) {
+        mContextChannelCombo->setToolTip(tr("Channel"));  // cn:通道
+    }
+    if (mToolbarFollowCheck) {
+        mToolbarFollowCheck->setText(tr("Follow playback"));  // cn:跟随播放
+        mToolbarFollowCheck->setToolTip(tr("Show the current frame while playback advances"));
+        // cn:播放推进时显示当前帧
+    }
+    if (mToolbarTimeSlider) {
+        mToolbarTimeSlider->setToolTip(tr("Playback position"));  // cn:播放位置
+    }
+    if (mToolbarDbFloorSpin) {
+        mToolbarDbFloorSpin->setToolTip(tr("Heatmap color scale lower limit"));  // cn:热图色标下限
+    }
+    if (mToolbarAutoScrollCheck) {
+        mToolbarAutoScrollCheck->setText(tr("Auto scroll"));  // cn:自动滚动
+        mToolbarAutoScrollCheck->setToolTip(tr("Scroll the time-frequency view while playback advances"));
+        // cn:播放推进时滚动时频视图
     }
     // 导出
     if (actionExportPeaks) {

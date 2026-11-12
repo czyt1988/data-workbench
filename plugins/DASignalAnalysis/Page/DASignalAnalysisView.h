@@ -9,12 +9,7 @@
 #include "Analysis/DAStftResult.h"
 #include "Analysis/DAPeakResult.h"
 
-class QSlider;
-class QComboBox;
-class QCheckBox;
-class QDoubleSpinBox;
 class QTimer;
-class QToolBar;
 class QResizeEvent;
 class QPixmap;
 
@@ -44,9 +39,9 @@ class DAStftRasterData;
  * 图元策略：分析结果类图元标 transient（加载后重算重建）；峰值标记非 transient（T9 写入工程）。
  * 视图不自己算频谱与包络：长任务由外部（UI 层的 worker）在 Python 守护线程算完回填。
  *
- * 注：T7 阶段临时用视图底部 QToolBar 承载原内联控件（TODO(T8)：迁移到 Ribbon 上下文标签与
- * 窗口底部工具栏）。业务状态（当前通道/时间/跟随/色带/dB 下限等）全部保存在成员变量中，
- * 临时工具栏只是它们的视图，T8 删除工具栏后 setter/getter 语义不变。
+ * 注：视图内不留 inline 控件（除播放头/STFT 矩形等画布元素）：显示类控件在 Ribbon
+ * 上下文标签、播放类在窗口底部工具栏、外观类在右侧设置面板（T8）；本类的 setter/getter
+ * 是这些入口共同操作的状态源。
  */
 class DASignalAnalysisView : public QWidget
 {
@@ -144,10 +139,6 @@ public:
     QList< qreal > gridColumnSizes() const;
     // 恢复网格比例（尺寸不符/非法值忽略）
     void setGridSizes(const QList< qreal >& rows, const QList< qreal >& cols);
-    // 兼容旧存档接口（T7 临时保留供旧 UI.cpp 编译，T8 改为 gridRowSizes/gridColumnSizes 后删除）
-    QList< int > verticalSplitterSizes() const;
-    QList< int > horizontalSplitterSizes() const;
-    void setSplitterSizes(const QList< int >& vertical, const QList< int >& horizontal);
 
 Q_SIGNALS:
     // 请求外部计算频谱（参数变化或首次显示）
@@ -185,8 +176,6 @@ private Q_SLOTS:
 private:
     void buildUI();
     void buildFigure();
-    // T7 临时底部工具栏（TODO(T8)：删除，控件迁 Ribbon/窗口底部工具栏）
-    void buildTemporaryToolbar();
     void rebuildWaterfall();
     void rebuildWavePlot();
     void rebuildSpectrumPlot();
@@ -204,8 +193,6 @@ private:
     double dbReferenceValue() const;
     // 按包络统计信号峰值：原始峰值与 dBFS 参考峰值（去直流/去趋势口径，评审 N-C2）
     void updateSignalPeaks();
-    // 让临时工具栏控件反映当前成员状态（防止程序化 setter 与控件不同步）
-    void syncTemporaryToolbar();
 
 private:
     DASignalPtr mSignal;
@@ -227,8 +214,6 @@ private:
     DAChartWidget* mSpectrumChart { nullptr };
     DAChartWidget* mHeatmapChart { nullptr };
     DAChart3DWidget* mWaterfallChart { nullptr };
-    // 网格比例是否已被外部（存档恢复）显式设置，未设置时首次显示用默认比例
-    bool mGridSizesApplied { false };
     // 当前激活子图是否为 3D（点击 3D 置 true，点击任一 2D 子图置 false）
     bool mCurrentIs3D { false };
 
@@ -246,15 +231,7 @@ private:
     // 频率轴模式：false 线性 / true 对数
     bool mLogFrequency { false };
 
-    // T7 临时工具栏（TODO(T8)：删除成员与 buildTemporaryToolbar/syncTemporaryToolbar）
-    QToolBar* mTempToolbar { nullptr };
-    QComboBox* mChannelCombo { nullptr };
-    QComboBox* mFreqAxisCombo { nullptr };
-    QComboBox* mColormapCombo { nullptr };
-    QDoubleSpinBox* mDbFloorSpin { nullptr };
-    QCheckBox* mFollowSliderCheck { nullptr };
-    QCheckBox* mAutoScrollCheck { nullptr };
-    QSlider* mTimeSlider { nullptr };
+    // T7 临时工具栏已删除（T8）：控件迁到 Ribbon 上下文标签与窗口底部工具栏
     QTimer* mResizeDebounce { nullptr };
 
     // 图元

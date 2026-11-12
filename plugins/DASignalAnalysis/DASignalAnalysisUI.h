@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QAction>
 #include <QHash>
+#include <QList>
 #include <QPointer>
 #include <memory>
 #include "Signal/DASignal.h"
@@ -17,7 +18,13 @@
 
 class QMenu;
 class QActionGroup;
+class QCheckBox;
+class QComboBox;
+class QDoubleSpinBox;
+class QSlider;
+class QToolBar;
 class SARibbonCategory;
+class SARibbonContextCategory;
 class SARibbonPanel;
 
 namespace DA
@@ -25,7 +32,10 @@ namespace DA
 class DACoreInterface;
 class DAUIInterface;
 class DAActionsInterface;
+class DADockingAreaInterface;
+class DAFigureWidget;
 class DASignalAnalysisView;
+class DASignalAnalysisSettingContext;
 class DAPeakDockWidget;
 class DASignalPlayer;
 class DAAbstractArchiveTask;
@@ -58,6 +68,16 @@ public:
     void retranslateUi();
 
     DASignalAnalysisPage* page() const;
+    // 当前信号视图（页面未创建/无信号时返回 nullptr；provider 与上下文标签共用）
+    DASignalAnalysisView* currentView() const;
+    // 全部信号的 figure（设置上下文图元树用；无页面返回空）
+    QList< DAFigureWidget* > signalFigures() const;
+    // 显示/隐藏插件 Ribbon 上下文标签（provider 激活/失活时调用）
+    void setSignalContextCategoryVisible(bool on);
+    // 显示/隐藏窗口底部播放工具栏（provider 激活/失活时调用）
+    void setSignalToolbarVisible(bool on);
+    // 宿主停靠区接口（provider 注册设置上下文/图元树/设置面板用）
+    DADockingAreaInterface* getDockingArea() const;
 
     // 无信号时置灰全部依赖信号的动作（导入动作始终保持可用）
     void setSignalDependentActionsEnabled(bool on);
@@ -141,10 +161,28 @@ private Q_SLOTS:
     void relinkCurrentSignalSource();
     // 宿主清空工程（新建/加载前/快照回滚）：清理本插件信号、缓存与临时文件
     void onProjectCleaned();
+    // 上下文标签：通道切换 / 对数频率 / 色带菜单 / 工具开关 / 添加图元
+    void onContextChannelChanged(int index);
+    void onContextLogFrequencyToggled(bool on);
+    void onContextColormapTriggered(QAction* action);
+    void onContextToolToggled();
+    void onContextAddFigure();
+    // 当前视图「跟随滑块」变化（回勾底部工具栏）
+    void onViewFollowSliderToggled(bool on);
+    // 当前 2D/3D 子图切换：同步上下文标签动作状态
+    void onViewSubChartChanged();
 
 private:
     void buildCenterPage();
     void buildSignalCategory();
+    // 构建插件 Ribbon 上下文标签（Display/Tools 两组）
+    void buildSignalContextCategory();
+    // 构建窗口底部播放工具栏（默认隐藏）
+    void buildSignalToolbar();
+    // 当前视图状态 → 上下文标签控件（QSignalBlocker 防回环）
+    void syncSignalContextControls();
+    // 当前视图状态 → 底部工具栏控件（QSignalBlocker 防回环）
+    void syncSignalToolbar();
     void buildPeakTopNMenu();
     void buildAmplitudeModeMenu();
     void buildPeakDock();
@@ -210,6 +248,25 @@ private:
     DAUIInterface* mUI { nullptr };
     DAActionsInterface* mActions { nullptr };
     SARibbonCategory* mCategory { nullptr };
+    // 插件自建的 Ribbon 上下文标签（objectName 固定，供 show/hide 查找）
+    SARibbonContextCategory* mContextCategory { nullptr };
+    SARibbonCategory* mContextPage { nullptr };
+    SARibbonPanel* mContextDisplayPanel { nullptr };
+    SARibbonPanel* mContextToolsPanel { nullptr };
+    // 上下文标签控件与色带菜单
+    QComboBox* mContextChannelCombo { nullptr };
+    QMenu* mColormapMenu { nullptr };
+    QActionGroup* mColormapGroup { nullptr };
+    // 窗口底部播放工具栏（默认隐藏，provider 激活时显示）
+    QToolBar* mSignalToolbar { nullptr };
+    QCheckBox* mToolbarFollowCheck { nullptr };
+    QSlider* mToolbarTimeSlider { nullptr };
+    QDoubleSpinBox* mToolbarDbFloorSpin { nullptr };
+    QCheckBox* mToolbarAutoScrollCheck { nullptr };
+    // 峰值标记开关（视图无 getter：UI 记录状态并在新视图创建时应用）
+    bool mPeakMarkersVisible { false };
+    // 设置上下文提供者（注册到宿主停靠区，finalize 前注销并销毁）
+    DASignalAnalysisSettingContext* mSettingContext { nullptr };
     // 停靠窗口由 dockManager 拥有：宿主销毁 dockManager 时会被连带销毁，
     // 用 QPointer 防止 finalize()/后台回调在窗口已销毁后继续访问（关闭程序时崩溃）
     QPointer< ads::CDockWidget > mPageDock;
@@ -235,7 +292,6 @@ public:
     SARibbonPanel* mPanelPlayback { nullptr };  ///< 播放
     SARibbonPanel* mPanelAnalysis { nullptr };  ///< 分析
     SARibbonPanel* mPanelPeaks { nullptr };     ///< 峰值
-    SARibbonPanel* mPanelDisplay { nullptr };   ///< 显示
     SARibbonPanel* mPanelExport { nullptr };    ///< 导出
 
     //===================================================
@@ -267,7 +323,7 @@ public:
     //===================================================
     // 峰值（Peaks）
     //===================================================
-    QAction* actionPeakMarker { nullptr };  ///< 峰值标记（快捷开关）
+    QAction* actionPeakMarker { nullptr };  ///< 峰值标记（上下文标签 Display 组的快捷开关）
     QAction* actionPeakTopN { nullptr };    ///< 前 N 个峰值（10/20/50，带菜单）
     QAction* actionPeakWindow { nullptr };  ///< 峰值窗口显隐
     // 前 N 菜单项
@@ -276,18 +332,29 @@ public:
     QAction* actionPeakTop50 { nullptr };
 
     //===================================================
-    // 显示（Display）
+    // 显示（Display，位于 Ribbon 上下文标签）
     //===================================================
     QAction* actionWaterfall2D { nullptr };    ///< 二维时频热图
     QAction* actionWaterfall3D { nullptr };    ///< 三维曲面瀑布
     QAction* actionWaterfallHide { nullptr };  ///< 隐藏瀑布
     QAction* actionAmplitudeMode { nullptr };  ///< 幅值模式（带菜单）
-    QAction* actionPeakTable { nullptr };      ///< 峰值表页面切换（占位）
+    QAction* actionPeakTable { nullptr };      ///< 峰值表窗口显隐
+    QAction* actionLogFrequency { nullptr };   ///< 对数频率轴
+    QAction* actionColormap { nullptr };       ///< 色带（带菜单）
     // 幅值模式菜单项
     QAction* actionAmpPeak { nullptr };     ///< 峰值幅度
     QAction* actionAmpRms { nullptr };      ///< 均方根
     QAction* actionAmpDbFs { nullptr };     ///< dB（相对满量程）
     QAction* actionAmpDbRef1 { nullptr };   ///< dB（相对 1.0）
+
+    //===================================================
+    // 工具（Tools，位于 Ribbon 上下文标签）
+    //===================================================
+    QAction* actionZoom { nullptr };         ///< 缩放工具开关
+    QAction* actionPan { nullptr };          ///< 平移工具开关
+    QAction* actionCrosshair { nullptr };    ///< 十字线工具开关
+    QAction* actionDataPicking { nullptr };  ///< 数据拾取工具开关
+    QAction* actionAddFigure { nullptr };    ///< 添加图元
 
     //===================================================
     // 导出（Export）
