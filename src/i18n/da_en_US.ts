@@ -16704,12 +16704,47 @@ Reduce the precision, scan only the visible range, or cancel?</translation>
         <translation>Max</translation>
     </message>
     <message>
-        <location line="+134"/>
+        <location line="+25"/>
+        <source>the 3D surface preview interpolates sampled points into a 30x30 grid (%1 of %2 rows were used); transfer the chart to the chart area to rebuild it with all rows</source>
+        <translation>the 3D surface preview interpolates sampled points into a 30x30 grid (%1 of %2 rows were used); transfer the chart to the chart area to rebuild it with all rows</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>the data source cannot be read in full, so only %1 of %2 rows were drawn</source>
+        <translation>the data source cannot be read in full, so only %1 of %2 rows were drawn</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>the data was sampled before drawing</source>
+        <translation>the data was sampled before drawing</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>data fetching stopped at the budget limit to keep the UI responsive, so only part of the rows were read</source>
+        <translation>data fetching stopped at the budget limit to keep the UI responsive, so only part of the rows were read</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>the aggregation is computed from the sample, so bar heights and boxes are approximate</source>
+        <translation>the aggregation is computed from the sample, so bar heights and boxes are approximate</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>only the top %1 of %2 categories are drawn</source>
+        <translation>only the top %1 of %2 categories are drawn</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Quick plot is truncated: %1.</source>
+        <translation>Quick plot is truncated: %1.</translation>
+    </message>
+    <message>
+        <location line="+139"/>
         <source>Loading data...</source>
         <translation>Loading data...</translation>
     </message>
     <message>
-        <location line="-32"/>
+        <location line="-39"/>
         <source>Based on %1 of %2 sampled rows</source>
         <translation>Based on %1 of %2 sampled rows</translation>
     </message>
@@ -16735,7 +16770,7 @@ Reduce the precision, scan only the visible range, or cancel?</translation>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+181"/>
+        <location line="+188"/>
         <source>The data has changed, click Refresh to redraw</source>
         <translation>The data has changed, click Refresh to redraw</translation>
     </message>
@@ -16745,7 +16780,7 @@ Reduce the precision, scan only the visible range, or cancel?</translation>
         <translation>The previous chart type is not available for the new selection, switched to the default type</translation>
     </message>
     <message>
-        <location line="-337"/>
+        <location line="-389"/>
         <source>Contour</source>
         <translation>Contour</translation>
     </message>
@@ -16826,7 +16861,7 @@ Reduce the precision, scan only the visible range, or cancel?</translation>
         <translation>Requires 1 category column and at least 2 numeric columns</translation>
     </message>
     <message>
-        <location line="+237"/>
+        <location line="+289"/>
         <source>%1 (manual)</source>
         <translation>%1 (manual)</translation>
     </message>

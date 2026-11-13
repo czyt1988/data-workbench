@@ -86,6 +86,8 @@ public:
     static QString chartTypeRequirementText(DATableChartType type);
     // 聚合口径显示名
     static QString aggregationText(DATableChartAggregation aggregation);
+    // 绘制被截断（采样/预算受限/近似聚合/类别 Top N）时的警告文案；未截断返回空串
+    static QString truncationWarningText(const DATableChartBuildInfo& info, DATableChartType type);
 
 Q_SIGNALS:
     // 列名摘要变化（框架标题栏显示用）
@@ -129,6 +131,7 @@ private:
     QString mErrorText;   ///< 无法出图的错误文案（设置页显示）
     QString mLastMessage;
     QString mPendingNotice;
+    QString mLastTruncationWarning;  ///< 上次已提示过的截断警告（同因不重复刷消息区）
     bool mDataChanged { false };
     bool mManual { false };
     bool mRenderPending { false };

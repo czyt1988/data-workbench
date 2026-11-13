@@ -209,6 +209,51 @@ QString DATableQuickPlotWindow::aggregationText(DATableChartAggregation aggregat
 }
 
 /**
+ * @brief 绘制被截断时的警告文案
+ *
+ * 快速绘图默认按全量数据绘制；只有少数情况会少画数据：
+ * 3D 曲面预览按采样点插值、惰性/数据库表的聚合基于采样、取数触及预算上限、
+ * 分类图只画 Top N 类别。这些情况除设置页的只读提示外，还要在消息区发一条
+ * 警告，说明为什么不能全面绘制（以及可用的补救入口）。
+ * @param info 本次构建信息
+ * @param type 当前图型（用于区分 3D 曲面预览与其它采样来源）
+ * @return 警告文案；没有截断时返回空串
+ */
+QString DATableQuickPlotWindow::truncationWarningText(const DATableChartBuildInfo& info, DATableChartType type)
+{
+    const bool categoryTruncated = (info.displayedCategories > 0 && info.totalCategories > info.displayedCategories);
+    if (!info.sampled && !info.approximate && !info.sampleLimited && !categoryTruncated) {
+        return QString();
+    }
+    QStringList reasons;
+    if (info.sampled) {
+        if (type == DATableChartType::Surface3D) {
+            reasons.append(tr("the 3D surface preview interpolates sampled points into a 30x30 grid (%1 of %2 rows were used); transfer the chart to the chart area to rebuild it with all rows")
+                               .arg(info.sampledRows)
+                               .arg(info.totalRows));  // cn:3D 曲面预览把采样后的散点插值成 30×30 网格（只用了 %1 / %2 行）；可用「转入绘图区」按全量数据重建
+        } else if (info.totalRows > 0 && info.sampledRows < info.totalRows) {
+            reasons.append(tr("the data source cannot be read in full, so only %1 of %2 rows were drawn")
+                               .arg(info.sampledRows)
+                               .arg(info.totalRows));  // cn:数据源无法全量取数，只绘制了 %1 / %2 行
+        } else {
+            reasons.append(tr("the data was sampled before drawing"));  // cn:绘制前对数据做了采样
+        }
+    }
+    if (info.sampleLimited) {
+        reasons.append(tr("data fetching stopped at the budget limit to keep the UI responsive, so only part of the rows were read"));  // cn:取数触及预算上限（为避免界面卡死）而提前停止，只读取了部分行
+    }
+    if (info.approximate) {
+        reasons.append(tr("the aggregation is computed from the sample, so bar heights and boxes are approximate"));  // cn:聚合基于采样计算，柱高/箱线为近似值
+    }
+    if (categoryTruncated) {
+        reasons.append(tr("only the top %1 of %2 categories are drawn")
+                           .arg(info.displayedCategories)
+                           .arg(info.totalCategories));  // cn:只绘制了前 %1 类（共 %2 类）
+    }
+    return tr("Quick plot is truncated: %1.").arg(reasons.join(QStringLiteral("; ")));  // cn:快速绘图未绘制全部数据：%1。
+}
+
+/**
  * @brief 搭建绘图区（只有 2D/3D 堆叠区；设置项在右侧 Dock 的设置页）
  */
 void DATableQuickPlotWindow::buildUi()
@@ -323,6 +368,13 @@ void DATableQuickPlotWindow::renderNow()
         parts.append(tr("The data has changed, click Refresh to redraw"));  // cn:数据已变化，点击刷新
     }
     setNotice(parts.join(QStringLiteral("  \u00b7  ")));
+
+    // 绘制被截断时在消息窗口给出警告并说明原因；同一原因只提示一次，避免刷新时刷屏
+    const QString truncationWarning = truncationWarningText(info, mSpec.type);
+    if (!truncationWarning.isEmpty() && truncationWarning != mLastTruncationWarning) {
+        daWarning << truncationWarning;
+    }
+    mLastTruncationWarning = truncationWarning;
 
     Q_EMIT titleChanged(displayTitle());
     mLastMessage.clear();
