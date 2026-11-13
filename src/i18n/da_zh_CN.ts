@@ -16680,12 +16680,47 @@ Reduce the precision, scan only the visible range, or cancel?</source>
         <translation>最大值</translation>
     </message>
     <message>
-        <location line="+130"/>
+        <location line="+25"/>
+        <source>the 3D surface preview interpolates sampled points into a 30x30 grid (%1 of %2 rows were used); transfer the chart to the chart area to rebuild it with all rows</source>
+        <translation>3D 曲面预览把采样后的散点插值成 30×30 网格（只用了 %1 / %2 行）；可用「转入绘图区」按全量数据重建</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>the data source cannot be read in full, so only %1 of %2 rows were drawn</source>
+        <translation>数据源无法全量取数，只绘制了 %1 / %2 行</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>the data was sampled before drawing</source>
+        <translation>绘制前对数据做了采样</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>data fetching stopped at the budget limit to keep the UI responsive, so only part of the rows were read</source>
+        <translation>取数触及预算上限（为避免界面卡死）而提前停止，只读取了部分行</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>the aggregation is computed from the sample, so bar heights and boxes are approximate</source>
+        <translation>聚合基于采样计算，柱高/箱线为近似值</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>only the top %1 of %2 categories are drawn</source>
+        <translation>只绘制了前 %1 类（共 %2 类）</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Quick plot is truncated: %1.</source>
+        <translation>快速绘图未绘制全部数据：%1。</translation>
+    </message>
+    <message>
+        <location line="+139"/>
         <source>Loading data...</source>
         <translation>正在取数…</translation>
     </message>
     <message>
-        <location line="-32"/>
+        <location line="-39"/>
         <source>Based on %1 of %2 sampled rows</source>
         <translation>基于 %1 / %2 行采样</translation>
     </message>
@@ -16711,7 +16746,7 @@ Reduce the precision, scan only the visible range, or cancel?</source>
     </message>
     <message>
         <location line="+3"/>
-        <location line="+181"/>
+        <location line="+188"/>
         <source>The data has changed, click Refresh to redraw</source>
         <translation>数据已变化，点击刷新</translation>
     </message>
@@ -16721,7 +16756,7 @@ Reduce the precision, scan only the visible range, or cancel?</source>
         <translation>新选区不支持原来的图型，已切换为默认图型</translation>
     </message>
     <message>
-        <location line="-333"/>
+        <location line="-389"/>
         <source>Contour</source>
         <translation>等高线</translation>
     </message>
@@ -16802,7 +16837,7 @@ Reduce the precision, scan only the visible range, or cancel?</source>
         <translation>需要 1 列分类 + 至少 2 列数值</translation>
     </message>
     <message>
-        <location line="+233"/>
+        <location line="+289"/>
         <source>%1 (manual)</source>
         <translation>%1（手动配置）</translation>
     </message>
@@ -19137,7 +19172,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
     <message>
         <location line="+4"/>
-        <location line="+89"/>
+        <location line="+90"/>
         <source>The chart specification is incomplete</source>
         <translation>绘图规格不完整</translation>
     </message>
@@ -19172,7 +19207,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>当前没有可追加的图表</translation>
     </message>
     <message>
-        <location line="-570"/>
+        <location line="-571"/>
         <source>Failed to build the contour plot</source>
         <translation>构建等高线图失败</translation>
     </message>
@@ -19207,7 +19242,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>3D 图需要绘制在 3D 图表控件上</translation>
     </message>
     <message>
-        <location line="+61"/>
+        <location line="+62"/>
         <source>Failed to build the 3D surface</source>
         <translation>构建 3D 曲面失败</translation>
     </message>
