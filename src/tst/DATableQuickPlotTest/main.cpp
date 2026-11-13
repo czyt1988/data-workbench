@@ -321,6 +321,8 @@ private Q_SLOTS:
     void testRenderMultiColumnUsesFullData();
     // 用户场景：100 万行 pandas 折线全量绘制
     void testMillionRowsLineRender();
+    // 绘制被截断（采样/预算受限/近似聚合/类别 Top N）时的警告文案与原因
+    void testTruncationWarningText();
     void testSpecEquality();
     void testRenderLineAndHistogram();
     void testRenderBarSampled();
@@ -938,6 +940,70 @@ df = pd.DataFrame({"x": range(1000000), "y": [float(i) * 0.25 for i in range(100
     QVERIFY(!info.sampled);
     QVERIFY(!info.sampleLimited);
     QCOMPARE(info.sampledRows, 1000000);
+}
+
+/**
+ * @brief 绘制被截断时需要给出可读警告（消息窗口用）
+ *
+ * 全量绘制不提示；采样（3D 曲面预览 / 惰性源）、预算受限、近似聚合、
+ * 类别 Top N 截断都要给出「为什么不能全面绘制」的原因与补救入口；
+ * 仅缺失值被剔除不属于截断（属于数据本身），不应触发警告。
+ */
+void DATableQuickPlotTest::testTruncationWarningText()
+{
+    // 全量绘制：没有截断，不提示
+    DA::DATableChartBuildInfo full;
+    full.totalRows      = 1000000;
+    full.sampledRows    = 1000000;
+    full.droppedMissing = 3;  // 缺失值剔除不算「截断」
+    QVERIFY(DA::DATableQuickPlotWindow::truncationWarningText(full, DA::DATableChartType::Line).isEmpty());
+
+    // 3D 曲面预览：输入按采样点插值，提示 30x30 网格与「转入绘图区」补救入口
+    DA::DATableChartBuildInfo surface;
+    surface.totalRows   = 1000000;
+    surface.sampledRows = 2000;
+    surface.sampled     = true;
+    const QString surfaceText =
+        DA::DATableQuickPlotWindow::truncationWarningText(surface, DA::DATableChartType::Surface3D);
+    QVERIFY(!surfaceText.isEmpty());
+    QVERIFY(surfaceText.contains(QStringLiteral("30x30")));
+    QVERIFY(surfaceText.contains(QStringLiteral("2000")));
+    QVERIFY(surfaceText.contains(QStringLiteral("1000000")));
+    QVERIFY(surfaceText.contains(QStringLiteral("transfer"), Qt::CaseInsensitive));
+
+    // 惰性/数据库源聚合采样：说明数据源无法全量取数 + 聚合为近似值
+    DA::DATableChartBuildInfo lazyBar;
+    lazyBar.totalRows   = 500000;
+    lazyBar.sampledRows = 20000;
+    lazyBar.sampled     = true;
+    lazyBar.approximate = true;
+    const QString barText = DA::DATableQuickPlotWindow::truncationWarningText(lazyBar, DA::DATableChartType::Bar);
+    QVERIFY(!barText.isEmpty());
+    QVERIFY(barText.contains(QStringLiteral("20000")));
+    QVERIFY(barText.contains(QStringLiteral("500000")));
+    QVERIFY(barText.contains(QStringLiteral("approximate")));
+
+    // 取数预算耗尽：说明为避免界面卡死而提前停止
+    DA::DATableChartBuildInfo limited;
+    limited.totalRows     = 5000000;
+    limited.sampledRows   = 250000;
+    limited.sampled       = true;
+    limited.sampleLimited = true;
+    const QString limitedText =
+        DA::DATableQuickPlotWindow::truncationWarningText(limited, DA::DATableChartType::Line);
+    QVERIFY(!limitedText.isEmpty());
+    QVERIFY(limitedText.contains(QStringLiteral("budget")));
+
+    // 类别 Top N：即使没有采样也要提示只画了前 N 类
+    DA::DATableChartBuildInfo categories;
+    categories.displayedCategories = 30;
+    categories.totalCategories     = 100;
+    const QString catText =
+        DA::DATableQuickPlotWindow::truncationWarningText(categories, DA::DATableChartType::Bar);
+    QVERIFY(!catText.isEmpty());
+    QVERIFY(catText.contains(QStringLiteral("30")));
+    QVERIFY(catText.contains(QStringLiteral("100")));
+    QVERIFY(catText.contains(QStringLiteral("categories")));
 }
 
 void DATableQuickPlotTest::testSpecEquality()
