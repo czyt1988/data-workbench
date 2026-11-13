@@ -15,7 +15,7 @@ plugins/DASignalAnalysis/
 ├── Page/
 │   ├── DASignalAnalysisPage.*    # 页面：QTabBar + QStackedWidget（每信号一个视图）
 │   ├── DASignalAnalysisView.*    # 单信号视图：DAFigureWidget 2×2 网格（波形+频谱+热图/三维瀑布+播放头）
-│   ├── DASignalAnalysisSettingContext.*  # 设置上下文 provider（页面 dock 激活时接管设置面板/图元树/上下文标签）
+│   ├── DASignalAnalysisSettingContext.*  # 设置上下文 provider（页面 dock 激活时接管设置面板/图元树/上下文标签，并声明内置「绘图操作」的 figure 目标）
 │   ├── DASignalChartExport.*     # 导出助手（整页/当前子图 PNG/SVG/PDF + 剪贴板）
 │   ├── DAPeakCurvePlotSamples.*  # 峰值曲线渲染采样（点/折线断开口径，v1.6）
 │   └── DAPeakDockWidget.*        # 峰值停靠窗口（表 2/3 + 曲线 1/3）
@@ -290,3 +290,26 @@ python -I -m pytest tests/test_signal_dsp.py tests/test_signal_import.py -q   # 
   （阈值换算、连续段断开位置、缺帧断开、timeOrigin 平移、阈值 0 的旧行为、越界空结果）。
 - **注意**：这是显示层口径，不改变 D10 的计算语义（每帧独立取前 N）；不要为了「连成轨迹」
   改成跨帧匹配/跟踪，那属于新功能（需另立方案）。
+
+## v1.7 修正要点（接入内置「绘图操作」上下文，2026-11-13）
+
+- **目标**：信号分析窗口激活时，除插件自己的「信号分析」上下文标签外，还要显示内置
+  「绘图操作」上下文标签，并把网格/缩放/平移/拾取/图例/主题/复制/导出/选区/标记等动作
+  作用到当前信号 figure（不再只保留插件自建的四个工具开关）。
+- **宿主契约**：`DASettingContextProvider` 新增 `virtual DAFigureWidget* chartContextFigure() const`；
+  `DASignalAnalysisSettingContext` 返回当前视图 figure（无视图为 nullptr）。宿主据此显示/隐藏
+  内置 Chart 上下文并路由 `DAAppController::getChartContextFigure()/getChartContextChart()`。
+  **插件不要自己 show/hide 内置 Chart 上下文**。
+- **内部变化通知**：切信号、切 2D/3D 子图后 `refreshTarget()` 末尾调用
+  `DADockingAreaInterface::notifySettingContextChanged()`；失活还原后也要 notify
+  （注册表已先清空 current provider，卸载/注销路径靠它恢复宿主状态）。
+- **重复工具移除**：不再自建 `actionZoom/actionPan/actionCrosshair/actionDataPicking`
+  （内置标签已提供）；「信号显示」页 Tools 只保留「添加图元」。
+- **SF-12 同步改法**：交互工具由内置标签开关后，插件监听当前 `DAChartWidget::chartPropertiesChanged`
+  （先断后连、QPointer 防悬空），仅在 `ZoomStateChanged/PanStateChanged/CrosshairStateChanged`
+  时重算「点击定位」互斥；`finalize()` 开头解绑。
+- **结构性动作**：内置 Chart 页的「新建绘图窗口/新建坐标系/调整子图大小/数据探针」由宿主在
+  插件上下文中置灰；「应用到所有绘图」只作用于当前信号 figure 的二维子图。
+- **3D 子图**：内置 Chart 标签保持显示；主题/复制/导出可用，2D 类动作置灰。
+- **文档**：宿主侧机制见 `docs/zh/dev-guide/ui/setting-context-provider.md`
+  §内置绘图操作上下文（chartContextFigure）。

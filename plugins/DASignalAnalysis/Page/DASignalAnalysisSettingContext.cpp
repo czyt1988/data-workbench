@@ -103,7 +103,9 @@ void DASignalAnalysisSettingContext::activateSettingContext()
  * 1. 隐藏 Ribbon 上下文标签与窗口底部工具栏；
  * 2. 图元树恢复宿主绘图操作窗口（setChartOperateWidget 会清空并以宿主 figure 列表重建）；
  * 3. 设置面板恢复为 Chart 页，target 为宿主当前 figure 的当前 2D 子图（取不到则 setPlot(nullptr)）；
- * 4. 解绑页面/视图信号，清激活标志。
+ * 4. 结束信号 figure 上可能仍激活的图表编辑器（选区/标记由内置「绘图操作」触发）；
+ * 5. 解绑页面/视图信号，清激活标志；
+ * 6. 通知宿主刷新绘图上下文（此时注册表已清空当前 provider，宿主会恢复绘图区动作状态）。
  *
  * 幂等：未激活时调用直接返回，不触碰界面。
  */
@@ -139,7 +141,16 @@ void DASignalAnalysisSettingContext::deactivateSettingContext()
             }
         }
     }
-    // 4) 解绑信号
+    // 4) 结束信号 figure 上可能仍激活的图表编辑器：内置「绘图操作」的选区/标记工具
+    //    以 beginChartEditor 进入编辑态，失活后不再有对应该 figure 的结束入口，需在此收尾
+    if (DASignalAnalysisView* view = currentView()) {
+        if (DAFigureWidget* figure = view->figure()) {
+            if (figure->isChartEditorActive()) {
+                figure->endChartEditor();
+            }
+        }
+    }
+    // 5) 解绑信号
     if (mUI) {
         if (DASignalAnalysisPage* page = mUI->page()) {
             QObject::disconnect(page, &DASignalAnalysisPage::currentSignalChanged, this, nullptr);
@@ -147,6 +158,13 @@ void DASignalAnalysisSettingContext::deactivateSettingContext()
     }
     unbindCurrentView();
     mActive = false;
+    // 6) 通知宿主刷新绘图上下文：注销/卸载路径不走 APP 的固定窗口路由，需要显式通知
+    //    （注册表已清空当前 provider，宿主据此恢复绘图区动作状态并收起内置「绘图操作」标签）
+    if (mUI) {
+        if (DADockingAreaInterface* dockingArea = mUI->getDockingArea()) {
+            dockingArea->notifySettingContextChanged();
+        }
+    }
 }
 
 /**
@@ -167,10 +185,29 @@ QUndoStack* DASignalAnalysisSettingContext::contextUndoStack() const
 }
 
 /**
+ * @brief 本上下文的绘图操作目标：当前信号视图的 figure
+ *
+ * 宿主在内置「绘图操作」上下文标签显示期间把绘图域动作（网格/缩放/拾取/主题/导出/
+ * 选区/标记等）路由到该 figure；返回 nullptr 表示当前没有可操作的信号图，宿主会
+ * 隐藏内置「绘图操作」上下文标签并禁用相关动作。
+ * @return 当前信号 figure；页面未创建或无当前视图时返回 nullptr
+ */
+DAFigureWidget* DASignalAnalysisSettingContext::chartContextFigure() const
+{
+    DASignalAnalysisView* view = currentView();
+    if (nullptr == view) {
+        return nullptr;
+    }
+    return view->figure();
+}
+
+/**
  * @brief 激活状态下刷新设置面板 target 与图元树当前 figure
  *
  * 只重做 activateSettingContext() 的第 2 步（设置页 target 与图元树），
  * 不重复 raise 设置 dock，也不改上下文标签/底部工具栏显隐。
+ * 结束后通知宿主刷新绘图上下文：信号/子图切换会改变 chartContextFigure() 与
+ * 内置「绘图操作」动作的勾选状态，宿主据此重新回灌 Ribbon 并同步动作可用性。
  */
 void DASignalAnalysisSettingContext::refreshTarget()
 {
@@ -179,6 +216,9 @@ void DASignalAnalysisSettingContext::refreshTarget()
     }
     applySettingTarget();
     updateChartManageTarget();
+    if (DADockingAreaInterface* dockingArea = mUI->getDockingArea()) {
+        dockingArea->notifySettingContextChanged();
+    }
 }
 
 /**
@@ -191,15 +231,23 @@ bool DASignalAnalysisSettingContext::isActive() const
 }
 
 /**
- * @brief 信号标签页切换：重新绑定新视图并刷新设置 target
+ * @brief 信号标签页切换：结束旧 figure 的图表编辑器、重新绑定新视图并刷新设置 target
  *
  * 页面切信号后当前视图对象整体变化，旧的 currentSubChartChanged 连接必须解到新视图上，
- * 否则切子图时设置面板 target 不再跟随。
+ * 否则切子图时设置面板 target 不再跟随。若旧信号 figure 上仍有内置「绘图操作」的
+ * 选区/标记编辑器处于激活态，先结束它，避免用户切走后旧 figure 停留在编辑态。
  */
 void DASignalAnalysisSettingContext::onPageCurrentSignalChanged()
 {
     if (!mActive) {
         return;
+    }
+    if (mView) {
+        if (DAFigureWidget* oldFigure = mView->figure()) {
+            if (oldFigure->isChartEditorActive()) {
+                oldFigure->endChartEditor();
+            }
+        }
     }
     bindCurrentView();
     refreshTarget();

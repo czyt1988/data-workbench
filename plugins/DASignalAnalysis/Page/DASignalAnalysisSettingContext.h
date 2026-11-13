@@ -9,6 +9,7 @@ class QUndoStack;
 namespace DA
 {
 class DASignalAnalysisUI;
+class DAFigureWidget;
 
 /**
  * @brief 信号分析页的设置上下文提供者
@@ -30,6 +31,8 @@ public:
     void deactivateSettingContext() override;
     // 当前信号 figure 的撤销栈
     QUndoStack* contextUndoStack() const override;
+    // 绘图操作目标：当前信号 figure；无视图时返回 nullptr（宿主据此显示/隐藏内置「绘图操作」上下文）
+    DAFigureWidget* chartContextFigure() const override;
 
     // 激活状态下刷新设置面板 target 与图元树当前 figure（切信号/子图时调用）
     void refreshTarget();

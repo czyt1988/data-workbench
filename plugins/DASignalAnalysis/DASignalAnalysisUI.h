@@ -14,6 +14,7 @@
 #include "Analysis/DAPeakResult.h"
 // QPointer 成员要求完整类型（Qt6 的 QPointer 内部用 std::is_base_of 校验）
 #include "DockWidget.h"
+#include "DAChartWidget.h"
 #include "Page/DASignalAnalysisPage.h"
 
 class QMenu;
@@ -170,11 +171,10 @@ private Q_SLOTS:
     void relinkCurrentSignalSource();
     // 宿主清空工程（新建/加载前/快照回滚）：清理本插件信号、缓存与临时文件
     void onProjectCleaned();
-    // 上下文标签：通道切换 / 对数频率 / 色带菜单 / 工具开关 / 添加图元
+    // 上下文标签：通道切换 / 对数频率 / 色带菜单 / 添加图元
     void onContextChannelChanged(int index);
     void onContextLogFrequencyToggled(bool on);
     void onContextColormapTriggered(QAction* action);
-    void onContextToolToggled();
     void onContextAddFigure();
     // 当前视图「跟随滑块」变化（回勾底部工具栏）
     void onViewFollowSliderToggled(bool on);
@@ -190,6 +190,10 @@ private:
     void buildSignalToolbar();
     // 当前视图状态 → 上下文标签控件（QSignalBlocker 防回环）
     void syncSignalContextControls();
+    // 绑定当前 2D 子图的属性变化（内置「绘图操作」切换缩放/平移/十字线后同步 SF-12）
+    void bindCurrentChartSignals();
+    // 解绑当前 2D 子图的属性变化并清空绑定指针（先断后连，QPointer 防悬空）
+    void unbindCurrentChartSignals();
     // 当前视图状态 → 底部工具栏控件（QSignalBlocker 防回环）
     void syncSignalToolbar();
     void buildPeakTopNMenu();
@@ -280,6 +284,10 @@ private:
     bool mPeakMarkersVisible { false };
     // 设置上下文提供者（注册到宿主停靠区，finalize 前注销并销毁）
     DASignalAnalysisSettingContext* mSettingContext { nullptr };
+    // 当前绑定 chartPropertiesChanged 的 2D 子图：用户经内置「绘图操作」标签切换
+    // 缩放/平移/十字线后，本插件据此重新计算「点击定位」互斥（SF-12）
+    QPointer< DAChartWidget > mBoundChart;
+    QMetaObject::Connection mChartPropertiesConnection;
     // 停靠窗口由 dockManager 拥有：宿主销毁 dockManager 时会被连带销毁，
     // 用 QPointer 防止 finalize()/后台回调在窗口已销毁后继续访问（关闭程序时崩溃）
     QPointer< ads::CDockWidget > mPageDock;
@@ -369,10 +377,7 @@ public:
     //===================================================
     // 工具（Tools，位于 Ribbon 上下文标签）
     //===================================================
-    QAction* actionZoom { nullptr };         ///< 缩放工具开关
-    QAction* actionPan { nullptr };          ///< 平移工具开关
-    QAction* actionCrosshair { nullptr };    ///< 十字线工具开关
-    QAction* actionDataPicking { nullptr };  ///< 数据拾取工具开关
+    // 缩放/平移/十字线/数据拾取等交互工具已由内置「绘图操作」上下文标签提供，本插件不再重复
     QAction* actionAddFigure { nullptr };    ///< 添加图元
 
     //===================================================

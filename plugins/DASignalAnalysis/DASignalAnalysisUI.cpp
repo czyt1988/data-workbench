@@ -1130,22 +1130,11 @@ void DASignalAnalysisUI::buildSignalContextCategory()
     actionPeakTable = createIconAction("actionSignalPeakTable", pluginIcon("peaksWindow.svg"), true);
     mContextDisplayPanel->addMediumAction(actionPeakTable);
 
-    // ---------- Tools：缩放 / 平移 / 十字线 / 数据拾取 / 添加图元 ----------
+    // ---------- Tools：添加图元 ----------
+    // 缩放/平移/十字线/数据拾取等交互工具由内置「绘图操作」上下文标签提供，这里不再重复放置，
+    // 避免两个上下文页出现同名开关且状态各自同步。Tools 页只保留插件特有的「添加图元」。
     mContextToolsPanel = mContextPage->addPanel(tr("Tools"));  // cn:工具
     mContextToolsPanel->setObjectName(QString::fromUtf8(cPanelContextToolsName));
-    actionZoom        = createIconAction("actionSignalToolZoom", appIcon("chart-zoomer.svg"), true);
-    actionPan         = createIconAction("actionSignalToolPan", appIcon("chart-pan.svg"), true);
-    actionCrosshair   = createIconAction("actionSignalToolCrosshair", appIcon("chart-corss-marker.svg"), true);
-    actionDataPicking = createIconAction("actionSignalToolDataPicking", appIcon("chart-picker-xy.svg"), true);
-    connect(actionZoom, &QAction::toggled, this, &DASignalAnalysisUI::onContextToolToggled);
-    connect(actionPan, &QAction::toggled, this, &DASignalAnalysisUI::onContextToolToggled);
-    connect(actionCrosshair, &QAction::toggled, this, &DASignalAnalysisUI::onContextToolToggled);
-    connect(actionDataPicking, &QAction::toggled, this, &DASignalAnalysisUI::onContextToolToggled);
-    mContextToolsPanel->addLargeAction(actionZoom);
-    mContextToolsPanel->addLargeAction(actionPan);
-    mContextToolsPanel->addLargeAction(actionCrosshair);
-    mContextToolsPanel->addLargeAction(actionDataPicking);
-    mContextToolsPanel->addSeparator();
     // 添加图元：复用宿主 DADialogChartGuide，目标 = 当前视图的当前子图
     actionAddFigure = createIconAction("actionSignalAddFigure", appIcon("addFigure.svg"), false);
     connect(actionAddFigure, &QAction::triggered, this, &DASignalAnalysisUI::onContextAddFigure);
@@ -1300,7 +1289,9 @@ void DASignalAnalysisUI::buildSignalToolbar()
 /**
  * @brief 当前视图状态 → 上下文标签控件
  *
- * 通道下拉/对数频率/色带/瀑布模式/峰值标记/幅值模式/工具开关全部跟随当前视图；
+ * 通道下拉/对数频率/色带/瀑布模式/峰值标记/幅值模式全部跟随当前视图；
+ * 当前 2D 子图的交互工具状态（缩放/平移/十字线）只用于「点击定位」互斥（SF-12），
+ * 交互工具本身由内置「绘图操作」上下文标签提供。
  * 写控件时用 QSignalBlocker 防回环（否则回填会再触发一次写回视图）。
  */
 void DASignalAnalysisUI::syncSignalContextControls()
@@ -1392,39 +1383,69 @@ void DASignalAnalysisUI::syncSignalContextControls()
         amplitudeAction->setEnabled(view != nullptr);
         amplitudeAction->setChecked(true);
     }
-    // 工具开关：状态与当前 2D 子图一致；无子图（或 3D 激活取不到 2D 子图）时禁用
+    // 「添加图元」可用性：需要当前视图 figure 与当前 2D 子图
     DAChartWidget* chart = (view ? view->currentChart() : nullptr);
     const bool chartAvailable = (chart != nullptr);
-    if (actionZoom) {
-        const QSignalBlocker blocker(actionZoom);
-        actionZoom->setEnabled(chartAvailable);
-        actionZoom->setChecked(chartAvailable && chart->isZoomEnabled());
-    }
-    if (actionPan) {
-        const QSignalBlocker blocker(actionPan);
-        actionPan->setEnabled(chartAvailable);
-        actionPan->setChecked(chartAvailable && chart->isPanEnabled());
-    }
-    if (actionCrosshair) {
-        const QSignalBlocker blocker(actionCrosshair);
-        actionCrosshair->setEnabled(chartAvailable);
-        actionCrosshair->setChecked(chartAvailable && chart->isCrosshairEnabled());
-    }
-    if (actionDataPicking) {
-        const QSignalBlocker blocker(actionDataPicking);
-        actionDataPicking->setEnabled(chartAvailable);
-        actionDataPicking->setChecked(chartAvailable && chart->isXYValuePickingEnabled());
-    }
     if (actionAddFigure) {
         actionAddFigure->setEnabled(view && view->figure() && chartAvailable);
     }
     // 「点击波形即定位」与交互工具互斥（SF-12）：缩放/平移/十字线任一启用时关闭，
-    // 避免按下拖动瞬间播放头跳位；全关时恢复
+    // 避免按下拖动瞬间播放头跳位；全关时恢复。交互工具由内置「绘图操作」上下文标签
+    // 负责开关，本插件只读取当前子图状态
     if (view) {
         const bool seekEnabled =
             !(chartAvailable && (chart->isZoomEnabled() || chart->isPanEnabled() || chart->isCrosshairEnabled()));
         view->setSeekEnabled(seekEnabled);
     }
+    // 当前 2D 子图可能已被切走：重绑属性变化信号，保证用户经内置「绘图操作」标签
+    // 切换缩放/平移/十字线后「点击定位」互斥仍正确（SF-12）
+    bindCurrentChartSignals();
+}
+
+/**
+ * @brief 绑定当前 2D 子图的 chartPropertiesChanged
+ *
+ * 缩放/平移/十字线改由内置「绘图操作」上下文标签开关后，本插件必须监听当前子图状态，
+ * 才能在工具被打开/关闭时同步「点击定位」互斥（SF-12）。
+ * 先比较成员绑定的图元，未变化则不重复连接；换图元时先断旧连接再用 QPointer 记录新图元。
+ */
+void DASignalAnalysisUI::bindCurrentChartSignals()
+{
+    DASignalAnalysisView* view = currentView();
+    DAChartWidget* chart       = (view ? view->currentChart() : nullptr);
+    if (mBoundChart == chart) {
+        return;
+    }
+    unbindCurrentChartSignals();
+    if (nullptr == chart) {
+        return;
+    }
+    mBoundChart = chart;
+    mChartPropertiesConnection =
+        connect(chart, &DAChartWidget::chartPropertiesChanged, this, [this](DAChartWidget* changedChart,
+                                                                           DAChartWidget::ChartPropertyChangeFlags flag) {
+            Q_UNUSED(changedChart);
+            // 只有影响 SF-12 的交互工具状态变化才需要刷新（其它属性变化不触碰点击定位）
+            if (flag.testFlag(DAChartWidget::ZoomStateChanged) || flag.testFlag(DAChartWidget::PanStateChanged)
+                || flag.testFlag(DAChartWidget::CrosshairStateChanged)) {
+                syncSignalContextControls();
+            }
+        });
+}
+
+/**
+ * @brief 断开当前 2D 子图的属性变化连接并清空绑定指针
+ *
+ * 图元可能已随视图销毁：连接对象仍可 disconnect（Qt 允许断开已失效连接），
+ * QPointer 同步置空，避免后续比较/解引用悬空指针。
+ */
+void DASignalAnalysisUI::unbindCurrentChartSignals()
+{
+    if (mChartPropertiesConnection) {
+        QObject::disconnect(mChartPropertiesConnection);
+        mChartPropertiesConnection = QMetaObject::Connection();
+    }
+    mBoundChart.clear();
 }
 
 /**
@@ -1512,39 +1533,6 @@ void DASignalAnalysisUI::onContextColormapTriggered(QAction* action)
     }
     if (DASignalAnalysisView* view = currentView()) {
         view->setColormapName(name);
-    }
-}
-
-/**
- * @brief 上下文标签工具开关：把开关状态映射到当前 2D 子图的交互控制
- *
- * 缩放/平移/十字线/XY 数据拾取互相独立，状态随当前子图同步（见 syncSignalContextControls）。
- * 交互工具启用/关闭后同步「点击定位」互斥状态（SF-12）。
- */
-void DASignalAnalysisUI::onContextToolToggled()
-{
-    auto* act = qobject_cast< QAction* >(sender());
-    if (nullptr == act) {
-        return;
-    }
-    DASignalAnalysisView* view = currentView();
-    DAChartWidget* chart       = (view ? view->currentChart() : nullptr);
-    if (nullptr == chart) {
-        return;
-    }
-    if (act == actionZoom) {
-        chart->enableZoom(act->isChecked());
-    } else if (act == actionPan) {
-        chart->enablePan(act->isChecked());
-    } else if (act == actionCrosshair) {
-        chart->enableCrosshair(act->isChecked());
-    } else if (act == actionDataPicking) {
-        chart->enableXYValuePicking(act->isChecked());
-    }
-    // 工具状态已变：按当前 chart 的工具状态刷新「点击定位」互斥（SF-12）
-    if (view) {
-        const bool seekEnabled = !(chart->isZoomEnabled() || chart->isPanEnabled() || chart->isCrosshairEnabled());
-        view->setSeekEnabled(seekEnabled);
     }
 }
 
@@ -2992,6 +2980,8 @@ void DASignalAnalysisUI::applyFiguresXml(const QByteArray& figuresXml, const DAC
  */
 void DASignalAnalysisUI::finalize()
 {
+    // 先解绑当前 2D 子图的属性变化连接：页面/dock 即将销毁，避免残留连接与悬空 QPointer
+    unbindCurrentChartSignals();
     // 保存插件偏好：峰值窗口显隐与上次色带（P2）；FFmpeg 路径等其它键原样保留。
     // 页面从未创建过的会话没有可保存的偏好（不能把其它会话的 peakDockVisible 覆盖掉）
     if (mUI && mPage) {
@@ -3148,9 +3138,7 @@ void DASignalAnalysisUI::finalize()
             actionPeakWindow,     actionWaterfall2D,     actionWaterfall3D,
             actionWaterfallHide,  actionAmplitudeMode,   actionExportPeaks,
             actionExportImage,    actionPeakTable,       actionRelinkSource,
-            actionLogFrequency,   actionColormap,        actionZoom,
-            actionPan,            actionCrosshair,       actionDataPicking,
-            actionAddFigure
+            actionLogFrequency,   actionColormap,        actionAddFigure
         };
         for (QAction* act : allActions) {
             if (act) {
@@ -3188,10 +3176,6 @@ void DASignalAnalysisUI::finalize()
     actionRelinkSource      = nullptr;
     actionLogFrequency      = nullptr;
     actionColormap          = nullptr;
-    actionZoom              = nullptr;
-    actionPan               = nullptr;
-    actionCrosshair         = nullptr;
-    actionDataPicking       = nullptr;
     actionAddFigure         = nullptr;
     mPanelOpen              = nullptr;
     mPanelSignal            = nullptr;
@@ -4062,9 +4046,7 @@ void DASignalAnalysisUI::setSignalDependentActionsEnabled(bool on)
         actionPeakWindow,   actionWaterfall2D,   actionWaterfall3D,
         actionWaterfallHide, actionAmplitudeMode, actionExportPeaks,
         actionExportImage,  actionPeakTable,     actionRelinkSource,
-        actionLogFrequency, actionColormap,      actionZoom,
-        actionPan,          actionCrosshair,     actionDataPicking,
-        actionAddFigure
+        actionLogFrequency, actionColormap,      actionAddFigure
     };
     for (QAction* act : acts) {
         if (act) {
@@ -4215,7 +4197,7 @@ void DASignalAnalysisUI::retranslateUi()
     if (actionAmpDbRef1) {
         actionAmpDbRef1->setText(tr("dB (re 1.0)"));  // cn:dB（相对 1.0）
     }
-    // 上下文标签新增动作（对数频率 / 色带 / 工具 / 添加图元）
+    // 上下文标签新增动作（对数频率 / 色带 / 添加图元）
     if (actionLogFrequency) {
         actionLogFrequency->setText(tr("Log frequency"));  // cn:对数频率
         actionLogFrequency->setToolTip(tr("Use a logarithmic frequency axis"));  // cn:使用对数频率轴
@@ -4223,22 +4205,6 @@ void DASignalAnalysisUI::retranslateUi()
     if (actionColormap) {
         actionColormap->setText(tr("Color Map"));  // cn:色带
         actionColormap->setToolTip(tr("Heatmap color map"));  // cn:热图色带
-    }
-    if (actionZoom) {
-        actionZoom->setText(tr("Zoom"));  // cn:缩放
-        actionZoom->setToolTip(tr("Enable zoom on the current chart"));  // cn:在当前图表启用缩放
-    }
-    if (actionPan) {
-        actionPan->setText(tr("Pan"));  // cn:平移
-        actionPan->setToolTip(tr("Enable panning on the current chart"));  // cn:在当前图表启用平移
-    }
-    if (actionCrosshair) {
-        actionCrosshair->setText(tr("Crosshair"));  // cn:十字线
-        actionCrosshair->setToolTip(tr("Show a crosshair on the current chart"));  // cn:在当前图表显示十字线
-    }
-    if (actionDataPicking) {
-        actionDataPicking->setText(tr("Data Pick"));  // cn:数据拾取
-        actionDataPicking->setToolTip(tr("Pick data values on the current chart"));  // cn:在当前图表拾取数据值
     }
     if (actionAddFigure) {
         actionAddFigure->setText(tr("Add Figure Item"));  // cn:添加图元
