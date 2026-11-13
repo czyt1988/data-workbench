@@ -398,6 +398,24 @@ DASettingContextProvider* DADockingAreaInterface::settingContextProviderFor(QWid
 }
 
 /**
+ * @brief 当前激活的设置上下文提供者
+ * @return 当前提供者指针，无当前项返回 nullptr
+ */
+DASettingContextProvider* DADockingAreaInterface::currentSettingContextProvider()
+{
+    return d_ptr->mSettingContextProviders.currentProvider();
+}
+
+/**
+ * @brief 当前激活的设置上下文提供者对应的 dock 内容
+ * @return dock 内容窗口，无当前项返回 nullptr
+ */
+QWidget* DADockingAreaInterface::currentSettingContextDockContent()
+{
+    return d_ptr->mSettingContextProviders.currentDockContent();
+}
+
+/**
  * @brief 广播 dock 内容被激活
  *
  * 由 APP 路由层在焦点变化/程序化 raise 时、执行上下文路由之前调用；插件可据此
@@ -407,6 +425,17 @@ DASettingContextProvider* DADockingAreaInterface::settingContextProviderFor(QWid
 void DADockingAreaInterface::notifyDockWidgetActivated(QWidget* dockContent)
 {
     Q_EMIT dockWidgetActivated(dockContent);
+}
+
+/**
+ * @brief 通知宿主当前设置上下文的目标已变化
+ *
+ * 插件切换内部文档（如信号分析切信号/子图）后调用；宿主据此重新同步内置「绘图操作」
+ * 上下文标签的动作目标、按钮状态与可用性。与 dockWidgetActivated 不同，它不参与上下文路由。
+ */
+void DADockingAreaInterface::notifySettingContextChanged()
+{
+    Q_EMIT settingContextChanged();
 }
 
 /**

@@ -32,6 +32,8 @@ public:
     explicit DAAppChartActionHandler(const DAAppActionHandlerDeps& deps, QObject* par = nullptr);
     // 建立本域的动作与信号绑定
     void initConnections();
+    // 同步绘图上下文动作的目标可用性（插件 provider 接管时禁用结构性/数据类动作并回灌状态）
+    void syncChartContextActions();
 
 public Q_SLOTS:
     // 绘图元素选中，信号由DAChartManageWidget发出
@@ -148,10 +150,15 @@ private Q_SLOTS:
     void onStatsGuideAccepted(const DA::DAStatsPlotRequest& req);
     // 同步「导出当前子图」动作可用性（无当前figure/无当前子图时置灰）
     void updateExportChartActionState();
+    // 2D 子图相关动作的可用性（3D 子图激活时置灰）
+    void setChart2DActionsEnabled(bool on);
+    // 清空图表编辑器动作勾选（不触发 onActionGroupChartEditorTriggered 的结束编辑分支）
+    void resetChartEditorActions();
 
 private:
     DAAppActionHandlerDeps mDeps;
     DADialogStatsChartGuide* mStatsChartGuideDlg { nullptr };  ///< 统计绘图引导对话框
+    bool mChartContextActive { false };  ///< 当前绘图上下文是否由插件 provider 接管（用于检测进入/离开）
 };
 }  // namespace DA
 

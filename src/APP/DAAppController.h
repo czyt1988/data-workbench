@@ -68,6 +68,7 @@ class DADataOperatePageWidget;
 class DAAppSettingDialog;
 class DAAppConfig;
 class DAPyWorkFlowEditWidget;
+class DASettingContextProvider;
 /**
  * @brief 控制层负责逻辑的对接
  */
@@ -142,7 +143,15 @@ public:
     QList< DAChartWidget* > gcas() const;
     bool applyToCharts(const FpChartWidgetApply& fp);
     // 获取需要操作的绘图
-    QList< DAChartWidget* > needOperateCharts() const;
+    QList< DAChartWidget* > needOperateCharts();
+    // 当前绘图上下文目标：设置上下文提供者激活时取其 figure，否则取宿主绘图窗口
+    DAFigureWidget* getChartContextFigure();
+    DAChartWidget* getChartContextChart();
+    QList< DAChartWidget* > getChartContextCharts();
+    // 当前绘图上下文是否由插件的设置上下文提供者接管
+    bool isChartContextFromProvider();
+    // 唤起当前绘图上下文所属区域（插件上下文时唤起插件 dock，否则唤起宿主绘图区）
+    void raiseChartContextArea();
     // 获取设置窗口
     DASettingContainerWidget* getSettingContainerWidget() const;
     // 判断当前是否是在绘图操作模式，就算绘图操作不在焦点，但绘图操作在前端，此函数也返回true
@@ -299,6 +308,8 @@ private Q_SLOTS:
     void onFocusedDockWidgetChanged(ads::CDockWidget* old, ads::CDockWidget* now);
     // 程序化raise dock窗口时激活context category
     void onDockWidgetRaised(QWidget* w);
+    // 设置上下文目标变化：同步内置绘图上下文标签显隐与绘图动作可用性
+    void onSettingContextChanged();
 
     //===================================================
     // DADataManageWidget
@@ -324,6 +335,12 @@ private:
     void initScripts();
     // 根据widget激活对应的context category
     void activateContextCategoryForWidget(QWidget* widget);
+    // 当前激活的设置上下文提供者（无则 nullptr）
+    DASettingContextProvider* activeSettingContextProvider();
+    // 按当前设置上下文显示/隐藏内置「绘图操作」上下文标签
+    void syncSettingContextChartCategory();
+    // 设置上下文目标变化后，刷新绘图上下文标签状态与动作可用性
+    void refreshChartContextUi();
     // 激活操作窗口当前的undo栈（焦点切到数据操作/绘图窗口时同步全局undo/redo action状态）
     void activateUndoStackForWidget(DAAbstractOperateWidget* w);
     // 注册 Agent 聊天窗口本地跳转链接处理器（da-figure:/da-data: 等协议，见 DAAgentLinkDispatcher）
@@ -352,6 +369,8 @@ private:
     QStringList mFileReadFilters;  ///< 包含支持的文件[Images (*.png *.xpm *.jpg)] [Text files (*.txt)]
     //
     LastFocusedOpertateWidgets mLastFocusedOpertateWidget;  ///< 最后获取焦点的操作窗口
+    // 内置「绘图操作」上下文标签是否因当前设置上下文提供者而显示（失活时据此收起）
+    bool mChartContextShownForSettingProvider { false };
                                                             //
     DAAppSettingDialog* mSettingDialog { nullptr };         ///< 设置窗口
     DAAppConfig* mConfig { nullptr };                                   ///< 设置类

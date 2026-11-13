@@ -228,6 +228,8 @@ void DAAppController::initConnection()
     connect(mDock->dockManager(), &ads::CDockManager::focusedDockWidgetChanged, this, &DAAppController::onFocusedDockWidgetChanged);
     // 程序化raise dock窗口时也激活context category
     connect(mDock, &DADockingAreaInterface::dockWidgetRaised, this, &DAAppController::onDockWidgetRaised);
+    // 插件设置上下文目标变化（切信号/子图、插件注销）时同步内置绘图上下文标签与动作可用性
+    connect(mDock, &DADockingAreaInterface::settingContextChanged, this, &DAAppController::onSettingContextChanged);
     //===================================================
     // 统计窗口（DADataStatsWidget）
     //===================================================

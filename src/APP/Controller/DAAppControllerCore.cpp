@@ -45,6 +45,7 @@
 #include "DAAppActions.h"
 #include "DAAppDataManager.h"
 #include "DAProjectInterface.h"
+#include "DASettingContextProvider.h"
 // plugin
 // Qt-Advanced-Docking-System
 #include "DockManager.h"
@@ -647,6 +648,134 @@ QList< DAChartWidget* > DAAppController::getAllCharts() const
     return getChartOperateWidget()->getAllCharts();
 }
 
+/**
+ * @brief 当前激活的设置上下文提供者
+ * @return 无 provider 接管时返回 nullptr
+ */
+DASettingContextProvider* DAAppController::activeSettingContextProvider()
+{
+    if (nullptr == mDock) {
+        return nullptr;
+    }
+    return mDock->currentSettingContextProvider();
+}
+
+/**
+ * @brief 当前绘图上下文目标 figure
+ *
+ * 插件设置上下文提供者接管时取 provider 声明的 figure（可能为空，此时不回退宿主，
+ * 避免绘图动作误作用到宿主绘图区）；否则取宿主绘图操作窗口的当前 figure。
+ * @return 目标 figure，无则 nullptr
+ */
+DAFigureWidget* DAAppController::getChartContextFigure()
+{
+    if (DASettingContextProvider* provider = activeSettingContextProvider()) {
+        return provider->chartContextFigure();
+    }
+    return getCurrentFigure();
+}
+
+/**
+ * @brief 当前绘图上下文目标子图
+ * @return 目标 figure 的当前 2D 子图，无则 nullptr
+ */
+DAChartWidget* DAAppController::getChartContextChart()
+{
+    DAFigureWidget* fig = getChartContextFigure();
+    return fig ? fig->getCurrentChart() : nullptr;
+}
+
+/**
+ * @brief 当前绘图上下文可用于「应用到所有绘图」的 2D 子图
+ *
+ * 插件上下文按用户确认口径只取当前信号 figure 的全部 2D 子图；宿主上下文保持原语义
+ * （全部绘图窗口的全部子图）。
+ * @return 2D 子图列表
+ */
+QList< DAChartWidget* > DAAppController::getChartContextCharts()
+{
+    if (activeSettingContextProvider() != nullptr) {
+        if (DAFigureWidget* fig = getChartContextFigure()) {
+            return fig->getCharts();
+        }
+        return {};
+    }
+    return getAllCharts();
+}
+
+/**
+ * @brief 当前绘图上下文是否由插件设置上下文提供者接管
+ * @return 接管返回 true
+ */
+bool DAAppController::isChartContextFromProvider()
+{
+    return activeSettingContextProvider() != nullptr;
+}
+
+/**
+ * @brief 唤起当前绘图上下文所属区域
+ *
+ * 插件上下文激活时唤起插件自己的 dock 内容（不能把焦点抢回宿主绘图区），
+ * 否则唤起宿主绘图区。
+ */
+void DAAppController::raiseChartContextArea()
+{
+    if (nullptr == mDock) {
+        return;
+    }
+    if (DASettingContextProvider* provider = activeSettingContextProvider()) {
+        Q_UNUSED(provider);
+        if (QWidget* dockContent = mDock->currentSettingContextDockContent()) {
+            mDock->raiseDockByWidget(dockContent);
+            return;
+        }
+    }
+    mDock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
+}
+
+/**
+ * @brief 按当前设置上下文同步内置「绘图操作」上下文标签的显隐
+ *
+ * provider 声明了绘图上下文 figure 时显示内置 Chart 上下文（隐藏 Data/Workflow），
+ * 否则收起固定上下文。只在「本次由 provider 显示」时收起，避免误关宿主路由刚显示的标签。
+ */
+void DAAppController::syncSettingContextChartCategory()
+{
+    if (nullptr == mDock) {
+        return;
+    }
+    DASettingContextProvider* provider = activeSettingContextProvider();
+    const bool wantChartContext       = (provider != nullptr && provider->chartContextFigure() != nullptr);
+    if (wantChartContext) {
+        mRibbon->hideContextCategory(DAAppRibbonArea::ContextCategoryData);
+        mRibbon->hideContextCategory(DAAppRibbonArea::ContextCategoryWorkflow);
+        mRibbon->showContextCategory(DAAppRibbonArea::ContextCategoryChart);
+        mChartContextShownForSettingProvider = true;
+    } else if (mChartContextShownForSettingProvider) {
+        mRibbon->hideContextCategory(DAAppRibbonArea::ContextCategoryChart);
+        mChartContextShownForSettingProvider = false;
+    }
+}
+
+/**
+ * @brief 刷新绘图上下文标签状态与动作可用性
+ */
+void DAAppController::refreshChartContextUi()
+{
+    syncSettingContextChartCategory();
+    if (mChartHandler) {
+        mChartHandler->syncChartContextActions();
+    }
+}
+
+/**
+ * @brief 设置上下文目标变化（插件切信号/切子图/注销时通知）
+ */
+void DAAppController::onSettingContextChanged()
+{
+    refreshChartContextUi();
+}
+
 QList< DAChartWidget* > DAAppController::gcas() const
 {
     return getAllCharts();
@@ -670,16 +799,20 @@ bool DAAppController::applyToCharts(const DAAppController::FpChartWidgetApply& f
 
 /**
  * @brief 获取需要操作的绘图
- * @return
+ *
+ * 目标由当前绘图上下文决定（插件 provider 的 figure 或宿主绘图窗口），并过滤空指针：
+ * 3D 子图激活/插件页无信号时当前 2D 子图为空，避免把 nullptr 传进应用回调。
+ * @return 需要操作的 2D 子图列表
  */
-QList< DAChartWidget* > DAAppController::needOperateCharts() const
+QList< DAChartWidget* > DAAppController::needOperateCharts()
 {
     QList< DAChartWidget* > ws;
     if (isApplyToAllCharts()) {
-        ws = getAllCharts();
-    } else {
-        ws.append(getCurrentChart());
+        ws = getChartContextCharts();
+    } else if (DAChartWidget* chart = getChartContextChart()) {
+        ws.append(chart);
     }
+    ws.removeAll(nullptr);
     return ws;
 }
 
@@ -780,11 +913,17 @@ void DAAppController::activateContextCategoryForWidget(QWidget* widget)
         mTableHandler->updateSortActionState();
     }
     if (nullptr == widget) {
-        // 焦点离开全部 dock 内容：先失活插件注册的设置上下文，再清空固定上下文标签
+        // 焦点离开全部 dock 内容：先失活插件注册的设置上下文（含内置绘图上下文标签），
+        // 再清空固定上下文标签
+        const bool hadProviderContext = (mDock && mDock->currentSettingContextProvider() != nullptr);
         if (mDock) {
             mDock->deactivateSettingContextProvider();
         }
+        if (hadProviderContext) {
+            refreshChartContextUi();
+        }
         mRibbon->hideContextCategory(DAAppRibbonArea::AllContextCategory);
+        mChartContextShownForSettingProvider = false;
         return;
     }
     // 路由判定抽成纯函数（可单测）：插件设置上下文提供者 > 数据/工作流/绘图操作窗口 > 数据管理 > 工具 dock
@@ -796,14 +935,25 @@ void DAAppController::activateContextCategoryForWidget(QWidget* widget)
         getChartOperateWidget(),
         getDataManageWidget());
     if (DAAppContextRoutePolicy::SettingContextProvider == route) {
-        // 插件提供者接管：先隐藏三个固定上下文分类（Chart/Data/Workflow），再激活 provider，
-        // 由 provider 自己显示设置页/上下文标签——否则「绘图」与插件上下文标签并存，
-        // Chart 分类的导出/复制/Resize 仍作用于 APP 绘图区（SF-07）。
+        // 插件提供者接管：由 provider 决定设置页/上下文标签。
+        // - provider 声明了绘图上下文 figure：显示内置「绘图操作」上下文标签，并把绘图域动作
+        //   路由到该 figure（APP 的 getChartContextFigure 等据此解析），隐藏 Data/Workflow；
+        // - 未声明：保持原有语义，三个固定上下文分类全部收起。
         // 此处不调用 deactivateSettingContextProvider：provider 激活期间由注册表管理当前项（重入保护）。
-        mRibbon->hideContextCategory(DAAppRibbonArea::AllContextCategory);
         if (mDock) {
+            DASettingContextProvider* provider = mDock->settingContextProviderFor(widget);
+            if (provider && provider->chartContextFigure()) {
+                mRibbon->hideContextCategory(DAAppRibbonArea::ContextCategoryData);
+                mRibbon->hideContextCategory(DAAppRibbonArea::ContextCategoryWorkflow);
+                mRibbon->showContextCategory(DAAppRibbonArea::ContextCategoryChart);
+                mChartContextShownForSettingProvider = true;
+            } else {
+                mRibbon->hideContextCategory(DAAppRibbonArea::AllContextCategory);
+                mChartContextShownForSettingProvider = false;
+            }
             mDock->activateSettingContextForWidget(widget);
         }
+        refreshChartContextUi();
         return;
     }
     // 焦点回到固定操作窗口：失活插件注册的设置上下文（恢复宿主的设置面板/图元树/上下文标签）。
@@ -813,7 +963,12 @@ void DAAppController::activateContextCategoryForWidget(QWidget* widget)
     if (mDock
         && (DAAppContextRoutePolicy::DataOperate == route || DAAppContextRoutePolicy::WorkFlowOperate == route
             || DAAppContextRoutePolicy::ChartOperate == route)) {
+        // 记录失活前是否由插件上下文接管：只有此时才需要收起内置绘图上下文并恢复宿主动作状态
+        const bool hadProviderContext = (mDock->currentSettingContextProvider() != nullptr);
         mDock->deactivateSettingContextProvider();
+        if (hadProviderContext) {
+            refreshChartContextUi();
+        }
     }
     switch (route) {
     case DAAppContextRoutePolicy::DataOperate: {

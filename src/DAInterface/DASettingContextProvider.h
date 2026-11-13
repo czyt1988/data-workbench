@@ -4,6 +4,8 @@ class QUndoStack;
 
 namespace DA
 {
+class DAFigureWidget;
+
 /**
  * @brief dock 内容窗口的「设置上下文提供者」
  *
@@ -29,6 +31,13 @@ public:
     virtual void deactivateSettingContext() = 0;
     // 本上下文的撤销栈（可为空，由宿主负责 setActive）
     virtual QUndoStack* contextUndoStack() const
+    {
+        return nullptr;
+    }
+    // 本上下文的绘图操作目标：非空时宿主会显示内置「绘图操作」上下文标签，
+    // 并把绘图域动作（样式/缩放/拾取/主题/导出/选区/标记等）路由到该 figure；
+    // 返回 nullptr 表示不接管绘图上下文（默认）。
+    virtual DAFigureWidget* chartContextFigure() const
     {
         return nullptr;
     }

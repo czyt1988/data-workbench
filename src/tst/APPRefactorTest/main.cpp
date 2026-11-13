@@ -39,6 +39,13 @@ public:
     {
         return undoStack;
     }
+    DA::DAFigureWidget* chartContextFigure() const override
+    {
+        return chartFigure;
+    }
+
+    // 绘图上下文目标（默认 nullptr；本测试不构造真实 figure）
+    DA::DAFigureWidget* chartFigure { nullptr };
 };
 }  // namespace
 
@@ -63,6 +70,7 @@ private Q_SLOTS:
     void testWindowStateSerialization_brokenPayload();
     // T6：设置上下文提供者注册表 + APP 路由
     void testSettingContextProvider_registerAndActivate();
+    void testSettingContextProvider_chartContextFigureDefault();
     void testSettingContextProvider_contextUndoStackActivated();
     void testSettingContextProvider_switchDeactivatesPrevious();
     void testSettingContextProvider_repeatedActivateKeepsContext();
@@ -239,6 +247,19 @@ void APPRefactorTest::testSettingContextProvider_registerAndActivate()
     QCOMPARE(provider.deactivateCount, 0);
     QCOMPARE(registry.currentProvider(), &provider);
     QCOMPARE(registry.currentDockContent(), &content);
+}
+
+// 提供者默认不接管绘图上下文（chartContextFigure 返回 nullptr），注册/激活行为保持不变
+void APPRefactorTest::testSettingContextProvider_chartContextFigureDefault()
+{
+    using namespace DA;
+    DASettingContextProviderRegistry registry;
+    QWidget content;
+    FakeSettingContextProvider provider;
+    registry.registerProvider(&content, &provider);
+
+    QVERIFY(registry.activateFor(&content));
+    QCOMPARE(provider.chartContextFigure(), nullptr);
 }
 
 // 提供者的 contextUndoStack 被 setActive（用 QUndoGroup 模拟真实场景：

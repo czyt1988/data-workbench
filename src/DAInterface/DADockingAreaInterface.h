@@ -112,8 +112,14 @@ public:
     void deactivateSettingContextProvider();
     // 查询 dock 内容对应的设置上下文提供者（未注册返回 nullptr）
     DASettingContextProvider* settingContextProviderFor(QWidget* dockContent);
+    // 当前激活的设置上下文提供者（无则返回 nullptr）
+    DASettingContextProvider* currentSettingContextProvider();
+    // 当前激活的设置上下文提供者对应的 dock 内容（无则返回 nullptr）
+    QWidget* currentSettingContextDockContent();
     // 广播 dock 内容被激活（框架内部在焦点变化/程序化 raise 路由前调用）
     void notifyDockWidgetActivated(QWidget* dockContent);
+    // 通知宿主「当前设置上下文的目标已变化」（插件切信号/子图后调用，宿主据此刷新绘图上下文标签）
+    void notifySettingContextChanged();
 
     // 获取中心区域
     ads::CDockAreaWidget* getCenterArea() const;
@@ -198,6 +204,9 @@ Q_SIGNALS:
 
     // 任意 dock 内容被激活时发射（焦点变化或程序化 raise，在上下文路由前发出）
     void dockWidgetActivated(QWidget* dockContent);
+
+    // 当前设置上下文的目标发生变化（由 notifySettingContextChanged 转发，APP 据此刷新绘图上下文）
+    void settingContextChanged();
 
 public:
     // 获取当前的场景
