@@ -225,6 +225,68 @@ QStringList peakItemKeys(const QDomElement& spectrumEle)
     }
     return keys;
 }
+
+/// 在候选集合里按匹配规则查找 figure 元素（不消费）：
+/// 1. signal-id 属性精确匹配（新存档；同名信号靠它区分）；
+/// 2. 无 signal-id 属性（旧存档）的元素按 signal-name 匹配；
+/// 3. 仍无命中时按 figure id "sig-"+signalName 回退（兼容未写 signal-name 的旧档）。
+QDomElement matchFigureElement(const QList< QDomElement >& candidates, qint64 signalId, const QString& signalName)
+{
+    const QString idText = QString::number(signalId);
+    for (const QDomElement& figureEle : candidates) {
+        if (figureEle.attribute(QStringLiteral("signal-id")) == idText) {
+            return figureEle;
+        }
+    }
+    for (const QDomElement& figureEle : candidates) {
+        // 旧存档没有 signal-id 属性：按信号名回退（新档的 signal-id 不参与名字匹配）
+        if (!figureEle.hasAttribute(QStringLiteral("signal-id"))
+            && figureEle.attribute(QStringLiteral("signal-name")) == signalName) {
+            return figureEle;
+        }
+    }
+    const QString figureId = QStringLiteral("sig-%1").arg(signalName);
+    for (const QDomElement& figureEle : candidates) {
+        if (figureEle.attribute(QStringLiteral("id")) == figureId) {
+            return figureEle;
+        }
+    }
+    return QDomElement();
+}
+
+/// 把 chart 元素 <items> 里已被其它子图消费的图元 key 摘除（防争用：一个 key 只 attach 一次），
+/// 新消费的 key 登记进 consumedItemKeys。
+void consumeChartItemKeys(QDomElement& chartEle, QSet< QString >& consumedItemKeys)
+{
+    QDomElement itemsEle = chartEle.firstChildElement(QStringLiteral("items"));
+    if (itemsEle.isNull()) {
+        return;
+    }
+    QDomNode itemNode = itemsEle.firstChild();
+    while (!itemNode.isNull()) {
+        const QDomNode nextNode = itemNode.nextSibling();  // 先取兄弟再决定是否移除
+        QDomElement itemEle     = itemNode.toElement();
+        if (itemEle.isNull() || itemEle.tagName() != QStringLiteral("item")) {
+            itemNode = nextNode;
+            continue;
+        }
+        const QString key = itemEle.attribute(QStringLiteral("key"));
+        if (key.isEmpty()) {
+            itemNode = nextNode;
+            continue;
+        }
+        if (consumedItemKeys.contains(key)) {
+            // 同一图元 key 已 attach 到别的子图：摘除该 <item>，绝不把一个 QwtPlotItem
+            // attach 到两个 chart（QwtPlotItem::attach 会把它从上一个 plot 摘下来）
+            itemsEle.removeChild(itemNode);
+            qWarning() << "DASignalFigureArchive::restoreFigure: chart item key" << key
+                       << "already attached to another sub chart, skipped";
+        } else {
+            consumedItemKeys.insert(key);
+        }
+        itemNode = nextNode;
+    }
+}
 }  // namespace
 
 /**
@@ -232,7 +294,7 @@ QStringList peakItemKeys(const QDomElement& spectrumEle)
  *
  * 每个 view 写一个 @c figure 元素：由 @ref DAXmlHelper::makeElement(DAFigureWidget*) 生成
  * 完整 figure XML（背景/主题/网格/子图/轴/非 transient 图元 key），再补：
- * - @c signal-name 属性（恢复时按信号名匹配 figure）；
+ * - @c signal-name 属性（可读标识）与 @c signal-id 属性（会话内唯一 id，恢复时优先匹配）；
  * - 每个 @c chart 的 @c role 属性（wave/spectrum/heatmap），@c chart3d 的 @c role="waterfall"；
  * - 频谱 chart 里峰值标的 item 的 @c peak="1"。
  * @param views 待保存的信号视图（一个信号一个视图）
@@ -263,6 +325,8 @@ QByteArray DASignalFigureArchive::saveFigures(const QList< DASignalAnalysisView*
             continue;
         }
         figureEle.setAttribute(QStringLiteral("signal-name"), view->signal()->name());
+        // 会话内唯一 id：同名信号在恢复端按它精确匹配，不串档（BLK-02）
+        figureEle.setAttribute(QStringLiteral("signal-id"), QString::number(view->signal()->signalId()));
         markFigureRoles(view, figureEle);
         root.appendChild(figureEle);
     }
@@ -270,34 +334,58 @@ QByteArray DASignalFigureArchive::saveFigures(const QList< DASignalAnalysisView*
 }
 
 /**
- * @brief 在 figures.xml 文档里按信号名查找 figure 元素
+ * @brief 收集文档里全部 figure 元素（恢复端逐个消费的候选集合）
  *
- * 优先按 @c signal-name 属性匹配（信号改名后仍能匹配保存时的名字用不上，故同时回退按
- * figure id @c "sig-"+signalName 匹配，兼容未写 signal-name 的旧存档）。
  * @param doc 已解析的 figures.xml
+ * @return 根节点下的全部 @c figure 元素（保持文档顺序）
+ */
+QList< QDomElement > DASignalFigureArchive::figureElements(const QDomDocument& doc)
+{
+    QList< QDomElement > result;
+    const QDomElement root = doc.documentElement();
+    if (root.isNull()) {
+        return result;
+    }
+    for (QDomElement figureEle = root.firstChildElement(QStringLiteral("figure")); !figureEle.isNull();
+         figureEle             = figureEle.nextSiblingElement(QStringLiteral("figure"))) {
+        result.append(figureEle);
+    }
+    return result;
+}
+
+/**
+ * @brief 在 XML 文档里按 signal-id（回退 signal-name，兼容旧存档）查找 figure 元素
+ *
+ * 非消费式查找（同一元素可被多次命中）；恢复流程请用 @ref takeFigureElement 逐个消费。
+ * @param doc 已解析的 figures.xml
+ * @param signalId 信号会话内唯一 id
  * @param signalName 信号显示名
  * @return 匹配到的 @c figure 元素；找不到返回空元素
  */
-QDomElement DASignalFigureArchive::findFigureElement(const QDomDocument& doc, const QString& signalName)
+QDomElement DASignalFigureArchive::findFigureElement(const QDomDocument& doc, qint64 signalId, const QString& signalName)
 {
-    const QDomElement root = doc.documentElement();
-    if (root.isNull()) {
-        return QDomElement();
+    return matchFigureElement(figureElements(doc), signalId, signalName);
+}
+
+/**
+ * @brief 从候选集合里取走匹配的 figure 元素（同一元素只能被消费一次）
+ *
+ * 恢复端（applyFiguresXml）用它保证：一个 figure 元素只被一个视图消费；重复命中
+ * （如旧存档里两个同名信号）由消费语义天然错开，不会把同一批图元恢复给两个视图。
+ * @param candidates 候选元素集合（匹配成功时从中移除该元素）
+ * @param signalId 信号会话内唯一 id
+ * @param signalName 信号显示名
+ * @return 匹配到的 @c figure 元素（已从候选集合移除）；找不到返回空元素
+ */
+QDomElement DASignalFigureArchive::takeFigureElement(QList< QDomElement >& candidates,
+                                                     qint64 signalId,
+                                                     const QString& signalName)
+{
+    const QDomElement matched = matchFigureElement(candidates, signalId, signalName);
+    if (!matched.isNull()) {
+        candidates.removeOne(matched);  // QDomElement 相等即同一底层节点
     }
-    for (QDomElement figureEle = root.firstChildElement(QStringLiteral("figure")); !figureEle.isNull();
-         figureEle             = figureEle.nextSiblingElement(QStringLiteral("figure"))) {
-        if (figureEle.attribute(QStringLiteral("signal-name")) == signalName) {
-            return figureEle;
-        }
-    }
-    const QString figureId = QStringLiteral("sig-%1").arg(signalName);
-    for (QDomElement figureEle = root.firstChildElement(QStringLiteral("figure")); !figureEle.isNull();
-         figureEle             = figureEle.nextSiblingElement(QStringLiteral("figure"))) {
-        if (figureEle.attribute(QStringLiteral("id")) == figureId) {
-            return figureEle;
-        }
-    }
-    return QDomElement();
+    return matched;
 }
 
 /**
@@ -314,13 +402,21 @@ QDomElement DASignalFigureArchive::findFigureElement(const QDomDocument& doc, co
  * XML 缺失/损坏（无 <charts>/<chart>）时记录 qWarning 并返回 false，视图保持默认布局。
  * @param view 已创建的目标视图（同一信号）
  * @param figureEle figures.xml 里的 figure 元素
+ * 防争用（BLK-02）：@p consumedItemKeys 跨视图共享，记录已 attach 的 chart-data 图元 key；
+ * 恢复某个子图前先把其中已消费的 key 从 <items> 摘除（qWarning 记录），保证一个
+ * QwtPlotItem 只 attach 到一个 chart。为空时在函数内建局部集合（仅本 figure 内防争用）。
  * @param itemsMgr chart-data 读回的图元管理者；可为空（此时只恢复样式，不恢复图元）
+ * @param consumedItemKeys 已消费图元 key 集合（跨视图共享；可空）
  * @return 恢复成功返回 true
  */
 bool DASignalFigureArchive::restoreFigure(DASignalAnalysisView* view,
                                           const QDomElement& figureEle,
-                                          const DAChartItemsManager* itemsMgr)
+                                          const DAChartItemsManager* itemsMgr,
+                                           QSet< QString >* consumedItemKeys)
 {
+    // 防争用 key 集合：调用方传入则跨视图共享，否则本 figure 内局部生效
+    QSet< QString > localConsumedKeys;
+    QSet< QString >& consumedKeys = (consumedItemKeys ? *consumedItemKeys : localConsumedKeys);
     if (!view || !view->figure()) {
         qWarning() << "DASignalFigureArchive::restoreFigure: null view or figure";
         return false;
@@ -410,6 +506,8 @@ bool DASignalFigureArchive::restoreFigure(DASignalAnalysisView* view,
             pendingCharts.append(chartEle);
             continue;
         }
+        // 防争用：先摘除已被其它子图消费的图元 key，再交给 DAXmlHelper attach
+        consumeChartItemKeys(chartEle, consumedKeys);
         if (!DAXmlHelper::loadElement(target, &chartEle, chartItems)) {
             qWarning() << "DASignalFigureArchive::restoreFigure: failed to load a <chart> element, continuing";
             continue;
@@ -433,13 +531,16 @@ bool DASignalFigureArchive::restoreFigure(DASignalAnalysisView* view,
             qWarning() << "DASignalFigureArchive::restoreFigure: no sub chart left for a <chart> element, skipped";
             continue;
         }
-        if (!DAXmlHelper::loadElement(target, &chartEle, chartItems)) {
+        // 防争用：回退路径同样先摘除已被消费的图元 key
+        QDomElement mutableChartEle = chartEle;
+        consumeChartItemKeys(mutableChartEle, consumedKeys);
+        if (!DAXmlHelper::loadElement(target, &mutableChartEle, chartItems)) {
             qWarning() << "DASignalFigureArchive::restoreFigure: failed to load a fallback <chart> element, continuing";
             continue;
         }
         usedTargets.insert(target);
         if (target == view->spectrumChart()) {
-            spectrumEle = chartEle;
+            spectrumEle = mutableChartEle;
         }
     }
     //! 4.峰值标记：存档优先，交给视图接管（之后 rebuildPeakMarkers 不按重算结果覆盖）

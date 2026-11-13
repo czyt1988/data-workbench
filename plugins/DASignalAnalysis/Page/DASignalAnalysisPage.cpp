@@ -3,6 +3,7 @@
 #include <QEvent>
 #include <QLabel>
 #include <QPushButton>
+#include <QSet>
 #include <QTabBar>
 #include <QStackedWidget>
 #include <QVBoxLayout>
@@ -51,12 +52,16 @@ QStackedWidget* DASignalAnalysisPage::signalStack() const
  *
  * 视图必须在这里真正创建并登记到 mViews：外部（DASignalAnalysisUI）通过
  * viewForSignal() 取视图来连接包络/频谱/热图请求，缺了它整个页面只剩空白。
+ * 同名信号在这里给显示名追加 " (2)"/" (3)" 序号（BLK-02）：重复导入同一文件/同一列
+ * 不再出现两个同名标签页，存档 signal-name 也随之唯一。
  */
 void DASignalAnalysisPage::addSignal(const DASignalPtr& signal)
 {
     if (!signal) {
         return;
     }
+    // 显示名去重（纯数据格式化，不用 tr）：重名时改写信号名，标签页/存档/日志一致
+    signal->setName(uniqueDisplayName(signal->name(), nullptr));
     mSignals.append(signal);
     const int idx = mTabBar->addTab(signal->name());
     mTabBar->setTabToolTip(idx, signal->source() ? signal->source()->sourceDescription() : QString());
@@ -175,6 +180,8 @@ bool DASignalAnalysisPage::replaceSignalAt(int index, const DASignalPtr& signal)
         mSignalStack->removeWidget(oldView);
         oldView->deleteLater();
     }
+    // 替换进来的信号也做显示名去重（排除被替换的旧信号本身）
+    signal->setName(uniqueDisplayName(signal->name(), oldSignal.get()));
     mSignals[ index ] = signal;
     DASignalAnalysisView* view = new DASignalAnalysisView(signal, mSignalStack);
     mSignalStack->insertWidget(index, view);
@@ -189,6 +196,34 @@ bool DASignalAnalysisPage::replaceSignalAt(int index, const DASignalPtr& signal)
     Q_EMIT signalRemoved(oldSignal);  // 外部清理旧信号的缓存
     Q_EMIT currentSignalChanged();
     return true;
+}
+
+/**
+ * @brief 同名信号显示名去重（BLK-02）
+ *
+ * 与现有信号重名时追加 " (2)"/" (3)" 序号（纯数据格式化，不翻译）：信号名来自文件名或
+ * 「数据帧名.列名」，重复导入同一文件/同一列即重名；去重后标签页、figures.xml 的
+ * signal-name 与日志提示保持唯一。@p except 用于替换场景（旧信号即将移走，不参与比对）。
+ * @param name 待去重的显示名
+ * @param except 比对时排除的信号（替换指定索引时传旧信号，其余传 nullptr）
+ * @return 不与现有信号冲突的显示名
+ */
+QString DASignalAnalysisPage::uniqueDisplayName(const QString& name, const DASignal* except) const
+{
+    QSet< QString > usedNames;
+    for (const DASignalPtr& sig : mSignals) {
+        if (sig && sig.get() != except) {
+            usedNames.insert(sig->name());
+        }
+    }
+    if (!usedNames.contains(name)) {
+        return name;
+    }
+    int suffix = 2;
+    while (usedNames.contains(QStringLiteral("%1 (%2)").arg(name).arg(suffix))) {
+        ++suffix;
+    }
+    return QStringLiteral("%1 (%2)").arg(name).arg(suffix);
 }
 
 /**

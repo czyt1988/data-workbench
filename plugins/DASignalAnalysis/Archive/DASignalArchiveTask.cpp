@@ -7,8 +7,8 @@ namespace DA
 {
 DASignalArchiveTask::DASignalArchiveTask(const QByteArray& signalsJson,
                                          const QByteArray& figuresXml,
-                                         const DAChartItemsManager& chartItems)
-    : mData(signalsJson), mFiguresXml(figuresXml), mItemsManager(chartItems)
+                                         const QList< DAChartItemSnapshot >& itemSnapshots)
+    : mData(signalsJson), mFiguresXml(figuresXml), mItemSnapshots(itemSnapshots)
 {
     setName(QStringLiteral("DASignalAnalysis"));
     setDescribe(QStringLiteral("signal analysis project data"));
@@ -43,9 +43,11 @@ QString DASignalArchiveTask::chartDataPrefix()
 }
 
 /**
- * @brief 执行读写任务（后台线程，不操作界面）
+ * @brief 执行读写任务（后台线程，不操作界面，不触碰 QwtPlotItem*）
  *
- * 写：先写 signals.json；figures.xml 非空时再写 figures.xml 与 chart-data（图元二进制）。
+ * 写：先写 signals.json；figures.xml 非空时再写 figures.xml 与 chart-data。
+ * chart-data 走 saveSnapshots 写**预序列化字节快照**（BLK-01）：快照在 GUI 线程侧
+ * 生成，本线程只写字节——保存期间 GUI 线程删除/重建图元不再影响写路径。
  * 读：先读 signals.json（保留原有「条目是否存在」语义），再读 figures.xml，非空时
  * 读回 chart-data 填进 mItemsManager；旧工程没有 figures.xml/chart-data 时保持空并返回 true。
  * @return 写模式返回 signals.json 是否写成功（figures 写失败也返回 false 并记录）；
@@ -68,7 +70,7 @@ bool DASignalArchiveTask::exec(DAAbstractArchive* archive, Mode mode)
                 return false;
             }
             QString errorMessage;
-            if (!DAChartItemArchive::save(archive, &mItemsManager, chartDataPrefix(), &errorMessage)) {
+            if (!DAChartItemArchive::saveSnapshots(archive, mItemSnapshots, chartDataPrefix(), &errorMessage)) {
                 qWarning() << "DASignalArchiveTask::exec: failed to save chart-data:" << errorMessage;
                 return false;
             }

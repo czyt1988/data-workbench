@@ -24,6 +24,11 @@ public:
     // 显示名（导入时取文件名或「数据帧名.列名」）
     QString name() const;
     void setName(const QString& n);
+    // 会话内唯一 id（进程级单调递增，不落盘）：figure id 与存档匹配键用，同名信号不串档
+    qint64 signalId() const;
+    // 工程恢复时回填持久化的信号 id（figures.xml 的 signal-id 存档键按它匹配）；
+    // 同时推进进程计数器，保证后续新分配的 id 不与恢复值冲突。id<=0 时忽略
+    void restoreSignalId(qint64 id);
     // 采样率（赫兹，用户确认后的值）
     double sampleRate() const;
     void setSampleRate(double fs);
@@ -54,6 +59,7 @@ public:
 
 private:
     QString mName;
+    qint64 mSignalId { 0 };
     double mTimeOrigin { 0.0 };
     QString mUnit;
     double mCalibration { 1.0 };

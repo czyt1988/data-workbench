@@ -1,4 +1,4 @@
-#include "DASignalAnalysisUI.h"
+﻿#include "DASignalAnalysisUI.h"
 // Qt
 #include <QMenu>
 #include <QActionGroup>
@@ -42,6 +42,7 @@
 // DA
 #include "DACoreInterface.h"
 #include "DAUIInterface.h"
+#include "DACommandInterface.h"
 #include "DARibbonAreaInterface.h"
 #include "DADockingAreaInterface.h"
 #include "DAActionsInterface.h"
@@ -55,6 +56,7 @@
 #include "DADialogChartGuide.h"
 #include "qwt_colormap_preset.h"
 #include "qwt_plot_item.h"
+#include <QUndoStack>
 // DASignalAnalysis
 #include "Page/DASignalAnalysisPage.h"
 #include "Page/DASignalAnalysisView.h"
@@ -71,6 +73,7 @@
 #include "Archive/DASignalFigureArchive.h"
 #include "Page/DASignalChartExport.h"
 #include "DAChartItemsManager.h"
+#include "Archive/DAChartItemArchive.h"
 #include <QDomDocument>
 #include <QDomElement>
 
@@ -658,6 +661,13 @@ void DASignalAnalysisUI::connectSignalView(const DASignalPtr& sig)
     }
     // 峰值标记开关由 UI 记录（视图无 getter）：新视图按当前开关状态应用
     view->setPeakMarkersVisible(mPeakMarkersVisible);
+    // 把信号 figure 的撤销栈加入宿主 QUndoGroup（SF-11）：全局撤销/重做才能作用于信号图。
+    // 栈由 figure 持有（值成员），figure 销毁时栈随 QObject 析构被 QUndoGroup 自动摘除
+    if (DAFigureWidget* fig = view->figure()) {
+        if (DACommandInterface* cmd = (mUI ? mUI->getCommandInterface() : nullptr)) {
+            cmd->addStack(fig->getUndoStack());
+        }
+    }
     // 同一视图可能因重新指定来源/重复激活多次连接：成员槽用 UniqueConnection 防重复触发
     connect(view, &DASignalAnalysisView::spectrumRequested, this, &DASignalAnalysisUI::onViewRequestSpectrum, Qt::UniqueConnection);
     connect(view, &DASignalAnalysisView::envelopeRequested, this, &DASignalAnalysisUI::onViewRequestEnvelope, Qt::UniqueConnection);
@@ -763,6 +773,15 @@ void DASignalAnalysisUI::onCurrentSignalChanged()
 {
     updateRelinkActionState();
     syncPlayerSource();
+    // 激活新当前视图 figure 的撤销栈（SF-11）：QUndoGroup 的 undo/redo 动作跟随当前信号；
+    // 上一信号标签页关闭后其栈随 figure 销毁被 QUndoGroup 自动摘除
+    if (DASignalAnalysisView* view = currentView()) {
+        if (DAFigureWidget* fig = view->figure()) {
+            if (QUndoStack* stack = fig->getUndoStack()) {
+                stack->setActive();
+            }
+        }
+    }
     // 切信号后当前视图整体变化：上下文标签控件与底部工具栏跟随（阻断信号防回环）
     syncSignalContextControls();
     syncSignalToolbar();
@@ -1399,6 +1418,13 @@ void DASignalAnalysisUI::syncSignalContextControls()
     if (actionAddFigure) {
         actionAddFigure->setEnabled(view && view->figure() && chartAvailable);
     }
+    // 「点击波形即定位」与交互工具互斥（SF-12）：缩放/平移/十字线任一启用时关闭，
+    // 避免按下拖动瞬间播放头跳位；全关时恢复
+    if (view) {
+        const bool seekEnabled =
+            !(chartAvailable && (chart->isZoomEnabled() || chart->isPanEnabled() || chart->isCrosshairEnabled()));
+        view->setSeekEnabled(seekEnabled);
+    }
 }
 
 /**
@@ -1493,6 +1519,7 @@ void DASignalAnalysisUI::onContextColormapTriggered(QAction* action)
  * @brief 上下文标签工具开关：把开关状态映射到当前 2D 子图的交互控制
  *
  * 缩放/平移/十字线/XY 数据拾取互相独立，状态随当前子图同步（见 syncSignalContextControls）。
+ * 交互工具启用/关闭后同步「点击定位」互斥状态（SF-12）。
  */
 void DASignalAnalysisUI::onContextToolToggled()
 {
@@ -1513,6 +1540,11 @@ void DASignalAnalysisUI::onContextToolToggled()
         chart->enableCrosshair(act->isChecked());
     } else if (act == actionDataPicking) {
         chart->enableXYValuePicking(act->isChecked());
+    }
+    // 工具状态已变：按当前 chart 的工具状态刷新「点击定位」互斥（SF-12）
+    if (view) {
+        const bool seekEnabled = !(chart->isZoomEnabled() || chart->isPanEnabled() || chart->isCrosshairEnabled());
+        view->setSeekEnabled(seekEnabled);
     }
 }
 
@@ -2406,10 +2438,14 @@ void DASignalAnalysisUI::exportWholePageImage()
         reportError(tr("No signal is selected."));  // cn:未选中信号。
         return;
     }
-    const QString path = askSavePath(mPage, tr("Export Whole Page"), tr("PNG Image (*.png)"));  // cn:导出整页
+    const QString pngFilter = tr("PNG Image (*.png)");  // cn:PNG 图片 (*.png)
+    QString path = askSavePath(mPage, tr("Export Whole Page"), pngFilter);  // cn:导出整页
     if (path.isEmpty()) {
         return;
     }
+    // 整页固定 PNG：按过滤器补齐后缀（F-07，与子图导出同一段规范化逻辑；不动 askSavePath
+    // 本体，避免影响 CSV 等其它调用方）
+    path = DAFigureWidget::applyExportFilterSuffix(path, pngFilter);
     if (DASignalChartExport::saveWholePage(view, path)) {
         mUI->addInfoLogMessage(tr("Whole page exported: %1").arg(path));  // cn:整页已导出：%1
     } else {
@@ -2418,10 +2454,13 @@ void DASignalAnalysisUI::exportWholePageImage()
 }
 
 /**
- * @brief 导出当前子图（2D 支持 PNG/SVG/PDF；三维子图只有位图路径，退回 PNG）
+ * @brief 导出当前子图（2D 支持 PNG/SVG/PDF；三维子图本期固定 PNG）
  *
  * 后缀口径与绘图区「导出当前子图」一致：用户输入未知后缀时按所选过滤器补真实后缀，
- * 避免「内容与后缀不一致」；三维子图没有矢量导出路径，非 PNG 时改存 PNG（qWarning 记录偏差）。
+ * 避免「内容与后缀不一致」。3D 子图激活时文件对话框过滤器收窄为 PNG（SF-14）：
+ * qwt3d 提供 saveVector（gl2ps 已编入）但依赖 GL 上下文、目标环境可用性未验证，
+ * 本期固定 PNG，矢量导出留作后续项。降级分支保留作防御：万一拿到非 PNG 请求
+ * （如旧工程/程序化调用），改存 PNG 并给用户可见提示（不只写开发日志）。
  */
 void DASignalAnalysisUI::exportCurrentSubChartImage()
 {
@@ -2430,33 +2469,33 @@ void DASignalAnalysisUI::exportCurrentSubChartImage()
         reportError(tr("No signal is selected."));  // cn:未选中信号。
         return;
     }
+    // 3D 子图只有 PNG 位图路径：过滤器收窄，用户从一开始就选不到 SVG/PDF（SF-14）
+    const bool is3D = view->is3DChartActive();
     QString selectedFilter;
     QString path = QFileDialog::getSaveFileName(mPage,
                                                 tr("Export Sub-chart"),  // cn:导出当前子图
                                                 QStringLiteral("chart.png"),
-                                                DAFigureWidget::exportFileFilter(),
+                                                is3D ? tr("PNG Image (*.png)")  // cn:PNG 图片 (*.png)
+                                                     : DAFigureWidget::exportFileFilter(),
                                                 &selectedFilter);
     if (path.isEmpty()) {
         return;
     }
-    const QString suffix = QFileInfo(path).suffix().toLower();
-    if (suffix != QLatin1String("png") && suffix != QLatin1String("svg") && suffix != QLatin1String("pdf")) {
-        if (selectedFilter.contains(QLatin1String("*.svg"))) {
-            path += QStringLiteral(".svg");
-        } else if (selectedFilter.contains(QLatin1String("*.pdf"))) {
-            path += QStringLiteral(".pdf");
-        } else {
-            path += QStringLiteral(".png");
-        }
-    }
+    // 以所选过滤器为权威修正后缀（SF-05）：默认名 chart.png 在用户切到 SVG/PDF 过滤器后
+    // 仍保留 .png，只按后缀推断格式会「选 SVG 却存成 PNG」；统一走框架侧助手收口
+    path = DAFigureWidget::applyExportFilterSuffix(path, selectedFilter);
     DAFigureExportFormat format = DAFigureWidget::exportFormatFromFilePath(path);
-    if (view->is3DChartActive() && format != DAFigureExportFormat::Png) {
-        // 三维子图没有矢量导出路径：改成 PNG 后缀，避免写出的内容与后缀不符
+    if (is3D && format != DAFigureExportFormat::Png) {
+        // 防御分支：3D 子图仅支持 PNG 位图导出，改存 PNG 并给用户可见提示（SF-14）
         const QFileInfo fi(path);
         path   = fi.path().isEmpty() ? fi.completeBaseName() + QStringLiteral(".png")
                                      : fi.path() + QLatin1Char('/') + fi.completeBaseName() + QStringLiteral(".png");
         format = DAFigureExportFormat::Png;
-        qWarning() << "DASignalAnalysisUI::exportCurrentSubChartImage: 3D sub-chart has no vector export, saved as PNG";
+        qWarning() << "DASignalAnalysisUI::exportCurrentSubChartImage: 3D sub-chart supports PNG export "
+                      "only, saved as PNG:"
+                   << path;
+        mUI->addWarningLogMessage(
+            tr("3D sub-chart supports PNG export only; saved as PNG."));  // cn:三维子图仅支持 PNG 导出，已按 PNG 保存。
     }
     if (DASignalChartExport::saveCurrentSubChart(view, path, format)) {
         mUI->addInfoLogMessage(tr("Sub-chart exported: %1").arg(path));  // cn:当前子图已导出：%1
@@ -2562,6 +2601,9 @@ QByteArray DASignalAnalysisUI::serializeState() const
             }
             QJsonObject o;
             o[ QStringLiteral("name") ] = sig->name();
+            // 会话内唯一 id 持久化（BLK-02）：恢复时回填，figures.xml 的 signal-id
+            // 存档键按它精确匹配，同名信号不串档；旧工程无该字段走 signal-name 回退
+            o[ QStringLiteral("signalId") ] = double(sig->signalId());
             switch (sig->sourceType()) {
             case DASignalSource::DataFrameSource: {
                 auto dfSrc = std::dynamic_pointer_cast< DADataFrameSignalSource >(sig->source());
@@ -2756,6 +2798,9 @@ void DASignalAnalysisUI::restoreState(const QByteArray& json,
             continue;
         }
         sig->setName(name);
+        // 回填持久化的信号唯一 id（BLK-02）：figures.xml 的 signal-id 存档键按它匹配；
+        // 旧工程没有该字段时保持构造时分配的会话内 id，恢复端走 signal-name 回退
+        sig->restoreSignalId(qint64(o.value(QStringLiteral("signalId")).toDouble()));
         sig->setTimeOrigin(o.value(QStringLiteral("timeOrigin")).toDouble());
         sig->setCalibration(o.value(QStringLiteral("calibration")).toDouble(1.0));
         sig->setUnit(o.value(QStringLiteral("unit")).toString());
@@ -2827,16 +2872,19 @@ void DASignalAnalysisUI::restoreState(const QByteArray& json,
  * @brief 创建工程存档任务（isSave 时收集状态；加载时在回调里重建信号）
  *
  * T9：保存时在主线程生成 signals.json + figures.xml，并把非 transient 图元登记到
- * DAChartItemsManager；后台存档任务负责把三份内容写入工程包（chart-data 走
- * DAChartItemArchive::save）。加载时任务先读 chart-data 与 figures.xml，回调里再
- * 恢复信号并应用 figure 文档。
+ * DAChartItemsManager；BLK-01：登记后立刻在 GUI 线程 makeSnapshots 预序列化成字节
+ * 快照，交给后台任务的是**快照列表**（不是 manager）——保存期间 GUI 线程（嵌套
+ * 事件循环继续派发定时器）可能删除/重建峰值标记等图元，后台线程只写字节，与活指针
+ * 完全解耦。加载时任务先读 chart-data 与 figures.xml，回调里再恢复信号并应用 figure 文档。
  */
 std::shared_ptr< DAAbstractArchiveTask > DASignalAnalysisUI::createArchiveTask(bool isSave)
 {
     if (isSave) {
         DAChartItemsManager chartItems;
         const QByteArray figuresXml = buildFiguresXml(&chartItems);
-        auto task = std::make_shared< DASignalArchiveTask >(serializeState(), figuresXml, chartItems);
+        // BLK-01：GUI 线程先把图元序列化成字节快照，后台任务只写字节（不携带 QwtPlotItem*）
+        const QList< DAChartItemSnapshot > itemSnapshots = DAChartItemArchive::makeSnapshots(&chartItems);
+        auto task = std::make_shared< DASignalArchiveTask >(serializeState(), figuresXml, itemSnapshots);
         return task;
     }
     auto task = std::make_shared< DASignalArchiveTask >();
@@ -2888,7 +2936,11 @@ QByteArray DASignalAnalysisUI::buildFiguresXml(DAChartItemsManager* chartItems) 
 /**
  * @brief 把 figures.xml 的 figure 状态应用到恢复后的信号视图
  *
- * 按信号名匹配 figure；恢复失败只记录诊断（英文）并保持默认布局，不影响信号本体恢复。
+ * 匹配按 signal-id 属性（同名信号不串档，BLK-02）；旧存档（无 signal-id）回退按
+ * signal-name。恢复端防争用：figure 元素从候选集合里逐个「取走」（同一元素只被一个
+ * 视图消费），chart-data 图元 key 跨视图共享登记（一个 QwtPlotItem 只 attach 到一个
+ * 子图，重复命中跳过并 qWarning）。
+ * 恢复失败只记录诊断（英文）并保持默认布局，不影响信号本体恢复。
  * 旧工程没有 figures.xml 时直接返回（兼容路径由 restoreState 的 view{} 分支负责）。
  */
 void DASignalAnalysisUI::applyFiguresXml(const QByteArray& figuresXml, const DAChartItemsManager* chartItems)
@@ -2902,6 +2954,10 @@ void DASignalAnalysisUI::applyFiguresXml(const QByteArray& figuresXml, const DAC
         qWarning() << "DASignalAnalysisUI::applyFiguresXml: cannot parse figures.xml:" << parseError;
         return;
     }
+    // 候选 figure 元素逐个消费：同一元素不会被两个视图命中（旧存档同名信号按顺序错开）
+    QList< QDomElement > candidates = DASignalFigureArchive::figureElements(figureDoc);
+    // 已 attach 的 chart-data 图元 key：跨视图共享，防止同一 QwtPlotItem 被两个子图争用
+    QSet< QString > consumedItemKeys;
     const QList< DASignalPtr > signalList = mPage->allSignals();
     for (const DASignalPtr& sig : signalList) {
         if (!sig) {
@@ -2911,12 +2967,14 @@ void DASignalAnalysisUI::applyFiguresXml(const QByteArray& figuresXml, const DAC
         if (!view) {
             continue;
         }
-        const QDomElement figureEle = DASignalFigureArchive::findFigureElement(figureDoc, sig->name());
+        const QDomElement figureEle =
+            DASignalFigureArchive::takeFigureElement(candidates, sig->signalId(), sig->name());
         if (figureEle.isNull()) {
-            qWarning() << "DASignalAnalysisUI::applyFiguresXml: no figure element for signal" << sig->name();
+            qWarning() << "DASignalAnalysisUI::applyFiguresXml: no figure element for signal" << sig->name()
+                       << "id" << sig->signalId();
             continue;
         }
-        if (!DASignalFigureArchive::restoreFigure(view, figureEle, chartItems)) {
+        if (!DASignalFigureArchive::restoreFigure(view, figureEle, chartItems, &consumedItemKeys)) {
             qWarning() << "DASignalAnalysisUI::applyFiguresXml: restore figure failed for signal" << sig->name();
         }
         // 存档里的峰值标记非 transient：视图接管后把 UI 开关同步为「可见」，

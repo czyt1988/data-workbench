@@ -1,5 +1,7 @@
 #include <QtTest>
+#include <QApplication>
 #include <QCoreApplication>
+#include <QEvent>
 #include <QFile>
 #include <QFileInfo>
 #include <QGuiApplication>
@@ -18,6 +20,9 @@
 #include <QDomElement>
 #include <QHash>
 #include <QSet>
+#include <QUndoCommand>
+#include <QUndoGroup>
+#include <QUndoStack>
 #include <cmath>
 #include <memory>
 #include "Analysis/DASignalAmplitude.h"
@@ -283,6 +288,16 @@ private Q_SLOTS:
     void signalFigureRestoreCorruptXml();
     // T9：图表导出工具（整页/当前子图 PNG/SVG/剪贴板）
     void signalChartExportToFile();
+    // BLK-02：同名信号不串档——signal-id 存档键 + 恢复端元素/图元 key 防争用
+    void signalArchiveDuplicateNames();
+    // BLK-01：快照两段式——写路径与活图元指针解耦（delete 全部图元后仍可写/读回）
+    void signalArchiveSnapshotDecoupledFromLiveItems();
+    // BLK-03a：外部删除缓存图元（图元树路径）后回填/重译不崩溃且按需重建
+    void signalViewExternalItemRemoval();
+    // SF-11：figure 撤销栈入组等价接线——activeStack 跟随 setActive、栈销毁自动摘除
+    void undoStackGroupWiring();
+    // SF-13：峰值「存档优先」只在加载后到第一次重算前——幅值/参数变化即重建
+    void signalPeakMarkersRestoredUntilRecompute();
 };
 
 /**
@@ -933,8 +948,9 @@ void DASignalAnalysisTest::signalViewFigureGrid()
     checkCell(view.heatmapChart(), 1, 1, 1, 1);
     checkCell(view.waterfall3DChart(), 1, 1, 1, 1);
 
-    // figure id 由信号派生
-    QCOMPARE(view.figureId(), QStringLiteral("sig-unit"));
+    // figure id 由信号唯一 id 派生（BLK-02：同名信号不再共用同一 figure id）
+    QVERIFY(view.signal()->signalId() > 0);
+    QCOMPARE(view.figureId(), QStringLiteral("sig-%1").arg(view.signal()->signalId()));
     // 当前 2D 子图可显式设置
     view.setCurrentChart(view.waveChart());
     QCOMPARE(view.currentChart(), view.waveChart());
@@ -1161,7 +1177,9 @@ void DASignalAnalysisTest::signalFigureSaveXml()
     const QDomElement figureEle = root.firstChildElement(QStringLiteral("figure"));
     QVERIFY(!figureEle.isNull());
     QCOMPARE(figureEle.attribute(QStringLiteral("signal-name")), QStringLiteral("unit"));
-    QCOMPARE(figureEle.attribute(QStringLiteral("id")), QStringLiteral("sig-unit"));
+    // BLK-02：figure id 由信号唯一 id 派生；signal-id 是恢复端优先匹配的存档键
+    QCOMPARE(figureEle.attribute(QStringLiteral("id")), QStringLiteral("sig-%1").arg(view.signal()->signalId()));
+    QCOMPARE(figureEle.attribute(QStringLiteral("signal-id")), QString::number(view.signal()->signalId()));
 
     // <grid>：2×2 且行列比例与设置一致
     const QDomElement gridEle = figureEle.firstChildElement(QStringLiteral("grid"));
@@ -1268,20 +1286,23 @@ void DASignalAnalysisTest::signalArchiveRoundTrip()
     sourceView.figure()->setFigureId(QStringLiteral("sig-archived"));
 
     // ---------- 2. 保存：figure XML + chart-data 经存档任务写内存 archive ----------
+    // BLK-01：GUI 线程先把图元序列化成字节快照，后台任务只写字节（与活指针解耦）
     const QByteArray signalsJson = QByteArrayLiteral("{\"signals\":[]}");
     DA::DAChartItemsManager saveItems;
     const QByteArray figuresXml = DA::DASignalFigureArchive::saveFigures({ &sourceView }, &saveItems);
     QVERIFY(!figuresXml.isEmpty());
     QVERIFY(!saveItems.isEmpty());
+    const QList< DA::DAChartItemSnapshot > snapshots = DA::DAChartItemArchive::makeSnapshots(&saveItems);
+    QVERIFY(!snapshots.isEmpty());
 
     MemoryArchive mem;
-    DA::DASignalArchiveTask writeTask(signalsJson, figuresXml, saveItems);
+    DA::DASignalArchiveTask writeTask(signalsJson, figuresXml, snapshots);
     QVERIFY(writeTask.exec(&mem, DA::DAAbstractArchiveTask::WriteMode));
     QVERIFY(mem.contains(DA::DASignalArchiveTask::archivePath()));
     QVERIFY(mem.contains(DA::DASignalArchiveTask::figuresArchivePath()));
     QVERIFY(mem.contains(DA::DASignalArchiveTask::chartDataPrefix() + QStringLiteral("/chart-items.xml")));
 
-    // 保存后源视图的用户图元可删除（图元管理者不持有所有权）
+    // 保存后源视图的用户图元可删除（图元管理者不持有所有权；写路径只依赖快照字节）
     userMarker->detach();
     delete userMarker;
 
@@ -1294,14 +1315,17 @@ void DASignalAnalysisTest::signalArchiveRoundTrip()
     QVERIFY(!readTask.chartItemsManager().isEmpty());
     QCOMPARE(readTask.chartItemsManager().keys().size(), saveItems.keys().size());
 
-    // ---------- 4. 新视图恢复 ----------
+    // ---------- 4. 新视图恢复（模拟 restoreState：回填持久化 signalId 后建视图） ----------
     QDomDocument doc;
     QString parseError;
     QVERIFY2(doc.setContent(readTask.loadedFiguresXml(), &parseError), qPrintable(parseError));
-    const QDomElement figureEle = DA::DASignalFigureArchive::findFigureElement(doc, QStringLiteral("unit"));
+    DA::DASignalPtr restoredSignal = makeTestSignal();
+    restoredSignal->restoreSignalId(sourceView.signal()->signalId());
+    const QDomElement figureEle =
+        DA::DASignalFigureArchive::findFigureElement(doc, restoredSignal->signalId(), QStringLiteral("unit"));
     QVERIFY(!figureEle.isNull());
 
-    DA::DASignalAnalysisView restoredView(makeTestSignal());
+    DA::DASignalAnalysisView restoredView(restoredSignal);
     QVERIFY(DA::DASignalFigureArchive::restoreFigure(&restoredView, figureEle, &readTask.chartItemsManager()));
 
     // 网格比例恢复
@@ -1379,6 +1403,7 @@ void DASignalAnalysisTest::signalFigureRestoreCorruptXml()
     DA::DASignalAnalysisView view(makeTestSignal());
     QVERIFY(view.figure());
     QVERIFY(view.figure()->grid());
+    const qint64 signalId = view.signal()->signalId();
     const QList< qreal > defaultRows = view.gridRowSizes();
     const QList< qreal > defaultCols = view.gridColumnSizes();
 
@@ -1389,7 +1414,8 @@ void DASignalAnalysisTest::signalFigureRestoreCorruptXml()
                      "<signal-figures version=\"1\"><figure signal-name=\"unit\"><charts/></figure></signal-figures>"),
                  &parseError),
              qPrintable(parseError));
-    const QDomElement figureEle = DA::DASignalFigureArchive::findFigureElement(doc, QStringLiteral("unit"));
+    const QDomElement figureEle =
+        DA::DASignalFigureArchive::findFigureElement(doc, signalId, QStringLiteral("unit"));
     QVERIFY(!figureEle.isNull());
     QVERIFY(!DA::DASignalFigureArchive::restoreFigure(&view, figureEle, nullptr));
 
@@ -1478,6 +1504,423 @@ void DASignalAnalysisTest::signalChartExportToFile()
     QVERIFY(DA::DASignalChartExport::copyCurrentSubChartToClipboard(&view));
     QVERIFY(!DA::DASignalChartExport::copyWholePageToClipboard(nullptr));
     QVERIFY(!DA::DASignalChartExport::copyCurrentSubChartToClipboard(nullptr));
+}
+
+/**
+ * @brief BLK-02：同名信号不串档——signal-id 存档键 + 恢复端元素/图元 key 防争用
+ *
+ * 场景：两个同名信号（重复导入同一文件）各自有可见峰值标记与不同网格比例。
+ * 校验：
+ * - saveFigures 产出两个 signal-name 相同、signal-id 不同的 <figure> 元素；
+ * - 恢复端 takeFigureElement 逐个消费候选元素，两个视图拿到**不同**元素；
+ * - 共享 consumedItemKeys 恢复后，两个视图的峰值标记指针互不共享、各归各的频谱图；
+ * - 旧格式（无 signal-id 属性）按 signal-name 回退仍可命中，消费语义把同名元素按顺序错开。
+ */
+void DASignalAnalysisTest::signalArchiveDuplicateNames()
+{
+    if (!openGLAvailable()) {
+        QSKIP("OpenGL is not available: skip the duplicate signal names archive test");
+    }
+    // ---------- 1. 两个同名信号（makeTestSignal 的名字都是 "unit"） ----------
+    DA::DASignalPtr sig1 = makeTestSignal();
+    DA::DASignalPtr sig2 = makeTestSignal();
+    QVERIFY(sig1->signalId() != sig2->signalId());
+    DA::DASignalAnalysisView view1(sig1);
+    DA::DASignalAnalysisView view2(sig2);
+    DA::DAPeakResult peaks;
+    peaks.frequencies = { 10.0 };
+    peaks.magnitudes  = { 2.0 };
+    view1.setPeaks(peaks);
+    view1.setPeakMarkersVisible(true);
+    view2.setPeaks(peaks);
+    view2.setPeakMarkersVisible(true);
+    QCOMPARE(view1.peakMarkers().size(), 1);
+    QCOMPARE(view2.peakMarkers().size(), 1);
+    // 不同网格比例，用于证明恢复端各自拿到自己的元素
+    const QList< qreal > rows1 { 0.7, 0.3 }, cols1 { 0.6, 0.4 };
+    const QList< qreal > rows2 { 0.35, 0.65 }, cols2 { 0.3, 0.7 };
+    view1.setGridSizes(rows1, cols1);
+    view2.setGridSizes(rows2, cols2);
+
+    // ---------- 2. 保存：两个元素 signal-name 相同、signal-id 不同 ----------
+    DA::DAChartItemsManager saveItems;
+    const QByteArray figuresXml = DA::DASignalFigureArchive::saveFigures({ &view1, &view2 }, &saveItems);
+    QVERIFY(!figuresXml.isEmpty());
+    QCOMPARE(saveItems.keys().size(), 2);
+    const QList< DA::DAChartItemSnapshot > snapshots = DA::DAChartItemArchive::makeSnapshots(&saveItems);
+    QCOMPARE(snapshots.size(), 2);
+
+    MemoryArchive mem;
+    DA::DASignalArchiveTask writeTask(QByteArrayLiteral("{\"signals\":[]}"), figuresXml, snapshots);
+    QVERIFY(writeTask.exec(&mem, DA::DAAbstractArchiveTask::WriteMode));
+    DA::DASignalArchiveTask readTask;
+    QVERIFY(readTask.exec(&mem, DA::DAAbstractArchiveTask::ReadMode));
+
+    QDomDocument doc;
+    QString parseError;
+    QVERIFY2(doc.setContent(readTask.loadedFiguresXml(), &parseError), qPrintable(parseError));
+    const QList< QDomElement > savedFigures = DA::DASignalFigureArchive::figureElements(doc);
+    QCOMPARE(savedFigures.size(), 2);
+    QStringList savedIds;
+    for (const QDomElement& figureEle : savedFigures) {
+        QCOMPARE(figureEle.attribute(QStringLiteral("signal-name")), QStringLiteral("unit"));
+        savedIds.append(figureEle.attribute(QStringLiteral("signal-id")));
+    }
+    QCOMPARE(savedIds, QStringList({ QString::number(sig1->signalId()), QString::number(sig2->signalId()) }));
+    QVERIFY(savedIds.at(0) != savedIds.at(1));
+
+    // ---------- 3. 恢复：候选元素逐个消费，两个视图拿到不同元素 ----------
+    DA::DASignalPtr restoredSig1 = makeTestSignal();
+    DA::DASignalPtr restoredSig2 = makeTestSignal();
+    // 模拟 restoreState：回填持久化 signalId 后建视图（figure id 与存档键一致）
+    restoredSig1->restoreSignalId(sig1->signalId());
+    restoredSig2->restoreSignalId(sig2->signalId());
+    DA::DASignalAnalysisView restored1(restoredSig1);
+    DA::DASignalAnalysisView restored2(restoredSig2);
+
+    QList< QDomElement > candidates = DA::DASignalFigureArchive::figureElements(doc);
+    const QDomElement ele1 =
+        DA::DASignalFigureArchive::takeFigureElement(candidates, restoredSig1->signalId(), QStringLiteral("unit"));
+    const QDomElement ele2 =
+        DA::DASignalFigureArchive::takeFigureElement(candidates, restoredSig2->signalId(), QStringLiteral("unit"));
+    QVERIFY(!ele1.isNull());
+    QVERIFY(!ele2.isNull());
+    QVERIFY(ele1 != ele2);  // 消费不重复：两个视图绝不命中同一个元素
+    QCOMPARE(candidates.size(), 0);
+
+    QSet< QString > consumedKeys;
+    QVERIFY(DA::DASignalFigureArchive::restoreFigure(&restored1, ele1, &readTask.chartItemsManager(), &consumedKeys));
+    QVERIFY(DA::DASignalFigureArchive::restoreFigure(&restored2, ele2, &readTask.chartItemsManager(), &consumedKeys));
+
+    // 各自的网格比例恢复正确（证明拿到的是自己的元素，不是对方的）
+    compareSizeList(restored1.gridRowSizes(), rows1);
+    compareSizeList(restored1.gridColumnSizes(), cols1);
+    compareSizeList(restored2.gridRowSizes(), rows2);
+    compareSizeList(restored2.gridColumnSizes(), cols2);
+    // 峰值标记互不共享：各归各的频谱图，绝不出现同一 QwtPlotMarker 挂两个 chart
+    QCOMPARE(restored1.peakMarkers().size(), 1);
+    QCOMPARE(restored2.peakMarkers().size(), 1);
+    QwtPlotMarker* marker1 = restored1.peakMarkers().first();
+    QwtPlotMarker* marker2 = restored2.peakMarkers().first();
+    QVERIFY(marker1 != marker2);
+    QVERIFY(restored1.spectrumChart()->itemList().contains(marker1));
+    QVERIFY(!restored1.spectrumChart()->itemList().contains(marker2));
+    QVERIFY(restored2.spectrumChart()->itemList().contains(marker2));
+    QVERIFY(!restored2.spectrumChart()->itemList().contains(marker1));
+
+    // ---------- 4. 旧格式回退：无 signal-id 属性按 signal-name 命中；同名元素消费式错开 ----------
+    QDomDocument legacyDoc;
+    QVERIFY(legacyDoc.setContent(
+        QByteArrayLiteral("<signal-figures version=\"1\">"
+                          "<figure signal-name=\"unit\" id=\"sig-unit\"/>"
+                          "</signal-figures>")));
+    const QDomElement legacyEle =
+        DA::DASignalFigureArchive::findFigureElement(legacyDoc, 12345, QStringLiteral("unit"));
+    QVERIFY(!legacyEle.isNull());  // 旧档元素无 signal-id：按名字回退命中
+
+    QDomDocument dupDoc;
+    QVERIFY(dupDoc.setContent(
+        QByteArrayLiteral("<signal-figures version=\"1\">"
+                          "<figure signal-name=\"X\"/>"
+                          "<figure signal-name=\"X\"/>"
+                          "</signal-figures>")));
+    QList< QDomElement > dupCandidates = DA::DASignalFigureArchive::figureElements(dupDoc);
+    QCOMPARE(dupCandidates.size(), 2);
+    const QDomElement dupA = DA::DASignalFigureArchive::takeFigureElement(dupCandidates, 1, QStringLiteral("X"));
+    const QDomElement dupB = DA::DASignalFigureArchive::takeFigureElement(dupCandidates, 2, QStringLiteral("X"));
+    QVERIFY(!dupA.isNull());
+    QVERIFY(!dupB.isNull());
+    QVERIFY(dupA != dupB);  // 旧档两个同名元素：消费语义按顺序错开，不再两个视图共用第一个
+    QVERIFY(DA::DASignalFigureArchive::takeFigureElement(dupCandidates, 3, QStringLiteral("X")).isNull());
+}
+
+/**
+ * @brief BLK-01：快照两段式——写路径与活图元指针解耦
+ *
+ * 场景：GUI 线程 makeSnapshots 预序列化后，**删除全部图元**（模拟保存期间 GUI 线程
+ * 删除/重建峰值标记），后台任务 saveSnapshots 仍能写出完整 chart-data，load 后
+ * 峰值标记与用户图元完整恢复——证明后台写路径不依赖任何存活的 QwtPlotItem*。
+ */
+void DASignalAnalysisTest::signalArchiveSnapshotDecoupledFromLiveItems()
+{
+    if (!openGLAvailable()) {
+        QSKIP("OpenGL is not available: skip the snapshot decoupling test");
+    }
+    DA::DASignalAnalysisView view(makeTestSignal());
+    DA::DAPeakResult peaks;
+    peaks.frequencies = { 10.0, 20.0 };
+    peaks.magnitudes  = { 2.0, 1.0 };
+    view.setPeaks(peaks);
+    view.setPeakMarkersVisible(true);
+    QCOMPARE(view.peakMarkers().size(), 2);
+    auto* userMarker = new QwtPlotMarker();
+    userMarker->setXValue(1.0);
+    userMarker->setYValue(0.5);
+    userMarker->attach(view.waveChart());
+
+    // GUI 线程：登记 + 预序列化快照
+    DA::DAChartItemsManager saveItems;
+    const QByteArray figuresXml = DA::DASignalFigureArchive::saveFigures({ &view }, &saveItems);
+    QVERIFY(!figuresXml.isEmpty());
+    QCOMPARE(saveItems.keys().size(), 3);  // 2 个峰值标记 + 1 个用户图元
+    const QList< DA::DAChartItemSnapshot > snapshots = DA::DAChartItemArchive::makeSnapshots(&saveItems);
+    QCOMPARE(snapshots.size(), 3);
+    for (const DA::DAChartItemSnapshot& snapshot : snapshots) {
+        QVERIFY(!snapshot.key.isEmpty());
+        QVERIFY(!snapshot.data.isEmpty());
+    }
+
+    // 模拟 GUI 线程在存档期间删除全部图元（后台任务只持有快照字节，不得触碰它们）
+    QList< QwtPlotItem* > doomed;
+    for (const QString& key : saveItems.keys()) {
+        QwtPlotItem* item = saveItems.keyToItem(key);
+        if (item) {
+            doomed.append(item);
+        }
+    }
+    QCOMPARE(doomed.size(), 3);
+    for (QwtPlotItem* item : doomed) {
+        item->detach();
+        delete item;
+    }
+
+    // 后台任务只写快照字节：图元已全部销毁仍能写出并读回完整 chart-data
+    MemoryArchive mem;
+    DA::DASignalArchiveTask writeTask(QByteArrayLiteral("{\"signals\":[]}"), figuresXml, snapshots);
+    QVERIFY(writeTask.exec(&mem, DA::DAAbstractArchiveTask::WriteMode));
+    DA::DASignalArchiveTask readTask;
+    QVERIFY(readTask.exec(&mem, DA::DAAbstractArchiveTask::ReadMode));
+    QVERIFY(!readTask.chartItemsManager().isEmpty());
+    QCOMPARE(readTask.chartItemsManager().keys().size(), 3);
+
+    // 恢复到新视图：峰值标记与用户图元完整回来（写路径与活指针解耦的端到端证明）
+    QDomDocument doc;
+    QString parseError;
+    QVERIFY2(doc.setContent(readTask.loadedFiguresXml(), &parseError), qPrintable(parseError));
+    DA::DASignalPtr restoredSignal = makeTestSignal();
+    restoredSignal->restoreSignalId(view.signal()->signalId());
+    const QDomElement figureEle =
+        DA::DASignalFigureArchive::findFigureElement(doc, restoredSignal->signalId(), QStringLiteral("unit"));
+    QVERIFY(!figureEle.isNull());
+    DA::DASignalAnalysisView restoredView(restoredSignal);
+    QVERIFY(DA::DASignalFigureArchive::restoreFigure(&restoredView, figureEle, &readTask.chartItemsManager()));
+    QCOMPARE(restoredView.peakMarkers().size(), 2);
+    QCOMPARE(nonTransientItems(restoredView.waveChart()).size(), 1);
+}
+
+/**
+ * @brief BLK-03a：外部删除缓存图元（图元树路径）后回填/重译不崩溃且按需重建
+ *
+ * 模拟共享图元树对 transient 图元执行 removePlotItem（detach+delete）：
+ * - 删包络曲线后再 setEnvelope：包络重建（itemList 重新出现 QwtPlotIntervalCurve）；
+ * - 删播放头后 setCurrentTime：播放头重建；
+ * - 删谱图图元后 setDbFloor（applyHeatmapColors 路径）不崩溃，再 setStft 重建谱图；
+ * - LanguageChange（retranslateUi 路径）对失效缓存不崩溃。
+ */
+void DASignalAnalysisTest::signalViewExternalItemRemoval()
+{
+    if (!openGLAvailable()) {
+        QSKIP("OpenGL is not available: skip the external item removal test");
+    }
+    DA::DASignalAnalysisView view(makeTestSignal());
+    const QVector< double > xs { 0.0, 1.0, 2.0 };
+    const QVector< double > mins { -1.0, -2.0, -1.5 };
+    const QVector< double > maxs { 1.0, 2.0, 1.5 };
+    view.setEnvelope(xs, mins, maxs);
+    // 找到包络曲线与播放头（波形图上的 transient 图元）
+    QwtPlotIntervalCurve* envelope = nullptr;
+    QwtPlotMarker* playhead        = nullptr;
+    const QList< QwtPlotItem* > waveItems = view.waveChart()->itemList();
+    for (QwtPlotItem* item : waveItems) {
+        if (auto* curve = dynamic_cast< QwtPlotIntervalCurve* >(item)) {
+            envelope = curve;
+        } else if (auto* marker = dynamic_cast< QwtPlotMarker* >(item)) {
+            playhead = marker;
+        }
+    }
+    QVERIFY(envelope);
+    QVERIFY(playhead);
+
+    // 删包络曲线（模拟图元树 Delete）：缓存指针悬空，再回填必须重建而不是崩溃
+    view.waveChart()->removePlotItem(envelope);
+    view.setEnvelope(xs, mins, maxs);
+    bool envelopeRebuilt = false;
+    const QList< QwtPlotItem* > waveAfterEnvelope = view.waveChart()->itemList();
+    for (QwtPlotItem* item : waveAfterEnvelope) {
+        if (dynamic_cast< QwtPlotIntervalCurve* >(item)) {
+            envelopeRebuilt = true;
+        }
+    }
+    QVERIFY2(envelopeRebuilt, "the envelope curve must be rebuilt after external removal");
+
+    // 删播放头：下一次时间更新（updatePlayhead）按需重建
+    view.waveChart()->removePlotItem(playhead);
+    view.setCurrentTime(0.1);
+    bool playheadRebuilt = false;
+    const QList< QwtPlotItem* > waveAfterPlayhead = view.waveChart()->itemList();
+    for (QwtPlotItem* item : waveAfterPlayhead) {
+        if (dynamic_cast< QwtPlotMarker* >(item)) {
+            playheadRebuilt = true;
+        }
+    }
+    QVERIFY2(playheadRebuilt, "the playhead must be rebuilt after external removal");
+
+    // 删谱图图元：applyHeatmapColors（setDbFloor 路径）对失效缓存不崩溃；
+    // 再回填 STFT 结果时谱图重建
+    DA::DAStftResult stft;
+    stft.rows          = 2;
+    stft.columns       = 3;
+    stft.times         = { 0.0, 0.5, 1.0 };
+    stft.freqs         = { 0.0, 10.0 };
+    stft.values        = { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 };
+    stft.windowSeconds = 0.1;
+    view.setStft(stft);
+    QwtPlotSpectrogram* spectrogram = nullptr;
+    const QList< QwtPlotItem* > heatItems = view.heatmapChart()->itemList();
+    for (QwtPlotItem* item : heatItems) {
+        if (auto* raster = dynamic_cast< QwtPlotSpectrogram* >(item)) {
+            spectrogram = raster;
+        }
+    }
+    QVERIFY(spectrogram);
+    view.heatmapChart()->removePlotItem(spectrogram);
+    view.setDbFloor(-60.0);   // applyHeatmapColors：失效缓存早退，不崩溃
+    view.setColormapName(QStringLiteral("inferno"));  // 同一路径再走一遍
+    view.setStft(stft);       // rebuildHeatmap：谱图重建
+    bool spectrogramRebuilt = false;
+    const QList< QwtPlotItem* > heatAfter = view.heatmapChart()->itemList();
+    for (QwtPlotItem* item : heatAfter) {
+        if (dynamic_cast< QwtPlotSpectrogram* >(item)) {
+            spectrogramRebuilt = true;
+        }
+    }
+    QVERIFY2(spectrogramRebuilt, "the spectrogram must be rebuilt after external removal");
+
+    // retranslateUi（LanguageChange 路径）对失效/重建后的缓存不崩溃
+    QEvent langEvent(QEvent::LanguageChange);
+    QApplication::sendEvent(&view, &langEvent);
+}
+
+/**
+ * @brief SF-11：figure 撤销栈入组等价接线
+ *
+ * DASignalAnalysisUI::connectSignalView 对每个信号 figure 的 getUndoStack() 调
+ * DACommandInterface::addStack（实现即 QUndoGroup::addStack），切信号时 setActive。
+ * 测试环境无法实例化完整 UI，这里直接验证组语义等价：
+ * - activeStack 跟随 setActive 切换；
+ * - 组的 canUndo/canRedo 跟随活动栈；
+ * - 栈随 figure 销毁被 QUndoGroup 自动摘除（活动栈销毁后组无活动栈）。
+ */
+void DASignalAnalysisTest::undoStackGroupWiring()
+{
+    DA::DAFigureWidget fig1;
+    DA::DAFigureWidget fig2;
+    QUndoStack* stack1 = fig1.getUndoStack();
+    QUndoStack* stack2 = fig2.getUndoStack();
+    QVERIFY(stack1);
+    QVERIFY(stack2);
+    QVERIFY(stack1 != stack2);
+
+    QUndoGroup group;
+    group.addStack(stack1);
+    group.addStack(stack2);
+    QCOMPARE(group.stacks().size(), 2);
+    QVERIFY(group.activeStack() == nullptr);  // 未激活任何栈
+
+    stack1->setActive();
+    QCOMPARE(group.activeStack(), stack1);
+    stack2->setActive();
+    QCOMPARE(group.activeStack(), stack2);  // 切换信号标签页：activeStack 跟随
+
+    // 活动栈压入命令 → 组的 undo/redo 可用性跟随
+    stack2->push(new QUndoCommand());
+    QVERIFY(group.canUndo());
+    stack1->setActive();
+    QVERIFY(!group.canUndo());  // stack1 为空栈
+    stack2->setActive();
+    QVERIFY(group.canUndo());
+
+    // 栈随 figure 销毁自动摘除（QUndoGroup 连接 destroyed；figure 值持有栈）
+    DA::DAFigureWidget* heapFig = new DA::DAFigureWidget();
+    QUndoStack* heapStack       = heapFig->getUndoStack();
+    group.addStack(heapStack);
+    heapStack->setActive();
+    QCOMPARE(group.activeStack(), heapStack);
+    delete heapFig;
+    QCOMPARE(group.stacks().size(), 2);
+    QVERIFY(group.activeStack() == nullptr);  // 活动栈销毁后组无活动栈（动作置灰）
+    // 剩余栈仍可再次激活（切回另一个信号标签页）
+    stack1->setActive();
+    QCOMPARE(group.activeStack(), stack1);
+}
+
+/**
+ * @brief SF-13：峰值「存档优先」只在加载后到第一次重算前
+ *
+ * 时序镜像真实恢复流：connectSignalView 先应用显隐开关（此时无峰值数据、无标记），
+ * restoreFigure 再接管存档标记；之后 setPeaks/setSpectrum 回填都不重建标记
+ * （存档优先窗口），setAmplitudeDisplay/setParams 才复位并按当前 mPeaks 重建：
+ * - 幅值口径切换：新对象、新位置（dBFS 下 2.0 → 20·log10(2.0) ≈ 6.0206）；
+ * - 参数变化：同样复位存档优先并重建。
+ */
+void DASignalAnalysisTest::signalPeakMarkersRestoredUntilRecompute()
+{
+    if (!openGLAvailable()) {
+        QSKIP("OpenGL is not available: skip the peak markers restored test");
+    }
+    DA::DASignalAnalysisView view(makeTestSignal());
+    DA::DASpectrumResult spectrum;
+    spectrum.freqs        = { 0.0, 10.0, 20.0 };
+    spectrum.amplitudes   = { 1.0, 2.0, 3.0 };
+    spectrum.resolutionHz = 10.0;
+    view.setSpectrum(spectrum);
+    // 恢复流程先应用显隐开关：此时 mPeaks 无效，不产生标记（connectSignalView 时序）
+    view.setPeakMarkersVisible(true);
+    QCOMPARE(view.peakMarkers().size(), 0);
+
+    // 模拟存档接管（restoreFigure 的第 4 步）：手工构造标记并交给视图
+    auto* restoredMarker = new QwtPlotMarker();
+    restoredMarker->setXValue(10.0);
+    restoredMarker->setYValue(2.0);
+    restoredMarker->attach(view.spectrumChart());
+    view.adoptRestoredPeakMarkers({ restoredMarker });
+    QCOMPARE(view.peakMarkers().size(), 1);
+
+    // 存档优先窗口内：峰值/频谱回填都不删除/重建标记（沿用既有断言口径）
+    DA::DAPeakResult peaks;
+    peaks.frequencies = { 10.0 };
+    peaks.magnitudes  = { 2.0 };
+    view.setPeaks(peaks);
+    QCOMPARE(view.peakMarkers().size(), 1);
+    view.setSpectrum(spectrum);
+    QCOMPARE(view.peakMarkers().size(), 1);
+    QCOMPARE(view.peakMarkers().first(), restoredMarker);
+    QVERIFY(view.spectrumChart()->itemList().contains(restoredMarker));
+
+    // 幅值口径切换：存档优先复位，标记按当前 mPeaks 以新口径重建（SF-13）
+    view.setAmplitudeDisplay(QStringLiteral("dbFS"), QStringLiteral("fullScale"));
+    QCOMPARE(view.peakMarkers().size(), 1);
+    QwtPlotMarker* rebuilt = view.peakMarkers().first();
+    QVERIFY(rebuilt != restoredMarker);  // 新对象（旧标记已删除重建）
+    // dBFS 参考 = signalPeak()（无包络时 0）→ 回退 1.0：20·log10(2.0/1.0)
+    QVERIFY2(qAbs(rebuilt->yValue() - 6.020599913279624) < 1e-6,
+             "the rebuilt marker must use the new amplitude conversion");
+    QCOMPARE(rebuilt->xValue(), 10.0);
+
+    // 参数变化同样复位存档优先并重建（新视图重复接管流程，镜像真实时序）
+    DA::DASignalAnalysisView view2(makeTestSignal());
+    view2.setSpectrum(spectrum);
+    view2.setPeakMarkersVisible(true);
+    auto* restoredAgain = new QwtPlotMarker();
+    restoredAgain->setXValue(10.0);
+    restoredAgain->setYValue(2.0);
+    restoredAgain->attach(view2.spectrumChart());
+    view2.adoptRestoredPeakMarkers({ restoredAgain });
+    QCOMPARE(view2.peakMarkers().size(), 1);
+    view2.setPeaks(peaks);
+    view2.setParams(DA::DASignalAnalysisParams::defaults());
+    QCOMPARE(view2.peakMarkers().size(), 1);
+    QVERIFY(view2.peakMarkers().first() != restoredAgain);
 }
 
 QTEST_MAIN(DASignalAnalysisTest)

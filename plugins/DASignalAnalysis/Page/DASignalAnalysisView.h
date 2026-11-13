@@ -1,6 +1,7 @@
 #ifndef DASIGNALANALYSISVIEW_H
 #define DASIGNALANALYSISVIEW_H
 #include <QWidget>
+#include <QPointer>
 #include <QVector>
 #include <QStringList>
 #include "Signal/DASignal.h"
@@ -13,9 +14,11 @@ class QTimer;
 class QResizeEvent;
 class QPixmap;
 
+class QwtPlotItem;
 class QwtPlotCurve;
 class QwtPlotIntervalCurve;
 class QwtPlotMarker;
+class QwtPlotPicker;
 class QwtPlotShapeItem;
 class QwtPlotSpectrogram;
 class Qwt3DWaterfall;
@@ -93,6 +96,9 @@ public:
     bool isFollowSlider() const;
     // 播放头跟随（外部按播放位置调用，避免与用户 seek 混淆）
     void setPlayheadFromPlayback(double seconds);
+    // 「点击波形即定位」开关：缩放/平移/十字线等交互工具启用时关闭（SF-12）
+    void setSeekEnabled(bool on);
+    bool isSeekEnabled() const;
     // 当前时间（秒）
     double currentTime() const;
     // 当前波形可见时间范围（秒，绝对时间，含 timeOrigin）；无数据/未布局时返回 false
@@ -136,7 +142,7 @@ public:
     bool is3DChartActive() const;
     // 设置当前 2D 子图
     void setCurrentChart(DAChartWidget* chart);
-    // figure id（"sig-<信号名>"；T9 存档细化）
+    // figure id（"sig-<信号唯一id>"；存档恢复时沿用存档里的持久 id）
     QString figureId() const;
     // 网格行/列比例（归一化，和≈1）
     QList< qreal > gridRowSizes() const;
@@ -191,6 +197,8 @@ private:
     void updateStftWindowRect();
     void updateAxisTitles();
     void applyHeatmapColors();
+    // 校验并按需重建波形画布的装饰图元（播放头/STFT 窗口矩形；被外部删除后按原样重建，BLK-03a）
+    void ensureWaveDecorItems();
     // 当前时间对应的 STFT 列索引（跟随滑块用）
     int currentStftColumn() const;
     // 幅值 → 显示口径（乘标定系数；dB 时换算对数）
@@ -215,11 +223,12 @@ private:
     bool mEnvelopeValid { false };
 
     // 图表文档
+    // figure 归视图所有（父对象），子图可被共享图元树删除：缓存用 QPointer 防悬空（BLK-03a）
     DAFigureWidget* mFigure { nullptr };
-    DAChartWidget* mWaveChart { nullptr };
-    DAChartWidget* mSpectrumChart { nullptr };
-    DAChartWidget* mHeatmapChart { nullptr };
-    DAChart3DWidget* mWaterfallChart { nullptr };
+    QPointer< DAChartWidget > mWaveChart;
+    QPointer< DAChartWidget > mSpectrumChart;
+    QPointer< DAChartWidget > mHeatmapChart;
+    QPointer< DAChart3DWidget > mWaterfallChart;
     // 当前激活子图是否为 3D（点击 3D 置 true，点击任一 2D 子图置 false）
     bool mCurrentIs3D { false };
 
@@ -241,6 +250,7 @@ private:
     QTimer* mResizeDebounce { nullptr };
 
     // 图元
+    // 缓存图元可能被共享图元树删除（detach+delete）：使用前经 ensureItemAttached 校验（BLK-03a）
     QwtPlotIntervalCurve* mEnvelopeCurve { nullptr };
     QwtPlotMarker* mPlayhead { nullptr };
     QwtPlotShapeItem* mStftWindow { nullptr };
@@ -248,8 +258,12 @@ private:
     QwtPlotSpectrogram* mSpectrogramItem { nullptr };
     DAStftRasterData* mStftRaster { nullptr };
     QVector< QwtPlotMarker* > mPeakMarkers;
-    // 峰值标记已从存档接管：rebuildPeakMarkers 不再删除重建（存档优先，用户可能手动调过）
+    // 峰值标记已从存档接管：rebuildPeakMarkers 不再删除重建（存档优先，用户可能手动调过）。
+    // 该优先只在「加载后到第一次重算前」成立：setParams/setAmplitudeDisplay/切通道复位（SF-13）
     bool mPeakMarkersRestored { false };
+    // 「点击波形即定位」picker（SF-12：缩放/平移/十字线启用时停用）
+    QwtPlotPicker* mSeekPicker { nullptr };
+    bool mSeekEnabled { true };
 
     // 时频热图结果与显示设置
     DAStftResult mStft;

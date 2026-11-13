@@ -125,11 +125,13 @@ bool DASignalChartExport::saveWholePage(DASignalAnalysisView* view, const QStrin
 }
 
 /**
- * @brief 当前子图保存到文件（2D 支持 PNG/SVG/PDF，3D 仅位图）
+ * @brief 当前子图保存到文件（2D 支持 PNG/SVG/PDF，3D 本期固定 PNG）
  *
  * - 二维子图：委托 @ref DAFigureWidget::exportChartToFile，按 format 输出 PNG/SVG/PDF；
- * - 三维子图：只有位图路径（Qwt3DPlot 无矢量导出），format 非 Png 时按 PNG 内容保存，
- *   并用 qWarning 记录英文偏差说明。调用方负责把路径后缀改成 .png，这里不改写路径。
+ * - 三维子图：只有 PNG 位图路径。qwt3d 提供 saveVector（gl2ps 已编入 plot3d），但依赖
+ *   GL 上下文、目标环境可用性未验证，本期固定 PNG，矢量导出留作后续项；format 非 Png
+ *   时按 PNG 内容保存并用 qWarning 记录英文偏差说明（调用方负责把路径后缀改成 .png
+ *   并给用户可见提示），这里不改写路径。
  *
  * @param view 信号分析视图
  * @param filePath 目标文件路径
@@ -150,7 +152,8 @@ bool DASignalChartExport::saveCurrentSubChart(DASignalAnalysisView* view,
     }
     if (view->is3DChartActive()) {
         if (DAFigureExportFormat::Png != format) {
-            // 3D 子图无矢量路径：SVG/PDF 请求降级为 PNG 位图，偏差只写开发日志，不弹界面提示
+            // 3D 子图本期仅 PNG 位图导出（saveVector 依赖 GL 上下文未验证）：SVG/PDF 请求
+            // 降级为 PNG 位图；用户可见提示由调用方（exportCurrentSubChartImage）负责
             qWarning() << "DASignalChartExport::saveCurrentSubChart: the 3D sub-chart supports bitmap "
                           "export only; requested non-PNG format, saving PNG content to"
                        << filePath;

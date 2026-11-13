@@ -14,11 +14,13 @@ plugins/DASignalAnalysis/
 ├── DASignalAnalysisUI.*          # 丝带标签页 + 中央页面 + 动作 + 工程存档入口
 ├── Page/
 │   ├── DASignalAnalysisPage.*    # 页面：QTabBar + QStackedWidget（每信号一个视图）
-│   ├── DASignalAnalysisView.*    # 单信号视图：波形 + 频谱 + 热图/三维叠置 + 播放头
-│   ├── DASignalChartPanel.*      # 单图容器（标题行 + DAChartWidget）
+│   ├── DASignalAnalysisView.*    # 单信号视图：DAFigureWidget 2×2 网格（波形+频谱+热图/三维瀑布+播放头）
+│   ├── DASignalAnalysisSettingContext.*  # 设置上下文 provider（页面 dock 激活时接管设置面板/图元树/上下文标签）
+│   ├── DASignalChartExport.*     # 导出助手（整页/当前子图 PNG/SVG/PDF + 剪贴板）
+│   ├── DAPeakCurvePlotSamples.*  # 峰值曲线渲染采样（点/折线断开口径，v1.6）
 │   └── DAPeakDockWidget.*        # 峰值停靠窗口（表 2/3 + 曲线 1/3）
 ├── Signal/
-│   ├── DASignal.*                # 信号对象（元数据 + 转发取数）
+│   ├── DASignal.*                # 信号对象（元数据 + 会话内唯一 id + 转发取数）
 │   ├── DASignalSource.h          # 来源抽象（readRange 必须可跨线程）
 │   ├── DAFileSignalSource.*      # 文件来源（音频/视频抽取结果）
 │   ├── DADataFrameSignalSource.* # 数据帧来源（引用式）
@@ -39,7 +41,9 @@ plugins/DASignalAnalysis/
 │   ├── DASignalAnalysisSettingDialog.*  # 信号分析标签页「分析设置」：按信号生效的分析参数
 │   └── DASignalAnalysisSettingPage.*    # 插件全局设置页（主页 → 设置 → 信号分析）：FFmpeg 路径
 ├── Form/DASignalFormSpecBuilder.*# DAFormSpec 表单规格（分组 + visible_when 联动）
-├── Archive/DASignalArchiveTask.* # 工程存档任务（只存来源引用与参数）
+├── Archive/
+│   ├── DASignalArchiveTask.*     # 工程存档任务（写模式携带图元字节快照，BLK-01）
+│   └── DASignalFigureArchive.*   # figures.xml 保存/恢复助手（signal-id 存档键 + 防争用，BLK-02）
 └── PyScripts/DASignalAnalysis/   # Python 包（安装到 <app>/PyScripts）
     ├── importer.py               # 音频/视频读取与 FFmpeg 转码编排
     ├── spectrum.py               # 整段频谱/功率谱编排（调核心层纯函数）
@@ -52,8 +56,10 @@ plugins/DASignalAnalysis/
 ## 铁律
 
 1. **v2 清单一条都不做**（`tmp/信号分析插件开发方案.md` §2.2）：滤波、重采样、包络解调、倒谱、
-   倍频程、阶次分析、热图对数频率轴、声压级换算、选区循环播放、变速、智能体工具、工作流节点、
-   矢量导出等。结构留口即可。
+   倍频程、阶次分析、热图对数频率轴、声压级换算、选区循环播放、变速、智能体工具、工作流节点等。
+   结构留口即可。**例外（chart-ops 线修订）**：矢量导出限制已解除——当前子图为 2D 时支持
+   PNG/SVG/PDF 导出；3D 子图固定 PNG（qwt3d 的 saveVector 依赖 GL 上下文、目标环境可用性
+   未验证，矢量导出留作后续项）。
 2. **决策记录 D1–D31 是定稿口径**：采样率必须用户确认（不静默用推断值）；峰值曲线每帧独立取前 N；
    瀑布默认二维；深色主题 v1 不做。发现冲突先停下报告。
 3. **DSP 纯函数放核心层**（`src/PyScripts/DAWorkbench/DAPyBase/spectral.py`），
@@ -76,8 +82,13 @@ plugins/DASignalAnalysis/
     插件持有的 `CDockWidget*` 与页面指针必须用 `QPointer` 保存（宿主可能在插件卸载前销毁 dockManager，
     裸指针会悬空）；对话框以插件页面为父（`mPage`），避免卸载后残留。
 11. **信号来源干净**：文件来源读块、数据帧来源引用式（按块转换）；临时 WAV 随信号/控制器生命周期清理。
-12. **工程只存来源引用、参数与视图状态**（`Archive/DASignalArchiveTask`），不存分析结果/STFT 矩阵/峰值数据；
-    任务在后台线程只做文件读写，界面重建走 `loadedCallBack`。
+12. **工程只存来源引用、参数与视图状态，以及非 transient 图元**（峰值标记、用户添加的
+    参考线/文本/标注，经 `chart-data`；`Archive/DASignalArchiveTask` + `Archive/DASignalFigureArchive`）；
+    **不存**分析结果图元（包络/频谱曲线/热图/瀑布数据）、STFT 矩阵与峰值表/峰值曲线数据。
+    写模式携带 GUI 线程预序列化的图元**字节快照**（`DAChartItemArchive::makeSnapshots`，
+    BLK-01），后台任务只写字节不触碰 `QwtPlotItem*`；界面重建走 `loadedCallBack`。
+    figure 存档键是 `signal-id`（信号会话内唯一 id，随 signals.json 持久化），`signal-name`
+    仅兼容旧档（BLK-02）。
 13. **全局设置与按信号参数分开**：与具体信号/数据无关的全局项（当前为 FFmpeg 可执行文件路径）放插件设置页
     （`DASignalAnalysisPlugin::createSettingPage()` → `Dialogs/DASignalAnalysisSettingPage`，入口是 主页 → 设置）；
     信号分析标签页的「分析设置」对话框（`DASignalAnalysisSettingDialog`）只放按信号生效的分析参数，
@@ -104,7 +115,8 @@ plugins/DASignalAnalysis/
 python -I -m pytest tests/test_signal_dsp.py tests/test_signal_import.py -q   # 纯 Python 测试
 ```
 
-新增源文件放在上表的子目录后，需要重新 `cmake -S . -B build`（各目录用 `file(GLOB)` 收集）。
+新增源文件放在上表的子目录后**无需手动 reconfigure**：插件 CMake 各目录的 `file(GLOB)`
+都带 `CONFIGURE_DEPENDS`，新增/删除文件后构建会自动重新配置。
 
 ## v1.1 修正要点（评审整改后新增约定）
 

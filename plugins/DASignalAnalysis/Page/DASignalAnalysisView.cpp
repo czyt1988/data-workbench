@@ -64,18 +64,58 @@ QwtColorMap* cloneLinearColorMap(const QwtLinearColorMap* src)
 
 /**
  * @brief 清理峰值标记图元
+ *
+ * 只对仍挂在频谱图上的标记做 detach+delete（BLK-03a）：共享图元树可能已经删除其中
+ * 一部分，对已释放指针二次 delete 会崩溃；失效项只从列表移除。频谱图本身已被销毁时，
+ * 标记随 QwtPlot 的 autoDelete 释放，这里只清空列表。
  */
-void clearPeakMarkers(QVector< QwtPlotMarker* >& markers)
+void clearPeakMarkers(QVector< QwtPlotMarker* >& markers, const DAChartWidget* chart)
 {
-    for (QwtPlotMarker* m : std::as_const(markers)) {
-        m->detach();
-        delete m;
+    if (!chart) {
+        markers.clear();  // chart 已销毁：标记随 QwtPlot autoDelete 释放，不再 delete
+        return;
     }
-    markers.clear();
+    const QList< QwtPlotItem* > attached = chart->itemList();
+    for (int i = markers.size() - 1; i >= 0; --i) {
+        QwtPlotMarker* marker = markers.at(i);
+        if (!attached.contains(marker)) {
+            markers.removeAt(i);  // 已被外部（图元树）删除：只移除登记，避免二次 delete
+            continue;
+        }
+        marker->detach();
+        delete marker;
+        markers.removeAt(i);
+    }
 }
 
 constexpr double cEps             = 1e-30;
 constexpr int cEnvelopeDebounceMs = 200;
+
+/**
+ * @brief 校验缓存图元是否仍挂在所属 chart 上（BLK-03a）
+ *
+ * 共享图元树（DAChartManageWidget）可对任意 transient 图元执行 detach+delete，
+ * 视图缓存的裸指针随之悬空。这里按 chart 的 itemList() 校验：失效时置空缓存并返回
+ * false，调用方按「需要时重建」处理（参考 mSpectrogramItem 的重建分支）。
+ * 模板参数匹配缓存成员的具体图元类型（QwtPlotIntervalCurve/QwtPlotCurve 等），
+ * 置空直接写回原成员。
+ * @param item 缓存图元指针（失效时被置空）
+ * @param chart 图元所属子图；为空视为失效
+ * @return 图元有效（仍挂载）返回 true；原本为空或已失效返回 false（失效时已置空）
+ */
+template< typename T >
+bool ensureItemAttached(T*& item, const DAChartWidget* chart)
+{
+    if (!item) {
+        return false;
+    }
+    if (chart && chart->itemList().contains(item)) {
+        return true;
+    }
+    qWarning() << "DASignalAnalysisView: cached plot item was removed externally, it will be rebuilt on demand";
+    item = nullptr;
+    return false;
+}
 }  // namespace
 
 DASignalAnalysisView::DASignalAnalysisView(const DASignalPtr& signal, QWidget* parent)
@@ -98,6 +138,9 @@ void DASignalAnalysisView::setParams(const DASignalAnalysisParams& params)
 {
     mParams     = params;
     mTimeOrigin = mSignal ? mSignal->timeOrigin() : 0.0;
+    // 参数变化即触发重算：存档接管的峰值标记让位给重算结果（SF-13，存档优先只在
+    // 「加载后到第一次重算前」成立），下一次 rebuildPeakMarkers 按当前 mPeaks 重建
+    mPeakMarkersRestored = false;
     rebuildSpectrumPlot();
     // 参数变化后热图（窗长/重叠/零填充）与矩形几何都跟着变（评审 U6 / D21）
     rebuildHeatmap();
@@ -225,8 +268,9 @@ void DASignalAnalysisView::buildFigure()
     mFigure = new DAFigureWidget(this);
     mFigure->setFrameShape(QFrame::NoFrame);
     mFigure->setObjectName(QStringLiteral("da-signal-figure"));
-    // figure id 由信号派生（T9 存档按此往返；名称仅作可读标识）
-    mFigure->setFigureId(QStringLiteral("sig-%1").arg(mSignal ? mSignal->name() : QStringLiteral("unknown")));
+    // figure id 由信号唯一 id 派生（会话内单调递增）：同名信号不再共用同一 figure id
+    // （BLK-02）；信号名只作可读标识，存档匹配按 figures.xml 的 signal-id 属性
+    mFigure->setFigureId(QStringLiteral("sig-%1").arg(mSignal ? mSignal->signalId() : qint64(0)));
     if (!mFigure->enableGridLayout(2, 2)) {
         qWarning() << "DASignalAnalysisView::buildFigure: failed to enable the 2x2 grid layout";
     }
@@ -254,31 +298,20 @@ void DASignalAnalysisView::buildFigure()
     connect(mFigure, &DAFigureWidget::current3DChartChanged, this, &DASignalAnalysisView::onFigureCurrent3DChartChanged);
 
     // ---------- 波形：播放头 + STFT 窗口矩形 + 点击定位 ----------
-    mPlayhead = new QwtPlotMarker();
-    mPlayhead->setLineStyle(QwtPlotMarker::VLine);
-    mPlayhead->setLinePen(QPen(QColor(206, 96, 67), 1.5, Qt::DashLine));  // 橙红（危险/标记色）
-    mPlayhead->setXValue(0.0);
-    mPlayhead->attach(mWaveChart);
-    mWaveChart->setItemTransient(mPlayhead);  // 交互装饰：不进存档
+    // 播放头/STFT 矩形的创建与「被外部删除后重建」共用 ensureWaveDecorItems（BLK-03a）
+    ensureWaveDecorItems();
 
-    mStftWindow = new QwtPlotShapeItem();
-    QPen rectPen(QColor(82, 128, 193), 1.0, Qt::SolidLine);  // 主蓝
-    QBrush rectBrush(QColor(189, 205, 232, 60));             // 浅蓝半透明
-    mStftWindow->setPen(rectPen);
-    mStftWindow->setBrush(rectBrush);
-    mStftWindow->setVisible(false);
-    mStftWindow->attach(mWaveChart);
-    mWaveChart->setItemTransient(mStftWindow);  // 交互装饰：不进存档
-
-    // 点击波形定位（评审 U1：QwtPicker 不设状态机时 transition() 直接返回，点击无效）
-    auto* wavePicker = new QwtPlotPicker(QwtPlot::xBottom,
-                                         QwtPlot::yLeft,
-                                         QwtPlotPicker::NoRubberBand,
-                                         QwtPicker::AlwaysOff,
-                                         mWaveChart->canvas());
-    wavePicker->setTrackerMode(QwtPicker::AlwaysOff);
-    wavePicker->setStateMachine(new QwtPickerClickPointMachine());
-    connect(wavePicker, QOverload< const QPointF& >::of(&QwtPlotPicker::selected), this, [this](const QPointF& p) {
+    // 点击波形定位（评审 U1：QwtPicker 不设状态机时 transition() 直接返回，点击无效）。
+    // picker 装在 canvas 上且不消费事件；缩放/平移/十字线启用时经 setSeekEnabled 停用（SF-12）
+    mSeekPicker = new QwtPlotPicker(QwtPlot::xBottom,
+                                    QwtPlot::yLeft,
+                                    QwtPlotPicker::NoRubberBand,
+                                    QwtPicker::AlwaysOff,
+                                    mWaveChart->canvas());
+    mSeekPicker->setTrackerMode(QwtPicker::AlwaysOff);
+    mSeekPicker->setStateMachine(new QwtPickerClickPointMachine());
+    mSeekPicker->setEnabled(mSeekEnabled);
+    connect(mSeekPicker, QOverload< const QPointF& >::of(&QwtPlotPicker::selected), this, [this](const QPointF& p) {
         setCurrentTime(p.x() - (mSignal ? mSignal->timeOrigin() : 0.0));
     });
     // STFT 窗口矩形整体拖动（D30）：在画布上监听鼠标，命中矩形内才进入拖动；
@@ -286,6 +319,43 @@ void DASignalAnalysisView::buildFigure()
     mWaveChart->canvas()->installEventFilter(this);
     mSpectrumChart->canvas()->installEventFilter(this);
     mHeatmapChart->canvas()->installEventFilter(this);
+}
+
+/**
+ * @brief 校验并按需重建波形画布的装饰图元（播放头/STFT 窗口矩形，BLK-03a）
+ *
+ * 两者都是 transient 交互装饰，可被共享图元树删除；失效时置空缓存并按原样式重建
+ * （transient 属性保持），下一次 updatePlayhead/updateStftWindowRect 自动恢复显示。
+ */
+void DASignalAnalysisView::ensureWaveDecorItems()
+{
+    if (!mWaveChart) {
+        return;
+    }
+    if (mPlayhead && !mWaveChart->itemList().contains(mPlayhead)) {
+        mPlayhead = nullptr;
+    }
+    if (!mPlayhead) {
+        mPlayhead = new QwtPlotMarker();
+        mPlayhead->setLineStyle(QwtPlotMarker::VLine);
+        mPlayhead->setLinePen(QPen(QColor(206, 96, 67), 1.5, Qt::DashLine));  // 橙红（危险/标记色）
+        mPlayhead->setXValue(0.0);
+        mPlayhead->attach(mWaveChart);
+        mWaveChart->setItemTransient(mPlayhead);  // 交互装饰：不进存档
+    }
+    if (mStftWindow && !mWaveChart->itemList().contains(mStftWindow)) {
+        mStftWindow = nullptr;
+    }
+    if (!mStftWindow) {
+        mStftWindow = new QwtPlotShapeItem();
+        QPen rectPen(QColor(82, 128, 193), 1.0, Qt::SolidLine);  // 主蓝
+        QBrush rectBrush(QColor(189, 205, 232, 60));             // 浅蓝半透明
+        mStftWindow->setPen(rectPen);
+        mStftWindow->setBrush(rectBrush);
+        mStftWindow->setVisible(false);
+        mStftWindow->attach(mWaveChart);
+        mWaveChart->setItemTransient(mStftWindow);  // 交互装饰：不进存档
+    }
 }
 
 /**
@@ -300,6 +370,8 @@ void DASignalAnalysisView::rebuildWavePlot()
         mWaveChart->replot();
         return;
     }
+    // 包络曲线可能被共享图元树删除：失效时置空并走重建分支（BLK-03a）
+    ensureItemAttached(mEnvelopeCurve, mWaveChart);
     if (!mEnvelopeCurve) {
         mEnvelopeCurve = new QwtPlotIntervalCurve(tr("Envelope"));  // cn:包络
         QPen pen(QColor(73, 124, 173), 1.0);                        // 深蓝
@@ -338,6 +410,8 @@ void DASignalAnalysisView::rebuildSpectrumPlot()
         mSpectrumChart->replot();
         return;
     }
+    // 频谱曲线可能被共享图元树删除：失效时置空并走重建分支（BLK-03a）
+    ensureItemAttached(mSpectrumCurve, mSpectrumChart);
     if (!mSpectrumCurve) {
         mSpectrumCurve = new QwtPlotCurve(tr("Amplitude spectrum"));  // cn:幅值谱
         QPen pen(QColor(82, 128, 193), 1.2);                          // 主蓝
@@ -392,7 +466,9 @@ void DASignalAnalysisView::rebuildSpectrumPlot()
  *
  * 只在峰值数据或显隐变化时调用；曲线数据更新不重建标记，避免闪烁。
  * 若峰值标记已从存档接管（mPeakMarkersRestored 且列表非空），存档优先：不删除、
- * 不按重算结果重建，只同步显隐（用户可能手动调整过峰位）。
+ * 不按重算结果重建，只同步显隐（用户可能手动调整过峰位）。该优先只在「加载后到
+ * 第一次重算前」成立：setParams/setAmplitudeDisplay/切通道复位该标志（SF-13）。
+ * 已被共享图元树删除的标记跳过并移除登记（BLK-03a）。
  */
 void DASignalAnalysisView::rebuildPeakMarkers()
 {
@@ -400,15 +476,19 @@ void DASignalAnalysisView::rebuildPeakMarkers()
         return;
     }
     if (mPeakMarkersRestored && !mPeakMarkers.isEmpty()) {
-        for (QwtPlotMarker* marker : std::as_const(mPeakMarkers)) {
-            if (marker) {
+        const QList< QwtPlotItem* > attached = mSpectrumChart->itemList();
+        for (int i = mPeakMarkers.size() - 1; i >= 0; --i) {
+            QwtPlotMarker* marker = mPeakMarkers.at(i);
+            if (attached.contains(marker)) {
                 marker->setVisible(mPeakMarkersVisible);
+            } else {
+                mPeakMarkers.removeAt(i);  // 已被外部（图元树）删除：只移除登记
             }
         }
         mSpectrumChart->replot();
         return;
     }
-    clearPeakMarkers(mPeakMarkers);
+    clearPeakMarkers(mPeakMarkers, mSpectrumChart);
     if (!mPeakMarkersVisible || !mPeaks.isValid()) {
         return;
     }
@@ -616,8 +696,9 @@ bool DASignalAnalysisView::isFollowSlider() const
 bool DASignalAnalysisView::eventFilter(QObject* watched, QEvent* e)
 {
     // 点击任意 2D 子图即切换当前子图（T8 设置面板 target 跟随）。
-    // qwt 的 QwtFigure 只在鼠标事件传播到 QwtPlot 时才切换当前坐标轴，而波形画布上的
-    // QwtPicker 会消费点击事件；因此这里在画布层显式同步，且不消费事件（交互行为不变）。
+    // 真实点击落在 QwtPlotCanvas 上：qwt figure 的激活事件过滤器原先装在 QwtPlot 上，
+    // 收不到 canvas 事件（QwtPicker::eventFilter 恒 return false，并不消费点击）；
+    // 因此这里在画布层显式同步当前子图，且不消费事件（交互行为不变）。
     if (e && e->type() == QEvent::MouseButtonPress && mFigure) {
         auto* me = static_cast< QMouseEvent* >(e);
         if (me->button() == Qt::LeftButton) {
@@ -636,10 +717,15 @@ bool DASignalAnalysisView::eventFilter(QObject* watched, QEvent* e)
     if (watched != mWaveChart->canvas()) {
         return QWidget::eventFilter(watched, e);
     }
+    // STFT 矩形可能被共享图元树删除：失效时按原样式重建（BLK-03a）
+    ensureWaveDecorItems();
     // 鼠标位置是否落在 STFT 窗口矩形内（X 与 Y 都要命中，评审 N-U5）
     auto hitWindowRect = [this](const QPoint& pos) -> bool {
         if (!mStftWindow || !mStftWindow->isVisible() || !mStft.isValid()) {
             return false;
+        }
+        if (!mWaveChart->itemList().contains(mStftWindow)) {
+            return false;  // 已被外部删除的缓存指针不参与命中判定（BLK-03a）
         }
         const QRectF rect = mStftWindow->boundingRect();
         if (!rect.isValid()) {
@@ -763,21 +849,10 @@ void DASignalAnalysisView::rebuildHeatmap()
         dbValues[ i ]  = std::isfinite(v) ? 20.0 * std::log10(qMax(v / peak, 1e-30))
                                           : std::numeric_limits< double >::quiet_NaN();
     }
-    // 栅格所有权归 QwtPlotSpectrogram（setData 接管）；若图表被清空导致谱图图元已销毁，
-    // 指针必须一起置空，避免继续写已释放的栅格（评审 H3/A5）
-    if (mSpectrogramItem) {
-        bool itemStillAttached           = false;
-        const QList< QwtPlotItem* > items = mHeatmapChart->itemList();
-        for (QwtPlotItem* item : items) {
-            if (item == mSpectrogramItem) {
-                itemStillAttached = true;
-                break;
-            }
-        }
-        if (!itemStillAttached) {
-            mSpectrogramItem = nullptr;
-            mStftRaster      = nullptr;
-        }
+    // 栅格所有权归 QwtPlotSpectrogram（setData 接管）；若图表被清空/图元树删除导致谱图
+    // 图元已销毁，指针必须一起置空，避免继续写已释放的栅格（评审 H3/A5、BLK-03a）
+    if (!ensureItemAttached(mSpectrogramItem, mHeatmapChart)) {
+        mStftRaster = nullptr;  // 栅格随谱图图元一起被销毁
     }
     if (!mStftRaster) {
         mStftRaster = new DAStftRasterData();
@@ -821,7 +896,12 @@ void DASignalAnalysisView::rebuildHeatmap()
  */
 void DASignalAnalysisView::applyHeatmapColors()
 {
-    if (!mHeatmapChart || !mSpectrogramItem) {
+    if (!mHeatmapChart) {
+        return;
+    }
+    // 谱图图元可能被共享图元树删除：失效时置空（连同栅格）并返回，下一次 rebuildHeatmap 重建（BLK-03a）
+    if (!ensureItemAttached(mSpectrogramItem, mHeatmapChart)) {
+        mStftRaster = nullptr;  // 栅格随谱图图元一起被销毁
         return;
     }
     auto cmap = QwtColorMapPreset::create(mColormapName);
@@ -856,7 +936,12 @@ void DASignalAnalysisView::requestHeatmapRefresh()
  */
 void DASignalAnalysisView::updateStftWindowRect()
 {
-    if (!mStftWindow || !mSignal) {
+    if (!mSignal) {
+        return;
+    }
+    // 播放头/STFT 矩形可能被共享图元树删除：失效时按原样式重建（BLK-03a）
+    ensureWaveDecorItems();
+    if (!mStftWindow) {
         return;
     }
     if (!mStft.isValid() || mStft.windowSeconds <= 0.0) {
@@ -998,11 +1083,16 @@ void DASignalAnalysisView::updateAxisTitles()
 
 /**
  * @brief 幅值显示模式切换（只重绘，不重算）
+ *
+ * 口径切换后峰值标记必须跟随：这里复位「存档接管」标志（SF-13），下一次
+ * rebuildPeakMarkers（随 rebuildSpectrumPlot 触发）按当前 mPeaks 以新口径换算重建
+ * （DASignalAmplitude::toDisplay 是唯一换算入口，mParams.amplitudeMode 已更新）。
  */
 void DASignalAnalysisView::setAmplitudeDisplay(const QString& amplitudeMode, const QString& dbReference)
 {
     mParams.amplitudeMode = amplitudeMode;
     mParams.dbReference   = dbReference;
+    mPeakMarkersRestored  = false;
     rebuildSpectrumPlot();
 }
 
@@ -1052,14 +1142,17 @@ void DASignalAnalysisView::setCurrentChannel(int channel)
     mEnvMins.clear();
     mEnvMaxs.clear();
     mStft = DAStftResult();
+    // 曲线可能已被共享图元树删除：失效时置空，不写已释放对象（BLK-03a）
+    ensureItemAttached(mEnvelopeCurve, mWaveChart);
     if (mEnvelopeCurve) {
         mEnvelopeCurve->setSamples(QVector< QwtIntervalSample >());
         mWaveChart->replot();
     }
+    ensureItemAttached(mSpectrumCurve, mSpectrumChart);
     if (mSpectrumCurve) {
         mSpectrumCurve->setSamples(QVector< double >(), QVector< double >());
     }
-    clearPeakMarkers(mPeakMarkers);
+    clearPeakMarkers(mPeakMarkers, mSpectrumChart);
     // 通道切换会重算峰值：存档恢复的标记已随上面的清理删除，复位「存档接管」状态
     mPeakMarkersRestored = false;
     requestEnvelopeRefresh();
@@ -1141,6 +1234,29 @@ void DASignalAnalysisView::setPlayheadFromPlayback(double seconds)
 }
 
 /**
+ * @brief 「点击波形即定位」开关（SF-12）
+ *
+ * seek picker（QwtPickerClickPointMachine）在任意左键按下即触发定位，且不消费事件、
+ * 不受缩放/平移开关影响；Zoom/Pan 框选拖动时按下瞬间会把播放头拉到按下位置。
+ * 交互工具（缩放/平移/十字线）任一启用时由 UI 层关闭本开关，全关时恢复。
+ */
+void DASignalAnalysisView::setSeekEnabled(bool on)
+{
+    mSeekEnabled = on;
+    if (mSeekPicker) {
+        mSeekPicker->setEnabled(on);
+    }
+}
+
+/**
+ * @brief 「点击波形即定位」是否启用
+ */
+bool DASignalAnalysisView::isSeekEnabled() const
+{
+    return mSeekEnabled;
+}
+
+/**
  * @brief 更新播放头位置（波形图 x = 当前时间）
  */
 void DASignalAnalysisView::updatePlayhead()
@@ -1148,6 +1264,8 @@ void DASignalAnalysisView::updatePlayhead()
     if (!mSignal) {
         return;
     }
+    // 播放头可能被共享图元树删除：失效时按原样式重建（BLK-03a）
+    ensureWaveDecorItems();
     const double t = currentTime() + mSignal->timeOrigin();
     if (mPlayhead) {
         mPlayhead->setXValue(t);
@@ -1404,17 +1522,22 @@ void DASignalAnalysisView::changeEvent(QEvent* e)
 
 void DASignalAnalysisView::retranslateUi()
 {
-    if (mEnvelopeCurve) {
+    // 缓存图元可能已被共享图元树删除：失效时置空跳过（BLK-03a），下一次回填按需重建
+    if (ensureItemAttached(mEnvelopeCurve, mWaveChart)) {
         mEnvelopeCurve->setTitle(tr("Envelope"));  // cn:包络
     }
-    if (mSpectrumCurve) {
+    if (ensureItemAttached(mSpectrumCurve, mSpectrumChart)) {
         mSpectrumCurve->setTitle(tr("Amplitude spectrum"));  // cn:幅值谱
     }
-    if (mSpectrogramItem) {
+    if (ensureItemAttached(mSpectrogramItem, mHeatmapChart)) {
         mSpectrogramItem->setTitle(tr("Spectrogram"));  // cn:时频图
+    } else {
+        mStftRaster = nullptr;  // 栅格随谱图图元一起被销毁
     }
-    if (mWaterfallItem) {
+    if (mWaterfallItem && mWaterfallChart && mWaterfallChart->getWaterfalls().contains(mWaterfallItem)) {
         mWaterfallItem->setTitle(tr("Waterfall"));  // cn:三维瀑布
+    } else {
+        mWaterfallItem = nullptr;  // 已被外部（clearAllData3D 等）销毁：置空待重建
     }
     updateAxisTitles();
 }

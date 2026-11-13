@@ -76,6 +76,8 @@ private:
     void updateEmptyState();
     // 关闭指定索引的信号：移除标签页与视图并通知外部
     void removeSignalAt(int index);
+    // 同名信号显示名去重：与现有信号重名时追加 " (2)"/" (3)" 序号（BLK-02）
+    QString uniqueDisplayName(const QString& name, const DA::DASignal* except) const;
 
 private:
     QStackedWidget* mRootStack { nullptr };   ///< 空状态页 / 信号视图页
