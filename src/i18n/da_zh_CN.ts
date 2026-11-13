@@ -3393,22 +3393,27 @@
 <context>
     <name>DA::DAAppChartActionHandler</name>
     <message>
-        <location filename="../APP/Controller/DAAppChartActionHandler.cpp" line="+1123"/>
+        <location filename="../APP/Controller/DAAppChartActionHandler.cpp" line="+1140"/>
         <source>There is no figure to export</source>
         <translation>没有可导出的绘图窗口</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>There is no sub-chart to export</source>
         <translation>没有可导出的子图</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+4"/>
+        <source>PNG Image (*.png)</source>
+        <translation>PNG 图片 (*.png)</translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>Export Chart</source>
         <translation>导出当前子图</translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location line="+17"/>
         <source>Chart exported to &quot;%1&quot;</source>
         <translation>子图已导出到“%1”</translation>
     </message>
@@ -3711,7 +3716,7 @@
         <translation>未找到数据集&quot;%1&quot;，可能已被移除</translation>
     </message>
     <message>
-        <location filename="../APP/Controller/DAAppChartActionHandler.cpp" line="-614"/>
+        <location filename="../APP/Controller/DAAppChartActionHandler.cpp" line="-613"/>
         <source>Before creating a new coordinate, you need to create a figure</source>
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
@@ -3777,7 +3782,7 @@
         <translation>获取到空工程接口</translation>
     </message>
     <message>
-        <location filename="../APP/Controller/DAAppControllerCore.cpp" line="+375"/>
+        <location filename="../APP/Controller/DAAppControllerCore.cpp" line="+378"/>
         <location filename="../APP/Controller/DAAppControllerPage.cpp" line="+254"/>
         <source>No cells selected to copy</source>
         <translation>没有选中可复制的单元格</translation>
@@ -5418,6 +5423,29 @@
         <location line="+2"/>
         <source>Line Smooth</source>
         <translation>线平滑</translation>
+    </message>
+</context>
+<context>
+    <name>DA::DAChart3DGenericItemSettingPanel</name>
+    <message>
+        <location filename="../DAGui/Chart/Setting3D/DAChart3DGenericItemSettingPanel.cpp" line="+44"/>
+        <source>Basic</source>
+        <translation>基础</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Title</source>
+        <translation>标题</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Visible</source>
+        <translation>可见</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Z Value</source>
+        <translation>Z值</translation>
     </message>
 </context>
 <context>
@@ -8094,7 +8122,7 @@
     <name>DA::DAChartManageWidget</name>
     <message>
         <location filename="../DAGui/Chart/DAChartManageWidget.cpp" line="+102"/>
-        <location line="+809"/>
+        <location line="+818"/>
         <location line="+17"/>
         <location line="+20"/>
         <location line="+22"/>
@@ -8104,26 +8132,26 @@
         <translation>重命名</translation>
     </message>
     <message>
-        <location line="-903"/>
+        <location line="-912"/>
         <source>Visible</source>
         <translation>可见</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+1007"/>
+        <location line="+1016"/>
         <location line="+24"/>
         <source>Delete</source>
         <translation>删除</translation>
     </message>
     <message>
-        <location line="-1029"/>
-        <location line="+1078"/>
+        <location line="-1038"/>
+        <location line="+1087"/>
         <location line="+20"/>
         <source>Remove Chart</source>
         <translation>删除坐标系</translation>
     </message>
     <message>
-        <location line="-1093"/>
+        <location line="-1102"/>
         <source>Transfer</source>
         <translation>转移</translation>
     </message>
@@ -8133,12 +8161,12 @@
         <translation>设置</translation>
     </message>
     <message>
-        <location line="+104"/>
+        <location line="+111"/>
         <source>figure</source>
         <translation>绘图</translation>
     </message>
     <message>
-        <location line="+482"/>
+        <location line="+484"/>
         <source>received figure create signal, but cannot find figure</source>
         <translation>获取了绘图创建的信号，但无法找到绘图</translation>
     </message>
@@ -8154,8 +8182,8 @@
         <translation>确认删除坐标系&quot;%1&quot;吗？其全部图元将一并移除。</translation>
     </message>
     <message>
-        <location line="-973"/>
-        <location line="+674"/>
+        <location line="-975"/>
+        <location line="+676"/>
         <location line="+275"/>
         <location line="+20"/>
         <source>chart</source>
@@ -12336,12 +12364,12 @@
 <context>
     <name>DA::DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+168"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+170"/>
         <source>Unexpected plotting operation: a chart that does not belong to the DAChartWidget type was added to the figure</source>
         <translation>意外的绘图操作：不属于 DAChartWidget 类型的图表被添加到了 figure 中</translation>
     </message>
     <message>
-        <location line="+1466"/>
+        <location line="+1599"/>
         <source>PNG Image (*.png);;SVG Image (*.svg);;PDF Document (*.pdf)</source>
         <translation>PNG 图片 (*.png);;SVG 图片 (*.svg);;PDF 文档 (*.pdf)</translation>
     </message>
@@ -12351,7 +12379,7 @@
         <translation>不支持的图表编辑器类型：%1</translation>
     </message>
     <message>
-        <location line="+1055"/>
+        <location line="+1062"/>
         <source>add data probes</source>
         <translation>添加数据探针</translation>
     </message>
@@ -14266,7 +14294,7 @@
 <context>
     <name>DA::DASignalAnalysisPage</name>
     <message>
-        <location filename="../../plugins/DASignalAnalysis/Page/DASignalAnalysisPage.cpp" line="+299"/>
+        <location filename="../../plugins/DASignalAnalysis/Page/DASignalAnalysisPage.cpp" line="+334"/>
         <source>No signal loaded</source>
         <translation>尚未载入信号</translation>
     </message>
@@ -14396,188 +14424,188 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
 <context>
     <name>DA::DASignalAnalysisUI</name>
     <message>
-        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="+282"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="+285"/>
         <source>FFmpeg was not detected; video import is unavailable until a path is specified in Settings &gt; Signal Analysis.</source>
         <translation>未检测到 FFmpeg，在「设置 → 信号分析」里指定路径前视频导入不可用。</translation>
     </message>
     <message>
         <location line="-113"/>
-        <location line="+4046"/>
+        <location line="+4101"/>
         <source>Peak table (CSV)</source>
         <translation>峰值表（CSV）</translation>
     </message>
     <message>
-        <location line="-4043"/>
-        <location line="+4046"/>
+        <location line="-4098"/>
+        <location line="+4101"/>
         <source>Spectrum curve (CSV)</source>
         <translation>频谱曲线（CSV）</translation>
     </message>
     <message>
-        <location line="-4040"/>
-        <location line="+4046"/>
+        <location line="-4095"/>
+        <location line="+4101"/>
         <source>Heatmap matrix (CSV)</source>
         <translation>热图矩阵（CSV）</translation>
     </message>
     <message>
-        <location line="-3611"/>
+        <location line="-3666"/>
         <source>Signal imported: %1 (%2 Hz, %3 s)</source>
         <translation>信号已导入：%1（%2 赫兹，%3 秒）</translation>
     </message>
     <message>
-        <location line="+192"/>
+        <location line="+208"/>
         <location line="+3"/>
         <location line="+103"/>
         <location line="+128"/>
-        <location line="+2996"/>
+        <location line="+3035"/>
         <location line="+3"/>
         <location line="+27"/>
         <source>Signal Analysis</source>
         <translation>信号分析</translation>
     </message>
     <message>
-        <location line="-3138"/>
-        <location line="+3122"/>
+        <location line="-3177"/>
+        <location line="+3161"/>
         <source>Signal</source>
         <translation>信号</translation>
     </message>
     <message>
-        <location line="-3100"/>
-        <location line="+3103"/>
+        <location line="-3139"/>
+        <location line="+3142"/>
         <source>Playback</source>
         <translation>播放</translation>
     </message>
     <message>
-        <location line="-3087"/>
-        <location line="+3090"/>
+        <location line="-3126"/>
+        <location line="+3129"/>
         <source>Analysis</source>
         <translation>分析</translation>
     </message>
     <message>
-        <location line="-3076"/>
+        <location line="-3115"/>
         <location line="+182"/>
         <location line="+2"/>
         <location line="+5"/>
-        <location line="+2874"/>
+        <location line="+2913"/>
         <location line="+16"/>
         <source>Peaks</source>
         <translation>峰值</translation>
     </message>
     <message>
-        <location line="-3005"/>
-        <location line="+3018"/>
+        <location line="-3044"/>
+        <location line="+3057"/>
         <source>Display</source>
         <translation>显示</translation>
     </message>
     <message>
-        <location line="-3076"/>
-        <location line="+3066"/>
+        <location line="-3115"/>
+        <location line="+3105"/>
         <source>Export</source>
         <translation>导出</translation>
     </message>
     <message>
-        <location line="-3876"/>
-        <location line="+4048"/>
+        <location line="-3931"/>
+        <location line="+4103"/>
         <source>Whole page (PNG)...</source>
         <translation>整页（PNG）...</translation>
     </message>
     <message>
-        <location line="-4043"/>
-        <location line="+4046"/>
+        <location line="-4098"/>
+        <location line="+4101"/>
         <source>Current sub-chart (PNG/SVG/PDF)...</source>
         <translation>当前子图（PNG/SVG/PDF）...</translation>
     </message>
     <message>
-        <location line="-4040"/>
-        <location line="+4044"/>
+        <location line="-4095"/>
+        <location line="+4099"/>
         <source>Copy whole page to clipboard</source>
         <translation>复制整页到剪贴板</translation>
     </message>
     <message>
-        <location line="-4042"/>
-        <location line="+4045"/>
+        <location line="-4097"/>
+        <location line="+4100"/>
         <source>Copy current sub-chart to clipboard</source>
         <translation>复制当前子图到剪贴板</translation>
     </message>
     <message>
-        <location line="-3198"/>
-        <location line="+3023"/>
+        <location line="-3237"/>
+        <location line="+3062"/>
         <source>Signal Display</source>
         <translation>信号显示</translation>
     </message>
     <message>
-        <location line="-3009"/>
-        <location line="+3132"/>
+        <location line="-3048"/>
+        <location line="+3171"/>
         <source>Channel</source>
         <translation>通道</translation>
     </message>
     <message>
-        <location line="-3076"/>
-        <location line="+2959"/>
+        <location line="-3115"/>
+        <location line="+2998"/>
         <source>Tools</source>
         <translation>工具</translation>
     </message>
     <message>
-        <location line="-2853"/>
-        <location line="+2973"/>
+        <location line="-2892"/>
+        <location line="+3012"/>
         <source>Follow playback</source>
         <translation>跟随播放</translation>
     </message>
     <message>
-        <location line="-2972"/>
-        <location line="+2973"/>
+        <location line="-3011"/>
+        <location line="+3012"/>
         <source>Show the current frame while playback advances</source>
         <translation>播放推进时显示当前帧</translation>
     </message>
     <message>
-        <location line="-2958"/>
-        <location line="+2962"/>
+        <location line="-2997"/>
+        <location line="+3001"/>
         <source>Playback position</source>
         <translation>播放位置</translation>
     </message>
     <message>
-        <location line="-2945"/>
-        <location line="+2948"/>
+        <location line="-2984"/>
+        <location line="+2987"/>
         <source>Heatmap color scale lower limit</source>
         <translation>热图色标下限</translation>
     </message>
     <message>
-        <location line="-2936"/>
-        <location line="+2939"/>
+        <location line="-2975"/>
+        <location line="+2978"/>
         <source>Auto scroll</source>
         <translation>自动滚动</translation>
     </message>
     <message>
-        <location line="-2938"/>
-        <location line="+2939"/>
+        <location line="-2977"/>
+        <location line="+2978"/>
         <source>Scroll the time-frequency view while playback advances</source>
         <translation>播放推进时滚动时频视图</translation>
     </message>
     <message>
-        <location line="-2141"/>
-        <location line="+2084"/>
+        <location line="-2167"/>
+        <location line="+2110"/>
         <source>Peak amplitude</source>
         <translation>峰值幅度</translation>
     </message>
     <message>
-        <location line="-2083"/>
-        <location line="+2086"/>
+        <location line="-2109"/>
+        <location line="+2112"/>
         <source>RMS</source>
         <translation>均方根</translation>
     </message>
     <message>
-        <location line="-2085"/>
-        <location line="+2088"/>
+        <location line="-2111"/>
+        <location line="+2114"/>
         <source>dB (FS)</source>
         <translation>dB（满量程）</translation>
     </message>
     <message>
-        <location line="-2087"/>
-        <location line="+2090"/>
+        <location line="-2113"/>
+        <location line="+2116"/>
         <source>dB (re 1.0)</source>
         <translation>dB（相对 1.0）</translation>
     </message>
     <message>
-        <location line="-2006"/>
+        <location line="-2032"/>
         <source>No peak data to export.</source>
         <translation>没有可导出的峰值数据。</translation>
     </message>
@@ -14609,15 +14637,15 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <location line="+54"/>
         <location line="+40"/>
         <location line="+112"/>
-        <location line="+24"/>
+        <location line="+31"/>
         <location line="+45"/>
         <location line="+17"/>
-        <location line="+703"/>
+        <location line="+722"/>
         <source>No signal is selected.</source>
         <translation>未选中信号。</translation>
     </message>
     <message>
-        <location line="-990"/>
+        <location line="-1016"/>
         <source>No spectrum data to export.</source>
         <translation>没有可导出的频谱数据。</translation>
     </message>
@@ -14663,17 +14691,23 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>热图矩阵导出失败。</translation>
     </message>
     <message>
-        <location line="+1835"/>
+        <location line="+1861"/>
         <source>Export Image</source>
         <translation>导出图片</translation>
     </message>
     <message>
-        <location line="-1818"/>
+        <location line="-1844"/>
+        <location line="+37"/>
         <source>PNG Image (*.png)</source>
         <translation>PNG 图片 (*.png)</translation>
     </message>
     <message>
-        <location line="+100"/>
+        <location line="+20"/>
+        <source>3D sub-chart supports PNG export only; saved as PNG.</source>
+        <translation>三维子图仅支持 PNG 导出，已按 PNG 保存。</translation>
+    </message>
+    <message>
+        <location line="+50"/>
         <source>No peak data to send.</source>
         <translation>没有可发送的峰值数据。</translation>
     </message>
@@ -14688,7 +14722,7 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>峰值表已作为「%1」加入数据管理器。</translation>
     </message>
     <message>
-        <location line="+756"/>
+        <location line="+775"/>
         <source>Signal analysis: %1 (%2%)</source>
         <translation>信号分析：%1（%2%）</translation>
     </message>
@@ -14883,8 +14917,8 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>导出峰值表</translation>
     </message>
     <message>
-        <location line="-3292"/>
-        <location line="+3127"/>
+        <location line="-3331"/>
+        <location line="+3166"/>
         <source>Window</source>
         <translation>窗口</translation>
     </message>
@@ -14899,12 +14933,12 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>显示信号分析界面（首次使用时创建）</translation>
     </message>
     <message>
-        <location line="-1343"/>
+        <location line="-1359"/>
         <source>Audio/Video files (*.wav *.aiff *.aif *.flac *.ogg *.mp3 *.m4a *.mp4 *.mkv *.avi);;All files (*)</source>
         <translation>音频/视频文件 (*.wav *.aiff *.aif *.flac *.ogg *.mp3 *.m4a *.mp4 *.mkv *.avi);;所有文件 (*)</translation>
     </message>
     <message>
-        <location line="+1381"/>
+        <location line="+1397"/>
         <source>Cancel Analysis</source>
         <translation>取消计算</translation>
     </message>
@@ -14919,7 +14953,7 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>无法开始播放该信号。</translation>
     </message>
     <message>
-        <location line="-1885"/>
+        <location line="-1911"/>
         <source>Continue</source>
         <translation>继续</translation>
     </message>
@@ -14944,7 +14978,7 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>导出完整矩阵</translation>
     </message>
     <message>
-        <location line="-1854"/>
+        <location line="-1883"/>
         <source>Extract the audio track of a video file</source>
         <translation>抽取视频音频轨</translation>
     </message>
@@ -14954,27 +14988,27 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>未检测到 FFmpeg，请在「设置 → 信号分析」里指定路径。</translation>
     </message>
     <message>
-        <location line="+345"/>
+        <location line="+361"/>
         <source>Failed to create the signal analysis page.</source>
         <translation>创建信号分析页面失败。</translation>
     </message>
     <message>
-        <location line="+1466"/>
+        <location line="+1479"/>
         <source>Failed to export the power spectral density.</source>
         <translation>功率谱密度导出失败。</translation>
     </message>
     <message>
-        <location line="+1287"/>
+        <location line="+1313"/>
         <source>Failed to import audio.</source>
         <translation>导入音频失败。</translation>
     </message>
     <message>
-        <location line="-3021"/>
+        <location line="-3076"/>
         <source>Failed to import data frame.</source>
         <translation>导入数据帧失败。</translation>
     </message>
     <message>
-        <location line="+3021"/>
+        <location line="+3076"/>
         <source>Failed to import video.</source>
         <translation>导入视频失败。</translation>
     </message>
@@ -14985,23 +15019,23 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>准备该信号的播放音频失败。</translation>
     </message>
     <message>
-        <location line="-1595"/>
+        <location line="-1621"/>
         <location line="+14"/>
         <source>Failed to relink the data frame source.</source>
         <translation>重新指定数据帧来源失败。</translation>
     </message>
     <message>
-        <location line="+742"/>
+        <location line="+752"/>
         <source>Failed to restore signal &quot;%1&quot;.</source>
         <translation>恢复信号「%1」失败。</translation>
     </message>
     <message>
-        <location line="-207"/>
+        <location line="-210"/>
         <source>Failed to send the peak table.</source>
         <translation>峰值表发送失败。</translation>
     </message>
     <message>
-        <location line="-963"/>
+        <location line="-970"/>
         <location line="+42"/>
         <source>Large Signal</source>
         <translation>大信号</translation>
@@ -15012,7 +15046,7 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>大信号已确认：%1 预计占用约 %2 GB 内存。</translation>
     </message>
     <message>
-        <location line="+1128"/>
+        <location line="+1138"/>
         <source>Locate Signal Source</source>
         <translation>重新指定信号源</translation>
     </message>
@@ -15022,7 +15056,7 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>重新指定...</translation>
     </message>
     <message>
-        <location line="-777"/>
+        <location line="-787"/>
         <source>No data frame is available. Import or create a data frame first.</source>
         <translation>没有可用的数据帧，请先导入或创建数据帧。</translation>
     </message>
@@ -15037,7 +15071,7 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>功率谱密度（dB，相对 1.0/赫兹）</translation>
     </message>
     <message>
-        <location line="+1954"/>
+        <location line="+1980"/>
         <source>Export the chart page or the current sub-chart, or copy it to the clipboard</source>
         <translation>导出整页/当前子图或复制到剪贴板</translation>
     </message>
@@ -15047,23 +15081,23 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>峰值表</translation>
     </message>
     <message>
-        <location line="-4015"/>
+        <location line="-4070"/>
         <source>Playback failed. See the message log for details.</source>
         <translation>播放失败，详情见消息日志。</translation>
     </message>
     <message>
-        <location line="+3865"/>
+        <location line="+3920"/>
         <source>Point a signal whose data frame is missing to an existing data frame</source>
         <translation>把数据帧缺失的信号重新指向现有数据帧</translation>
     </message>
     <message>
-        <location line="-3922"/>
-        <location line="+4046"/>
+        <location line="-3977"/>
+        <location line="+4101"/>
         <source>Power spectral density (CSV)</source>
         <translation>功率谱密度（CSV）</translation>
     </message>
     <message>
-        <location line="-1941"/>
+        <location line="-1967"/>
         <source>Power spectral density exported: %1</source>
         <translation>功率谱密度已导出：%1</translation>
     </message>
@@ -15074,7 +15108,7 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
     </message>
     <message>
         <location line="+324"/>
-        <location line="+2138"/>
+        <location line="+2164"/>
         <source>Relink Data Frame Source</source>
         <translation>重新指定数据帧来源</translation>
     </message>
@@ -15084,12 +15118,12 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>显示或隐藏峰值表窗口</translation>
     </message>
     <message>
-        <location line="-3639"/>
+        <location line="-3694"/>
         <source>Signal &quot;%1&quot; is a placeholder: its data frame is missing.</source>
         <translation>信号「%1」为占位：其数据帧缺失。</translation>
     </message>
     <message>
-        <location line="+2110"/>
+        <location line="+2149"/>
         <source>Signal &quot;%1&quot; refers to a missing file:
 %2
 
@@ -15097,22 +15131,22 @@ Locate the file again?</source>
         <translation>信号「%1」引用的文件不存在：%2。要重新指定文件吗？</translation>
     </message>
     <message>
-        <location line="-691"/>
+        <location line="-701"/>
         <source>Signal &quot;%1&quot; relinked to data frame &quot;%2&quot;.</source>
         <translation>信号「%1」已重新指向数据帧「%2」。</translation>
     </message>
     <message>
-        <location line="+690"/>
+        <location line="+700"/>
         <source>Signal Source Missing</source>
         <translation>信号源缺失</translation>
     </message>
     <message>
-        <location line="-1119"/>
+        <location line="-1129"/>
         <source>Signal analysis cancelled: %1 needs more than the memory budget.</source>
         <translation>已取消信号分析：%1 超出内存预算。</translation>
     </message>
     <message>
-        <location line="+1751"/>
+        <location line="+1777"/>
         <source>Signal analysis failed. See the message log for details.</source>
         <translation>信号分析失败，详情见消息日志。</translation>
     </message>
@@ -15122,7 +15156,7 @@ Locate the file again?</source>
         <translation>信号分析：参数已应用，正在重算。</translation>
     </message>
     <message>
-        <location line="-580"/>
+        <location line="-596"/>
         <source>Signal source missing: data frame &quot;%1&quot; (signal &quot;%2&quot;). Use &quot;Relink Data Frame Source&quot; to point it to an existing data frame.</source>
         <translation>信号源缺失：数据帧「%1」（信号「%2」）。可用「重新指定数据帧来源」指向现有数据帧。</translation>
     </message>
@@ -15132,7 +15166,7 @@ Locate the file again?</source>
         <translation>跳过</translation>
     </message>
     <message>
-        <location line="-797"/>
+        <location line="-807"/>
         <source>The current signal&apos;s source is available; there is nothing to relink.</source>
         <translation>当前信号的来源可用，无需重新指定。</translation>
     </message>
@@ -15154,12 +15188,12 @@ Export the full matrix or downsample by 2?</source>
         <translation>峰值表</translation>
     </message>
     <message>
-        <location line="-1388"/>
+        <location line="-1417"/>
         <source>soundfile is not available; only WAV files can be read directly. Install soundfile or use FFmpeg.</source>
         <translation>未安装 soundfile，只能直接读取 WAV；可安装 soundfile 或改用 FFmpeg。</translation>
     </message>
     <message>
-        <location line="+3082"/>
+        <location line="+3137"/>
         <source>spectrum</source>
         <translation>频谱</translation>
     </message>
@@ -15169,7 +15203,7 @@ Export the full matrix or downsample by 2?</source>
         <translation>波形包络</translation>
     </message>
     <message>
-        <location line="-2906"/>
+        <location line="-2961"/>
         <source>FFmpeg is available; video import is enabled.</source>
         <translation>FFmpeg 可用，视频导入已启用。</translation>
     </message>
@@ -15179,12 +15213,12 @@ Export the full matrix or downsample by 2?</source>
         <translation>仍未检测到 FFmpeg，视频导入保持置灰。</translation>
     </message>
     <message>
-        <location line="+3074"/>
+        <location line="+3129"/>
         <source>Signal imported.</source>
         <translation>信号导入完成。</translation>
     </message>
     <message>
-        <location line="-1940"/>
+        <location line="-1966"/>
         <source>The estimated peak memory for the %1 is about %2 GB, above the 1.5 GB budget.
 Reduce the precision, scan only the visible range, or cancel?</source>
         <translation>%1 的预计峰值内存约 %2 GB，超过 1.5 GB 预算。降低精度、只扫可见区段，还是取消？</translation>
@@ -15210,12 +15244,12 @@ Reduce the precision, scan only the visible range, or cancel?</source>
         <translation>峰值曲线改用更粗的帧步进（局部扫描）。</translation>
     </message>
     <message>
-        <location line="+693"/>
+        <location line="+694"/>
         <source>Export Whole Page</source>
         <translation>导出整页</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+8"/>
         <source>Whole page exported: %1</source>
         <translation>整页已导出：%1</translation>
     </message>
@@ -15225,12 +15259,12 @@ Reduce the precision, scan only the visible range, or cancel?</source>
         <translation>整页导出失败。</translation>
     </message>
     <message>
-        <location line="+19"/>
+        <location line="+24"/>
         <source>Export Sub-chart</source>
         <translation>导出当前子图</translation>
     </message>
     <message>
-        <location line="+27"/>
+        <location line="+25"/>
         <source>Sub-chart exported: %1</source>
         <translation>当前子图已导出：%1</translation>
     </message>
@@ -15260,7 +15294,7 @@ Reduce the precision, scan only the visible range, or cancel?</source>
         <translation>复制当前子图到剪贴板失败。</translation>
     </message>
     <message>
-        <location line="+1198"/>
+        <location line="+1217"/>
         <source>heatmap</source>
         <translation>热图</translation>
     </message>
@@ -15278,43 +15312,43 @@ Reduce the precision, scan only the visible range, or cancel?</source>
 <context>
     <name>DA::DASignalAnalysisView</name>
     <message>
-        <location filename="../../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="+304"/>
-        <location line="+1104"/>
+        <location filename="../../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="+376"/>
+        <location line="+1151"/>
         <source>Envelope</source>
         <translation>包络</translation>
     </message>
     <message>
-        <location line="-1066"/>
-        <location line="+1069"/>
+        <location line="-1111"/>
+        <location line="+1114"/>
         <source>Amplitude spectrum</source>
         <translation>幅值谱</translation>
     </message>
     <message>
-        <location line="-679"/>
-        <location line="+685"/>
+        <location line="-712"/>
+        <location line="+720"/>
         <source>Waterfall</source>
         <translation>三维瀑布</translation>
     </message>
     <message>
-        <location line="-621"/>
-        <location line="+618"/>
+        <location line="-667"/>
+        <location line="+662"/>
         <source>Spectrogram</source>
         <translation>时频图</translation>
     </message>
     <message>
-        <location line="-603"/>
+        <location line="-647"/>
         <source>dB</source>
         <translation>分贝</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+162"/>
+        <location line="+172"/>
         <source>Time (s)</source>
         <translation>时间（秒）</translation>
     </message>
     <message>
-        <location line="-161"/>
-        <location line="+169"/>
+        <location line="-171"/>
+        <location line="+179"/>
         <source>Frequency (Hz)</source>
         <translation>频率（赫兹）</translation>
     </message>
@@ -16680,7 +16714,7 @@ Reduce the precision, scan only the visible range, or cancel?</source>
         <translation>最大值</translation>
     </message>
     <message>
-        <location line="+130"/>
+        <location line="+134"/>
         <source>Loading data...</source>
         <translation>正在取数…</translation>
     </message>
@@ -16721,7 +16755,7 @@ Reduce the precision, scan only the visible range, or cancel?</source>
         <translation>新选区不支持原来的图型，已切换为默认图型</translation>
     </message>
     <message>
-        <location line="-333"/>
+        <location line="-337"/>
         <source>Contour</source>
         <translation>等高线</translation>
     </message>
@@ -16802,7 +16836,7 @@ Reduce the precision, scan only the visible range, or cancel?</source>
         <translation>需要 1 列分类 + 至少 2 列数值</translation>
     </message>
     <message>
-        <location line="+233"/>
+        <location line="+237"/>
         <source>%1 (manual)</source>
         <translation>%1（手动配置）</translation>
     </message>
@@ -17658,10 +17692,10 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/Controller/DAAppChartActionHandler.cpp" line="-401"/>
+        <location filename="../APP/Controller/DAAppChartActionHandler.cpp" line="-419"/>
         <location filename="../APP/Controller/DAAppControllerAgent.cpp" line="-106"/>
         <location filename="../APP/Controller/DAAppControllerConnections.cpp" line="+140"/>
-        <location filename="../APP/Controller/DAAppControllerCore.cpp" line="-804"/>
+        <location filename="../APP/Controller/DAAppControllerCore.cpp" line="-807"/>
         <location filename="../APP/Controller/DAAppControllerPage.cpp" line="-348"/>
         <location filename="../APP/Controller/DAAppControllerProject.cpp" line="-194"/>
         <location filename="../APP/Controller/DAAppControllerView.cpp" line="-50"/>
@@ -19137,7 +19171,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
     </message>
     <message>
         <location line="+4"/>
-        <location line="+89"/>
+        <location line="+90"/>
         <source>The chart specification is incomplete</source>
         <translation>绘图规格不完整</translation>
     </message>
@@ -19172,7 +19206,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>当前没有可追加的图表</translation>
     </message>
     <message>
-        <location line="-570"/>
+        <location line="-571"/>
         <source>Failed to build the contour plot</source>
         <translation>构建等高线图失败</translation>
     </message>
@@ -19207,7 +19241,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>3D 图需要绘制在 3D 图表控件上</translation>
     </message>
     <message>
-        <location line="+61"/>
+        <location line="+62"/>
         <source>Failed to build the 3D surface</source>
         <translation>构建 3D 曲面失败</translation>
     </message>
@@ -19915,7 +19949,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="-2648"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="-2788"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>

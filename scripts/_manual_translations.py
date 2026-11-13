@@ -650,4 +650,11 @@ If a column name contains spaces or special characters, enclose it in backticks 
     # ---- DA::DAAgentBridge（子进程未运行提示，会话交互直接相关） ----
     ("DA::DAAgentBridge", "Message not sent: agent subprocess is not running"): "消息未发送：agent 子进程未运行",
     ("DA::DAAgentBridge", "Answer not sent: agent subprocess is not running"): "回答未发送：agent 子进程未运行",
+
+    # ---- 复审修复（signal-analysis review fixes，2026-11-13） ----
+    # 3D 子图导出过滤器收窄（与既有 DASignalAnalysisUI 的 PNG 过滤器译文口径一致）
+    ("DA::DAAppChartActionHandler", "PNG Image (*.png)"): "PNG 图片 (*.png)",
+    ("DA::DASignalAnalysisUI", "PNG Image (*.png)"): "PNG 图片 (*.png)",
+    # 3D 子图导出降级的用户可见提示（SF-14）
+    ("DA::DASignalAnalysisUI", "3D sub-chart supports PNG export only; saved as PNG."): "三维子图仅支持 PNG 导出，已按 PNG 保存。",
 }
