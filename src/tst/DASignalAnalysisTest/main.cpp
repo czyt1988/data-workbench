@@ -1897,17 +1897,20 @@ void DASignalAnalysisTest::signalPeakMarkersRestoredUntilRecompute()
     QCOMPARE(view.peakMarkers().first(), restoredMarker);
     QVERIFY(view.spectrumChart()->itemList().contains(restoredMarker));
 
-    // 幅值口径切换：存档优先复位，标记按当前 mPeaks 以新口径重建（SF-13）
+    // 幅值口径切换：存档优先复位，标记按当前 mPeaks 以新口径重建（SF-13）。
+    // 断言用「重建后标记的幅值口径」而非指针不等：delete+new 在堆地址复用时可能拿到
+    // 相同地址，指针不等不可靠（实测可复现）
     view.setAmplitudeDisplay(QStringLiteral("dbFS"), QStringLiteral("fullScale"));
     QCOMPARE(view.peakMarkers().size(), 1);
     QwtPlotMarker* rebuilt = view.peakMarkers().first();
-    QVERIFY(rebuilt != restoredMarker);  // 新对象（旧标记已删除重建）
     // dBFS 参考 = signalPeak()（无包络时 0）→ 回退 1.0：20·log10(2.0/1.0)
     QVERIFY2(qAbs(rebuilt->yValue() - 6.020599913279624) < 1e-6,
              "the rebuilt marker must use the new amplitude conversion");
     QCOMPARE(rebuilt->xValue(), 10.0);
 
-    // 参数变化同样复位存档优先并重建（新视图重复接管流程，镜像真实时序）
+    // 参数变化同样复位存档优先并重建（新视图重复接管流程，镜像真实时序）。
+    // 用 dbFS 参数让「重建后的口径」可断言：peak 口径下重建值与存档值相同（2.0），
+    // 只有指针能区分——而指针不等因堆地址复用不可靠
     DA::DASignalAnalysisView view2(makeTestSignal());
     view2.setSpectrum(spectrum);
     view2.setPeakMarkersVisible(true);
@@ -1918,9 +1921,14 @@ void DASignalAnalysisTest::signalPeakMarkersRestoredUntilRecompute()
     view2.adoptRestoredPeakMarkers({ restoredAgain });
     QCOMPARE(view2.peakMarkers().size(), 1);
     view2.setPeaks(peaks);
-    view2.setParams(DA::DASignalAnalysisParams::defaults());
+    DA::DASignalAnalysisParams dbfsParams = DA::DASignalAnalysisParams::defaults();
+    dbfsParams.amplitudeMode = QStringLiteral("dbFS");
+    dbfsParams.dbReference   = QStringLiteral("fullScale");
+    view2.setParams(dbfsParams);
     QCOMPARE(view2.peakMarkers().size(), 1);
-    QVERIFY(view2.peakMarkers().first() != restoredAgain);
+    QVERIFY2(qAbs(view2.peakMarkers().first()->yValue() - 6.020599913279624) < 1e-6,
+             "setParams must reset the archive priority and rebuild the markers with the new amplitude mode");
+    QCOMPARE(view2.peakMarkers().first()->xValue(), 10.0);
 }
 
 QTEST_MAIN(DASignalAnalysisTest)
