@@ -25,3 +25,6 @@ da_add_test(
     # 输出目录 build/bin（与 DA DLLs 同目录）；QTEST_MAIN 需要 QApplication，部署 Qt DLLs
     DEPLOY_QT
 )
+# 注册表 .cpp 直接编入测试可执行文件：SF-09 加 DAINTERFACE_API 后，MSVC 下类外成员定义
+# 会报 C2491，测试目标按静态编译处理（头文件守卫宏，DLL 构建仍正常导出）
+target_compile_definitions(APPRefactorTest PRIVATE DASETTINGCONTEXTREGISTRY_STATIC)

@@ -42,6 +42,15 @@ enum class DAFigureExportFormat
     Pdf   ///< PDF矢量文档
 };
 /**
+ * @brief 当前激活子图的类型
+ */
+enum class DAFigureCurrentSubChart
+{
+    None,     ///< 无激活子图
+    Chart2D,  ///< 最近激活的是2D子图
+    Chart3D   ///< 最近激活的是3D子图
+};
+/**
  * @brief 绘图窗口
  *
  * - 绘图窗口默认会构建一个QwtFigure
@@ -136,6 +145,8 @@ public:
     bool has3DChart(DAChart3DWidget* chart) const;
     // 获取3D图表的数量
     int get3DChartCount() const;
+    // 最近激活的子图类型（2D/3D 点击跟踪；无任何子图为 None）
+    DAFigureCurrentSubChart currentSubChartKind() const;
 
     // ========== 保留式网格布局（支持拖拽分隔条调整子图比例） ==========
 
@@ -208,10 +219,14 @@ public:
     void copyToClipboard();
     // 导出指定2D子图到文件（Png/Svg/Pdf），失败返回false
     bool exportChartToFile(DAChartWidget* chart, const QString& filePath, DAFigureExportFormat format);
+    // 导出指定3D子图到PNG文件（grabFramebuffer 位图路径），失败返回false
+    bool export3DChartToFile(Qwt3DPlot* plot3d, const QString& filePath);
     // 把指定2D子图复制到剪贴板（nullptr用当前子图），失败返回false
     bool copyChartToClipboard(DAChartWidget* chart = nullptr);
     // 根据文件后缀推断导出格式（.png/.svg/.pdf，其它按Png）
     static DAFigureExportFormat exportFormatFromFilePath(const QString& filePath);
+    // 按文件对话框所选过滤器修正导出路径后缀（过滤器含唯一已知扩展名时以过滤器为权威）
+    static QString applyExportFilterSuffix(const QString& filePath, const QString& selectedFilter);
     // 导出动作的文件对话框过滤器
     static QString exportFileFilter();
     // 开始进行矩形选框交互

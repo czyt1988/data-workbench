@@ -2,6 +2,7 @@
 #include "Chart/Setting3D/DAChart3DSurfaceSettingPanel.h"
 #include "Chart/Setting3D/DAChart3DBarSettingPanel.h"
 #include "Chart/Setting3D/DAChart3DLineSettingPanel.h"
+#include "Chart/Setting3D/DAChart3DGenericItemSettingPanel.h"
 #include "qwt3d_types.h"
 
 namespace DA
@@ -28,6 +29,11 @@ void DAChart3DItemSettingPanelFactory::registerPanel(int rtti, FpCreatePanel cre
 
 /**
  * @brief 根据RTTI创建对应面板
+ *
+ * 未注册的RTTI（如插件自定义3D图元）不会返回nullptr，而是回退到
+ * @ref DAChart3DGenericItemSettingPanel 通用面板，避免设置面板停留在上一个图元（SF-08）。
+ * @param rtti 3D RTTI类型值
+ * @return 创建的面板实例（未注册时返回通用回退面板）
  */
 DAChart3DItemSettingPanel* DAChart3DItemSettingPanelFactory::createPanel(int rtti) const
 {
@@ -35,7 +41,8 @@ DAChart3DItemSettingPanel* DAChart3DItemSettingPanelFactory::createPanel(int rtt
     if (it != mCreators.constEnd() && it.value()) {
         return it.value()();
     }
-    return nullptr;
+    // 未注册（或注册的创建函数失效）：回退到通用3D图元面板
+    return new DAChart3DGenericItemSettingPanel();
 }
 
 /**
@@ -57,7 +64,8 @@ QList< int > DAChart3DItemSettingPanelFactory::registeredRttiTypes() const
 /**
  * @brief 显式注册所有已知3D面板类型
  *
- * 注册内置的3D图表项面板类型，包括 Surface、Bar、Line。
+ * 注册内置的3D图表项面板类型，包括 Surface、Bar、Line；
+ * Qwt3DWaterfall 暂无专属面板，显式注册到通用面板（未注册 rtti 也会回退通用面板）。
  */
 void DAChart3DItemSettingPanelFactory::registerAllKnown3DPanels()
 {
@@ -74,6 +82,11 @@ void DAChart3DItemSettingPanelFactory::registerAllKnown3DPanels()
     // Qwt3DLine → Line 设置面板
     registerPanel(Rtti_Plot3DLine, []() {
         return new DAChart3DLineSettingPanel();
+    });
+
+    // Qwt3DWaterfall → 通用设置面板（信号分析瀑布视图在用，暂无专属面板）
+    registerPanel(Rtti_Plot3DWaterfall, []() {
+        return new DAChart3DGenericItemSettingPanel();
     });
 }
 

@@ -1,11 +1,27 @@
 #ifndef DACHARTITEMARCHIVE_H
 #define DACHARTITEMARCHIVE_H
 #include "DAGuiAPI.h"
+#include <QByteArray>
+#include <QList>
 #include <QString>
 namespace DA
 {
 class DAAbstractArchive;
 class DAChartItemsManager;
+
+/**
+ * @brief 预序列化图元快照
+ *
+ * GUI 线程生成，后台存档任务只写字节，不触碰 QwtPlotItem*：
+ * 保存期间 GUI 线程（嵌套事件循环继续派发定时器）可能删除/重建图元，
+ * 后台线程若仍对 QwtPlotItem* 逐个 serializeOut 会产生 use-after-free（BLK-01）。
+ */
+struct DAChartItemSnapshot
+{
+    QString key;       ///< 图元 key（与 DAChartItemsManager 登记一致）
+    int rtti { 0 };    ///< QwtPlotItem::rtti()
+    QByteArray data;   ///< DAChartItemSerialize::serializeOut 的字节
+};
 
 /**
  * @brief chart-data（图元数据）归档助手
@@ -21,6 +37,9 @@ class DAChartItemsManager;
  * @endcode
  *
  * prefix 是相对存档根的目录，例如工程存档的 @c chart-data。
+ *
+ * 跨线程保存用快照两段式：GUI 线程 makeSnapshots() 先把图元序列化成字节，
+ * 后台任务只调 saveSnapshots() 写字节，不再解引用任何 QwtPlotItem*。
  */
 class DAGUI_API DAChartItemArchive
 {
@@ -35,6 +54,13 @@ public:
                      DAChartItemsManager* itemsMgr,
                      const QString& prefix,
                      QString* errorMessage = nullptr);
+    // 在 GUI 线程调用：把管理者里全部图元序列化为快照（单图元失败跳过并 qWarning，与 save 的容错口径一致）
+    static QList< DAChartItemSnapshot > makeSnapshots(const DAChartItemsManager* itemsMgr);
+    // 后台线程调用：写 chart-items.xml 索引 + 每快照一个 <prefix>/<key> 文件；输出与 save() 字节等价
+    static bool saveSnapshots(DAAbstractArchive* archive,
+                              const QList< DAChartItemSnapshot >& snapshots,
+                              const QString& prefix,
+                              QString* errorMessage = nullptr);
     // 索引文件名
     static QString itemsIndexFileName();
 };

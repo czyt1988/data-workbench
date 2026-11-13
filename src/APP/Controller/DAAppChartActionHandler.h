@@ -146,6 +146,8 @@ private Q_SLOTS:
     void onActionGroupChartEditorTriggered(QAction* a);
     // 统计绘图引导对话框确认槽：类型化请求随信号一起传入，执行编排并提升绘图区
     void onStatsGuideAccepted(const DA::DAStatsPlotRequest& req);
+    // 同步「导出当前子图」动作可用性（无当前figure/无当前子图时置灰）
+    void updateExportChartActionState();
 
 private:
     DAAppActionHandlerDeps mDeps;

@@ -31,6 +31,7 @@
 #include "Archive/DAXmlHelper.h"
 #include "Archive/DAZipArchive.h"
 #include "Archive/DAZipArchiveTask_ChartItem.h"
+#include "Archive/DAZipArchiveTask_Xml.h"
 #include "Chart/DAChartItemsManager.h"
 #include "DAChart3DSerialize.h"
 #include "DAChartAxisRangeBinder.h"
@@ -272,6 +273,14 @@ private Q_SLOTS:
     void testChartItemArchiveMemoryRoundTrip();
     // DAZipArchiveTask_ChartItem 真实 zip 往返（DAAppProject 图表存档路径）
     void testZipArchiveTaskChartItemRoundTrip();
+    // 快照两段式与 save() 输出字节等价，load() 读回一致（BLK-01a）
+    void testChartItemSnapshotSaveEquivalence();
+    // BLK-01 回归：makeSnapshots 后图元全部 delete，saveSnapshots 仍能完整恢复
+    void testChartItemSnapshotSurvivesItemDeletion();
+    // 工程级存档顺序回归：按 DAAppProject 的任务顺序（保存 charts.xml→chart-data；加载 chart-data→charts.xml）
+    void testProjectArchiveOrderRoundTrip();
+    // SF-06 回归：设过当前 3D 子图的 figure 析构不崩（析构期 3D destroyed 回调不再访问失效 PIMPL/figure）
+    void testFigureDestructionWithCurrent3DChart();
 };
 
 void DAChartSerializeTest::testSpectrogramZIntervalFallsBackToDataRange()
@@ -1170,6 +1179,261 @@ void DAChartSerializeTest::testZipArchiveTaskChartItemRoundTrip()
              "a 0-byte chart-items.xml in a real zip must make the chart-item task fail");
 
     qDeleteAll(dstMgr.items());
+}
+
+/**
+ * @brief 快照两段式与 save() 输出字节等价，load() 读回一致
+ *
+ * 同一批图元分别走 save()（后台线程序列化）与 makeSnapshots()+saveSnapshots()
+ * （GUI 线程序列化成字节、后台只写字节）：
+ * - 索引 chart-items.xml 与每个 <prefix>/<key> 图元文件字节完全一致；
+ * - 快照存档经 load() 读回后 keys/rtti/标题/数据量与源一致（加载端无需改动）。
+ */
+void DAChartSerializeTest::testChartItemSnapshotSaveEquivalence()
+{
+    // 源绘图：两条不同长度/数据/标题的曲线
+    DA::DAChartWidget chart;
+    QVERIFY(chart.addCurve(QVector< double >{ 0.0, 1.0, 2.0, 3.0 },
+                           QVector< double >{ 10.0, 11.0, 12.0, 13.0 }, QStringLiteral("snap-A")));
+    QVERIFY(chart.addCurve(QVector< double >{ 5.0, 6.0, 7.0 }, QVector< double >{ 1.0, 2.0, 3.0 },
+                           QStringLiteral("snap-B")));
+
+    DA::DAChartItemsManager srcMgr;
+    QDomDocument doc;
+    DA::DAXmlHelper::makeElement(&chart, QStringLiteral("chart"), &doc, &srcMgr);
+    QCOMPARE(srcMgr.items().size(), 2);
+    const QList< QString > srcKeys = srcMgr.keys();
+    QCOMPARE(srcKeys.size(), 2);
+
+    // 旧路径：save() 直接序列化图元
+    MemoryArchive saveMem;
+    QString saveError;
+    QVERIFY2(DA::DAChartItemArchive::save(&saveMem, &srcMgr, QStringLiteral("chart-data"), &saveError),
+             qPrintable(saveError));
+    // 新路径：GUI 线程快照 + 后台只写字节
+    const QList< DA::DAChartItemSnapshot > snapshots = DA::DAChartItemArchive::makeSnapshots(&srcMgr);
+    QCOMPARE(snapshots.size(), 2);
+    MemoryArchive snapMem;
+    QString snapError;
+    QVERIFY2(DA::DAChartItemArchive::saveSnapshots(&snapMem, snapshots, QStringLiteral("chart-data"), &snapError),
+             qPrintable(snapError));
+
+    // 索引与每图元文件字节完全一致（saveSnapshots 输出与 save() 等价）
+    const QString indexRelPath = QStringLiteral("chart-data/") + DA::DAChartItemArchive::itemsIndexFileName();
+    QVERIFY(saveMem.contains(indexRelPath));
+    QVERIFY(snapMem.contains(indexRelPath));
+    QCOMPARE(snapMem.read(indexRelPath), saveMem.read(indexRelPath));
+    for (const QString& key : srcKeys) {
+        const QString itemPath = QStringLiteral("chart-data/%1").arg(key);
+        QVERIFY2(snapMem.contains(itemPath), qPrintable(QStringLiteral("missing snapshot item file: %1").arg(key)));
+        QCOMPARE(snapMem.read(itemPath), saveMem.read(itemPath));
+    }
+
+    // 快照存档经既有 load() 读回：keys/rtti/标题/数据量与源一致
+    DA::DAChartItemsManager restoredMgr;
+    QString loadError;
+    QVERIFY2(DA::DAChartItemArchive::load(&snapMem, &restoredMgr, QStringLiteral("chart-data"), &loadError),
+             qPrintable(loadError));
+    QCOMPARE(restoredMgr.items().size(), 2);
+    QCOMPARE(keySet(restoredMgr.keys()), keySet(srcKeys));
+    for (const QString& key : srcKeys) {
+        auto* restored = dynamic_cast< QwtPlotCurve* >(restoredMgr.keyToItem(key));
+        QVERIFY2(restored, qPrintable(QStringLiteral("missing snapshot-restored curve: %1").arg(key)));
+        QCOMPARE(restored->rtti(), static_cast< int >(QwtPlotItem::Rtti_PlotCurve));
+        const QString title = restored->title().text();
+        QVERIFY(title == QStringLiteral("snap-A") || title == QStringLiteral("snap-B"));
+        QCOMPARE(static_cast< int >(restored->dataSize()), title == QStringLiteral("snap-A") ? 4 : 3);
+    }
+    qDeleteAll(restoredMgr.items());
+}
+
+/**
+ * @brief BLK-01 回归：makeSnapshots 后图元全部 delete，saveSnapshots 仍能完整恢复
+ *
+ * 模拟保存期间 GUI 线程（嵌套事件循环继续派发定时器）删除/重建图元：
+ * 快照生成后源图元全部 delete（管理者里只剩悬空指针），后台任务只写字节——
+ * 写路径不依赖任何活指针，load() 读回仍完整。
+ */
+void DAChartSerializeTest::testChartItemSnapshotSurvivesItemDeletion()
+{
+    DA::DAChartWidget chart;
+    QVERIFY(chart.addCurve(QVector< double >{ 0.0, 1.0, 2.0 }, QVector< double >{ 4.0, 5.0, 6.0 },
+                           QStringLiteral("uaf-A")));
+    QVERIFY(chart.addCurve(QVector< double >{ 3.0, 4.0 }, QVector< double >{ 7.0, 8.0 }, QStringLiteral("uaf-B")));
+
+    DA::DAChartItemsManager srcMgr;
+    QDomDocument doc;
+    DA::DAXmlHelper::makeElement(&chart, QStringLiteral("chart"), &doc, &srcMgr);
+    QCOMPARE(srcMgr.items().size(), 2);
+    const QList< QString > srcKeys = srcMgr.keys();
+    QCOMPARE(srcKeys.size(), 2);
+
+    // GUI 线程先生成快照（此后不再解引用任何 QwtPlotItem*）
+    const QList< DA::DAChartItemSnapshot > snapshots = DA::DAChartItemArchive::makeSnapshots(&srcMgr);
+    QCOMPARE(snapshots.size(), 2);
+    for (const DA::DAChartItemSnapshot& snap : snapshots) {
+        QVERIFY(!snap.key.isEmpty());
+        QVERIFY(!snap.data.isEmpty());
+        QCOMPARE(snap.rtti != 0, true);
+    }
+
+    // 模拟 GUI 线程删除全部图元（保存期间峰值 marker 重建即此场景）；
+    // 管理者内部登记随之悬空，但快照已持有字节，写存档不触碰它们
+    qDeleteAll(srcMgr.items());
+
+    MemoryArchive mem;
+    QString error;
+    QVERIFY2(DA::DAChartItemArchive::saveSnapshots(&mem, snapshots, QStringLiteral("chart-data"), &error),
+             qPrintable(error));
+
+    // 读回：keys/rtti/标题/数据量完整恢复（证明写路径不依赖活指针）
+    DA::DAChartItemsManager restoredMgr;
+    QVERIFY2(DA::DAChartItemArchive::load(&mem, &restoredMgr, QStringLiteral("chart-data"), &error),
+             qPrintable(error));
+    QCOMPARE(restoredMgr.items().size(), 2);
+    QCOMPARE(keySet(restoredMgr.keys()), keySet(srcKeys));
+    for (const QString& key : srcKeys) {
+        auto* restored = dynamic_cast< QwtPlotCurve* >(restoredMgr.keyToItem(key));
+        QVERIFY2(restored, qPrintable(QStringLiteral("missing restored curve after item deletion: %1").arg(key)));
+        const QString title = restored->title().text();
+        QVERIFY(title == QStringLiteral("uaf-A") || title == QStringLiteral("uaf-B"));
+        QCOMPARE(static_cast< int >(restored->dataSize()), title == QStringLiteral("uaf-A") ? 3 : 2);
+    }
+    qDeleteAll(restoredMgr.items());
+}
+
+/**
+ * @brief 工程级存档顺序回归：按 DAAppProject 的任务顺序组装并往返
+ *
+ * DAAppProject 无法在单测实例化，这里按其任务顺序等价复刻（行号依据）：
+ * - 保存（src/APP/DAAppProject.cpp:1493-1506 makeSaveChartTask）：先 appendXmlSaveTask
+ *   写 charts.xml（:1499），再 appendChartItemSaveTask 写 chart-data（:1503）；
+ * - 加载（src/APP/DAAppProject.cpp:1063-1108）：先 appendChartItemLoadTask 读 chart-data
+ *   （:1063-1065，注释「ChartItemLoadTask必须在chart info 的XmlLoadTask之前」），
+ *   再 appendXmlLoadTask 读 charts.xml（:1104）并按 key 把图元 attach 回子图。
+ * 用真实 DAZipArchive（临时文件）+ 相同任务类，断言图元 key 能重新 attach、往返成功，
+ * 锁定「保存 charts.xml→chart-data、加载 chart-data→charts.xml」的顺序。
+ */
+void DAChartSerializeTest::testProjectArchiveOrderRoundTrip()
+{
+    QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+    const QString zipPath = tempDir.filePath(QStringLiteral("project-order.dapro"));
+
+    // 源绘图：两条曲线；charts.xml 按 createChartsUIDomDocument 的结构生成
+    // （root[type=chart] → project → <chart>，DAAppProject.cpp:1682-1700）
+    DA::DAChartWidget chart;
+    QVERIFY(chart.addCurve(QVector< double >{ 0.0, 1.0, 2.0 }, QVector< double >{ 4.0, 5.0, 6.0 },
+                           QStringLiteral("order-A")));
+    QVERIFY(chart.addCurve(QVector< double >{ 3.0, 4.0 }, QVector< double >{ 7.0, 8.0 }, QStringLiteral("order-B")));
+    DA::DAChartItemsManager srcMgr;
+    QDomDocument chartXml;
+    QDomProcessingInstruction chartXmlPi =
+        chartXml.createProcessingInstruction(QStringLiteral("xml"), QStringLiteral("version=\"1.0\" encoding=\"UTF-8\""));
+    chartXml.appendChild(chartXmlPi);
+    QDomElement rootEle = chartXml.createElement(QStringLiteral("root"));
+    rootEle.setAttribute(QStringLiteral("type"), QStringLiteral("chart"));
+    chartXml.appendChild(rootEle);
+    QDomElement projectEle = chartXml.createElement(QStringLiteral("project"));
+    rootEle.appendChild(projectEle);
+    QDomElement chartEle = DA::DAXmlHelper::makeElement(&chart, QStringLiteral("chart"), &chartXml, &srcMgr);
+    projectEle.appendChild(chartEle);
+    QCOMPARE(srcMgr.items().size(), 2);
+    const QList< QString > srcKeys = srcMgr.keys();
+    QCOMPARE(srcKeys.size(), 2);
+
+    // === 保存：按 makeSaveChartTask 的顺序组装任务（charts.xml 先于 chart-data） ===
+    {
+        DA::DAZipArchive zip;
+        QSignalSpy finished(&zip, &DA::DAAbstractArchive::taskFinished);
+        // t1：charts.xml（DAAppProject.cpp:1499）
+        auto xmlTask = std::make_shared< DA::DAZipArchiveTask_Xml >(QStringLiteral("charts.xml"), chartXml);
+        zip.appendTask(xmlTask);
+        // t2：chart-data（DAAppProject.cpp:1503）
+        auto itemTask = std::make_shared< DA::DAZipArchiveTask_ChartItem >(QStringLiteral("chart-data"), srcMgr);
+        zip.appendTask(itemTask);
+        zip.saveAll(zipPath);
+        QCOMPARE(finished.count(), 1);
+        QCOMPARE(finished.takeFirst().at(0).toInt(), static_cast< int >(DA::DAAbstractArchive::SaveSuccess));
+        QVERIFY2(itemTask->getLastError().isEmpty(), qPrintable(itemTask->getLastError()));
+    }
+    QVERIFY(QFile::exists(zipPath));
+
+    // === 加载：按 DAAppProject.cpp:1063-1108 的顺序组装任务（chart-data 先于 charts.xml） ===
+    DA::DAChartItemsManager loadedMgr;
+    QDomDocument loadedChartsXml;
+    {
+        DA::DAZipArchive zipIn;
+        QSignalSpy finishedIn(&zipIn, &DA::DAAbstractArchive::taskFinished);
+        // taskChartItem 先注册（:1063-1065）：图元先读回 manager
+        auto itemLoadTask = std::make_shared< DA::DAZipArchiveTask_ChartItem >(QStringLiteral("chart-data"));
+        zipIn.appendTask(itemLoadTask);
+        // taskCharts 后注册（:1104）：charts.xml 只记 key，应用时经 keyToItem attach
+        auto xmlLoadTask = std::make_shared< DA::DAZipArchiveTask_Xml >(QStringLiteral("charts.xml"));
+        zipIn.appendTask(xmlLoadTask);
+        zipIn.loadAll(zipPath);
+        QCOMPARE(finishedIn.count(), 1);
+        QCOMPARE(finishedIn.takeFirst().at(0).toInt(), static_cast< int >(DA::DAAbstractArchive::LoadSuccess));
+        QVERIFY2(itemLoadTask->getLastError().isEmpty(), qPrintable(itemLoadTask->getLastError()));
+        loadedMgr     = itemLoadTask->getChartItemsManager();
+        loadedChartsXml = xmlLoadTask->getDomDocument();
+    }
+    QVERIFY(!loadedChartsXml.isNull());
+    QCOMPARE(loadedMgr.items().size(), 2);
+    QCOMPARE(keySet(loadedMgr.keys()), keySet(srcKeys));
+
+    // === 应用：charts.xml 按图元 key 把图元 attach 回新子图（loadedChartsInfo 的生产路径） ===
+    DA::DAChartWidget restoredChart;
+    const QDomElement loadedRoot = loadedChartsXml.documentElement();
+    QVERIFY2(!loadedRoot.isNull(), "charts.xml should have a root element");
+    const QDomElement loadedChartEle =
+        loadedRoot.firstChildElement(QStringLiteral("project")).firstChildElement(QStringLiteral("chart"));
+    QVERIFY2(!loadedChartEle.isNull(), "charts.xml should contain a <chart> element under <project>");
+    QVERIFY(DA::DAXmlHelper::loadElement(&restoredChart, &loadedChartEle, &loadedMgr));
+    // 两条曲线都按 key 重新 attach 到恢复的子图（曲线数为准，不排除未来默认图元）
+    const QList< QwtPlotItem* > attached = restoredChart.itemList();
+    int curveCount = 0;
+    for (QwtPlotItem* item : attached) {
+        if (item->rtti() == QwtPlotItem::Rtti_PlotCurve) {
+            ++curveCount;
+        }
+    }
+    QCOMPARE(curveCount, 2);
+    for (const QString& key : srcKeys) {
+        auto* restored = dynamic_cast< QwtPlotCurve* >(loadedMgr.keyToItem(key));
+        QVERIFY2(restored, qPrintable(QStringLiteral("missing project-order restored curve: %1").arg(key)));
+        QVERIFY2(restored->plot() == &restoredChart,
+                 qPrintable(QStringLiteral("restored curve %1 must be attached to the chart").arg(key)));
+        const QString title = restored->title().text();
+        QVERIFY(title == QStringLiteral("order-A") || title == QStringLiteral("order-B"));
+        QCOMPARE(static_cast< int >(restored->dataSize()), title == QStringLiteral("order-A") ? 3 : 2);
+    }
+    qDeleteAll(loadedMgr.items());
+}
+
+/**
+ * @brief SF-06 回归：设过当前 3D 子图的 figure 析构不崩
+ *
+ * 复现路径（修复前必崩）：构造 figure → create3DChart → setCurrent3DChart（SF-06 的 3D 激活
+ * 路径，mCurrent3DChart 非空）→ delete figure。~DAFigureWidget 之后 ~QWidget::deleteChildren
+ * 逐层释放 viewport → 内层 QwtFigure → 3D 子图，3D 子图的 destroyed 信号触发 add3DChart
+ * 注册的清理 lambda：彼时 d_ptr（PIMPL 成员）已释放、内层 QwtFigure 已删除，lambda 里
+ * mCurrent3DChart 命中分支再调 getCurrentChart()（内部 figure()->currentAxes()）即 UAF。
+ * 修复：析构体在 PIMPL 仍存活时显式断开全部 3D 子图的 destroyed 连接，析构期不再进入 lambda。
+ */
+void DAChartSerializeTest::testFigureDestructionWithCurrent3DChart()
+{
+    std::unique_ptr< DA::DAFigureWidget > fig(new DA::DAFigureWidget());
+    DA::DAChart3DWidget* chart3d = fig->create3DChart();
+    QVERIFY(chart3d);
+    // 走 SF-06 的 3D 激活路径（setCurrent3DChart 记录最近激活类型）
+    fig->setCurrent3DChart(chart3d);
+    QCOMPARE(static_cast< int >(fig->currentSubChartKind()),
+             static_cast< int >(DA::DAFigureCurrentSubChart::Chart3D));
+    // delete figure：析构期 3D 子图 destroyed 信号不再进入访问失效 d_ptr/内层 figure 的 lambda
+    fig.reset();
+    // 走到这里即证明析构路径安全（修复前在 lambda 内 UAF 崩溃）
+    QVERIFY(true);
 }
 
 int main(int argc, char* argv[])

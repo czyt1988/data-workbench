@@ -119,7 +119,7 @@ function Get-SuitesForFile {
     }
     # 已知无测试覆盖的区域
     if ($p -match '^(docs|scripts|requirements\.txt|\.github)/' -or $p -match '^plugins/' -or
-        $p -match '^src/(DAPyWorkFlow|DAGraphicsView|DAPluginSupport|DAInterface|DAAxOfficeWrapper)/' -or
+        $p -match '^src/(DAPyWorkFlow|DAGraphicsView|DAPluginSupport|DAAxOfficeWrapper)/' -or
         $p -match '^src/3rdparty/') {
         return New-SuiteResult -Kind 'none'
     }
@@ -141,6 +141,11 @@ function Get-SuitesForFile {
     }
     if ($p -match '^src/DAAgent/' -or $p -match '^src/DAGui/Agent/' -or $p -match '^src/PyScripts/DAWorkbench/agent/') {
         return New-SuiteResult -Kind 'suites' -Suites @('agent')
+    }
+    # DAInterface 的设置上下文注册表被 APPRefactorTest（SUITE core）直接编译，
+    # 改动该目录必须选中 core 套件（SF-18：原先归入 none 会静默漏跑）
+    if ($p -match '^src/DAInterface/') {
+        return New-SuiteResult -Kind 'suites' -Suites @('core')
     }
     # DAGui 已按领域收敛：Chart/ 跑图表套件，Table/ 跑表格套件
     if ($p -match '^src/DAGui/Chart/') {

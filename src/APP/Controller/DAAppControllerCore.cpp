@@ -796,8 +796,11 @@ void DAAppController::activateContextCategoryForWidget(QWidget* widget)
         getChartOperateWidget(),
         getDataManageWidget());
     if (DAAppContextRoutePolicy::SettingContextProvider == route) {
-        // 插件提供者接管：由 provider 自己显示设置页/上下文标签，不执行 hide-all
-        //（修复插件 raise 自己 dock 时把 Chart 上下文标签清空的问题）
+        // 插件提供者接管：先隐藏三个固定上下文分类（Chart/Data/Workflow），再激活 provider，
+        // 由 provider 自己显示设置页/上下文标签——否则「绘图」与插件上下文标签并存，
+        // Chart 分类的导出/复制/Resize 仍作用于 APP 绘图区（SF-07）。
+        // 此处不调用 deactivateSettingContextProvider：provider 激活期间由注册表管理当前项（重入保护）。
+        mRibbon->hideContextCategory(DAAppRibbonArea::AllContextCategory);
         if (mDock) {
             mDock->activateSettingContextForWidget(widget);
         }

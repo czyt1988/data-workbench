@@ -26,6 +26,7 @@
 #include <QTimer>
 #include <QShortcut>
 #include <QFileInfo>
+#include <QImage>
 #include <QPixmap>
 #include <QPdfWriter>
 #include <QPageSize>
@@ -87,6 +88,7 @@ public:
     QList< DAChartWidget* > m_2dCharts;                ///< 2D chart 列表（由onAxesAdded/onAxesRemoved维护）
     QList< DAChart3DWidget* > m_3dCharts;            ///< 3D chart 列表
     QPointer< DAChart3DWidget > mCurrent3DChart;    ///< 当前选中的 3D chart
+    DAFigureCurrentSubChart mCurrentSubChartKind { DAFigureCurrentSubChart::None };  ///< 最近激活的子图类型
     // ===== 保留式网格布局状态 =====
     bool mGridLayoutEnabled { false };        ///< 是否已启用网格布局
     bool mSuppressGridUndo { false };         ///< 程序化设置比例期间抑制撤销记录
@@ -366,6 +368,15 @@ DAFigureWidget::DAFigureWidget(QWidget* parent) : QScrollArea(parent), DA_PIMPL_
  */
 DAFigureWidget::~DAFigureWidget()
 {
+    // 析构期间子控件由 ~QWidget 的 deleteChildren 释放，3D 子图的 destroyed 信号仍会触发
+    // add3DChart 注册的清理 lambda——彼时 d_ptr（PIMPL 成员）已释放、内层 QwtFigure 也可能
+    // 已删除，lambda 再访问两者就是 UAF（析构期崩溃）。在 PIMPL 仍存活时显式断开。
+    const QList< DAChart3DWidget* > charts3d = d_ptr->m_3dCharts;
+    for (DAChart3DWidget* c : charts3d) {
+        if (c) {
+            disconnect(c, &QObject::destroyed, this, nullptr);
+        }
+    }
 }
 
 /**
@@ -684,6 +695,9 @@ void DAFigureWidget::add3DChart(DAChart3DWidget* chart3d, qreal xVersatile, qrea
         d_ptr->m_3dCharts.removeAll(destroyedChart);
         if (d_ptr->mCurrent3DChart == destroyedChart) {
             d_ptr->mCurrent3DChart = nullptr;
+            // 当前 3D 子图销毁：最近激活类型回退到仍存活的 2D 当前子图
+            d_ptr->mCurrentSubChartKind =
+                getCurrentChart() ? DAFigureCurrentSubChart::Chart2D : DAFigureCurrentSubChart::None;
             Q_EMIT current3DChartChanged(nullptr);
         }
     });
@@ -725,6 +739,9 @@ void DAFigureWidget::remove3DChart(DAChart3DWidget* chart3d)
     // 清理 current 指针
     if (d_ptr->mCurrent3DChart == chart3d) {
         d_ptr->mCurrent3DChart = nullptr;
+        // 当前 3D 子图移除：最近激活类型回退到仍存活的 2D 当前子图
+        d_ptr->mCurrentSubChartKind =
+            getCurrentChart() ? DAFigureCurrentSubChart::Chart2D : DAFigureCurrentSubChart::None;
         Q_EMIT current3DChartChanged(nullptr);
     }
     Q_EMIT chart3DRemoved(chart3d);
@@ -790,6 +807,12 @@ void DAFigureWidget::setCurrent3DChart(DAChart3DWidget* chart3d)
         return;
     }
     d->mCurrent3DChart = chart3d;
+    // 最近激活子图类型跟踪：3D 激活；显式清空时回退到仍存活的 2D 当前子图
+    if (chart3d) {
+        d->mCurrentSubChartKind = DAFigureCurrentSubChart::Chart3D;
+    } else {
+        d->mCurrentSubChartKind = getCurrentChart() ? DAFigureCurrentSubChart::Chart2D : DAFigureCurrentSubChart::None;
+    }
     // 通知 overlay 编辑器更新激活窗口（参考 2D 的 onCurrentAxesChanged）
     if (d->mChartEditor) {
         d->mChartEditor->setActiveWidget(chart3d);
@@ -843,6 +866,28 @@ bool DAFigureWidget::has3DChart(DAChart3DWidget* chart3d) const
 int DAFigureWidget::get3DChartCount() const
 {
     return d_ptr->m_3dCharts.size();
+}
+
+/**
+ * @brief 最近激活的子图类型
+ *
+ * 跟踪口径：2D 子图激活（setCurrentChart / qwt currentAxesChanged）记 Chart2D；
+ * 3D 子图激活（setCurrent3DChart，含 3D 控件点击的事件过滤器）记 Chart3D；
+ * 任一侧当前指针被清空时回退到另一侧仍存活的当前子图，两者皆无则为 None。
+ * 读取时按当前指针存活性校验，保证返回的类型一定有可操作的子图。
+ * @return None/Chart2D/Chart3D
+ */
+DAFigureCurrentSubChart DAFigureWidget::currentSubChartKind() const
+{
+    DA_DC(d);
+    switch (d->mCurrentSubChartKind) {
+    case DAFigureCurrentSubChart::Chart2D:
+        return getCurrentChart() ? DAFigureCurrentSubChart::Chart2D : DAFigureCurrentSubChart::None;
+    case DAFigureCurrentSubChart::Chart3D:
+        return getCurrent3DChart() ? DAFigureCurrentSubChart::Chart3D : DAFigureCurrentSubChart::None;
+    default:
+        return DAFigureCurrentSubChart::None;
+    }
 }
 
 //===================================================
@@ -1588,6 +1633,39 @@ bool DAFigureWidget::exportChartToFile(DAChartWidget* chart, const QString& file
 }
 
 /**
+ * @brief 把指定3D子图导出到PNG文件
+ *
+ * 3D 子图只有位图路径（Qwt3DPlot 无矢量导出）：grabFramebuffer 取帧缓冲后按 PNG 保存，
+ * 内容显式指定格式、不依赖文件后缀（调用方负责让路径以 .png 结尾，
+ * 见 @ref applyExportFilterSuffix 与导出动作的过滤器收窄）。
+ * @param plot3d 要导出的3D子图
+ * @param filePath 目标文件路径
+ * @return 成功返回true；plot3d 为空、路径为空、控件尺寸为0、帧缓冲为空或保存失败返回false
+ */
+bool DAFigureWidget::export3DChartToFile(Qwt3DPlot* plot3d, const QString& filePath)
+{
+    if (nullptr == plot3d || filePath.isEmpty()) {
+        return false;
+    }
+    const QSize size = plot3d->size();
+    if (size.isEmpty()) {
+        qWarning() << "DAFigureWidget::export3DChartToFile: the 3D sub-chart size is empty, file path is" << filePath;
+        return false;
+    }
+    // 未初始化 GL（控件从未显示）时 grabFramebuffer 返回空图，按失败处理
+    const QImage frame = plot3d->grabFramebuffer();
+    if (frame.isNull()) {
+        qWarning() << "DAFigureWidget::export3DChartToFile: the grabbed frame buffer is null, file path is" << filePath;
+        return false;
+    }
+    const QPixmap pixmap = QPixmap::fromImage(frame);
+    if (pixmap.isNull()) {
+        return false;
+    }
+    return pixmap.save(filePath, "PNG");
+}
+
+/**
  * @brief 把指定2D子图复制到剪贴板
  * @param chart 要复制的2D子图，为空时使用当前子图
  * @return 成功返回true；没有可用子图或抓取失败返回false
@@ -1623,6 +1701,63 @@ DAFigureExportFormat DAFigureWidget::exportFormatFromFilePath(const QString& fil
         return DAFigureExportFormat::Pdf;
     }
     return DAFigureExportFormat::Png;
+}
+
+/**
+ * @brief 按文件对话框所选过滤器修正导出路径后缀
+ *
+ * 行为定义：
+ * 1. 从 selectedFilter 里解析已知扩展名（png/svg/pdf，大小写不敏感，形如 @c *.svg）；
+ * 2. 恰好解析出一个已知扩展名时以它为目标：路径当前后缀（小写）与目标一致则原样返回；
+ *    当前后缀是已知图像后缀（png/svg/pdf 之一）则替换之；否则直接追加目标后缀；
+ * 3. 过滤器解析不出唯一已知扩展名（无或多个）时：路径已有已知后缀则原样返回，
+ *    否则追加 @c .png（保留旧默认行为）。
+ *
+ * 背景：默认文件名 chart.png 时，Windows 原生保存对话框在用户切换到 SVG/PDF 过滤器后
+ * 仍保留 .png 后缀，若只按后缀推断格式会「选 SVG 却存成 PNG」；本助手以所选过滤器为权威。
+ * @param filePath 用户在对话框里输入的路径
+ * @param selectedFilter 对话框返回的所选过滤器
+ * @return 修正后的路径
+ */
+QString DAFigureWidget::applyExportFilterSuffix(const QString& filePath, const QString& selectedFilter)
+{
+    if (filePath.isEmpty()) {
+        return filePath;
+    }
+    // 1. 解析过滤器里的已知扩展名（大小写不敏感）
+    QString targetSuffix;
+    bool ambiguous = false;
+    const QString lowerFilter = selectedFilter.toLower();
+    const QStringList knownExts = { QStringLiteral("png"), QStringLiteral("svg"), QStringLiteral("pdf") };
+    for (const QString& ext : knownExts) {
+        if (lowerFilter.contains(QStringLiteral("*.") + ext)) {
+            if (!targetSuffix.isEmpty()) {
+                // 过滤器含多个已知扩展名，无法以它为唯一权威
+                ambiguous = true;
+                break;
+            }
+            targetSuffix = ext;
+        }
+    }
+    const QString suffix = QFileInfo(filePath).suffix().toLower();
+    const bool knownSuffix = (suffix == QLatin1String("png") || suffix == QLatin1String("svg")
+                              || suffix == QLatin1String("pdf"));
+    if (!ambiguous && !targetSuffix.isEmpty()) {
+        // 2. 过滤器给出唯一已知扩展名：以它为目标修正后缀
+        if (suffix == targetSuffix) {
+            return filePath;
+        }
+        if (knownSuffix) {
+            // 替换已知图像后缀（保留大小写无关的路径长度换算）
+            return filePath.left(filePath.size() - suffix.size()) + targetSuffix;
+        }
+        return filePath + QLatin1Char('.') + targetSuffix;
+    }
+    // 3. 过滤器解析不出唯一已知扩展名：保留旧默认行为
+    if (knownSuffix) {
+        return filePath;
+    }
+    return filePath + QStringLiteral(".png");
 }
 
 /**
@@ -2110,6 +2245,13 @@ void DAFigureWidget::onAxesRemoved(QwtPlot* removedAxes)
 void DAFigureWidget::onCurrentAxesChanged(QwtPlot* plot)
 {
     DAChartWidget* chartWidget = plot ? qobject_cast< DAChartWidget* >(plot) : nullptr;
+    // 最近激活子图类型跟踪：2D 激活；当前 2D 被清空时回退到仍存活的当前 3D 子图
+    if (chartWidget) {
+        d_ptr->mCurrentSubChartKind = DAFigureCurrentSubChart::Chart2D;
+    } else {
+        d_ptr->mCurrentSubChartKind =
+            d_ptr->mCurrent3DChart ? DAFigureCurrentSubChart::Chart3D : DAFigureCurrentSubChart::None;
+    }
     // 如果有子窗口编辑器，把编辑器的激活窗口改变
     if (d_ptr->mChartEditor) {
         d_ptr->mChartEditor->setActiveWidget(plot);

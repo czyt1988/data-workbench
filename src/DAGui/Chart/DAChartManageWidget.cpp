@@ -187,6 +187,13 @@ void DAChartManageWidget::PrivateData::updateContextMenuActions(int nodeType)
     }
     // "转移"仅对2D图元节点有意义（图元所在chart由右键上下文提供，跨figure移动）
     mActTransfer->setVisible(nodeType == DAFigureTreeModel::NodeTypePlotItem);
+    // 外部figure列表模式下隐藏破坏性动作（删除图元/删除坐标系）：外部 figure（如信号分析）
+    // 的图元/子图被其视图缓存为裸指针，宿主侧删除是 detach+delete，会让视图悬空崩溃（BLK-03）。
+    // "转移"已由 rebuildTransferMenu 在外部模式下返回 false 隐藏；恢复内部模式后这些动作重新可见。
+    if (mExternalMode) {
+        mActDelete->setVisible(false);
+        mActRemoveChart->setVisible(false);
+    }
 }
 /**
  * @brief 重建"转移"子菜单
@@ -475,7 +482,9 @@ void DAChartManageWidget::onManagedFigureDestroyed(QObject* obj)
 void DAChartManageWidget::setCurrentChartOnItemClicked(bool on)
 {
     d_ptr->mSetCurrentChartOnClicked = on;
-}bool DAChartManageWidget::isSetCurrentChartOnItemClicked() const
+}
+
+bool DAChartManageWidget::isSetCurrentChartOnItemClicked() const
 {
     return d_ptr->mSetCurrentChartOnClicked;
 }

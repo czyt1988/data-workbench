@@ -25,6 +25,9 @@
 #include "Chart/Setting/DAChartGenericItemSettingPanel.h"
 #include "Chart/Setting/DAChartItemSettingPanel.h"
 #include "Chart/Setting/DAChartItemSettingPanelFactory.h"
+#include "Chart/Setting3D/DAChart3DGenericItemSettingPanel.h"
+#include "Chart/Setting3D/DAChart3DItemSettingPanel.h"
+#include "Chart/Setting3D/DAChart3DItemSettingPanelFactory.h"
 // DAFigure
 #include "DAChartWidget.h"
 #include "DAFigureWidget.h"
@@ -32,6 +35,9 @@
 #include "qwt_plot_item.h"
 #include "qwt_plot_marker.h"
 #include "qwt_text.h"
+// qwt3d
+#include "qwt3d_plotitem.h"
+#include "qwt3d_waterfall.h"
 
 namespace DA
 {
@@ -62,6 +68,33 @@ public:
 };
 
 /**
+ * @brief 未注册 rtti 的自定义 3D 图元（模拟插件自定义 3D 图元）
+ *
+ * rtti 取 0x7F01（不与 qwt3d 内置 Rtti_Plot3D* 冲突），且从不注册到
+ * DAChart3DItemSettingPanelFactory，用于验证 3D 工厂/通用面板的回退路径。
+ */
+class TSTUnregistered3DPlotItem : public Qwt3DPlotItem
+{
+public:
+    // 未注册的 RTTI 值
+    static constexpr int RttValue = 0x7F01;
+
+    int rtti() const override
+    {
+        return RttValue;
+    }
+
+    void draw() override
+    {
+    }
+
+    ParallelEpiped hull() const override
+    {
+        return ParallelEpiped();
+    }
+};
+
+/**
  * @brief T6 WP4 图元树目标抽象、通用回退图元面板与当前子图导出测试
  */
 class TSTDAChartContextTest : public QObject
@@ -74,6 +107,8 @@ private Q_SLOTS:
     void testChartManageSetFigures();
     // 未注册 rtti → 工厂回退通用面板
     void testUnregisteredRttiFallback();
+    // 3D 未注册 rtti（含 Rtti_Plot3DWaterfall）→ 3D 工厂回退通用面板，setPlot3DItem 安全（SF-08）
+    void test3DUnregisteredRttiFallback();
     // updateUI 在已注册/未注册 rtti 之间切换 currentItemPanel
     void testCommonItemsSettingWidgetSwitchesPanel();
     // 导出 PNG/SVG/PDF 到文件
@@ -133,6 +168,12 @@ void TSTDAChartContextTest::initTestCase()
              "the built-in marker panel should be registered");
     QVERIFY2(!DAChartItemSettingPanelFactory::instance().isRegistered(TSTUnregisteredPlotItem::RttValue),
              "the custom rtti must stay unregistered in this test");
+    // 3D 面板一并注册（生产环境由 DAChart3DSettingWidget 构造函数注册）
+    DAChart3DItemSettingPanelFactory::instance().registerAllKnown3DPanels();
+    QVERIFY2(DAChart3DItemSettingPanelFactory::instance().isRegistered(Rtti_Plot3DWaterfall),
+             "the waterfall rtti should be registered to the generic 3D panel");
+    QVERIFY2(!DAChart3DItemSettingPanelFactory::instance().isRegistered(TSTUnregistered3DPlotItem::RttValue),
+             "the custom 3D rtti must stay unregistered in this test");
 }
 
 /**
@@ -220,6 +261,48 @@ void TSTDAChartContextTest::testUnregisteredRttiFallback()
              "a registered rtti should not use the generic fallback panel");
 
     item->detach();
+}
+
+/**
+ * @brief 3D 未注册 rtti（含 Rtti_Plot3DWaterfall）回退通用面板，setPlot3DItem 安全
+ *
+ * 面板构造与 updateUI 只读写 Qwt3DPlotItem 基类属性（title/visible/z），不需要 GL 环境；
+ * 图元不挂任何 plot 也可安全设 target（setPlot3D(nullptr) 有空指针防御）。
+ */
+void TSTDAChartContextTest::test3DUnregisteredRttiFallback()
+{
+    // Rtti_Plot3DWaterfall：显式注册到通用面板，createPanel 返回非空通用面板
+    QScopedPointer< DAChart3DItemSettingPanel > waterfallPanel(
+        DAChart3DItemSettingPanelFactory::instance().createPanel(Rtti_Plot3DWaterfall));
+    QVERIFY2(waterfallPanel.data() != nullptr, "createPanel(Rtti_Plot3DWaterfall) must not return null");
+    QVERIFY2(dynamic_cast< DAChart3DGenericItemSettingPanel* >(waterfallPanel.data()) != nullptr,
+             "Rtti_Plot3DWaterfall should use the generic 3D fallback panel");
+
+    // 未注册 rtti：工厂一律回退通用面板（不再返回 nullptr，设置页不再停留上一个图元）
+    QScopedPointer< DAChart3DItemSettingPanel > unregisteredPanel(
+        DAChart3DItemSettingPanelFactory::instance().createPanel(TSTUnregistered3DPlotItem::RttValue));
+    QVERIFY2(unregisteredPanel.data() != nullptr, "createPanel() must not return null for an unregistered 3D rtti");
+    QVERIFY2(dynamic_cast< DAChart3DGenericItemSettingPanel* >(unregisteredPanel.data()) != nullptr,
+             "an unregistered 3D rtti must fall back to DAChart3DGenericItemSettingPanel");
+
+    // setPlot3DItem 不崩溃并能正确持有图元（图元未挂 plot，getPlot3D 为空是预期）
+    Qwt3DWaterfall waterfall;
+    waterfall.setTitle(QStringLiteral("waterfall-item"));
+    unregisteredPanel->setPlot3DItem(&waterfall);
+    QVERIFY2(unregisteredPanel->getPlot3DItem() == &waterfall, "the panel should hold the waterfall item");
+    QVERIFY(unregisteredPanel->isHaveItem());
+
+    TSTUnregistered3DPlotItem custom;
+    waterfallPanel->setPlot3DItem(&custom);
+    QVERIFY2(waterfallPanel->getPlot3DItem() == &custom, "the generic panel should hold the custom 3D item");
+    QVERIFY(waterfallPanel->isHaveItem());
+
+    // 已注册 rtti 仍走向专属面板（回退不吞掉正常注册）
+    QScopedPointer< DAChart3DItemSettingPanel > surfacePanel(
+        DAChart3DItemSettingPanelFactory::instance().createPanel(Rtti_Plot3DSurface));
+    QVERIFY(surfacePanel.data() != nullptr);
+    QVERIFY2(dynamic_cast< DAChart3DGenericItemSettingPanel* >(surfacePanel.data()) == nullptr,
+             "a registered 3D rtti should not use the generic fallback panel");
 }
 
 /**
@@ -322,6 +405,33 @@ void TSTDAChartContextTest::testExportChartToFile()
     QVERIFY2(filter.contains(QStringLiteral("*.png")) && filter.contains(QStringLiteral("*.svg"))
                  && filter.contains(QStringLiteral("*.pdf")),
              "the export file filter should contain png/svg/pdf entries");
+
+    // SF-05：以所选过滤器为权威修正后缀（选 SVG 过滤器保留 .png 时必须改写为 .svg）
+    QCOMPARE(DAFigureWidget::applyExportFilterSuffix(QStringLiteral("chart.png"),
+                                                     QStringLiteral("SVG Image (*.svg)")),
+             QStringLiteral("chart.svg"));
+    QCOMPARE(DAFigureWidget::applyExportFilterSuffix(QStringLiteral("chart.png"),
+                                                     QStringLiteral("PDF Document (*.pdf)")),
+             QStringLiteral("chart.pdf"));
+    // 后缀与过滤器一致：原样返回（保留原路径大小写）
+    QCOMPARE(DAFigureWidget::applyExportFilterSuffix(QStringLiteral("chart.PNG"),
+                                                     QStringLiteral("PNG Image (*.png)")),
+             QStringLiteral("chart.PNG"));
+    // 无后缀/未知后缀：追加过滤器后缀
+    QCOMPARE(DAFigureWidget::applyExportFilterSuffix(QStringLiteral("chart"),
+                                                     QStringLiteral("SVG Image (*.svg)")),
+             QStringLiteral("chart.svg"));
+    QCOMPARE(DAFigureWidget::applyExportFilterSuffix(QStringLiteral("chart.txt"),
+                                                     QStringLiteral("PDF Document (*.pdf)")),
+             QStringLiteral("chart.txt.pdf"));
+    // 过滤器解析不出唯一已知扩展名：保留旧默认行为（已知后缀原样，否则补 .png）
+    QCOMPARE(DAFigureWidget::applyExportFilterSuffix(QStringLiteral("chart.svg"), QString()),
+             QStringLiteral("chart.svg"));
+    QCOMPARE(DAFigureWidget::applyExportFilterSuffix(QStringLiteral("chart"), QString()),
+             QStringLiteral("chart.png"));
+    QCOMPARE(DAFigureWidget::applyExportFilterSuffix(QStringLiteral("chart.png"),
+                                                     QStringLiteral("Images (*.png *.svg)")),
+             QStringLiteral("chart.png"));
 }
 
 /**

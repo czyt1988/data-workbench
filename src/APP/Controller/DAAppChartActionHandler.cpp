@@ -1,9 +1,8 @@
-#include "DAAppChartActionHandler.h"
+﻿#include "DAAppChartActionHandler.h"
 #include "DAAppController.h"
 // Qt
 #include <QDebug>
 #include <QFileDialog>
-#include <QFileInfo>
 #include <QMessageBox>
 #include <QProgressDialog>
 #include <QSignalBlocker>
@@ -419,6 +418,8 @@ void DAAppChartActionHandler::onFigureCreated(DAFigureWidget* f)
     // updateFigureAboutRibbon(f);//在onActionAddFigureTriggered中调用了
     mDeps.controller->setDirty();
     connect(f, &DAFigureWidget::currentChartChanged, this, &DAAppChartActionHandler::onCurrentChartChanged);
+    // 3D 当前子图变化也影响「导出当前子图」的可用性（2D 变化经 onCurrentChartChanged 同步）
+    connect(f, &DAFigureWidget::current3DChartChanged, this, &DAAppChartActionHandler::updateExportChartActionState);
     connect(f, &DAFigureWidget::chartEditorStatusChanged, this, &DAAppChartActionHandler::onChartEditorStatusChanged);
     // 指针工具在图中选中元素 → 联动属性设置面板（与树形控件点击同链路）
     connect(f, &DAFigureWidget::figureElementClicked, this, &DAAppChartActionHandler::onFigureElementClicked);
@@ -437,6 +438,7 @@ void DAAppChartActionHandler::onCurrentFigureChanged(DAFigureWidget* f, int inde
     }
     qDebug() << "DAAppChartActionHandler::onCurrentFigureChanged";
     mDeps.ribbon->updateFigureAboutRibbon(f);
+    updateExportChartActionState();
     QUndoStack* stack = f->getUndoStack();
     if (stack) {
         stack->setActive();
@@ -449,10 +451,25 @@ void DAAppChartActionHandler::onCurrentFigureChanged(DAFigureWidget* f, int inde
  */
 void DAAppChartActionHandler::onCurrentChartChanged(DAChartWidget* c)
 {
+    // 2D 当前子图变化（含被清空为 nullptr）影响「导出当前子图」的可用性
+    updateExportChartActionState();
     if (nullptr == c) {
         return;
     }
     mDeps.ribbon->updateChartAboutRibbon(c);
+}
+
+/**
+ * @brief 同步「导出当前子图」动作可用性
+ *
+ * 无当前 figure、或当前 figure 无任何激活子图（currentSubChartKind 为 None）时置灰，
+ * 避免正看 3D/空 figure 时动作仍可点而触发「没有可导出的子图」提示或导出错误目标。
+ */
+void DAAppChartActionHandler::updateExportChartActionState()
+{
+    DAFigureWidget* fig = mDeps.controller->getCurrentFigure();
+    const bool enabled = (fig && DAFigureCurrentSubChart::None != fig->currentSubChartKind());
+    mDeps.actions->actionExportChartToFile->setEnabled(enabled);
 }
 
 /**
@@ -1111,10 +1128,10 @@ void DAAppChartActionHandler::onActionCopyFigureToClipboardTriggered()
 /**
  * @brief 导出当前子图到图片文件
  *
- * 目标为当前figure的当前子图；格式由用户输入的后缀决定（.png/.svg/.pdf），
- * 后缀缺失或用户输入了未知后缀时按文件对话框所选过滤器补正确后缀，避免
- * 「内容与后缀不一致」（例如选 SVG 却存成 .png）。成功/失败都用da*消息反馈
- * （用户可见，必须翻译）。
+ * 按最近激活的子图类型分派（currentSubChartKind）：3D 子图只有位图路径，文件对话框
+ * 过滤器收窄为 PNG 并走 grabFramebuffer 导出；2D 子图支持 PNG/SVG/PDF。后缀以文件
+ * 对话框所选过滤器为权威（applyExportFilterSuffix），避免「选 SVG 却存成 .png」。
+ * 成功/失败都用da*消息反馈（用户可见，必须翻译）。
  */
 void DAAppChartActionHandler::onActionExportChartToFileTriggered()
 {
@@ -1123,34 +1140,33 @@ void DAAppChartActionHandler::onActionExportChartToFileTriggered()
         daWarning << tr("There is no figure to export");  // cn:没有可导出的绘图窗口
         return;
     }
-    DAChartWidget* chart = fig->getCurrentChart();
-    if (nullptr == chart) {
+    // 3D 当前子图：位图导出（PNG）；2D 当前子图：矢量/位图导出；无子图：提示
+    const bool is3D = (DAFigureCurrentSubChart::Chart3D == fig->currentSubChartKind());
+    if (!is3D && nullptr == fig->getCurrentChart()) {
         daWarning << tr("There is no sub-chart to export");  // cn:没有可导出的子图
         return;
     }
     QString selectedFilter;
-    QString filePath = QFileDialog::getSaveFileName(
-        mDeps.controller->app(),
-        tr("Export Chart"),  // cn:导出当前子图
-        QStringLiteral("chart.png"),
-        DAFigureWidget::exportFileFilter(),
-        &selectedFilter);
+    const QString filter = is3D ? tr("PNG Image (*.png)")  // cn:PNG 图片 (*.png)
+                                : DAFigureWidget::exportFileFilter();
+    QString filePath = QFileDialog::getSaveFileName(mDeps.controller->app(),
+                                                    tr("Export Chart"),  // cn:导出当前子图
+                                                    QStringLiteral("chart.png"),
+                                                    filter,
+                                                    &selectedFilter);
     if (filePath.isEmpty()) {
         return;
     }
-    // 后缀缺失或未知：按所选过滤器补真实后缀（.svg/.pdf/默认 .png）
-    const QString suffix = QFileInfo(filePath).suffix().toLower();
-    if (suffix != QLatin1String("png") && suffix != QLatin1String("svg") && suffix != QLatin1String("pdf")) {
-        if (selectedFilter.contains(QLatin1String("*.svg"))) {
-            filePath += QStringLiteral(".svg");
-        } else if (selectedFilter.contains(QLatin1String("*.pdf"))) {
-            filePath += QStringLiteral(".pdf");
-        } else {
-            filePath += QStringLiteral(".png");
-        }
+    // 以所选过滤器为权威修正后缀：用户切到 SVG/PDF 过滤器而对话框保留 .png 时改写后缀
+    filePath = DAFigureWidget::applyExportFilterSuffix(filePath, selectedFilter);
+    bool ok = false;
+    if (is3D) {
+        ok = fig->export3DChartToFile(fig->getCurrent3DChart(), filePath);
+    } else {
+        const DAFigureExportFormat format = DAFigureWidget::exportFormatFromFilePath(filePath);
+        ok = fig->exportChartToFile(fig->getCurrentChart(), filePath, format);
     }
-    const DAFigureExportFormat format = DAFigureWidget::exportFormatFromFilePath(filePath);
-    if (fig->exportChartToFile(chart, filePath, format)) {
+    if (ok) {
         daInfo << tr("Chart exported to \"%1\"").arg(filePath);  // cn:子图已导出到“%1”
     } else {
         daWarning << tr("Failed to export the chart to \"%1\"").arg(filePath);  // cn:导出子图到“%1”失败

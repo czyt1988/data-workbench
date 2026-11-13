@@ -145,7 +145,9 @@ if (nullptr == widget) {
 }
 const DAAppContextRoutePolicy route = resolveAppContextRoutePolicy(...);
 if (SettingContextProvider == route) {
-    // provider 接管：由它显示设置页/上下文标签，不执行 hide-all
+    // provider 接管：先隐藏三个固定上下文分类（Chart/Data/Workflow），再激活 provider，
+    // 由 provider 显示自己的设置页/上下文标签——避免两套上下文标签并存
+    mRibbon->hideContextCategory(AllContextCategory);
     mDock->activateSettingContextForWidget(widget);
     return;
 }
@@ -162,14 +164,36 @@ default: break;    // UtilityDock：不改上下文
 }
 ```
 
+### 路由分支的实际行为
+
+当前各分支对上下文标签的实际行为（与基线代码一致，写明以免误判）：
+
+- **`widget == nullptr`**（焦点离开全部 dock 内容）：失活 provider + `hideContextCategory(All)`，固定上下文标签全部清空。
+- **未识别/未路由的 widget**（`UtilityDock`）：什么都不做，当前上下文标签保持原样。
+- **provider 命中**：先隐藏三个固定上下文分类（Chart/Data/Workflow），再激活 provider；provider 自己的上下文标签由 provider 显示（见上文代码）。这样从绘图区切到插件页面时，「绘图」与插件上下文标签不会并存，Chart 分类的导出/复制/Resize 也不会继续作用于 APP 绘图区。
+- **固定操作窗口命中**（数据/工作流/绘图）：失活 provider 并显示对应固定分类，`showContextCategory` 本身会把其余固定分类隐藏。
+
+> **已知待验证项**：若原始症状（插件页激活后上下文标签被清空）来自嵌套 dock 抢焦点导致的
+> `focusedDockWidgetChanged(nullptr)`，该路径仍会失活 provider 并 hide-all——本机制没有覆盖它。
+> 需要在真实 GUI 里观察信号页激活/raise 时 `onFocusedDockWidgetChanged` 的 old/now 实参
+> （`now == nullptr` 即命中该路径），再决定是否按「最近一次 provider」保持上下文。
+
 ### hide-all 陷阱
 
-旧实现里，`activateContextCategoryForWidget()` 遇到未识别的 widget 会 `hideContextCategory(All)`。插件 provider 在 `activateSettingContext()` 里 `raiseDockByWidget(设置容器)` 会触发一次新的 dock 激活，旧逻辑把这个「设置 dock」当作未知窗口处理，把刚显示出来的 Chart/插件上下文标签全部清掉。
+历史行为澄清（更正早先把缺陷归因为「未识别 dock 激活会清空上下文标签」的叙述）：
+
+- 基线代码里 `activateContextCategoryForWidget()` **只有 `widget == nullptr`** 才 `hideContextCategory(All)`；
+  未识别的 widget 在改动前后行为一致（什么都不做），并不会触发 hide-all。
+- 真正会 hide-all 的路径是焦点离开全部 dock 内容（`focusedDockWidgetChanged(nullptr)`），
+  该路径同时会失活 provider；若原始症状来自嵌套 dock 抢焦点，需要按上一节的「已知待验证项」
+  在 GUI 里实测确认，而不是按「未识别 widget」排查。
 
 现在的做法有两层：
 
-- 已注册 provider 的 dock 内容在路由里优先命中，走 provider 分支，不执行 hide-all。
-- 未识别的 dock 归 `UtilityDock`，只 `break`，不切换也不清空上下文。工具 dock（设置、日志、图表管理）因此不会把插件上下文顶掉。
+- 已注册 provider 的 dock 内容在路由里优先命中，走 provider 分支：先隐藏三个固定上下文分类
+  （Chart/Data/Workflow），再激活 provider——插件上下文与固定上下文标签互斥，不会并存。
+- 未识别的 dock 归 `UtilityDock`，只 `break`，不切换也不清空上下文。工具 dock（设置、日志、
+  图表管理）因此不会把插件上下文顶掉。
 
 改造路由时不要恢复「未识别就 hide-all」的行为，也不要把 `UtilityDock` 合并进 `nullptr` 分支。
 
@@ -223,6 +247,9 @@ default: break;    // UtilityDock：不改上下文
 
 - `setFigures()` 会断开与 `DAChartOperateWidget` 的信号连接但保留指针，`setChartOperateWidget()` 才能切回内部模式。
 - 管理树不拥有 figure；figure 销毁时管理项由 `DAChartManageWidget` 的清理逻辑移除，但 provider 应保证只传入活着的 figure。
+- **外部模式下右键菜单不提供「删除图元（Delete）」与「删除坐标系（Remove Chart）」**（「转移」同样已隐藏）：
+  外部 figure（如信号分析视图）的图元/子图被视图缓存为裸指针，宿主侧的删除是 detach+delete，
+  会让视图悬空崩溃；恢复内部模式（`setChartOperateWidget`）后这些动作重新可见。
 - 失活时必须用 `setChartOperateWidget(宿主)` 还原，否则管理树会继续显示插件 figure。
 - 每次切子图都调 `setFigures()` 会重建树，可能复位展开状态。功能正确；若体验需要优化，可只在 figure 列表或当前 figure 真正变化时重建。
 

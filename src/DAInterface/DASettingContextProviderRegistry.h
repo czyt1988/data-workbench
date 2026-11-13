@@ -6,6 +6,19 @@
 
 class QWidget;
 
+// 导出注解：本头文件列在安装公开头（DA_LIB_HEADER_FILES）中，插件按公开头实例化时
+// 需要 dllimport（否则 MSVC 链接失败 LNK2019）。但 APPRefactorTest 直接把
+// DASettingContextProviderRegistry.cpp 编入测试可执行文件且不链接 DAInterface 库，
+// 该测试目标定义 DASETTINGCONTEXTREGISTRY_STATIC 以获得无注解声明（dllimport 类的
+// 类外成员定义会被 MSVC 拒绝：C2491），同时跳过 DAInterfaceAPI.h（其 DAGlobals.h
+// 依赖不在该测试的 include 路径内）。
+#if defined(DASETTINGCONTEXTREGISTRY_STATIC)
+#define DASETTINGCONTEXTREGISTRY_API
+#else
+#include "DAInterfaceAPI.h"
+#define DASETTINGCONTEXTREGISTRY_API DAINTERFACE_API
+#endif
+
 namespace DA
 {
 /**
@@ -22,7 +35,7 @@ namespace DA
  *   （提供者可能随之失效）；
  * - 同一 provider 可以注册给多个 dock 内容，注册表按「内容 + 提供者」共同判断当前项。
  */
-class DASettingContextProviderRegistry
+class DASETTINGCONTEXTREGISTRY_API DASettingContextProviderRegistry
 {
 public:
     DASettingContextProviderRegistry() = default;

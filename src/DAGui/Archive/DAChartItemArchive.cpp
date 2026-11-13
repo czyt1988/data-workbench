@@ -3,6 +3,7 @@
 #include <QDomDocument>
 #include <QIODevice>
 #include <exception>
+#include <utility>
 #include "Archive/DAAbstractArchive.h"
 #include "Chart/DAChartItemsManager.h"
 #include "DAChartSerialize.h"
@@ -47,6 +48,25 @@ QByteArray makeIndexXml(const DAChartItemsManager* itemsMgr)
         QDomElement itemEle = doc.createElement(QStringLiteral("item"));
         itemEle.setAttribute(QStringLiteral("key"), key);
         itemEle.setAttribute(QStringLiteral("rtti"), item->rtti());
+        root.appendChild(itemEle);
+    }
+    return doc.toByteArray();
+}
+
+/// 把快照的 key + rtti 索引写成 XML 字节流（与 makeIndexXml 对同一批图元输出完全一致）
+QByteArray makeSnapshotIndexXml(const QList< DAChartItemSnapshot >& snapshots)
+{
+    QDomDocument doc(QStringLiteral("chart-items"));
+    QDomElement root = doc.createElement(QStringLiteral("items"));
+    doc.appendChild(root);
+    for (const DAChartItemSnapshot& snap : snapshots) {
+        if (snap.key.isEmpty()) {
+            qWarning() << "DAChartItemArchive::makeSnapshotIndexXml: snapshot key is empty, skipped";
+            continue;
+        }
+        QDomElement itemEle = doc.createElement(QStringLiteral("item"));
+        itemEle.setAttribute(QStringLiteral("key"), snap.key);
+        itemEle.setAttribute(QStringLiteral("rtti"), snap.rtti);
         root.appendChild(itemEle);
     }
     return doc.toByteArray();
@@ -243,5 +263,98 @@ bool DAChartItemArchive::load(DAAbstractArchive* archive,
 QString DAChartItemArchive::itemsIndexFileName()
 {
     return chartItemsIndexFileName();
+}
+
+/**
+ * @brief 把管理者里全部图元序列化为快照
+ *
+ * 必须在 GUI 线程调用（内部走生产路径 @ref DAChartItemSerialize::serializeOut，触碰 QwtPlotItem*）。
+ * 单个图元 key 为空或序列化抛异常时跳过并 qWarning，与 @ref save 的容错口径一致；
+ * itemsMgr 为空时返回空列表。
+ * @param itemsMgr 图元管理者（只读，不修改其登记）
+ * @return 快照列表；调用方把它交给后台任务的 @ref saveSnapshots 写存档
+ */
+QList< DAChartItemSnapshot > DAChartItemArchive::makeSnapshots(const DAChartItemsManager* itemsMgr)
+{
+    QList< DAChartItemSnapshot > snapshots;
+    if (!itemsMgr) {
+        return snapshots;
+    }
+    DAChartItemSerialize serializer;
+    const QList< QwtPlotItem* > items = itemsMgr->items();
+    for (QwtPlotItem* item : items) {
+        const QString key = itemsMgr->itemToKey(item);
+        if (key.isEmpty()) {
+            qWarning() << "DAChartItemArchive::makeSnapshots: plot item cannot find key, skipped";
+            continue;
+        }
+        DAChartItemSnapshot snap;
+        snap.key  = key;
+        snap.rtti = item->rtti();
+        try {
+            snap.data = serializer.serializeOut(item);
+        } catch (const std::exception& e) {
+            qWarning() << "DAChartItemArchive::makeSnapshots: serialize" << key << "failed:" << e.what();
+            continue;
+        }
+        snapshots.append(snap);
+    }
+    return snapshots;
+}
+
+/**
+ * @brief 把预序列化快照写入存档
+ *
+ * 在后台存档任务的 exec 内调用：只写字节，不触碰任何 QwtPlotItem*（图元可能已被 GUI
+ * 线程删除/重建，见 BLK-01）。索引 XML 与 @ref save 的 makeIndexXml 输出完全同构
+ * （key + rtti），加载端 @ref load 无需改动即可读回。
+ * 单个快照写失败只记录错误并继续（与既有存档行为一致，不中断整体保存）。
+ * @param archive 存档对象（zip/文件等），由调用方保证已在正确的线程/打开状态
+ * @param snapshots GUI 线程经 @ref makeSnapshots 生成的快照
+ * @param prefix 存档内相对目录，例如 "chart-data"、"signal-analysis/chart-data"
+ * @param errorMessage 可选，返回失败/部分失败原因（英文诊断，经 qWarning 记录）
+ * @return 索引写入成功返回 true
+ */
+bool DAChartItemArchive::saveSnapshots(DAAbstractArchive* archive,
+                                       const QList< DAChartItemSnapshot >& snapshots,
+                                       const QString& prefix,
+                                       QString* errorMessage)
+{
+    if (!archive) {
+        if (errorMessage) {
+            *errorMessage = QStringLiteral("null archive");
+        }
+        return false;
+    }
+    //! 1.先把key和rtti信息保存到xml（与 save() 的索引完全同构）
+    const QByteArray indexData = makeSnapshotIndexXml(snapshots);
+    // QDomDocument::toByteArray 理论上不会返回空；这里保留防御，避免写入0字节索引
+    if (indexData.isEmpty()) {
+        if (errorMessage) {
+            *errorMessage = QStringLiteral("failed to generate chart-items.xml");
+        }
+        return false;
+    }
+    const QString indexPath = makeArchivePath(prefix, chartItemsIndexFileName());
+    if (!archive->write(indexPath, indexData)) {
+        if (errorMessage) {
+            *errorMessage = QStringLiteral("failed to write %1").arg(indexPath);
+        }
+        return false;
+    }
+    //! 2.写每个快照的数据（纯字节写入，不依赖图元对象存活）
+    for (const DAChartItemSnapshot& snap : snapshots) {
+        if (snap.key.isEmpty()) {
+            continue;  // 索引阶段已 qWarning
+        }
+        const QString itemPath = makeArchivePath(prefix, snap.key);
+        if (!archive->write(itemPath, snap.data)) {
+            qWarning() << "DAChartItemArchive::saveSnapshots: failed to write" << itemPath << ", skipped";
+            if (errorMessage) {
+                *errorMessage = QStringLiteral("failed to write %1").arg(itemPath);
+            }
+        }
+    }
+    return true;
 }
 }  // namespace DA
