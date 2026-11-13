@@ -17,14 +17,16 @@ class DAChartOperateWidget;
 /**
  * @brief 按规格构建图元并挂到图表的唯一编排器
  *
- * 浮窗预览与「转入绘图区」共用同一份「请求 + 规格 + 采样 + 图元构建」：
+ * 浮窗预览与「转入绘图区」共用同一份「请求 + 规格 + 取数 + 图元构建」：
  * 浮窗直接渲染到自己的 DAChartWidget；转入时用同一份规格重新构建图元，
  * 挂到正式 chart。这样不存在第二套建图逻辑，也不会把浮窗的 chart 直接 reparent。
  *
  * 数据侧约定：
- * - 折线/散点/直方图按 DAChartSeriesSampler 采样；
- * - 分类聚合/箱线图能精确就精确（内存源阈值内走全量），否则采样并在
+ * - 折线/散点/多序列折线/直方图/等高线/误差棒/向量场按**全量数据**构建，不限制点数
+ *   （DAChartSeriesSampler 传 kFullDataPoints，不受取数预算限制）；
+ * - 分类聚合/箱线图能精确就精确（内存 pandas 源一律全量），只有惰性/数据库源采样并在
  *   DATableChartBuildInfo 标注近似；
+ * - 3D 线图全量，3D 曲面预览仍按采样点插值成 30×30 网格（预览成本与曲面分辨率无关）；
  * - 调用方必须持有 Python GIL（与统计向导的约定一致）。
  */
 class DAGUI_API DAChartQuickPlot
@@ -56,7 +58,7 @@ public:
 
     /**
      * @brief 构建 3D 图元（不挂载，调用方负责 attach / add3DItem_）
-     * @param fullData true 时不采样（转入绘图区的全量重建）
+     * @param fullData true 时全量取数（3D 线图预览与转入绘图区）；false 时曲面预览按约 2000 点采样后插值
      * @return 新建图元，失败返回 nullptr（error 给出可读原因）
      */
     static Qwt3DPlotItem* create3DItem(const DATableChartRequest& request,
@@ -67,6 +69,7 @@ public:
 
     /**
      * @brief 把规格渲染到 3D 图表（浮窗预览用；先清空旧数据再挂新图元）
+     * @param fullData true 时全量取数（3D 线图预览），false 时曲面预览采样
      */
     static bool render3D(const DATableChartRequest& request,
                          const DATableChartSpec& spec,

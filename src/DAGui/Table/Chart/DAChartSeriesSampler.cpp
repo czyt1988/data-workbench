@@ -23,13 +23,21 @@ struct RowRange
 /**
  * @brief 把全区间切成若干连续窗口（确定性，不引入随机数）
  *
- * 小表直接返回一个全量窗口；大表按 kSampleWindowCount 个窗口均匀铺满全区间，
+ * maxPoints == kFullDataPoints 时整个行区间一个窗口（不限制点数，一次性全量取数）；
+ * 小表同样直接返回一个全量窗口；大表按 kSampleWindowCount 个窗口均匀铺满全区间，
  * 每个窗口取前 perWindow 行，从而在不放大取数次数的前提下覆盖整个行区间。
  */
 QVector< RowRange > buildRanges(qint64 totalRows, int maxPoints)
 {
     QVector< RowRange > ranges;
     if (totalRows <= 0) {
+        return ranges;
+    }
+    if (maxPoints == DAChartSeriesSampler::kFullDataPoints) {
+        // 不限制点数：一个窗口覆盖全表；一次取数受 QList 的 int 长度上限约束，
+        // 超过上限时截断到上限（实际表格数据远小于该量级）
+        const qint64 count = std::min< qint64 >(totalRows, std::numeric_limits< int >::max());
+        ranges.append(RowRange { 0, static_cast< int >(count) });
         return ranges;
     }
     if (totalRows <= DAChartSeriesSampler::kFullPlotRowThreshold) {
@@ -57,6 +65,14 @@ QVector< RowRange > buildRanges(qint64 totalRows, int maxPoints)
         ranges.append(RowRange { tailStart, static_cast< int >(totalRows - tailStart) });
     }
     return ranges;
+}
+
+/**
+ * @brief 是否要求全量取数（maxPoints == kFullDataPoints 时不限制点数、不受取数预算限制）
+ */
+bool isFullDataRequest(int maxPoints)
+{
+    return maxPoints == DAChartSeriesSampler::kFullDataPoints;
 }
 
 /// 把单元格值转成 double；不可转换返回 false
@@ -153,15 +169,12 @@ bool cellToLabel(const QVariant& v, QString& out)
 /**
  * @brief 是否可以对全量数据做精确聚合/分位数
  *
- * 内存 pandas 源且行数在阈值内才是精确的；惰性/数据库源与超阈值大表
- * 走采样路径，调用方必须把结果标注为近似。
+ * 内存 pandas 源一律全量精确（不设行数上限，保证柱状/箱线图结果与表格一致）；
+ * 惰性/数据库源没有全量 DataFrame 可取，仍走采样路径，调用方必须把结果标注为近似。
  */
 bool DAChartSeriesSampler::canAggregateExactly(const DATableChartRequest& request)
 {
-    if (request.lazy || !request.data.isDataFrame()) {
-        return false;
-    }
-    return static_cast< std::int64_t >(request.rowCount) <= kExactAggregationRowLimit;
+    return !request.lazy && request.data.isDataFrame();
 }
 
 /**
@@ -188,15 +201,19 @@ DAChartSeriesSampler::XYSample DAChartSeriesSampler::sampleXY(const DATableChart
     result.info.totalRows  = static_cast< int >(std::min< qint64 >(totalRows, std::numeric_limits< int >::max()));
     const QVector< RowRange > ranges = buildRanges(totalRows, maxPoints);
     result.info.sampled              = (ranges.size() != 1 || (ranges.size() == 1 && ranges.first().count < totalRows));
+    const bool fullData              = isFullDataRequest(maxPoints);
 
     for (const RowRange& range : ranges) {
-        // 预算：这一轮要取 1~2 块，任何一块取不了就停止采样并标记受限（实施方案 §8.4）
+        // 预算：这一轮要取 1~2 块，任何一块取不了就停止采样并标记受限（实施方案 §8.4）；
+        // 全量取数（不限制点数）不参与预算
         const int callsNeeded = (xDataColumn >= 0) ? 2 : 1;
         bool budgetOk         = true;
-        for (int c = 0; c < callsNeeded; ++c) {
-            if (!usedBudget->request(range.count)) {
-                budgetOk = false;
-                break;
+        if (!fullData) {
+            for (int c = 0; c < callsNeeded; ++c) {
+                if (!usedBudget->request(range.count)) {
+                    budgetOk = false;
+                    break;
+                }
             }
         }
         if (!budgetOk) {
@@ -256,15 +273,18 @@ DAChartSeriesSampler::MultiXYSample DAChartSeriesSampler::sampleMultiXY(const DA
     result.info.totalRows  = static_cast< int >(std::min< qint64 >(totalRows, std::numeric_limits< int >::max()));
     const QVector< RowRange > ranges = buildRanges(totalRows, maxPoints);
     result.info.sampled              = (ranges.size() != 1 || (ranges.size() == 1 && ranges.first().count < totalRows));
+    const bool fullData              = isFullDataRequest(maxPoints);
 
     for (const RowRange& range : ranges) {
-        // 每轮取 1(可选 x) + 每列 y 各一块；预算不足立即停止并标记受限
+        // 每轮取 1(可选 x) + 每列 y 各一块；预算不足立即停止并标记受限（全量取数不参与预算）
         const int callsNeeded = static_cast< int >(yDataColumns.size()) + (xDataColumn >= 0 ? 1 : 0);
         bool budgetOk         = true;
-        for (int c = 0; c < callsNeeded; ++c) {
-            if (!usedBudget->request(range.count)) {
-                budgetOk = false;
-                break;
+        if (!fullData) {
+            for (int c = 0; c < callsNeeded; ++c) {
+                if (!usedBudget->request(range.count)) {
+                    budgetOk = false;
+                    break;
+                }
             }
         }
         if (!budgetOk) {
@@ -346,9 +366,10 @@ QVector< double > DAChartSeriesSampler::sampleValues(const DATableChartRequest& 
     local.totalRows        = static_cast< int >(std::min< qint64 >(totalRows, std::numeric_limits< int >::max()));
     const QVector< RowRange > ranges = buildRanges(totalRows, maxValues);
     local.sampled                    = (ranges.size() != 1 || (ranges.size() == 1 && ranges.first().count < totalRows));
+    const bool fullData              = isFullDataRequest(maxValues);
 
     for (const RowRange& range : ranges) {
-        if (!usedBudget->request(range.count)) {
+        if (!fullData && !usedBudget->request(range.count)) {
             local.limited = true;
             break;
         }
@@ -390,14 +411,17 @@ DAChartSeriesSampler::CategorySample DAChartSeriesSampler::sampleCategory(const 
     result.info.totalRows  = static_cast< int >(std::min< qint64 >(totalRows, std::numeric_limits< int >::max()));
     const QVector< RowRange > ranges = buildRanges(totalRows, maxPoints);
     result.info.sampled              = (ranges.size() != 1 || (ranges.size() == 1 && ranges.first().count < totalRows));
+    const bool fullData              = isFullDataRequest(maxPoints);
 
     for (const RowRange& range : ranges) {
         const int callsNeeded = (valueDataColumn >= 0) ? 2 : 1;
         bool budgetOk         = true;
-        for (int c = 0; c < callsNeeded; ++c) {
-            if (!usedBudget->request(range.count)) {
-                budgetOk = false;
-                break;
+        if (!fullData) {
+            for (int c = 0; c < callsNeeded; ++c) {
+                if (!usedBudget->request(range.count)) {
+                    budgetOk = false;
+                    break;
+                }
             }
         }
         if (!budgetOk) {
@@ -456,14 +480,17 @@ DAChartSeriesSampler::CategoryMultiSample DAChartSeriesSampler::sampleCategoryMu
     result.info.totalRows  = static_cast< int >(std::min< qint64 >(totalRows, std::numeric_limits< int >::max()));
     const QVector< RowRange > ranges = buildRanges(totalRows, maxPoints);
     result.info.sampled              = (ranges.size() != 1 || (ranges.size() == 1 && ranges.first().count < totalRows));
+    const bool fullData              = isFullDataRequest(maxPoints);
 
     for (const RowRange& range : ranges) {
         const int callsNeeded = 1 + static_cast< int >(valueDataColumns.size());
         bool budgetOk         = true;
-        for (int c = 0; c < callsNeeded; ++c) {
-            if (!usedBudget->request(range.count)) {
-                budgetOk = false;
-                break;
+        if (!fullData) {
+            for (int c = 0; c < callsNeeded; ++c) {
+                if (!usedBudget->request(range.count)) {
+                    budgetOk = false;
+                    break;
+                }
             }
         }
         if (!budgetOk) {

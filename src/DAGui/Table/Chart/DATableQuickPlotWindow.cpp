@@ -282,7 +282,11 @@ void DATableQuickPlotWindow::renderNow()
     QString error;
     bool ok = false;
     if (DAChartQuickPlot::is3DType(mSpec.type)) {
-        ok = DAChartQuickPlot::render3D(mRequest, mSpec, ensureChart3D(), &info, &error, false);
+        // 3D 线图的点就是可见数据：预览也全量绘制（不限制点数）；
+        // 3D 曲面预览仍采样输入散点——它要插值成固定的 30×30 网格，输入采样不损失曲面分辨率，
+        // 而全量百万点做 scipy 插值会让界面长时间卡住。
+        const bool fullData = (mSpec.type == DATableChartType::Line3D);
+        ok = DAChartQuickPlot::render3D(mRequest, mSpec, ensureChart3D(), &info, &error, fullData);
     } else if (mChart2D) {
         ok = DAChartQuickPlot::render(mRequest, mSpec, mChart2D.data(), &info, &error, true, nullptr);
     }

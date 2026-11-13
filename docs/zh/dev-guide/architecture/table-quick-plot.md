@@ -20,7 +20,7 @@
 | L3 界面层 | `src/DAGui/Table/Views/DATableChildWindowContainer.*` | **表格子窗口容器**：任意 QWidget 贴入成表格里的子窗口；允许区域夹取、几何源监听、关闭默认隐藏 |
 | L3 界面层 | `src/DAGui/Table/Chart/DATableChartTypes.h` | 请求/规格/规划结果/构建信息等纯数据结构 |
 | L3 界面层 | `src/DAGui/Table/Chart/DATableChartPlanner.*` | 列角色判定、图型能力矩阵、默认规格、X 轴候选 |
-| L3 界面层 | `src/DAGui/Table/Chart/DAChartSeriesSampler.*` | 列 → 采样点/值的唯一采样入口（小表全量、大表确定性分块） |
+| L3 界面层 | `src/DAGui/Table/Chart/DAChartSeriesSampler.*` | 列 → 绘图点/值的唯一取数入口（快速绘图走 `kFullDataPoints` 全量；采样模式保留给统计面板等其它调用方） |
 | L3 界面层 | `src/DAGui/Table/Chart/DAChartQuickPlot.*` | **唯一图元编排器**：按规格构建图元并挂到图表；转入绘图区 |
 | L3 界面层 | `src/DAGui/Table/Chart/DATableQuickPlotWindow.*` | **绘图区部件**：只承载 2D/3D 图表堆叠区（位置/尺寸/标题由子窗口框架承载）；负责取数绘制、把状态回推设置页、接收设置页回写的请求/规格 |
 | L3 界面层 | `src/DAGui/Common/Settings/DASettingContainerWidget.*` | 右侧「设置」Dock 的页面容器（QStackedWidget）：挂工作流节点/绘图/3D/Figure/快速绘图设置页，按当前编辑对象切页 |
@@ -70,13 +70,13 @@
   → DATableChartRequest（数据集句柄 + 有序选中列 + 角色 + 行数/惰性标记）
   → DATableChartPlanner::plan()（可选图型 + 默认规格 + 拒绝原因）
   → DATableChartSpec（图型 / X / 数值列 / 分类列 / 聚合 / Top N）
-  → DAChartSeriesSampler（采样）
+  → DAChartSeriesSampler（全量取数，不限制点数）
   → DAChartQuickPlot::render()（构建图元 → attach 到目标 DAChartWidget）
   → 绘图区显示（容器贴入框架），或 transferToFigure() 转入正式图表
-  → 重画/状态变化后：contextChanged / statusChanged（把图型/角色/手动模式与采样/错误状态回推右侧设置页）
+  → 重画/状态变化后：contextChanged / statusChanged（把图型/角色/手动模式与取数/错误状态回推右侧设置页）
 ```
 
-绘图区与正式图表**共用同一份**请求、采样与构建实现；转入不是把绘图区的 chart reparent 过去，而是用同一份规格再构建一次图元。
+绘图区与正式图表**共用同一份**请求、取数与构建实现；转入不是把绘图区的 chart reparent 过去，而是用同一份规格再构建一次图元。
 
 设置页的编辑走反方向：设置页只调用绘图区的公开 API（`setChartType()` / `applyEditedContext()` / `refresh()` 等），
 绘图区按新状态重画，并把最新的结构（图型、角色、手动模式）经 `contextChanged()`、只读状态（采样提示、错误、数据变化）
@@ -150,9 +150,10 @@ v3 起请求额外携带 `allColumns`（整表列清单，只按静态类型判�
 
 - 绘图区是 `QStackedWidget`，2D `DAChartWidget` 与 3D `DAChart3DWidget` 按图型切换；
   `DAChart3DWidget` 懒创建（首次切到 3D 才建 GL 上下文）；
-- 3D 预览沿用 2D 的采样预算（约 2000 点，采样说明显示在设置页状态区）；
+- 3D 线图预览也全量取数（不限制点数）；
+- 3D 曲面预览的输入散点仍按约 2000 点采样：它要插值成固定的 30×30 网格，输入采样不损失曲面分辨率，
+  而百万点全量插值会让界面长时间卡住；转入绘图区时全量重建；
 - 3D 曲面固定「散点 + scipy 插值 30×30 网格」；scipy 不可用时不出图并在设置页给出可读原因；
-- 3D 线图直接用采样后的 `(x, y, z)` 轨迹；
 - 转入绘图区走 `DAChartQuickPlot::transferToFigure3D()`：新建/复用 Figure 的 3D 图表并全量重建图元；
 - 3D 曲面/柱状的「整表作矩阵」网格模式不进快速绘图（与选区模型不符，属添加绘图）。
 
@@ -189,20 +190,30 @@ v3 起请求额外携带 `allColumns`（整表列清单，只按静态类型判�
 > 按图型动态生成，但**行本身写进通用属性面板**（`DAPropertyPanelWidget` 的 `addProperty()`），
 > 折叠分组与属性行都是图表设置页同款封装，不做自绘行、不自造控件外观；固定表单项（图型、列摘要）同样走 `addProperty()`。
 
-## 4. 采样与精确性
+## 4. 取数与精确性
+
+快速绘图**不限制点数**：折线、散点、多序列折线、直方图、等高线、误差棒、向量场都按表格全量行取数
+（`DAChartSeriesSampler` 传 `kFullDataPoints`，整个行区间一次取完、不受取数预算限制），
+100 万行的表也画完整的 100 万个点。曲线点数交给 qwt 在绘制时按像素列做 LTTB/自适应抽稀
+（`QwtPlotCurve::FilterPointsLTTB` 等默认 PaintAttribute），数据本身不丢点。
 
 | 场景 | 策略 |
 |---|---|
-| 小表（≤ 5000 行） | 全量绘制，不标注采样 |
-| 大表折线/散点 | 确定性分块均匀采样，约 2000 点（首尾都覆盖，不引入随机数） |
-| 大表直方图 | 约 2 万个值 |
-| 分类聚合 / 箱线图 | 内存 pandas 源且 ≤ 500 万行 → **全量精确**；惰性源或超阈值 → 采样并在设置页标注近似 |
-| 取数预算 | `DAChartSeriesSampler::SampleBudget`：默认最多 128 次取数调用 / 25 万行，同一次构建的各列共用一个预算；耗尽即停止采样并置 `SampleInfo::limited`，`DATableChartBuildInfo::sampleLimited` 聚合后由设置页标注「样本受限」 |
+| 折线 / 散点 / 多序列折线 / 直方图 / 等高线 / 误差棒 / 向量场 | **全量行取数**，不采样、不标注 |
+| 分类聚合 / 箱线图 | 内存 pandas 源 → **全量精确**（不设行数上限）；惰性/数据库源 → 采样并在设置页标注近似 |
+| 3D 线图 | 全量 `(x, y, z)` 轨迹 |
+| 3D 曲面预览 | 输入散点约 2000 点后插值成 30×30 网格（输出是固定网格，输入采样不损失曲面分辨率）；转入绘图区时全量重建 |
+| 取数预算 | `DAChartSeriesSampler::SampleBudget`（默认 128 次调用 / 25 万行）只作用于**采样模式**；全量取数不参与预算，也不会置 `sampleLimited` |
 | 忙碌状态 | `DAChartQuickPlot::render()` 全程持有等待光标；绘图区在取数前禁用交互，设置页状态区显示「正在取数…」，取数结束（含失败）后恢复 |
 
 精确路径走 `DAPyScriptsStatistics` 的 DataFrame 接口（按列序号取列，重名列不歧义）；
-采样路径把采样后的标签/数值交给 `aggregate_by_category_from_lists` / `compute_boxplot_stats_from_lists`，
+惰性源的采样路径把采样后的标签/数值交给 `aggregate_by_category_from_lists` / `compute_boxplot_stats_from_lists`，
 仍然是同一套 Python 聚合/分位数实现，不存在第二套 group by。
+
+> **📌 采样模式仍保留给非快速绘图场景**
+>
+> `DAChartSeriesSampler` 的采样模式（小表 ≤ 5000 行全量、大表确定性分块约 2000 点 / 直方图约 2 万值）
+> 仍被表格的统计面板等调用方使用，快速绘图不再走这条分支；需要精确口径的入口传 `kFullDataPoints`。
 
 > **⚠️ 统计向导的估计器口径**
 >
@@ -277,6 +288,8 @@ endMacro()
   关闭绘图区或切到别的数据页后设置页回到空态，下次在该页打开或点击绘图区时重新绑定；设置页不能同时展示多个快速绘图的设置。
 - 惰性/数据库源目前只能采样聚合（无 SQL 聚合下推）。
 - 「低基数数值作为分类」用采样（起始 2000 行）估计基数，极端分布下可能误判；真正的 Top N 守卫按聚合结果执行。
+- 3D 曲面预览的输入散点仍采样（约 2000 点后插值；输出是 30×30 网格）；需要精确输入时走转入绘图区（全量重建）。
+- 点数据不再限制点数，超大表（如千万行）首次出图/刷新的取数与构建耗时随行数线性增长；绘图时 qwt 会按像素列抽稀，交互重绘开销主要在这一层。
 - 3D 曲面依赖 scipy 插值；无 scipy 时只给可读原因、不出图。
 - 多重柱状对每个数值列各做一次分类聚合（精确路径为每列一次 pandas group-by）；列很多时属于已知的耗时点。
 - 「2 分类交叉柱状」仍不支持（统计管线 hue 能力缺交互与基数守卫）。

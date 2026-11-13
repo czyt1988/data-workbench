@@ -314,8 +314,13 @@ private Q_SLOTS:
     void testSamplerBudgetStopsSampling();
     // 默认预算下正常采样不应被标记受限（避免误报）
     void testSamplerDefaultBudgetNotLimited();
-    // 回归：真实 pandas 大表（10 万行 × 2 列）折线采样必须覆盖整段，而不是只出列数个点
+    // 回归：真实 pandas 大表（10 万行 × 2 列）折线与渲染都必须用全量行，而不是列数个点
     void testLargePandasLineSample();
+    // 不限制点数：折线/直方图/多序列折线 / 等高线/误差棒/向量场按全量行取数
+    void testRenderUsesFullData();
+    void testRenderMultiColumnUsesFullData();
+    // 用户场景：100 万行 pandas 折线全量绘制
+    void testMillionRowsLineRender();
     void testSpecEquality();
     void testRenderLineAndHistogram();
     void testRenderBarSampled();
@@ -757,11 +762,12 @@ void DATableQuickPlotTest::testSamplerDefaultBudgetNotLimited()
 }
 
 /**
- * @brief 回归：真实 pandas 大表（10 万行 × 2 列）折线采样必须覆盖整段
+ * @brief 回归：真实 pandas 大表（10 万行 × 2 列）折线必须画出全部行
  *
- * 背景：pandas 数据源按列取数曾误用 DataFrame.iloc[整数]（取行），一列只能取到
+ * 背景一：pandas 数据源按列取数曾误用 DataFrame.iloc[整数]（取行），一列只能取到
  * 「列数」个值，10 万行 × 2 列的数据画折线只剩 2 个点（用户反馈的「10 万点只画 2 点」）。
- * 采样正常时目标点数约为 kMaxLinePoints（2000 量级）。
+ * 背景二：快速绘图不再设点数上限，渲染路径按全量行取数（sampled=false）。
+ * 采样 API 本身仍保留采样模式（显式传目标点数时）。
  */
 void DATableQuickPlotTest::testLargePandasLineSample()
 {
@@ -788,7 +794,7 @@ df = pd.DataFrame({"x": range(100000), "y": [float(i) * 0.5 for i in range(10000
     QCOMPARE(spec.valueColumns.size(), 1);
     QCOMPARE(spec.valueColumns.first(), 1);
 
-    // 采样层：应得到约 2000 个点（按行误取时只有 2 个点）
+    // 采样 API 的采样模式仍可用（显式传目标点数）：约 2000 个点（按行误取时只有 2 个点）
     const auto sample = DA::DAChartSeriesSampler::sampleXY(
         request, spec.xColumn, 1, DA::DAChartSeriesSampler::kMaxLinePoints);
     QVERIFY(sample.info.sampled);
@@ -796,15 +802,142 @@ df = pd.DataFrame({"x": range(100000), "y": [float(i) * 0.5 for i in range(10000
              qPrintable(QStringLiteral("sampled points=%1").arg(sample.points.size())));
     QVERIFY(sample.points.size() <= DA::DAChartSeriesSampler::kMaxLinePoints);
 
-    // 渲染整条链路：构建信息中的采样行数应与采样点数一致
+    // 渲染整条链路：不限制点数，10 万行全部参与绘制
     DA::DAChartWidget chart;
     DA::DATableChartBuildInfo info;
     QString error;
     QVERIFY2(DA::DAChartQuickPlot::render(request, spec, &chart, &info, &error), qPrintable(error));
     QVERIFY(!chart.itemList().isEmpty());
     QCOMPARE(info.totalRows, 100000);
-    QVERIFY2(info.sampledRows > 1000,
-             qPrintable(QStringLiteral("rendered sample rows=%1").arg(info.sampledRows)));
+    QVERIFY(!info.sampled);          // 全量绘制，不是采样
+    QVERIFY(!info.sampleLimited);
+    QCOMPARE(info.sampledRows, 100000);
+}
+
+/**
+ * @brief 快速绘图不限制点数：折线/直方图/多序列折线按全量行取数
+ *
+ * 10 万行合成表（第 6 行是 NaN）：非全量时采样约 2000 点，全量时应为 99999 点。
+ */
+void DATableQuickPlotTest::testRenderUsesFullData()
+{
+    constexpr int rows = 100000;
+    auto* source       = new DAQuickPlotTestSource;
+    source->columns.append({ QStringLiteral("v1"), QMetaType::Double, makeNumeric(rows) });
+    source->columns.append({ QStringLiteral("v2"), QMetaType::Double, makeNumeric(rows, 7.0) });
+    const DA::DAData data = makeData(source);
+    const auto request    = requestFromColumns(data, { 0, 1 });
+
+    DA::DAChartWidget chart;
+    DA::DATableChartBuildInfo info;
+    QString error;
+
+    // 折线：10 万行全量（第 6 行缺失被剔除）
+    DA::DATableChartSpec lineSpec = DA::DATableChartPlanner::defaultSpec(request, DA::DATableChartType::Line);
+    QVERIFY2(DA::DAChartQuickPlot::render(request, lineSpec, &chart, &info, &error), qPrintable(error));
+    QCOMPARE(info.totalRows, rows);
+    QVERIFY(!info.sampled);
+    QVERIFY(!info.sampleLimited);
+    QCOMPARE(info.sampledRows, rows - 1);
+
+    // 直方图：全量取值，同样不标注采样
+    DA::DATableChartBuildInfo histInfo;
+    DA::DATableChartSpec histSpec = DA::DATableChartPlanner::defaultSpec(request, DA::DATableChartType::Histogram);
+    QVERIFY2(DA::DAChartQuickPlot::render(request, histSpec, &chart, &histInfo, &error), qPrintable(error));
+    QCOMPARE(histInfo.totalRows, rows);
+    QVERIFY(!histInfo.sampled);
+    QCOMPARE(histInfo.sampledRows, rows - 1);
+
+    // 多序列折线：任一列缺失整行剔除，仍为全量行数
+    DA::DATableChartBuildInfo multiInfo;
+    DA::DATableChartSpec multiSpec = DA::DATableChartPlanner::defaultSpec(request, DA::DATableChartType::MultiLine);
+    QVERIFY2(DA::DAChartQuickPlot::render(request, multiSpec, &chart, &multiInfo, &error), qPrintable(error));
+    QCOMPARE(multiInfo.totalRows, rows);
+    QVERIFY(!multiInfo.sampled);
+    QCOMPARE(multiInfo.sampledRows, rows - 1);
+}
+
+/**
+ * @brief 快速绘图不限制点数：等高线/误差棒/向量场按全量行取数（三列/四列路径）
+ */
+void DATableQuickPlotTest::testRenderMultiColumnUsesFullData()
+{
+    constexpr int rows = 100000;
+    auto* source       = new DAQuickPlotTestSource;
+    source->columns.append({ QStringLiteral("x"), QMetaType::Double, makeNumeric(rows) });
+    source->columns.append({ QStringLiteral("y"), QMetaType::Double, makeNumeric(rows, 3.0) });
+    source->columns.append({ QStringLiteral("z"), QMetaType::Double, makeNumeric(rows, 5.0) });
+    source->columns.append({ QStringLiteral("u"), QMetaType::Double, makeNumeric(rows, 9.0) });
+    source->columns.append({ QStringLiteral("v"), QMetaType::Double, makeNumeric(rows, 11.0) });
+    const DA::DAData data = makeData(source);
+    const auto request    = requestFromColumns(data, { 0, 1, 2, 3, 4 });
+
+    DA::DAChartWidget chart;
+    QString error;
+
+    DA::DATableChartBuildInfo contourInfo;
+    DA::DATableChartSpec contourSpec = DA::DATableChartPlanner::defaultSpec(request, DA::DATableChartType::Contour);
+    QVERIFY2(DA::DAChartQuickPlot::render(request, contourSpec, &chart, &contourInfo, &error), qPrintable(error));
+    QCOMPARE(contourInfo.totalRows, rows);
+    QVERIFY(!contourInfo.sampled);
+    QCOMPARE(contourInfo.sampledRows, rows - 1);
+
+    DA::DATableChartBuildInfo errorBarInfo;
+    DA::DATableChartSpec errorBarSpec = DA::DATableChartPlanner::defaultSpec(request, DA::DATableChartType::ErrorBar);
+    QVERIFY2(DA::DAChartQuickPlot::render(request, errorBarSpec, &chart, &errorBarInfo, &error), qPrintable(error));
+    QCOMPARE(errorBarInfo.totalRows, rows);
+    QVERIFY(!errorBarInfo.sampled);
+    QCOMPARE(errorBarInfo.sampledRows, rows - 1);
+
+    DA::DATableChartBuildInfo vectorInfo;
+    DA::DATableChartSpec vectorSpec = DA::DATableChartPlanner::defaultSpec(request, DA::DATableChartType::VectorField);
+    QVERIFY2(DA::DAChartQuickPlot::render(request, vectorSpec, &chart, &vectorInfo, &error), qPrintable(error));
+    QCOMPARE(vectorInfo.totalRows, rows);
+    QVERIFY(!vectorInfo.sampled);
+    QCOMPARE(vectorInfo.sampledRows, rows - 1);
+}
+
+/**
+ * @brief 用户场景：真实 pandas 100 万行折线必须全量绘制（点数不设上限）
+ *
+ * 全量路径若被采样预算拦住，sampledRows 会停在 2000 量级或 sampleLimited=true；
+ * 这里断言 100 万行全部参与绘制。
+ */
+void DATableQuickPlotTest::testMillionRowsLineRender()
+{
+    pybind11::dict scope;
+    pybind11::exec(R"(
+import pandas as pd
+df = pd.DataFrame({"x": range(1000000), "y": [float(i) * 0.25 for i in range(1000000)]})
+)",
+                   pybind11::globals(),
+                   scope);
+    DA::DAPyDataFrame df(scope[ "df" ]);
+    const DA::DAData data(df);
+    QVERIFY(data.isDataFrame());
+
+    DA::DATableChartRequest request;
+    request.data     = data;
+    request.rowCount = data.tableSource()->tableRowCount();
+    request.columns.append(DA::DATableChartPlanner::makeColumn(data, 0, 0));
+    request.columns.append(DA::DATableChartPlanner::makeColumn(data, 1, 0));
+    QCOMPARE(request.rowCount, static_cast< std::size_t >(1000000));
+
+    const DA::DATableChartSpec spec = DA::DATableChartPlanner::defaultSpec(request, DA::DATableChartType::Line);
+    DA::DAChartWidget chart;
+    DA::DATableChartBuildInfo info;
+    QString error;
+    QElapsedTimer timer;
+    timer.start();
+    QVERIFY2(DA::DAChartQuickPlot::render(request, spec, &chart, &info, &error), qPrintable(error));
+    const qint64 elapsedMs = timer.elapsed();
+    qInfo() << "1M-row line render:" << elapsedMs << "ms, sampledRows=" << info.sampledRows;
+
+    QVERIFY(!chart.itemList().isEmpty());
+    QCOMPARE(info.totalRows, 1000000);
+    QVERIFY(!info.sampled);
+    QVERIFY(!info.sampleLimited);
+    QCOMPARE(info.sampledRows, 1000000);
 }
 
 void DATableQuickPlotTest::testSpecEquality()

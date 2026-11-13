@@ -218,7 +218,7 @@ void fillSampleInfo(DATableChartBuildInfo* info, const DAChartSeriesSampler::Sam
     info->sampleLimited = info->sampleLimited || sample.limited;
 }
 
-// 折线/散点：采样 → 复用 DAChartAddCurveWidget 的图元构建
+// 折线/散点：全量取数 → 复用 DAChartAddCurveWidget 的图元构建（不限制点数）
 bool buildLineLike(const DATableChartRequest& request,
                    const DATableChartSpec& spec,
                    DAChartWidget* chart,
@@ -239,7 +239,7 @@ bool buildLineLike(const DATableChartRequest& request,
         }
         const QString yTitle = columnDisplayName(request, yIndex);
         const DAChartSeriesSampler::XYSample sample = DAChartSeriesSampler::sampleXY(
-            request, xDataColumn, yData, DAChartSeriesSampler::kMaxLinePoints, budget);
+            request, xDataColumn, yData, DAChartSeriesSampler::kFullDataPoints, budget);
         fillSampleInfo(info, sample.info);
         if (sample.points.isEmpty()) {
             setError(error, QCoreApplication::translate("DAChartQuickPlot", "No valid numeric data in the selected column"));  // cn:所选列没有可绘制的数值
@@ -261,7 +261,7 @@ bool buildLineLike(const DATableChartRequest& request,
         applyAxisTitles(chart, xTitle, yTitle);
     } else {
         const DAChartSeriesSampler::MultiXYSample sample = DAChartSeriesSampler::sampleMultiXY(
-            request, spec.xColumn, spec.valueColumns, DAChartSeriesSampler::kMaxLinePoints, budget);
+            request, spec.xColumn, spec.valueColumns, DAChartSeriesSampler::kFullDataPoints, budget);
         fillSampleInfo(info, sample.info);
         if (sample.series.isEmpty()) {
             setError(error, QCoreApplication::translate("DAChartQuickPlot", "No valid numeric data in the selected columns"));  // cn:所选列没有可绘制的数值
@@ -286,7 +286,7 @@ bool buildLineLike(const DATableChartRequest& request,
     return true;
 }
 
-// 直方图：采样 → 复用 DAChartAddHistogramWidget 的分箱与图元构建
+// 直方图：全量取数 → 复用 DAChartAddHistogramWidget 的分箱与图元构建（不限制点数）
 bool buildHistogram(const DATableChartRequest& request,
                     const DATableChartSpec& spec,
                     DAChartWidget* chart,
@@ -302,7 +302,7 @@ bool buildHistogram(const DATableChartRequest& request,
     }
     DAChartSeriesSampler::SampleInfo sample;
     const QVector< double > values = DAChartSeriesSampler::sampleValues(
-        request, yData, DAChartSeriesSampler::kMaxHistogramValues, &sample, budget);
+        request, yData, DAChartSeriesSampler::kFullDataPoints, &sample, budget);
     fillSampleInfo(info, sample);
     if (values.isEmpty()) {
         setError(error, QCoreApplication::translate("DAChartQuickPlot", "No valid numeric data in the selected column"));  // cn:所选列没有可绘制的数值
@@ -422,7 +422,7 @@ bool buildBoxplot(const DATableChartRequest& request,
     return true;
 }
 
-// 分类柱状：精确优先，惰性/超阈值源走采样（同一套 Python 聚合口径）
+// 分类柱状：精确优先（内存源全量），惰性/数据库源走采样（同一套 Python 聚合口径）
 bool buildBar(const DATableChartRequest& request,
               const DATableChartSpec& spec,
               DAChartWidget* chart,
@@ -554,7 +554,7 @@ bool requireNumericColumns(const DATableChartRequest& request, const QList< int 
     return true;
 }
 
-// 通用多列采样 → 每列一个向量；失败时写入可读原因
+// 通用多列取数（快速绘图传 kFullDataPoints，按全量数据构建每列向量）；失败时写入可读原因
 bool sampleNumericColumns(const DATableChartRequest& request,
                           const QList< int >& columnIndexes,
                           int maxPoints,
@@ -592,7 +592,7 @@ bool buildContour(const DATableChartRequest& request,
     DAChartSeriesSampler::ColumnsSample sample;
     if (!sampleNumericColumns(request,
                               { spec.xColumn, spec.yColumn, spec.zColumn },
-                              DAChartSeriesSampler::kMaxLinePoints,
+                              DAChartSeriesSampler::kFullDataPoints,
                               info,
                               error,
                               budget,
@@ -628,7 +628,7 @@ bool buildErrorBar(const DATableChartRequest& request,
     DAChartSeriesSampler::ColumnsSample sample;
     if (!sampleNumericColumns(request,
                               { spec.xColumn, spec.yColumn, spec.errorColumn },
-                              DAChartSeriesSampler::kMaxLinePoints,
+                              DAChartSeriesSampler::kFullDataPoints,
                               info,
                               error,
                               budget,
@@ -669,7 +669,7 @@ bool buildVectorField(const DATableChartRequest& request,
     DAChartSeriesSampler::ColumnsSample sample;
     if (!sampleNumericColumns(request,
                               { spec.xColumn, spec.yColumn, spec.uColumn, spec.vColumn },
-                              DAChartSeriesSampler::kMaxLinePoints,
+                              DAChartSeriesSampler::kFullDataPoints,
                               info,
                               error,
                               budget,
@@ -977,7 +977,8 @@ bool DAChartQuickPlot::is3DType(DATableChartType type)
  * @brief 构建 3D 图元（不挂载）
  *
  * 3D 曲面走「散点 + scipy 插值成 30×30 网格」，scipy 不可用时给出可读原因；
- * 3D 线图直接使用采样后的轨迹点。fullData=true 时不做采样（转入全量重建）。
+ * 3D 线图直接使用轨迹点。fullData=true 时不采样（3D 线图与转入绘图区全量重建），
+ * 曲面预览传 false：输入散点采样到约 2000 点后插值，输出仍是 30×30 网格、不损失曲面分辨率。
  */
 Qwt3DPlotItem* DAChartQuickPlot::create3DItem(const DATableChartRequest& request,
                                               const DATableChartSpec& spec,
