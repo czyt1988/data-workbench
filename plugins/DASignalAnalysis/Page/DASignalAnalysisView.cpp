@@ -35,6 +35,7 @@
 #include "DAChartWidget.h"
 #include "DAFigureWidget.h"
 #include "Analysis/DASignalAmplitude.h"
+#include "Page/DAPeakMarkerSamples.h"
 #include "Render/DAStftRasterData.h"
 #include "Render/DAWaterfallBuilder.h"
 #include "qwt3d_waterfall.h"
@@ -92,6 +93,17 @@ constexpr double cEps             = 1e-30;
 constexpr int cEnvelopeDebounceMs = 200;
 
 /**
+ * @brief 色标下限的有效值（dB）
+ *
+ * 工具栏允许把 dB 下限调到 0，此时 [下限, 0] 是退化区间（宽度 0）：Qwt 刻度/色图都要求
+ * 下界 < 上界，这里留 1 dB 宽度兜底；正常负下限不受影响。
+ */
+double colorBarLowerDb(double dbFloor)
+{
+    return (dbFloor < 0.0) ? dbFloor : -1.0;
+}
+
+/**
  * @brief 校验缓存图元是否仍挂在所属 chart 上（BLK-03a）
  *
  * 共享图元树（DAChartManageWidget）可对任意 transient 图元执行 detach+delete，
@@ -141,6 +153,8 @@ void DASignalAnalysisView::setParams(const DASignalAnalysisParams& params)
     // 参数变化即触发重算：存档接管的峰值标记让位给重算结果（SF-13，存档优先只在
     // 「加载后到第一次重算前」成立），下一次 rebuildPeakMarkers 按当前 mPeaks 重建
     mPeakMarkersRestored = false;
+    // 段长/跳步/窗/预处理口径都随参数变化：跟随帧谱快照作废（等新 STFT 算出后按新栅格重取）
+    clearFollowFrameSpectrum();
     rebuildSpectrumPlot();
     // 参数变化后热图（窗长/重叠/零填充）与矩形几何都跟着变（评审 U6 / D21）
     rebuildHeatmap();
@@ -290,6 +304,20 @@ void DASignalAnalysisView::buildFigure()
     mFigure->setGridCell(mHeatmapChart, 1, 1);
     mFigure->setGridCell(mWaterfallChart, 1, 1);
 
+    // 坐标轴自适应：DAFigureWidget::createChart() 给新子图显式设了 0..800 / 0..500 刻度
+    // （设计期占位坐标，setAxisScale 会关闭 autoscale）。信号视图必须重新打开 X/Y 自动缩放，
+    // 否则 setSamples/setData + replot 后 Qwt 永远按 0..800/0..500 出图（导入信号后波形/频谱/
+    // 时频三张图的坐标轴不随数据范围变化）。热图的纵向范围由 QwtPlotSpectrogram::boundingRect()
+    // 提供（AutoScale 图元属性为 true），attach 后 setData + replot 即可自适应。
+    // 只在建图时打开一次：用户用缩放工具缩放后 Qwt 会自动关闭 autoscale，rebuild* 里不得再
+    // 无条件重开，否则会覆盖用户的缩放。
+    mWaveChart->setAxisAutoScale(QwtPlot::xBottom, true);
+    mWaveChart->setAxisAutoScale(QwtPlot::yLeft, true);
+    mSpectrumChart->setAxisAutoScale(QwtPlot::xBottom, true);
+    mSpectrumChart->setAxisAutoScale(QwtPlot::yLeft, true);
+    mHeatmapChart->setAxisAutoScale(QwtPlot::xBottom, true);
+    mHeatmapChart->setAxisAutoScale(QwtPlot::yLeft, true);
+
     // 默认二维热图（D12）：三维瀑布隐藏
     mHeatmapChart->setVisible(true);
     mWaterfallChart->setVisible(false);
@@ -406,6 +434,9 @@ void DASignalAnalysisView::rebuildSpectrumPlot()
         return;
     }
     if (!mSpectrum.isValid()) {
+        // 没有频谱结果：曲线快照同步失效，峰值标记回退到峰值表幅值（不要吸附到上一份旧曲线）
+        mDisplayedFreqs.clear();
+        mDisplayedValues.clear();
         rebuildPeakMarkers();
         mSpectrumChart->replot();
         return;
@@ -420,10 +451,24 @@ void DASignalAnalysisView::rebuildSpectrumPlot()
         // 分析结果图元：transient（峰值标记则非 transient，见 rebuildPeakMarkers）
         mSpectrumChart->setItemTransient(mSpectrumCurve);
     }
-    // 跟随滑块：用 STFT 当前时间所在列的幅值谱（D13）；未算 STFT 时回退整段频谱
+    // 跟随滑块：优先用「当前帧真实幅值谱」（与峰值曲线同口径，D13）；尚未回填时
+    // 回退 STFT 显示栅格的当前列（过渡期：mStft 已算出但帧谱请求还没回来）
     QVector< double > srcFreqs = mSpectrum.freqs;
     QVector< double > srcAmps  = displayAmplitudes();
-    if (mFollowSlider && mStft.isValid() && mStft.columns > 0) {
+    const bool hasFollowFrame = mFollowSlider && mFollowFrameValid && !mFollowFreqs.isEmpty()
+                                && mFollowFreqs.size() == mFollowAmplitudes.size();
+    if (hasFollowFrame) {
+        srcFreqs = mFollowFreqs;
+        srcAmps.resize(mFollowAmplitudes.size());
+        for (int i = 0; i < mFollowAmplitudes.size(); ++i) {
+            srcAmps[ i ] = DASignalAmplitude::toDisplay(mFollowAmplitudes[ i ],
+                                                        i == 0,  // 第 0 点为 DC
+                                                        mParams.amplitudeMode,
+                                                        mParams.dbReference,
+                                                        mParams.calibration,
+                                                        signalPeak() * mParams.calibration);
+        }
+    } else if (mFollowSlider && mStft.isValid() && mStft.columns > 0) {
         const int col = currentStftColumn();
         QVector< double > colAmps(mStft.rows);
         for (int r = 0; r < mStft.rows; ++r) {
@@ -454,6 +499,9 @@ void DASignalAnalysisView::rebuildSpectrumPlot()
         freqs[ i - startIdx ]  = srcFreqs[ i ];
         values[ i - startIdx ] = (i < srcAmps.size()) ? srcAmps[ i ] : 0.0;
     }
+    // 记录当前真正绘制到频谱图的曲线快照：峰值标记按它吸附到曲线峰顶（跟随播放时是当前帧谱）
+    mDisplayedFreqs  = freqs;
+    mDisplayedValues = values;
     mSpectrumCurve->setSamples(freqs, values);
     rebuildPeakMarkers();
     updateAxisTitles();
@@ -467,8 +515,14 @@ void DASignalAnalysisView::rebuildSpectrumPlot()
  * 只在峰值数据或显隐变化时调用；曲线数据更新不重建标记，避免闪烁。
  * 若峰值标记已从存档接管（mPeakMarkersRestored 且列表非空），存档优先：不删除、
  * 不按重算结果重建，只同步显隐（用户可能手动调整过峰位）。该优先只在「加载后到
- * 第一次重算前」成立：setParams/setAmplitudeDisplay/切通道复位该标志（SF-13）。
+ * 第一次重算前」成立：setParams/setAmplitudeDisplay/setPeaks/切通道复位该标志（SF-13）。
  * 已被共享图元树删除的标记跳过并移除登记（BLK-03a）。
+ *
+ * 标记坐标不再直接用峰值表的频率 + 幅值换算：峰值表频率与频谱曲线按离散频点绘制的
+ * 位置有一两个 bin 的偏差，直接换算会落在曲线旁边（用户报告的峰值标记偏离曲线问题）。
+ * 这里用「当前已绘制曲线」的快照（mDisplayedFreqs/mDisplayedValues，跟随播放时是当前
+ * 帧谱）经 snapPeakMarkersToCurve 吸附到最近局部极大，x/y 都取曲线显示值，标记必然落在
+ * 曲线峰顶；没有曲线快照时（频谱尚未算出）回退旧口径按峰值表幅值放置。
  */
 void DASignalAnalysisView::rebuildPeakMarkers()
 {
@@ -492,18 +546,63 @@ void DASignalAnalysisView::rebuildPeakMarkers()
     if (!mPeakMarkersVisible || !mPeaks.isValid()) {
         return;
     }
+    // 曲线快照可用时按曲线吸附；否则回退旧口径（峰值频率 + 峰值表幅值换算）
+    const bool hasCurveSnapshot = !mDisplayedFreqs.isEmpty() && mDisplayedFreqs.size() == mDisplayedValues.size();
+    QVector< QPointF > snappedByPeak(mPeaks.frequencies.size());
+    QVector< char > snappedValid(mPeaks.frequencies.size(), 0);
+    if (hasCurveSnapshot) {
+        // 先筛出落在曲线频率范围内的峰（对数轴起点之前的 0 Hz 峰、越界峰不参与吸附），
+        // 同时记录所在峰序号：吸附结果按峰序回填，第 0 个峰的配色不会因跳过而错位
+        QVector< double > snapFreqs;
+        QVector< int > snapPeaks;
+        snapFreqs.reserve(mPeaks.frequencies.size());
+        snapPeaks.reserve(mPeaks.frequencies.size());
+        const double freqMin = mDisplayedFreqs.first();
+        const double freqMax = mDisplayedFreqs.last();
+        for (int i = 0; i < mPeaks.frequencies.size(); ++i) {
+            const double f = mPeaks.frequencies.at(i);
+            if (!std::isfinite(f) || f < freqMin || f > freqMax) {
+                continue;
+            }
+            snapFreqs.append(f);
+            snapPeaks.append(i);
+        }
+        const QVector< QPointF > snapped = snapPeakMarkersToCurve(mDisplayedFreqs, mDisplayedValues, snapFreqs);
+        const int snappedCount           = qMin(snapped.size(), snapPeaks.size());
+        for (int k = 0; k < snappedCount; ++k) {
+            snappedByPeak[ snapPeaks.at(k) ] = snapped.at(k);
+            snappedValid[ snapPeaks.at(k) ]  = 1;
+        }
+        if (snappedCount < mPeaks.frequencies.size()) {
+            // 开发诊断：曲线范围外的峰不画标记（对数轴起点/越界），排查时看日志
+            qWarning() << "DASignalAnalysisView::rebuildPeakMarkers:" << (mPeaks.frequencies.size() - snappedCount)
+                       << "of" << mPeaks.frequencies.size()
+                       << "peaks are outside the displayed spectrum range and were skipped";
+        }
+    } else {
+        qWarning() << "DASignalAnalysisView::rebuildPeakMarkers: no displayed spectrum snapshot yet, "
+                      "falling back to peak-table magnitudes";
+    }
     const double signalPeakCal = signalPeak() * mParams.calibration;
     for (int i = 0; i < mPeaks.frequencies.size(); ++i) {
-        const double f = mPeaks.frequencies.at(i);
-        const double y = DASignalAmplitude::toDisplay(mPeaks.magnitudes.value(i),
-                                                      f <= 0.0,
-                                                      mParams.amplitudeMode,
-                                                      mParams.dbReference,
-                                                      mParams.calibration,
-                                                      signalPeakCal);
+        QPointF pos;
+        if (snappedValid.at(i)) {
+            pos = snappedByPeak.at(i);
+        } else if (hasCurveSnapshot) {
+            continue;  // 快照存在但该峰在曲线范围外：与纯函数口径一致，跳过
+        } else {
+            const double f = mPeaks.frequencies.at(i);
+            pos            = QPointF(f,
+                                     DASignalAmplitude::toDisplay(mPeaks.magnitudes.value(i),
+                                                                  f <= 0.0,
+                                                                  mParams.amplitudeMode,
+                                                                  mParams.dbReference,
+                                                                  mParams.calibration,
+                                                                  signalPeakCal));
+        }
         auto* marker = new QwtPlotMarker();
-        marker->setXValue(f);
-        marker->setYValue(y);
+        marker->setXValue(pos.x());
+        marker->setYValue(pos.y());
         marker->setSymbol(new QwtSymbol(QwtSymbol::Ellipse,
                                         QBrush(i == 0 ? QColor(206, 96, 67) : QColor(82, 128, 193)),
                                         QPen(Qt::NoPen),
@@ -524,7 +623,20 @@ DAStftResult DASignalAnalysisView::stftResult() const
 
 void DASignalAnalysisView::setStft(const DAStftResult& result)
 {
-    mStft = result;
+    // 帧栅格（段长/跳步）变化时跟随帧快照作废：帧号与频率轴都是按旧栅格算的
+    const bool layoutChanged = (result.nperseg != mStft.nperseg || result.hop != mStft.hop);
+    mStft                    = result;
+    if (layoutChanged) {
+        clearFollowFrameSpectrum();
+    }
+    if (mFollowSlider) {
+        // STFT 刚算出/换栅格后补请求当前帧（帧号换算依赖 mStft.nperseg/hop）；
+        // 帧谱未回填/失败时回退 STFT 栅格列重绘
+        requestFollowFrameSpectrum();
+        if (!mFollowFrameValid) {
+            rebuildSpectrumPlot();
+        }
+    }
     rebuildHeatmap();
     if (mWaterfallMode == 1) {
         rebuildWaterfall();
@@ -629,6 +741,27 @@ void DASignalAnalysisView::setDbFloor(double dbFloor)
 }
 
 /**
+ * @brief 时频图色标（colorbar）显隐
+ *
+ * 状态变化后立即应用（yRight 轴显隐 + 色带 + 刻度区间）并重绘；隐藏时 yRight 轴不再占
+ * 横向空间，时频图绘图区变宽。显隐偏好由界面层（信号显示 ribbon）持久化，视图只做应用。
+ * @param on true 显示色标 / false 隐藏
+ */
+void DASignalAnalysisView::setColorBarVisible(bool on)
+{
+    mColorBarVisible = on;
+    applyHeatmapColors();
+}
+
+/**
+ * @brief 时频图色标（colorbar）是否显示
+ */
+bool DASignalAnalysisView::isColorBarVisible() const
+{
+    return mColorBarVisible;
+}
+
+/**
  * @brief 设置显示用时间原点（秒）：数据帧时间列首值非 0 时三张图横向对齐（评审 U12）
  */
 void DASignalAnalysisView::setTimeOrigin(double seconds)
@@ -669,6 +802,9 @@ bool DASignalAnalysisView::isHeatmapAutoScroll() const
 
 /**
  * @brief 跟随滑块（频谱显示当前帧而不是整段，D13）
+ *
+ * 开关切换即作废跟随帧快照：关闭后回整段频谱，开启后立即请求当前帧的真实幅值谱
+ * （与峰值曲线同口径）；请求失败/尚未回来时 rebuildSpectrumPlot 回退 STFT 栅格列。
  */
 void DASignalAnalysisView::setFollowSlider(bool on)
 {
@@ -676,6 +812,10 @@ void DASignalAnalysisView::setFollowSlider(bool on)
         return;
     }
     mFollowSlider = on;
+    clearFollowFrameSpectrum();
+    if (mFollowSlider) {
+        requestFollowFrameSpectrum();  // 同步回填会自行重建频谱
+    }
     rebuildSpectrumPlot();
     // 专用信号（不用 currentTimeChanged）：避免被外部当作 seek 而暂停播放（评审 §七-2）
     Q_EMIT followSliderToggled(on);
@@ -864,7 +1004,7 @@ void DASignalAnalysisView::rebuildHeatmap()
                          mStft.times.last() + mTimeOrigin,
                          mStft.freqs.first(),
                          mStft.freqs.last());
-    mStftRaster->setValueRange(mDbFloor, 0.0);
+    mStftRaster->setValueRange(colorBarLowerDb(mDbFloor), 0.0);
 
     if (!mSpectrogramItem) {
         mSpectrogramItem = mHeatmapChart->addSpectrogram(static_cast< QwtRasterData* >(mStftRaster),
@@ -879,12 +1019,9 @@ void DASignalAnalysisView::rebuildHeatmap()
         mSpectrogramItem->setData(static_cast< QwtRasterData* >(mStftRaster));
         mSpectrogramItem->attach(mHeatmapChart);
     }
-    mHeatmapChart->enableAxis(QwtPlot::yRight);
-    if (QwtScaleWidget* colorBar = mHeatmapChart->axisWidget(QwtPlot::yRight)) {
-        colorBar->setColorBarEnabled(true);
-        colorBar->setColorBarWidth(18);
-        colorBar->setTitle(tr("dB"));  // cn:分贝
-    }
+    // 色标（yRight 轴）的显隐、刻度区间 [mDbFloor, 0]、色带宽度与色图统一由
+    // applyHeatmapColors 应用：不做这一步时 yRight 用 Qwt 默认 0..1000 刻度，与色标区间
+    // [mDbFloor, 0] 不一致（用户报告的色标刻度对不上问题）
     mHeatmapChart->setAxisTitle(QwtPlot::xBottom, tr("Time (s)"));      // cn:时间（秒）
     mHeatmapChart->setAxisTitle(QwtPlot::yLeft, tr("Frequency (Hz)"));  // cn:频率（赫兹）
     applyHeatmapColors();
@@ -892,28 +1029,58 @@ void DASignalAnalysisView::rebuildHeatmap()
 }
 
 /**
- * @brief 应用色带与色标范围（色带或 dB 下限变化时调用）
+ * @brief 应用时频图色标（colorbar）状态与色带
+ *
+ * 色带、dB 下限（mDbFloor）或色标显隐（mColorBarVisible）变化时调用。要点：
+ * - 显隐：mHeatmapChart->setAxisVisible(yRight, mColorBarVisible)；隐藏时同时关闭色带，
+ *   避免 yRight 轴仍占着横向空间；
+ * - 刻度：显示时必须 setAxisScale(yRight, mDbFloor, 0.0)，让刻度与色标区间 [mDbFloor, 0]
+ *   一致（否则 Qwt 按默认 0..1000 画刻度，色标显示诡异）；dB 下限被调到 0 的退化区间
+ *   按 -1..0 兜底，避免 Qwt 刻度区间宽度为 0；
+ * - 色带：setColorBarEnabled(true) + setColorBarWidth(18) + setSpacing(4)（与绘图区间隔）
+ *   + setTitle(tr("dB")) + setColorMap(QwtInterval(mDbFloor, 0), ...)；
+ * - 谱图图元可能被共享图元树删除：失效时置空（连同栅格）后只刷新色标并返回，
+ *   下一次 rebuildHeatmap 重建（BLK-03a）。
  */
 void DASignalAnalysisView::applyHeatmapColors()
 {
     if (!mHeatmapChart) {
         return;
     }
-    // 谱图图元可能被共享图元树删除：失效时置空（连同栅格）并返回，下一次 rebuildHeatmap 重建（BLK-03a）
-    if (!ensureItemAttached(mSpectrogramItem, mHeatmapChart)) {
-        mStftRaster = nullptr;  // 栅格随谱图图元一起被销毁
-        return;
-    }
+    // 1. 色标状态与刻度：与谱图图元是否存在无关（工程恢复时谱图是 transient、尚未重算，
+    //    也要把存档恢复出来的 yRight 轴同步到正确状态）
+    mHeatmapChart->setAxisVisible(QwtPlot::yRight, mColorBarVisible);
     auto cmap = QwtColorMapPreset::create(mColormapName);
-    if (cmap) {
-        mSpectrogramItem->setColorMap(cloneLinearColorMap(cmap.get()));
-        if (QwtScaleWidget* colorBar = mHeatmapChart->axisWidget(QwtPlot::yRight)) {
-            // setColorMap 同时设定色标区间与色带（接管所有权）
-            colorBar->setColorMap(QwtInterval(mDbFloor, 0.0), cloneLinearColorMap(cmap.get()));
+    // dB 下限被调到 0（无动态范围，工具栏允许 -200..0）时 [mDbFloor, 0] 是退化区间：
+    // Qwt 刻度要求下界 < 上界，这里留 1 dB 宽度兜底；正常的负下限不受影响
+    const double colorBarLower = colorBarLowerDb(mDbFloor);
+    if (QwtScaleWidget* colorBar = mHeatmapChart->axisWidget(QwtPlot::yRight)) {
+        if (mColorBarVisible) {
+            // 关键：yRight 刻度必须与色标区间一致，否则 Qwt 用默认 0..1000 刻度画色标
+            mHeatmapChart->setAxisScale(QwtPlot::yRight, colorBarLower, 0.0);
+            colorBar->setColorBarEnabled(true);
+            colorBar->setColorBarWidth(18);
+            colorBar->setSpacing(4);       // 色标与绘图区之间留间隔
+            colorBar->setTitle(tr("dB"));  // cn:分贝
+            if (cmap) {
+                // setColorMap 同时设定色标区间与色带（接管所有权）
+                colorBar->setColorMap(QwtInterval(colorBarLower, 0.0), cloneLinearColorMap(cmap.get()));
+            }
+        } else {
+            colorBar->setColorBarEnabled(false);
         }
     }
+    // 2. 谱图图元与栅格：图元被删除时置空缓存，只保留色标刷新（下次 rebuildHeatmap 重建）
+    if (!ensureItemAttached(mSpectrogramItem, mHeatmapChart)) {
+        mStftRaster = nullptr;  // 栅格随谱图图元一起被销毁
+        mHeatmapChart->replot();
+        return;
+    }
+    if (cmap) {
+        mSpectrogramItem->setColorMap(cloneLinearColorMap(cmap.get()));
+    }
     if (mStftRaster) {
-        mStftRaster->setValueRange(mDbFloor, 0.0);
+        mStftRaster->setValueRange(colorBarLowerDb(mDbFloor), 0.0);
     }
     mHeatmapChart->replot();
 }
@@ -961,10 +1128,16 @@ void DASignalAnalysisView::updateStftWindowRect()
 
 /**
  * @brief 峰值表数据回填（频谱图上标记峰位）
+ *
+ * 新算出的峰值结果必须替换「从工程存档接管」的旧标记，否则旧标记会一直停在存档位置
+ * （文档 v1.7 所述「存档优先只在第一次重算前成立」）：这里复位 mPeakMarkersRestored，
+ * 随后 rebuildPeakMarkers 按新 mPeaks 重建。注意 adoptRestoredPeakMarkers 之后、还没有
+ * 新结果时不能复位，否则存档标记会被立即清掉。
  */
 void DASignalAnalysisView::setPeaks(const DAPeakResult& peaks)
 {
-    mPeaks = peaks;
+    mPeaks               = peaks;
+    mPeakMarkersRestored = false;
     rebuildPeakMarkers();
     if (mSpectrumChart) {
         mSpectrumChart->replot();
@@ -1117,6 +1290,74 @@ int DASignalAnalysisView::currentStftColumn() const
     return best;
 }
 
+/**
+ * @brief 作废跟随帧谱快照（切通道 / 参数变化 / STFT 栅格变化 / 关闭跟随时调用）
+ */
+void DASignalAnalysisView::clearFollowFrameSpectrum()
+{
+    mFollowFreqs.clear();
+    mFollowAmplitudes.clear();
+    mFollowFrameValid = false;
+    mFollowFrameIndex = -1;
+}
+
+/**
+ * @brief 回填「当前帧幅值谱」（外部同步计算完成后调用）
+ *
+ * 快照优先于 STFT 显示栅格列：跟随播放时频谱曲线就是当前帧的真实谱（与峰值曲线
+ * 同口径），mDisplayedFreqs/mDisplayedValues 也随之变成真实帧谱网格，峰值标记吸附
+ * 因此落在曲线上。只有跟随模式才重绘（关闭跟随时快照已被 setFollowSlider 清空，
+ * rebuild 走整段谱）。
+ */
+void DASignalAnalysisView::setFollowFrameSpectrum(const QVector< double >& freqs, const QVector< double >& amplitudes)
+{
+    mFollowFreqs      = freqs;
+    mFollowAmplitudes = amplitudes;
+    mFollowFrameValid = !mFollowFreqs.isEmpty() && mFollowFreqs.size() == mFollowAmplitudes.size();
+    if (mFollowSlider) {
+        rebuildSpectrumPlot();
+    }
+}
+
+/**
+ * @brief 按当前时间请求「当前帧幅值谱」
+ *
+ * 帧号换算与 Python 侧 ``stft.frame_index_for_time`` 同口径：帧中心
+ * t = (k·hop + nperseg/2)/fs，取最近一帧并 clamp 到 [0, frame_count-1]；
+ * 段长/跳步用 STFT 结果的 nperseg/hop（与峰值曲线同栅格）。
+ * 同一帧不重复请求（播放位置在帧内移动时不产生 Python 调用）。
+ * 跟随关闭或 STFT 未就绪时不做（此时 rebuild 用整段谱 / STFT 栅格列回退）。
+ */
+void DASignalAnalysisView::requestFollowFrameSpectrum()
+{
+    if (!mFollowSlider || !mSignal) {
+        return;
+    }
+    if (!mStft.isValid() || mStft.nperseg <= 0 || mStft.hop <= 0) {
+        return;
+    }
+    const double fs = mSignal->sampleRate();
+    const qint64 sampleCount = mSignal->sampleCount();
+    const qint64 nperseg     = mStft.nperseg;
+    const qint64 hop         = mStft.hop;
+    if (fs <= 0.0 || sampleCount < nperseg || hop <= 0) {
+        return;
+    }
+    const qint64 frameCount = (sampleCount - nperseg) / hop + 1;
+    if (frameCount <= 0) {
+        return;
+    }
+    // t 是相对信号起点的秒（currentTime()），与 Python 侧帧中心公式一致
+    const double t = currentTime();
+    qint64 frame   = qRound64((t * fs - double(nperseg) / 2.0) / double(hop));
+    frame          = qBound< qint64 >(0, frame, frameCount - 1);
+    if (frame == mFollowFrameIndex) {
+        return;  // 同一帧：不重复请求（播放位置在帧内移动）
+    }
+    mFollowFrameIndex = frame;
+    Q_EMIT followFrameSpectrumRequested(frame);
+}
+
 int DASignalAnalysisView::currentChannel() const
 {
     return mCurrentChannel;
@@ -1142,6 +1383,8 @@ void DASignalAnalysisView::setCurrentChannel(int channel)
     mEnvMins.clear();
     mEnvMaxs.clear();
     mStft = DAStftResult();
+    // 跟随帧谱快照属于上一个通道：作废，等新 STFT 算出后按新栅格重取
+    clearFollowFrameSpectrum();
     // 曲线可能已被共享图元树删除：失效时置空，不写已释放对象（BLK-03a）
     ensureItemAttached(mEnvelopeCurve, mWaveChart);
     if (mEnvelopeCurve) {
@@ -1152,6 +1395,9 @@ void DASignalAnalysisView::setCurrentChannel(int channel)
     if (mSpectrumCurve) {
         mSpectrumCurve->setSamples(QVector< double >(), QVector< double >());
     }
+    // 曲线快照随频谱一起作废，避免峰值标记吸附到上一个通道的旧曲线
+    mDisplayedFreqs.clear();
+    mDisplayedValues.clear();
     clearPeakMarkers(mPeakMarkers, mSpectrumChart);
     // 通道切换会重算峰值：存档恢复的标记已随上面的清理删除，复位「存档接管」状态
     mPeakMarkersRestored = false;
@@ -1272,6 +1518,9 @@ void DASignalAnalysisView::updatePlayhead()
     }
     updateStftWindowRect();
     if (mFollowSlider) {
+        // 跟随模式频谱 = 当前帧的真实幅值谱（与峰值曲线同口径，D13）：
+        // 帧号变化时才请求（同一帧不重复）；帧谱未回填/失败时 rebuild 回退 STFT 栅格列
+        requestFollowFrameSpectrum();
         rebuildSpectrumPlot();  // 跟随模式下频谱随滑块更新
     }
     // 热图随播放滚动（D27）：只平移 X 轴范围，不改数据
@@ -1451,6 +1700,9 @@ void DASignalAnalysisView::refreshAfterFigureRestore()
         mWaterfallChart->update();
     }
     updateAxisTitles();
+    // 色标/yRight 刻度/显隐在恢复后重新应用：存档里恢复出来的 yRight 轴可能带着旧刻度
+    // （Qwt 默认 0..1000），必须回到与色标区间 [mDbFloor, 0] 一致的状态
+    applyHeatmapColors();
 }
 
 void DASignalAnalysisView::onFigureCurrentChartChanged(DA::DAChartWidget* chart)

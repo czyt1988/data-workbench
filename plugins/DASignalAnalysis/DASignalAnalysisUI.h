@@ -171,13 +171,17 @@ private Q_SLOTS:
     void relinkCurrentSignalSource();
     // 宿主清空工程（新建/加载前/快照回滚）：清理本插件信号、缓存与临时文件
     void onProjectCleaned();
-    // 上下文标签：通道切换 / 对数频率 / 色带菜单 / 添加图元
+    // 上下文标签：通道切换 / 对数频率 / 色带菜单 / 色标显隐 / 添加图元
     void onContextChannelChanged(int index);
     void onContextLogFrequencyToggled(bool on);
     void onContextColormapTriggered(QAction* action);
+    // 时频图色标显隐开关：写当前视图并立即持久化偏好
+    void onColorBarToggled(bool on);
     void onContextAddFigure();
     // 当前视图「跟随滑块」变化（回勾底部工具栏）
     void onViewFollowSliderToggled(bool on);
+    // 当前视图请求跟随帧幅值谱（同步短调用：成功回填、失败静默，不弹消息）
+    void onViewFollowFrameSpectrumRequested(qint64 frameIndex);
     // 当前 2D/3D 子图切换：同步上下文标签动作状态
     void onViewSubChartChanged();
 
@@ -368,6 +372,7 @@ public:
     QAction* actionPeakTable { nullptr };      ///< 峰值表窗口显隐
     QAction* actionLogFrequency { nullptr };   ///< 对数频率轴
     QAction* actionColormap { nullptr };       ///< 色带（带菜单）
+    QAction* actionColorBar { nullptr };       ///< 时频图色标显隐（显示面板开关）
     // 幅值模式菜单项
     QAction* actionAmpPeak { nullptr };     ///< 峰值幅度
     QAction* actionAmpRms { nullptr };      ///< 均方根
@@ -420,6 +425,8 @@ private:
     QString mDbReference { QStringLiteral("fullScale") };
     // 插件偏好：上次使用的色带（P2）
     QString mLastColormap;
+    // 插件偏好：时频图右侧色标是否显示（默认显示；signal-analysis-config.json 的 colorBarVisible）
+    bool mColorBarVisible { true };
     // 插件偏好：峰值窗口显隐（-1=从未设置 / 0=用户关闭 / 1=用户打开，评审 N-U1/P2）
     int mPeakDockVisiblePref { -1 };
     // 峰值停靠窗口创建期间屏蔽 visibilityChanged 对偏好的写入（评审 N-U1）

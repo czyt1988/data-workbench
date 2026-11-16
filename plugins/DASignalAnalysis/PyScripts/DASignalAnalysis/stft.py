@@ -323,6 +323,137 @@ def compute_heatmap_sync(
     return _heatmap_result(grid, fs, nperseg, hop, nfft, n_frames, columns, pool)
 
 
+def _frame_layout(fs, sample_count, params, frame_index):
+    """推导单帧窗口（与 ``peaks.compute_peak_curves_sync`` 的帧栅格完全一致）。
+
+    段长/跳步/帧数复用 ``_stft_layout``（与 peaks.py 同一公式）：段长按 ``stftWindowMs``
+    取整并 clamp 到样本数，跳步由 ``stftOverlap``（百分比）换算，帧数 = frame_count。
+    帧窗口起点 = ``frame_index * hop``，越界帧号先 clamp 到 [0, frame_count-1]，
+    起点再防御性 clamp 到 ``sample_count - nperseg``。
+
+    :param fs: 采样率
+    :param sample_count: 总采样点数
+    :param params: 参数（stftWindowMs/stftOverlap）
+    :param frame_index: 目标帧号（可越界）
+    :return: (帧号, nperseg, hop, 帧数, 帧窗口起点)
+    """
+    nperseg, hop, _nfft, n_frames = _stft_layout(fs, sample_count, params)
+    if n_frames <= 0:
+        raise RuntimeError("signal is shorter than one STFT window")
+    k = int(max(0, min(int(frame_index), n_frames - 1)))
+    start = int(k) * hop
+    start = int(min(max(0, start), max(0, int(sample_count) - nperseg)))
+    return k, nperseg, hop, n_frames, start
+
+
+def _frame_amplitudes(seg, window, u):
+    """单帧段数据 → 单边峰值幅度谱（与 peaks.py 单帧逐行一致的口径）。
+
+    ``mag = |rfft(seg * w)| / Σw``；单边倍增：DC 不乘 2、偶数段长时 Nyquist 不乘 2。
+
+    :param seg: 一维 float64 帧数据（长度 nperseg）
+    :param window: 窗函数数组（长度 nperseg）
+    :param u: 窗函数之和 Σw
+    :return: 一维 float64 幅度谱（长度 nperseg//2+1）
+    """
+    spec = np.fft.rfft(seg * window, n=seg.size)
+    mag = np.abs(spec) / u
+    if mag.size > 1:
+        mag[1:] *= 2.0
+        if seg.size % 2 == 0 and mag.size > 1:
+            mag[-1] /= 2.0
+    return mag
+
+
+def frame_spectrum_sync(source, params, frame_index):
+    """计算「当前帧」的幅值谱（跟随播放显示用，同步短调用）。
+
+    本函数是 D13「跟随播放显示当前帧幅值谱」的取数/计算口：口径与
+    ``peaks.compute_peak_curves_sync`` 的**单帧**完全一致——同段长
+    （nperseg = round(fs·stftWindowMs/1000) 且 clamp 到样本数）、同跳步
+    （hop_from_overlap(nperseg, stftOverlap/100%)）、同窗函数、同 Σw 归一化、
+    同单边倍增（DC 与偶数 Nyquist 不乘 2），帧窗口起点同为 ``frame_index * hop``。
+    因此峰值曲线（每帧前 N 峰）的标记必然落在这条曲线上（此前跟随模式用 STFT
+    显示栅格的当前列，频率方向 max 池化到画布行数，频率网格与峰值曲线不同）。
+
+    取数 O(nperseg)：优先 ``spectrum._source_provider`` + ``source["read"]`` 只读一帧；
+    去趋势/去直流需要整段统计量时按 ``spectrum._preprocess`` 整段预处理后取帧
+    （正确但较慢，默认参数不会走）。
+
+    线程约定：不启线程、不写结果表，由调用方在 GIL 内直接同步调用（与
+    ``spectrum._load_channel`` 一致）；C++ 侧只用于跟随播放显示，必须短（<10 毫秒）。
+
+    :param source: 来源描述（含 sampleRate/sampleCount/read；channel 在 provider 内）
+    :param params: 参数（stftWindowMs/stftOverlap/window/removeDc/detrend）
+    :param frame_index: 目标帧号（越界会被 clamp，不抛异常）
+    :return: dict{freqs: ndarray, amplitudes: ndarray, nperseg: int, hop: int}
+    """
+    fs = float(source.get("sampleRate", 0.0))
+    if fs <= 0:
+        raise RuntimeError("invalid sample rate")
+    provider = spectrum._source_provider(source)
+    sample_count = source.get("sampleCount")
+    use_provider = provider is not None and sample_count is not None and int(sample_count) > 0
+    mode = spectrum._detrend_mode(params)
+    # 无 provider 时整段读一次（回退路径）；有 provider 且需要去趋势时也才整段读
+    x = None if use_provider else spectrum._load_channel(source)
+    total = int(sample_count) if use_provider else int(x.size)
+    k, nperseg, hop, _n_frames, start = _frame_layout(fs, total, params, frame_index)
+    if mode in ("constant", "linear"):
+        # 去趋势/去直流需要**整段**统计量（全局均值 / 全局最小二乘直线），单帧无法自洽：
+        # 整段读入后按 spectrum._preprocess 统一预处理再取帧——正确但较慢（O(信号长度)），
+        # 默认参数（detrend=none、removeDc=false）不会走这条路径。
+        if x is None:
+            x = spectrum._load_channel(source)
+        y = spectrum._preprocess(x, params)
+        seg = np.asarray(y[start : start + nperseg], dtype=np.float64)
+    elif use_provider:
+        # O(nperseg)：只向 C++ readRange 请求这一帧（单次 5000 点量级），不整段读入
+        seg = spectral._provider_read(provider, start, nperseg).astype(np.float64, copy=False)
+    else:
+        seg = np.asarray(x[start : start + nperseg], dtype=np.float64)
+    if seg.size != nperseg:
+        raise RuntimeError("failed to read a full STFT frame (frame=%d, nperseg=%d)" % (k, nperseg))
+    window = spectral.window_values(str(params.get("window", "hann")), nperseg)
+    u = float(np.sum(window))
+    if u <= 0.0:
+        u = 1.0
+    mag = _frame_amplitudes(seg, window, u)
+    freqs = np.fft.rfftfreq(nperseg, d=1.0 / fs)
+    return {
+        "freqs": np.asarray(freqs, dtype=np.float64),
+        "amplitudes": np.asarray(mag, dtype=np.float64),
+        "nperseg": int(nperseg),
+        "hop": int(hop),
+    }
+
+
+def frame_index_for_time(source, params, time_seconds):
+    """把「时间（秒，相对信号起点）」换算成 STFT 帧号（纯函数，供 C++ 侧换算/测试）。
+
+    帧中心 t = (k·hop + nperseg/2) / fs，取最近的一帧并 clamp 到
+    [0, frame_count-1]；与 ``frame_spectrum_sync`` 使用同一帧栅格
+    （段长/跳步/帧数与 ``peaks.compute_peak_curves_sync`` 一致）。
+
+    :param source: 来源描述（需含 sampleRate 与 sampleCount）
+    :param params: 参数（stftWindowMs/stftOverlap）
+    :param time_seconds: 时间（秒，相对信号起点）
+    :return: 帧号（int）
+    """
+    fs = float(source.get("sampleRate", 0.0))
+    if fs <= 0:
+        raise RuntimeError("invalid sample rate")
+    sample_count = source.get("sampleCount")
+    if sample_count is None or int(sample_count) <= 0:
+        raise RuntimeError("invalid sample count")
+    nperseg, hop, _nfft, n_frames = _stft_layout(fs, int(sample_count), params)
+    if n_frames <= 0:
+        raise RuntimeError("signal is shorter than one STFT window")
+    ratio = (float(time_seconds) * fs - nperseg / 2.0) / float(hop)
+    k = int(round(ratio))
+    return int(max(0, min(k, n_frames - 1)))
+
+
 def compute_heatmap_async(source, params, columns, rows, start_sample=None, end_sample=None, block_frames=None):
     """在守护线程中计算 STFT 显示栅格，返回任务 id（支持 D5 局部区段/块帧数降级）。"""
     task_id, status = tsm.create_task_with_status("signal stft")

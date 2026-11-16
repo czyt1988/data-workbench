@@ -798,3 +798,136 @@ def test_provider_linear_detrend_matches_scipy():
     assert ours.dtype == np.float32
     # 与 scipy float64 结果比较：残差只来自 float32 落地（相对 ~1e-7）
     assert np.allclose(ours, ref, rtol=1e-5, atol=1e-6)
+
+
+# ---------------------------------------------------------------- 跟随播放的当前帧谱（D13 修复）
+
+# 插件 Python 包路径（conftest 只加了 src/PyScripts；与 test_signal_peaks.py 同口径）
+_PLUGIN_PY = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    "plugins", "DASignalAnalysis", "PyScripts",
+)
+if _PLUGIN_PY not in sys.path:
+    sys.path.insert(0, _PLUGIN_PY)
+
+
+def test_frame_spectrum_matches_peak_curves(tmp_path):
+    """跟随播放的当前帧谱与峰值曲线单帧同口径（D13 缺陷：显示栅格 vs 峰值细网格）。
+
+    缺陷：跟随模式原先画 STFT 显示栅格的当前列——频率方向 max 池化到画布行数
+    （Δf_row ≈ fs/2/rows），与峰值曲线（每帧前 N、细网格）频率网格不同，峰值标记
+    落在曲线下降沿。修复后频谱取「当前帧真实幅值谱」，必须与 peaks 单帧完全同口径。
+
+    覆盖：
+    - freqs 与 peaks 的 rfftfreq(nperseg) 网格一致（同段长/跳步）；
+    - 同一帧 |rfft| 幅值与 peaks.compute_peak_curves_sync 的 top1 结果对拍（1e-6）；
+    - 取数 O(nperseg)：带 provider 时只请求一帧（起点 = frame_index*hop，不整段读）；
+    - 越界 frame_index 被 clamp 后不抛异常；
+    - frame_index_for_time 与帧中心时间往返一致、超界时间被 clamp。
+    """
+    from DASignalAnalysis import peaks, stft
+
+    fs = 48000.0
+    nperseg_expected = 960  # stftWindowMs=20 毫秒 × 48 千赫
+    hop_expected = 480  # stftOverlap=50%
+    n = 24000
+    x = _deterministic_signal(n)  # 多正弦 + 噪声（float32，已含少量直流）
+    wav = tmp_path / "frame_spectrum.wav"
+    import soundfile as sf
+
+    # FLOAT 子类型保证读出值与合成数组逐位一致（PCM_16 会量化，超出 1e-6 容差）
+    sf.write(str(wav), x, int(fs), subtype="FLOAT")
+
+    params = {
+        "stftWindowMs": 20.0,
+        "stftOverlap": 50.0,
+        "window": "hann",
+        "removeDc": False,
+        "detrend": "none",
+        "peakTopN": 1,
+        "peakRelDb": 40.0,
+        "peakMode": "simple",
+    }
+
+    requests = []
+
+    def read(channel, start, count):
+        """假 provider：模拟 C++ readRange(channel, start, count) -> float32 一维。"""
+        requests.append((int(channel), int(start), int(count)))
+        assert int(channel) == 0
+        assert 0 <= start and count > 0 and start + count <= n
+        return np.ascontiguousarray(x[int(start) : int(start) + int(count)], dtype=np.float32)
+
+    provider_src = {
+        "type": "file",
+        "path": str(wav),
+        "sampleRate": fs,
+        "channel": 0,
+        "sampleCount": n,
+        "read": read,
+    }
+    plain_src = {"type": "file", "path": str(wav), "sampleRate": fs, "channel": 0}
+
+    # 峰值曲线（每帧前 N）作为对拍基准
+    curves = peaks.compute_peak_curves_sync(plain_src, params)
+    assert curves["nperseg"] == nperseg_expected
+    assert curves["hop"] == hop_expected
+    frame_count = (n - nperseg_expected) // hop_expected + 1
+    assert curves["n_frames"] == frame_count
+    expected_freqs = np.fft.rfftfreq(nperseg_expected, d=1.0 / fs)
+
+    frames = [0, 1, frame_count // 2, frame_count - 1]
+    for k in frames:
+        del requests[:]
+        r = stft.frame_spectrum_sync(provider_src, params, k)
+        # 1) 频率网格与峰值曲线完全一致（同段长/跳步的 rfftfreq 网格）
+        np.testing.assert_array_equal(r["freqs"], expected_freqs)
+        assert r["nperseg"] == nperseg_expected
+        assert r["hop"] == hop_expected
+        assert r["amplitudes"].shape == expected_freqs.shape
+        # 2) 取数 O(nperseg)：只读一帧，帧窗口起点 = k*hop
+        assert requests == [(0, k * hop_expected, nperseg_expected)]
+        # 3) 同一帧的 |rfft| 口径与 peaks 单帧 top1 幅值一致（同窗、同 Σw、同单边倍增）
+        peak_f = curves["freq_by_rank"][0, k]
+        peak_m = curves["mag_by_rank"][0, k]
+        assert np.isfinite(peak_f) and np.isfinite(peak_m)
+        idx = int(np.argmin(np.abs(expected_freqs - peak_f)))
+        assert expected_freqs[idx] == pytest.approx(peak_f, abs=1e-9)
+        assert r["amplitudes"][idx] == pytest.approx(peak_m, abs=1e-6)
+
+    # 无 provider 的整段回退路径与 provider 路径同一帧数值一致
+    del requests[:]
+    r_provider = stft.frame_spectrum_sync(provider_src, params, 3)
+    r_plain = stft.frame_spectrum_sync(plain_src, params, 3)
+    np.testing.assert_allclose(r_plain["amplitudes"], r_provider["amplitudes"], rtol=1e-12, atol=0.0)
+    assert requests == [(0, 3 * hop_expected, nperseg_expected)]
+
+    # 越界 frame_index：clamp 到 [0, frame_count-1]，不抛异常
+    r_first = stft.frame_spectrum_sync(provider_src, params, -5)
+    np.testing.assert_array_equal(
+        r_first["amplitudes"], stft.frame_spectrum_sync(provider_src, params, 0)["amplitudes"]
+    )
+    r_last = stft.frame_spectrum_sync(provider_src, params, 10**9)
+    np.testing.assert_array_equal(
+        r_last["amplitudes"], stft.frame_spectrum_sync(provider_src, params, frame_count - 1)["amplitudes"]
+    )
+    # 末帧起点 = (frame_count-1)*hop，不会越过 size-nperseg
+    assert requests[-1] == (0, (frame_count - 1) * hop_expected, nperseg_expected)
+
+    # 时间 → 帧号：帧中心时间往返一致；超界时间被 clamp
+    for k in frames:
+        center = (k * hop_expected + nperseg_expected / 2.0) / fs
+        assert stft.frame_index_for_time(provider_src, params, center) == k
+    assert stft.frame_index_for_time(provider_src, params, -10.0) == 0
+    assert stft.frame_index_for_time(provider_src, params, 10.0) == frame_count - 1
+
+    # 去直流/去趋势：需要整段统计量（走整段预处理后取帧的慢路径），口径仍需与 peaks 单帧一致
+    k_detrend = frame_count // 3
+    for mode in ("constant", "linear"):
+        detrend_params = dict(params, detrend=mode)
+        detrend_curves = peaks.compute_peak_curves_sync(plain_src, detrend_params)
+        r_detrend = stft.frame_spectrum_sync(provider_src, detrend_params, k_detrend)
+        peak_f = detrend_curves["freq_by_rank"][0, k_detrend]
+        peak_m = detrend_curves["mag_by_rank"][0, k_detrend]
+        idx = int(np.argmin(np.abs(expected_freqs - peak_f)))
+        assert r_detrend["amplitudes"][idx] == pytest.approx(peak_m, abs=1e-6)

@@ -36,6 +36,7 @@
 #include "Chart/DAChartItemsManager.h"
 #include "Form/DASignalFormSpecBuilder.h"
 #include "Page/DAPeakCurvePlotSamples.h"
+#include "Page/DAPeakMarkerSamples.h"
 #include "Page/DASignalAnalysisView.h"
 #include "Page/DASignalChartExport.h"
 #include "Render/DAStftRasterData.h"
@@ -270,6 +271,7 @@ private Q_SLOTS:
     void peakCurveJumpThreshold();
     // 峰值曲线渲染：连续段才连线，跳变/缺峰处插入 NaN 断开（其余帧仍以点保留）
     void peakCurvePlotSamples();
+    void peakMarkerSnapping();
     // T7：视图 figure 为 2×2 网格，波形跨两列，热图与三维瀑布同格
     void signalViewFigureGrid();
     // T7：分析结果图元标 transient，峰值标记保持非 transient
@@ -913,6 +915,64 @@ void DASignalAnalysisTest::peakCurvePlotSamples()
     // rank 越界 / 空结果：返回空采样
     QVERIFY(DA::daPeakCurvePlotSamples(curves, 1, threshold).dotXs.isEmpty());
     QVERIFY(DA::daPeakCurvePlotSamples(DA::DAPeakCurveResult(), 0, threshold).lineXs.isEmpty());
+}
+
+/**
+ * @brief 峰值标记吸附：标记落在当前已绘制频谱曲线的最近局部极大上
+ *
+ * 峰值表频率与频谱曲线按离散频点绘制的位置可能差一两个 bin，直接按峰值频率放标记会
+ * 落在曲线旁边（用户报告的「标记与真实峰值偏离」）。snapPeakMarkersToCurve 的口径：
+ * - 峰频正好是曲线局部极大样本：保持不动；
+ * - 峰频偏一个 bin / 落在上升沿 / 落在谷底：吸附到邻域内曲线数值最大的样本；
+ * - 峰频超出曲线范围 / NaN / 空曲线 / 长度不一致 / 频率非严格递增：跳过（输出可少于输入）。
+ *
+ * 合成曲线：峰在 20 Hz（5.0）与 60 Hz（7.0），其余为 0；邻域半径 2 个样本。
+ */
+void DASignalAnalysisTest::peakMarkerSnapping()
+{
+    QVector< double > freqs;
+    for (int i = 0; i <= 8; ++i) {
+        freqs.append(10.0 * i);
+    }
+    const QVector< double > values{ 0.0, 0.0, 5.0, 0.0, 0.0, 0.0, 7.0, 0.0, 0.0 };
+
+    // 正好命中峰顶：保持 (20, 5.0)
+    QVector< QPointF > snapped = DA::snapPeakMarkersToCurve(freqs, values, QVector< double >{ 20.0 });
+    QCOMPARE(snapped.size(), 1);
+    QCOMPARE(snapped.first().x(), 20.0);
+    QCOMPARE(snapped.first().y(), 5.0);
+
+    // 偏一个 bin（19 Hz 最近样本为 20 Hz）：吸附到曲线峰顶
+    snapped = DA::snapPeakMarkersToCurve(freqs, values, QVector< double >{ 19.0 });
+    QCOMPARE(snapped.size(), 1);
+    QCOMPARE(snapped.first().x(), 20.0);
+    QCOMPARE(snapped.first().y(), 5.0);
+
+    // 落在上升沿（5 Hz 最近样本为 0 Hz）：吸附到 20 Hz 峰顶，而不是留在原频率
+    snapped = DA::snapPeakMarkersToCurve(freqs, values, QVector< double >{ 5.0 });
+    QCOMPARE(snapped.size(), 1);
+    QCOMPARE(snapped.first().x(), 20.0);
+
+    // 正好落在谷底样本（30 Hz 不是局部极大）：吸附到邻域内最高的 20 Hz 峰顶
+    snapped = DA::snapPeakMarkersToCurve(freqs, values, QVector< double >{ 30.0 });
+    QCOMPARE(snapped.size(), 1);
+    QCOMPARE(snapped.first().x(), 20.0);
+
+    // 超出曲线范围 / NaN：跳过；输出保持输入中有效峰的顺序
+    snapped = DA::snapPeakMarkersToCurve(freqs, values, QVector< double >{ -5.0, 90.0, 20.0, std::nan(""), 60.0 });
+    QCOMPARE(snapped.size(), 2);
+    QCOMPARE(snapped.at(0).x(), 20.0);
+    QCOMPARE(snapped.at(1).x(), 60.0);
+    QCOMPARE(snapped.at(1).y(), 7.0);
+
+    // 空输入 / 长度不一致 / 频率非严格递增：安全返回空
+    QVERIFY(DA::snapPeakMarkersToCurve(QVector< double >(), QVector< double >(), QVector< double >{ 10.0 }).isEmpty());
+    QVERIFY(DA::snapPeakMarkersToCurve(freqs, QVector< double >{ 1.0 }, QVector< double >{ 10.0 }).isEmpty());
+    QVERIFY(DA::snapPeakMarkersToCurve(QVector< double >{ 0.0, 20.0, 10.0 },
+                                       QVector< double >{ 0.0, 1.0, 2.0 },
+                                       QVector< double >{ 10.0 })
+                .isEmpty());
+    QVERIFY(DA::snapPeakMarkersToCurve(freqs, values, QVector< double >()).isEmpty());
 }
 
 /**
@@ -1858,8 +1918,10 @@ void DASignalAnalysisTest::undoStackGroupWiring()
  * @brief SF-13：峰值「存档优先」只在加载后到第一次重算前
  *
  * 时序镜像真实恢复流：connectSignalView 先应用显隐开关（此时无峰值数据、无标记），
- * restoreFigure 再接管存档标记；之后 setPeaks/setSpectrum 回填都不重建标记
- * （存档优先窗口），setAmplitudeDisplay/setParams 才复位并按当前 mPeaks 重建：
+ * restoreFigure 再接管存档标记；**setPeaks 收到第一次重算结果即结束存档优先窗口**并
+ * 按当前峰值重建（v1.8：此前要等 setParams/setAmplitudeDisplay/切通道，峰值窗口打开或
+ * 峰值标记打开触发重算后旧标记仍停在存档位置，表现为「标记与曲线峰值偏离」）；
+ * setAmplitudeDisplay/setParams 也会复位并按当前 mPeaks 重建：
  * - 幅值口径切换：新对象、新位置（dBFS 下 2.0 → 20·log10(2.0) ≈ 6.0206）；
  * - 参数变化：同样复位存档优先并重建。
  */
@@ -1871,7 +1933,8 @@ void DASignalAnalysisTest::signalPeakMarkersRestoredUntilRecompute()
     DA::DASignalAnalysisView view(makeTestSignal());
     DA::DASpectrumResult spectrum;
     spectrum.freqs        = { 0.0, 10.0, 20.0 };
-    spectrum.amplitudes   = { 1.0, 2.0, 3.0 };
+    // 10 Hz 必须是曲线局部极大：rebuildPeakMarkers 会把标记吸附到已绘制曲线的峰顶
+    spectrum.amplitudes   = { 1.0, 2.0, 1.0 };
     spectrum.resolutionHz = 10.0;
     view.setSpectrum(spectrum);
     // 恢复流程先应用显隐开关：此时 mPeaks 无效，不产生标记（connectSignalView 时序）
@@ -1886,18 +1949,36 @@ void DASignalAnalysisTest::signalPeakMarkersRestoredUntilRecompute()
     view.adoptRestoredPeakMarkers({ restoredMarker });
     QCOMPARE(view.peakMarkers().size(), 1);
 
-    // 存档优先窗口内：峰值/频谱回填都不删除/重建标记（沿用既有断言口径）
+    // setPeaks 收到新的计算结果即结束「存档优先」窗口：旧存档标记被删除，按新峰值重建。
+    // 这是 v1.8 口径修正：此前只在 setParams/setAmplitudeDisplay/切通道复位该标志，
+    // 峰值窗口打开/峰值标记打开触发重算后旧标记仍停在那里，表现为「标记与曲线峰值偏离」。
     DA::DAPeakResult peaks;
     peaks.frequencies = { 10.0 };
     peaks.magnitudes  = { 2.0 };
     view.setPeaks(peaks);
     QCOMPARE(view.peakMarkers().size(), 1);
+    // 注意不要用已 delete 的 restoredMarker 做 itemList().contains()：堆地址复用会让断言偶发通过/失败。
+    // 用「图上只有 1 个标记，且登记的那个标记仍挂在图上」判断重建结果。
+    QVERIFY2(view.spectrumChart()->itemList().contains(view.peakMarkers().first()),
+             "the recomputed peak marker must be attached to the spectrum chart");
+    int markerItems = 0;
+    const QList< QwtPlotItem* > spectrumItems = view.spectrumChart()->itemList();
+    for (QwtPlotItem* item : spectrumItems) {
+        if (item && item->rtti() == QwtPlotItem::Rtti_PlotMarker) {
+            ++markerItems;
+        }
+    }
+    QCOMPARE(markerItems, 1);
+    // 重建后的标记吸附到当前已绘制频谱曲线的局部极大（10 Hz 处幅值 2.0）
+    QCOMPARE(view.peakMarkers().first()->xValue(), 10.0);
+    QCOMPARE(view.peakMarkers().first()->yValue(), 2.0);
+
+    // 之后再回填频谱只按当前峰值重建标记，不会退回存档状态
     view.setSpectrum(spectrum);
     QCOMPARE(view.peakMarkers().size(), 1);
-    QCOMPARE(view.peakMarkers().first(), restoredMarker);
-    QVERIFY(view.spectrumChart()->itemList().contains(restoredMarker));
+    QCOMPARE(view.peakMarkers().first()->xValue(), 10.0);
 
-    // 幅值口径切换：存档优先复位，标记按当前 mPeaks 以新口径重建（SF-13）。
+    // 幅值口径切换：按当前 mPeaks 以新口径重建（SF-13）。
     // 断言用「重建后标记的幅值口径」而非指针不等：delete+new 在堆地址复用时可能拿到
     // 相同地址，指针不等不可靠（实测可复现）
     view.setAmplitudeDisplay(QStringLiteral("dbFS"), QStringLiteral("fullScale"));

@@ -18,6 +18,7 @@ plugins/DASignalAnalysis/
 │   ├── DASignalAnalysisSettingContext.*  # 设置上下文 provider（页面 dock 激活时接管设置面板/图元树/上下文标签，并声明内置「绘图操作」的 figure 目标）
 │   ├── DASignalChartExport.*     # 导出助手（整页/当前子图 PNG/SVG/PDF + 剪贴板）
 │   ├── DAPeakCurvePlotSamples.*  # 峰值曲线渲染采样（点/折线断开口径，v1.6）
+│   ├── DAPeakMarkerSamples.*     # 峰值标记吸附采样（标记落到已绘制曲线峰顶，v1.8）
 │   └── DAPeakDockWidget.*        # 峰值停靠窗口（表 2/3 + 曲线 1/3）
 ├── Signal/
 │   ├── DASignal.*                # 信号对象（元数据 + 会话内唯一 id + 转发取数）
@@ -313,3 +314,54 @@ python -I -m pytest tests/test_signal_dsp.py tests/test_signal_import.py -q   # 
 - **3D 子图**：内置 Chart 标签保持显示；主题/复制/导出可用，2D 类动作置灰。
 - **文档**：宿主侧机制见 `docs/zh/dev-guide/ui/setting-context-provider.md`
   §内置绘图操作上下文（chartContextFigure）。
+
+## v1.8 修正要点（绘图自适应、色标与峰值标记吸附，2026-11-16）
+
+- **坐标轴自适应（用户报告）**：`DAFigureWidget::createChart()` 会给新建子图显式设
+  X 0..800 / Y 0..500 占位刻度（`setAxisScale` 同时关闭 autoscale），视图此前从未重新打开，
+  导入信号后三张图坐标轴固定为默认刻度。现在 `buildFigure()` 对波形/频谱/时频三张 2D 子图
+  调用 `setAxisAutoScale(xBottom/yLeft, true)`；**只在建图时打开一次**，`rebuild*` 不无条件重开
+  （用户用缩放工具后 Qwt 会自动关闭 autoscale，视图不得覆盖用户缩放）。工程恢复仍走存档轴状态。
+- **色标（colorbar）**：① yRight 轴刻度此前保持 Qwt 默认 0..1000，与色标区间 `[mDbFloor, 0]`
+  不一致（刻度与颜色对不上，色带看起来贴在绘图区里）。现在 `applyHeatmapColors()` 统一
+  `setAxisScale(yRight, mDbFloor, 0.0)` + `setColorBarWidth(18)` + `setSpacing(4)`；隐藏时
+  `setAxisVisible(yRight, false)` 不占横向空间。`setDbFloor` / `rebuildHeatmap` /
+  `refreshAfterFigureRestore` 全部走同一入口。②「信号显示」上下文标签的「显示」面板新增
+  checkable「色标」开关（`actionSignalColorBar`），视图侧 `setColorBarVisible()/isColorBarVisible()`；
+  偏好存 `signal-analysis-config.json` 的 `colorBarVisible`（默认 true，`ensurePageCreated()`
+  读取、`onColorBarToggled()` 即时写、`finalize()` 兜底写）。三维瀑布/隐藏瀑布模式下置灰，
+  切回二维自动恢复。图标复用宿主 `:/app/bright/Icon/chart-grid-y.svg`（不新增 SVG）。
+- **峰值标记吸附（用户报告）**：`rebuildPeakMarkers()` 不再用「峰值表频率 + 峰值表幅值换算」
+  直接落点（峰值表频率与按离散频点绘制的曲线可能差一两个 bin，标记会落在曲线旁边），而是用
+  `rebuildSpectrumPlot()` 记录的**当前已绘制曲线快照**（跟随播放时是当前帧谱）经纯函数
+  `snapPeakMarkersToCurve()`（`Page/DAPeakMarkerSamples.*`）吸附到曲线最近局部极大，x/y 都取
+  曲线显示值；峰频超出曲线范围（如对数轴去掉 0 Hz）跳过；无快照时回退旧口径。算法
+  O(N·log M + N·k)，峰值上限 50、邻域半径 2，界面线程可接受。
+- **跟随播放改画「当前帧真实幅值谱」（用户报告峰值标记偏离的真正根因）**：此前跟随模式
+  （mFollowSlider）的频谱曲线取 `mStft` 的**热图显示栅格**当前列——该栅格把频率方向 max 池化到
+  画布高度（Δf_row ≈ fs/2/rows ≈ 82 Hz，且窗口大小会改变谱形），而峰值标记来自 10 Hz 细网格的
+  每帧前 N 峰值，两个网格不同 → 标记落在曲线下降沿。现在：
+  - `stft.py` 新增 `frame_spectrum_sync(source, params, frame_index)`：按 `stftWindowMs` 反推段长、
+    与 `peaks.py` 的单帧完全同口径（同 hop、同窗、同 `|rfft(seg*w)|/Σw` 单边倍增），**只按
+    `source["read"]` 读一帧（O(nperseg)）**，默认参数下不整段读；`frame_index_for_time()` 负责
+    时间→帧号（帧中心 `(k*hop+nperseg/2)/fs`）。
+  - `DASignalAnalysisWorker::computeFrameSpectrumSync()` 是 GUI 线程直调的短同步调用
+    （实测 0.3~1 ms/帧，< 10 ms 门限），失败只写 qWarning 不弹界面消息。
+  - 视图 `setFollowFrameSpectrum()` 保存真实帧谱，`rebuildSpectrumPlot()` 跟随分支优先用它，
+    mStft 栅格列只作过渡 fallback；`updatePlayhead()` / `setFollowSlider()` 按当前时间算帧号并
+    `Q_EMIT followFrameSpectrumRequested(frame)`（同帧不重复请求）；UI 收到后同步算完回填。
+  - 注意：`detrend`/`removeDc` 非默认时需要整段预处理后取帧（慢），默认参数不走该路径；
+    若以后要支持大信号 + 去趋势跟随，应改为在 Python 侧缓存全局去趋势参数而不是每帧整段读。
+- **存档优先窗口口径修正（SF-13 收口）**：`setPeaks()` 收到新计算结果时复位
+  `mPeakMarkersRestored`——此前只在 `setParams`/`setAmplitudeDisplay`/切通道复位，峰值窗口或
+  峰值标记开关触发重算后旧存档标记会一直停在旧位置（表现为标记与曲线偏离）。
+  `adoptRestoredPeakMarkers()` 之后、还没有新结果时仍保持存档标记优先。
+- **测试**：`DASignalAnalysisTest` 新增 `peakMarkerSnapping`（命中峰顶不变、偏一个 bin / 上升沿 /
+  谷底吸附、越界与 NaN 跳过、空/长度不一致/频率非单调安全返回）；
+  `signalPeakMarkersRestoredUntilRecompute` 按新口径更新（setPeaks 即结束存档窗口、合成频谱
+  改为 10 Hz 局部极大；断言不复用已释放标记指针，避免堆地址复用导致 flaky）；测试 CMake 的
+  显式 SOURCES 补 `Page/DAPeakMarkerSamples.cpp`。`tests/test_signal_dsp.py` 新增
+  `test_frame_spectrum_matches_peak_curves`（帧谱与 peaks 单帧对拍 1e-6、provider 只读一帧、
+  帧号越界 clamp、时间↔帧号往返）。
+- **注意**：吸附是显示层口径，不改变峰值表计算（D10 每帧独立取前 N、峰值表自身数值不变）；
+  不要为了「让标记更贴近某个峰」改 Python 侧峰值算法的频率网格。

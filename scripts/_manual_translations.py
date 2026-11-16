@@ -657,4 +657,7 @@ If a column name contains spaces or special characters, enclose it in backticks 
     ("DA::DASignalAnalysisUI", "PNG Image (*.png)"): "PNG 图片 (*.png)",
     # 3D 子图导出降级的用户可见提示（SF-14）
     ("DA::DASignalAnalysisUI", "3D sub-chart supports PNG export only; saved as PNG."): "三维子图仅支持 PNG 导出，已按 PNG 保存。",
+    # v1.8：信号显示 ribbon 新增「色标」显隐开关（跟随峰值标记吸附/色标修正）
+    ("DA::DASignalAnalysisUI", "Color bar"): "色标",
+    ("DA::DASignalAnalysisUI", "Show or hide the time-frequency color bar"): "显示或隐藏时频图色标",
 }

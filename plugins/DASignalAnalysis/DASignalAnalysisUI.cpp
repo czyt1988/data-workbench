@@ -676,6 +676,8 @@ void DASignalAnalysisUI::connectSignalView(const DASignalPtr& sig)
     connect(view, &DASignalAnalysisView::channelChanged, this, &DASignalAnalysisUI::onViewChannelChanged, Qt::UniqueConnection);
     // 「跟随滑块」只刷新峰值表显示，不触发 seek；同时回勾底部工具栏的「跟随播放」
     connect(view, &DASignalAnalysisView::followSliderToggled, this, &DASignalAnalysisUI::onViewFollowSliderToggled, Qt::UniqueConnection);
+    // 跟随播放：视图按当前时间请求「当前帧真实幅值谱」，这里同步算完回填（与峰值曲线同口径）
+    connect(view, &DASignalAnalysisView::followFrameSpectrumRequested, this, &DASignalAnalysisUI::onViewFollowFrameSpectrumRequested, Qt::UniqueConnection);
     // 当前 2D/3D 子图切换：上下文标签的工具动作/瀑布勾选跟随
     connect(view, &DASignalAnalysisView::currentSubChartChanged, this, &DASignalAnalysisUI::onViewSubChartChanged, Qt::UniqueConnection);
     // 视图创建/切换后与上下文标签、窗口底部工具栏对齐
@@ -716,6 +718,36 @@ void DASignalAnalysisUI::onViewFollowSliderToggled(bool on)
     if (currentSigView) {
         currentSigView->setPeaks(peaks);
     }
+}
+
+/**
+ * @brief 视图请求「跟随帧幅值谱」：界面线程同步短调用，成功回填、失败静默
+ *
+ * 跟随播放的频谱必须与峰值曲线同口径（同段长/跳步/窗/预处理），否则峰值标记会落在
+ * 曲线下降沿（此前用 STFT 显示栅格当前列，频率方向池化到画布行数）。这里直接调用
+ * worker 的同步方法（单帧 nperseg 5000 点量级，<10 毫秒），**不新起任务/线程**：
+ * - 不走 ensureAnalyzable（失败会发 failed 信号，跟随播放每换一帧都会调用 → 刷界面消息）；
+ * - 失败静默（不调用 reportOperationFailure），视图侧回退 STFT 栅格列显示；
+ * - 不做参数版本校验：参数取当前值、同步返回，不存在迟到结果。
+ * 峰值曲线（updatePeaksForCurrentFrame）不动：现在标记与真实帧谱同口径，会自然落在曲线上。
+ */
+void DASignalAnalysisUI::onViewFollowFrameSpectrumRequested(qint64 frameIndex)
+{
+    auto* view = qobject_cast< DASignalAnalysisView* >(sender());
+    if (!view || !mWorker) {
+        return;
+    }
+    const DASignalPtr sig = view->signal();
+    if (!sig) {
+        return;
+    }
+    DASpectrumResult result;
+    const DASignalTaskContext ctx        = makeTaskContext(sig, view->currentChannel());
+    const DASignalAnalysisParams params  = paramsForSignal(sig);
+    if (mWorker->computeFrameSpectrumSync(ctx, params, frameIndex, &result)) {
+        view->setFollowFrameSpectrum(result.freqs, result.amplitudes);
+    }
+    // 失败静默：只写 worker 内的英文 qWarning，界面不回灌消息（跟随播放是每帧调用）
 }
 
 /**
@@ -882,6 +914,9 @@ bool DASignalAnalysisUI::ensurePageCreated()
     if (cfg.contains(QStringLiteral("peakDockVisible"))) {
         mPeakDockVisiblePref = cfg.value(QStringLiteral("peakDockVisible")).toBool(true) ? 1 : 0;
     }
+    // 色标显隐偏好：缺省（旧配置/首次运行）按显示处理；动作勾选在 buildSignalContextCategory 建立、
+    // 视图生效在 connectSignalView → syncSignalContextControls
+    mColorBarVisible = cfg.value(QStringLiteral("colorBarVisible")).toBool(true);
     // 峰值停靠窗口与页面同批创建（创建后保持隐藏，首次导入信号成功时按偏好再决定）
     buildPeakDock();
     // 窗口底部播放工具栏同批创建（默认隐藏，provider 激活信号分析页时显示）
@@ -1104,6 +1139,12 @@ void DASignalAnalysisUI::buildSignalContextCategory()
     connect(mColormapGroup, &QActionGroup::triggered, this, &DASignalAnalysisUI::onContextColormapTriggered);
     actionColormap->setMenu(mColormapMenu);
     mContextDisplayPanel->addLargeAction(actionColormap);
+    // 色标（colorbar）显隐：时频热图右侧的色标轴，紧挨「色带」放置；只影响显示，不重算
+    // 图标复用宿主 y 轴网格图标（色标就是右侧纵轴刻度尺），禁止新增 SVG
+    actionColorBar = createIconAction("actionSignalColorBar", appIcon("chart-grid-y.svg"), true);
+    actionColorBar->setChecked(mColorBarVisible);  // 初始勾选跟随已加载的偏好
+    connect(actionColorBar, &QAction::toggled, this, &DASignalAnalysisUI::onColorBarToggled);
+    mContextDisplayPanel->addLargeAction(actionColorBar);
     mContextDisplayPanel->addSeparator();
     // 瀑布模式：二维 / 三维 / 隐藏（互斥）
     mWaterfallModeGroup = new QActionGroup(this);
@@ -1360,6 +1401,16 @@ void DASignalAnalysisUI::syncSignalContextControls()
         actionWaterfallHide->setEnabled(view != nullptr);
         actionWaterfallHide->setChecked(waterfallMode == 2);
     }
+    // 色标显隐：偏好是全局的（各信号共用），勾选回填 UI 记录的 mColorBarVisible 并应用到当前视图；
+    // 三维瀑布/隐藏瀑布模式下二维热图不可见、色标无意义 → 置灰，回到二维模式才可用
+    if (actionColorBar) {
+        const QSignalBlocker blocker(actionColorBar);
+        actionColorBar->setEnabled(view != nullptr && waterfallMode == 0);
+        actionColorBar->setChecked(mColorBarVisible);
+    }
+    if (view && view->isColorBarVisible() != mColorBarVisible) {
+        view->setColorBarVisible(mColorBarVisible);
+    }
     // 峰值标记（视图无 getter：以 UI 记录的开关状态为准）
     if (actionPeakMarker) {
         const QSignalBlocker blocker(actionPeakMarker);
@@ -1534,6 +1585,26 @@ void DASignalAnalysisUI::onContextColormapTriggered(QAction* action)
     if (DASignalAnalysisView* view = currentView()) {
         view->setColormapName(name);
     }
+}
+
+/**
+ * @brief 上下文标签「色标」开关：显示/隐藏时频热图右侧色标轴，并立即持久化偏好
+ *
+ * 偏好是全局的（不按信号区分）：先更新 UI 记录的 mColorBarVisible 并写入当前视图，
+ * 再「读-改-写」整份 signal-analysis-config.json（保留 ffmpegPath/colormap/peakDockVisible
+ * 等已有键），下次启动在 ensurePageCreated() 读回，finalize() 再兜底写一次。
+ * @param on true 显示色标 / false 隐藏色标
+ */
+void DASignalAnalysisUI::onColorBarToggled(bool on)
+{
+    mColorBarVisible = on;
+    if (DASignalAnalysisView* view = currentView()) {
+        view->setColorBarVisible(on);
+    }
+    // 立即持久化：读-改-写整份配置，不能只写这一个键而丢掉其它键
+    QJsonObject cfg                          = DASignalImporter::loadPluginConfig();
+    cfg[ QStringLiteral("colorBarVisible") ] = on;
+    DASignalImporter::savePluginConfig(cfg);
 }
 
 /**
@@ -2987,6 +3058,8 @@ void DASignalAnalysisUI::finalize()
     if (mUI && mPage) {
         QJsonObject cfg      = DASignalImporter::loadPluginConfig();
         cfg[ QStringLiteral("peakDockVisible") ] = (mPeakDock && !mPeakDock->isClosed());
+        // 色标显隐兜底写回（onColorBarToggled 已即时写；这里防未触发 toggled 的退出路径丢失）
+        cfg[ QStringLiteral("colorBarVisible") ] = mColorBarVisible;
         if (DASignalAnalysisView* v = currentView()) {
             cfg[ QStringLiteral("colormap") ] = v->colormapName();
         }
@@ -3138,7 +3211,7 @@ void DASignalAnalysisUI::finalize()
             actionPeakWindow,     actionWaterfall2D,     actionWaterfall3D,
             actionWaterfallHide,  actionAmplitudeMode,   actionExportPeaks,
             actionExportImage,    actionPeakTable,       actionRelinkSource,
-            actionLogFrequency,   actionColormap,        actionAddFigure
+            actionLogFrequency,   actionColormap,        actionAddFigure,       actionColorBar
         };
         for (QAction* act : allActions) {
             if (act) {
@@ -3176,6 +3249,7 @@ void DASignalAnalysisUI::finalize()
     actionRelinkSource      = nullptr;
     actionLogFrequency      = nullptr;
     actionColormap          = nullptr;
+    actionColorBar          = nullptr;
     actionAddFigure         = nullptr;
     mPanelOpen              = nullptr;
     mPanelSignal            = nullptr;
@@ -4046,7 +4120,8 @@ void DASignalAnalysisUI::setSignalDependentActionsEnabled(bool on)
         actionPeakWindow,   actionWaterfall2D,   actionWaterfall3D,
         actionWaterfallHide, actionAmplitudeMode, actionExportPeaks,
         actionExportImage,  actionPeakTable,     actionRelinkSource,
-        actionLogFrequency, actionColormap,      actionAddFigure
+        actionLogFrequency, actionColormap,      actionAddFigure,
+        actionColorBar
     };
     for (QAction* act : acts) {
         if (act) {
@@ -4205,6 +4280,11 @@ void DASignalAnalysisUI::retranslateUi()
     if (actionColormap) {
         actionColormap->setText(tr("Color Map"));  // cn:色带
         actionColormap->setToolTip(tr("Heatmap color map"));  // cn:热图色带
+    }
+    if (actionColorBar) {
+        actionColorBar->setText(tr("Color bar"));  // cn:色标
+        actionColorBar->setToolTip(tr("Show or hide the time-frequency color bar"));
+        // cn:显示或隐藏时频图色标
     }
     if (actionAddFigure) {
         actionAddFigure->setText(tr("Add Figure Item"));  // cn:添加图元

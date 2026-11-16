@@ -430,6 +430,70 @@ bool DASignalAnalysisWorker::computePeakCurves(const DASignalTaskContext& ctx,
 }
 
 /**
+ * @brief 同步计算「当前帧」幅值谱（只给跟随播放显示用）
+ *
+ * D13「跟随播放」的频谱应是「当前帧的真实幅值谱」，而不是 STFT 显示栅格的当前列：
+ * 显示栅格把频率方向 max 池化到画布行数（Δf_row ≈ fs/2/rows，且改窗口大小会改谱形），
+ * 与峰值曲线的帧栅格（每帧前 N、细网格）不同，峰值标记会落在曲线下降沿。
+ * Python 侧 ``stft.frame_spectrum_sync`` 与 ``peaks.compute_peak_curves_sync`` 的单帧
+ * 同口径（同段长/跳步/窗/Σw 归一化/单边倍增），这里只做同步短调用（单帧 nperseg
+ * 5000 点量级，实测 <10 毫秒），由界面线程在时间变化时直接调用。
+ *
+ * **失败静默**：本方法故意不走 ensureAnalyzable——它会在失败时发 failed 信号，
+ * 而跟随播放每换一帧都会调用一次，失败会刷屏界面消息；异常只写 qWarning 并返回
+ * false，视图侧保留 mStft 栅格列回退显示（过渡期）。
+ *
+ * @param ctx 任务上下文（信号 + 通道；同步调用无迟到结果，参数版本不参与校验）
+ * @param params 当前分析参数（段长/跳步/窗/预处理口径）
+ * @param frameIndex 目标帧号（越界由 Python 侧 clamp，保证不抛异常）
+ * @param out 成功时填充分布谱结果（freqs/amplitudes/resolutionHz/segLen/window）
+ * @return 成功返回 true；信号无效/Python 调用失败返回 false（不弹界面消息）
+ */
+bool DASignalAnalysisWorker::computeFrameSpectrumSync(const DASignalTaskContext& ctx,
+                                                      const DASignalAnalysisParams& params,
+                                                      qint64 frameIndex,
+                                                      DASpectrumResult* out)
+{
+    if (!out) {
+        return false;
+    }
+    *out = DASpectrumResult();
+    if (!ctx.signal || !ctx.signal->isValid()) {
+        return false;
+    }
+    try {
+        DAPyModule stft       = namedModule("DASignalAnalysis.stft");
+        pybind11::dict source = buildSourceDict(ctx.signal, ctx.channel);
+        pybind11::dict p      = paramsToDict(params);
+        pybind11::object raw  = stft.attr("frame_spectrum_sync")(source, p, frameIndex);
+        if (raw.is_none()) {
+            return false;
+        }
+        pybind11::dict r   = pybind11::cast< pybind11::dict >(raw);
+        DASpectrumResult result;
+        result.freqs        = toDoubleVector(r[ "freqs" ]);
+        result.amplitudes   = toDoubleVector(r[ "amplitudes" ]);
+        result.segLen       = r[ "nperseg" ].cast< int >();
+        result.window       = params.window;
+        result.rms          = false;  // 计算层恒为峰值幅度，dB/均方根只在显示层换算（C2）
+        result.resolutionHz = (result.segLen > 0 && ctx.signal->sampleRate() > 0.0)
+                                  ? ctx.signal->sampleRate() / double(result.segLen)
+                                  : 0.0;
+        if (!result.isValid()) {
+            qWarning() << "DASignalAnalysisWorker::computeFrameSpectrumSync: empty frame spectrum for frame"
+                       << frameIndex;
+            return false;
+        }
+        *out = result;
+        return true;
+    } catch (const std::exception& e) {
+        // 跟随播放显示用的短操作：异常只写英文日志，不发 failed（不刷界面消息）
+        qWarning() << "DASignalAnalysisWorker::computeFrameSpectrumSync frame" << frameIndex << ":" << e.what();
+        return false;
+    }
+}
+
+/**
  * @brief 发起数据帧列 → 会话临时 WAV 的后台导出（U9）
  *
  * Python 守护线程导出 + 现有 QTimer 轮询，不新起 QThread；完成后 playbackWavReady

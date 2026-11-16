@@ -84,6 +84,9 @@ public:
     void setColormapName(const QString& name);
     double dbFloor() const;
     void setDbFloor(double dbFloor);
+    // 时频图色标（colorbar）显隐：隐藏时不占横向空间（默认显示）
+    void setColorBarVisible(bool on);
+    bool isColorBarVisible() const;
     // 时间轴原点（秒）：数据帧时间列首值非 0 时三张图横向对齐用（评审 U12）
     void setTimeOrigin(double seconds);
     // 信号峰值幅度（dBFS 参考；按去直流/去趋势后的预处理口径统计，评审 N-C2）
@@ -94,6 +97,8 @@ public:
     // 跟随滑块（显示当前帧而不是整段）
     void setFollowSlider(bool on);
     bool isFollowSlider() const;
+    // 跟随播放的当前帧幅值谱回填（外部同步计算完成后调用；与峰值曲线同口径）
+    void setFollowFrameSpectrum(const QVector< double >& freqs, const QVector< double >& amplitudes);
     // 播放头跟随（外部按播放位置调用，避免与用户 seek 混淆）
     void setPlayheadFromPlayback(double seconds);
     // 「点击波形即定位」开关：缩放/平移/十字线等交互工具启用时关闭（SF-12）
@@ -165,6 +170,8 @@ Q_SIGNALS:
     void currentTimeChanged(double seconds);
     // 「跟随滑块」开关变化（只影响显示与峰值表刷新，不触发 seek）
     void followSliderToggled(bool on);
+    // 请求当前跟随帧的幅值谱（帧号按 STFT 帧栅格换算；外部同步计算后回填）
+    void followFrameSpectrumRequested(qint64 frameIndex);
     // 当前 2D/3D 子图切换（网格点击 / 瀑布模式切换 / 切信号），T8 设置面板 target 用
     void currentSubChartChanged();
 
@@ -201,6 +208,10 @@ private:
     void ensureWaveDecorItems();
     // 当前时间对应的 STFT 列索引（跟随滑块用）
     int currentStftColumn() const;
+    // 按当前时间请求「当前帧幅值谱」（同一帧不重复请求）；跟随关闭/STFT 未就绪时不做
+    void requestFollowFrameSpectrum();
+    // 作废跟随帧快照（切通道/参数变化/STFT 栅格变化时调用）
+    void clearFollowFrameSpectrum();
     // 幅值 → 显示口径（乘标定系数；dB 时换算对数）
     QVector< double > displayAmplitudes() const;
     // dB 参考值（满量程 = 信号峰值，1.0 = 固定 1.0）
@@ -212,6 +223,9 @@ private:
     DASignalPtr mSignal;
     DASignalAnalysisParams mParams;
     DASpectrumResult mSpectrum;
+    // 当前真正画到频谱图上的曲线快照（峰值标记吸附到曲线峰顶用；跟随播放时为当前帧谱）
+    QVector< double > mDisplayedFreqs;
+    QVector< double > mDisplayedValues;
 
     // 包络缓存
     QVector< double > mEnvXs;
@@ -238,6 +252,8 @@ private:
     bool mFollowSlider { false };
     QString mColormapName { QStringLiteral("viridis") };
     double mDbFloor { -80.0 };
+    // 时频图色标（yRight colorbar）显隐
+    bool mColorBarVisible { true };
     bool mPeakMarkersVisible { false };
     bool mHeatmapAutoScroll { false };
     int mWaterfallMode { 0 };  ///< 0=二维 / 1=三维 / 2=隐藏
@@ -267,6 +283,11 @@ private:
 
     // 时频热图结果与显示设置
     DAStftResult mStft;
+    // 跟随播放的当前帧幅值谱快照（与峰值曲线同口径）：有效时优先于 STFT 栅格列
+    QVector< double > mFollowFreqs;
+    QVector< double > mFollowAmplitudes;
+    bool mFollowFrameValid { false };
+    qint64 mFollowFrameIndex { -1 };
     DAPeakResult mPeaks;
     // STFT 窗口矩形拖动（D30：整体可拖、不可拖边）
     bool mDraggingWindow { false };

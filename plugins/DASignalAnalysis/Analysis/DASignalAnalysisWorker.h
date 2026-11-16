@@ -55,6 +55,11 @@ public:
                            qint64 startSample = -1,
                            qint64 endSample   = -1,
                            int frameStep      = 1);
+    // 同步计算「当前帧」幅值谱（只给跟随播放显示用：界面线程直接调用，必须短，失败静默）
+    bool computeFrameSpectrumSync(const DA::DASignalTaskContext& ctx,
+                                  const DASignalAnalysisParams& params,
+                                  qint64 frameIndex,
+                                  DASpectrumResult* out);
     // 发起数据帧列 → 会话临时 WAV 的后台导出（U9：数据帧来源播放前准备）
     bool computePlaybackWav(const DA::DASignalTaskContext& ctx);
     // 发起音视频导入的后台准备（I2：视频/压缩音频转码搬进 Python 守护线程，界面不阻塞）
