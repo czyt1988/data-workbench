@@ -39,6 +39,7 @@ plugins/DASignalAnalysis/
 │   ├── DASignalChartExport.*     # 导出助手：整页 PNG（含 3D 合帧）、当前子图 PNG/SVG/PDF、剪贴板
 │   ├── DAPeakDockWidget.*        # 峰值停靠窗口：上 2/3 峰值表、下 1/3 每帧前 N 曲线
 │   ├── DAPeakCurvePlotSamples.*  # 峰值曲线采样口径：点全画、折线按跳变断开（纯函数）
+│   ├── DAPeakMarkerLabel.*       # 峰值标记文本模板：{index}/{fre}/{amp} 占位符渲染（纯函数）
 │   └── DAPeakMarkerSamples.*     # 峰值标记吸附：落到当前已绘制曲线的最近局部极大（纯函数）
 ├── Signal/
 │   ├── DASignal.*                # 信号对象：元数据 + 会话内唯一 id + 转发 readRange
@@ -62,7 +63,8 @@ plugins/DASignalAnalysis/
 ├── Playback/DASignalPlayer.*     # QMediaPlayer 封装（Qt5/Qt6 分支；数据帧来源先后台导出临时 WAV）
 ├── Dialogs/
 │   ├── DASignalImportDialog.*    # 导入对话框（音频 / 视频 / 数据帧；采样率必须用户确认）
-│   ├── DASignalAnalysisSettingDialog.*  # 按信号生效的分析参数（六组）
+│   ├── DASignalAnalysisSettingDialog.*  # 按信号生效的分析参数（峰值查找只留高级项）
+│   ├── DAPeakMarkerDisplayDialog.*      # 峰值标记文本模板编辑（占位符按钮 + 编辑框 + 渲染预览）
 │   └── DASignalAnalysisSettingPage.*    # 插件全局设置页（设置 → 信号分析）：FFmpeg 路径
 ├── Form/DASignalFormSpecBuilder.*# DAFormSpec 表单规格（分组 + visible_when 联动）
 ├── Archive/
@@ -122,9 +124,12 @@ plugins/DASignalAnalysis/
    （`DAChartItemArchive::makeSnapshots`），后台任务只写字节、不碰 `QwtPlotItem*`；界面重建走
    `loadedCallBack`。figure 存档键用 `signal-id`（`signal-name` 只兼容旧档）。
 
-10. **全局设置与按信号参数分开。** 与数据无关的全局项（目前只有 FFmpeg 可执行文件路径）只放插件
-    设置页（`createSettingPage()` → `Dialogs/DASignalAnalysisSettingPage`，入口「设置 → 信号分析」）；
-    「分析设置」对话框只放按信号生效的分析参数。界面文案引用入口时统一写「设置 → 信号分析」。
+10. **全局设置与按信号参数分开。** 与数据无关的全局项（FFmpeg 可执行文件路径、峰值标记文本模板）
+    放插件级配置（FFmpeg 路径在 `createSettingPage()` → `Dialogs/DASignalAnalysisSettingPage`，
+    入口「设置 → 信号分析」；模板在丝带「峰值」panel 的「标记显示」对话框）；
+    「分析设置」对话框只放按信号生效的分析参数。峰值查找的常见项（模式 / 标记数量 / 相对门限）
+    在丝带「峰值」panel，对话框只保留「模式 = 高级」时生效的突出度 / 最小间距 / 绝对高度，
+    不要再把常见项加回对话框（两处入口会分叉）。界面文案引用入口时统一写「设置 → 信号分析」。
 
 11. **插件必须能热卸载干净。** 动作经宿主 `DAActionsInterface` 创建/销毁；`CDockWidget*` 与页面指针
     用 `QPointer`（宿主可能先销毁 dockManager）；对话框以页面为父；`finalize()` 清理峰值窗口、页面
@@ -187,8 +192,10 @@ plugins/DASignalAnalysis/
 
 ### 4.4 参数、幅值与内存预算
 
-- 参数六组（预处理 / 频谱 / 功率谱 / STFT / 峰值 / 标定），一个信号标签页记一份，不进全局撤销栈；
-  改参数后立即重算一次。
+- 参数六组（预处理 / 频谱 / 功率谱 / STFT / 峰值（高级项）/ 标定），一个信号标签页记一份，
+  不进全局撤销栈；改参数后立即重算一次。峰值查找的模式 / 标记数量 / 相对门限在丝带「峰值」
+  panel（改后只重算峰值表与曲线，不重算频谱）；分析设置对话框不含这三项，`params()` 必须从
+  打开时的基线参数回填，否则点确定会把 ribbon 上的选择重置成默认值。
 - `resolutionHz` 与 `stftWindowMs` 二选一联动（Δf = 1/窗长），换算函数
   `signalStftWindowMsFromResolution` / `signalResolutionFromStftWindowMs`；峰值最小间距 `<=0` 是自动哨兵，
   按 5×实际分辨率派生。
@@ -201,8 +208,9 @@ plugins/DASignalAnalysis/
 
 - 布局：`DAFigureWidget` 2×2 保留式网格——波形 (0,0,1,2)、频谱 (1,0)、热图/三维瀑布 (1,1)；
   瀑布默认二维（`setWaterfallMode` 0=二维 / 1=三维 / 2=隐藏）；播放头、STFT 窗口矩形、峰值标记是
-  画布图元。视图内不放 inline 控件：显示类控件在丝带上下文标签、播放类在底部工具栏、外观类在右侧
-  设置面板，视图的 setter/getter 是这些入口共同操作的状态源。
+  画布图元。视图内不放 inline 控件：峰值/分析类控件在丝带「峰值」与「分析」panel、显示类控件在
+  上下文标签、播放类在底部工具栏、外观类在右侧设置面板，视图的 setter/getter 是这些入口共同
+  操作的状态源。
 - **坐标轴**：`DAFigureWidget::createChart()` 会给新子图显式设 X 0..800 / Y 0..500 占位刻度（同时关掉
   autoscale）。`buildFigure()` 只在建图时对三张 2D 子图调用 `setAxisAutoScale(..., true)`；
   `rebuild*` 不无条件重开，否则用户缩放会被覆盖。工程恢复走存档轴状态。
@@ -224,8 +232,18 @@ plugins/DASignalAnalysis/
   点全画（缺峰帧跳过），折线只在相邻帧频率跳变 ≤ `8 × fs / nperseg` 时连接，跳变/缺帧处插入 NaN
   断开。不要为了「连成轨迹」改成跨帧匹配，那属于新功能。
 - 标记：`snapPeakMarkersToCurve()` 把标记吸附到**当前已绘制曲线**（跟随播放时是当前帧谱）的最近局部
-  极大，邻域半径 2、峰值数量由 Top N（10/20/50）决定；峰频超出曲线范围时跳过，无快照时回退旧口径。
+  极大，邻域半径 2、峰值数量由标记数量（10/20/50）决定；峰频超出曲线范围时跳过，无快照时回退旧口径。
   吸附是显示层口径，不改峰值表数值，也不要去改 Python 侧峰值算法的频率网格。
+- 标记形状与文本：符号是**倒三角**（`QwtSymbol::Path` + `pinPoint`，尖端严格落在峰值点；不要用内置
+  `DTriangle`，它以符号中心为锚点、尖端会落到峰顶下方），统一一种颜色；文本由 `DAPeakMarkerLabel`
+  按模板渲染（`{index}` / `{fre}` / `{amp}`，默认 `{index}-{fre} Hz` → `1-32.5 Hz`），幅值取标记自身
+  的显示坐标（与 `DASignalAmplitude` 同口径，dB 模式自动带单位），空模板表示不显示文本。
+  标记非 transient、随工程存档；恢复时位置以存档为准，文本按当前模板重写（`applyPeakMarkerLabels()`）。
+- 丝带入口：峰值相关动作统一在顶级「信号分析」→「峰值」panel：峰值标记、标记数量、模式（small
+  combobox）、相对门限（small spin）、标记显示（弹出模板编辑对话框）、峰值窗口；**上下文标签不再有**
+  峰值标记/峰值表（重复入口已删除），峰值窗口是打开峰值表停靠窗口的唯一入口。
+  模式/相对门限改后只重算峰值表与曲线（`requestPeaks`），不重算频谱；模板改动立即写配置并广播到
+  全部已创建视图。
 - 存档优先：加载后到第一次重算之间，`mPeakMarkersRestored` 保证不删除重建用户调整过的标记；
   `setPeaks()` 收到新计算结果时复位该窗口。
 - 窗口显隐偏好 `peakDockVisible`：`ensurePageCreated()` 读取、`finalize()` 写回；首次导入只按偏好决定
@@ -271,7 +289,8 @@ plugins/DASignalAnalysis/
   指针缓存为长期成员，`finalize()` 也不需要清理设置页。
 - 全局设置 `apply()` 后调 `DASignalAnalysisUI::onGlobalSettingsApplied()` 刷新 FFmpeg 可用性；路径无效
   时不落盘、表单回退到已保存值。所有配置共用 `signal-analysis-config.json`
-  （`ffmpegPath`、`colormap`、`peakDockVisible`、`colorBarVisible`），由 `DASignalImporter` 读写。
+  （`ffmpegPath`、`colormap`、`peakDockVisible`、`colorBarVisible`、`peakMarkerText`），
+  由 `DASignalImporter` 读写。峰值标记文本模板在「标记显示」对话框确定时立即「读-改-写」落盘。
 
 ### 4.10 Python 包契约
 
