@@ -8,7 +8,9 @@
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QLabel>
 #include <QLayout>
+#include <QLineEdit>
 #include <QOpenGLContext>
 #include <QSignalSpy>
 #include <QMetaType>
@@ -34,8 +36,10 @@
 #include "Archive/DASignalArchiveTask.h"
 #include "Archive/DASignalFigureArchive.h"
 #include "Chart/DAChartItemsManager.h"
+#include "Dialogs/DAPeakMarkerDisplayDialog.h"
 #include "Form/DASignalFormSpecBuilder.h"
 #include "Page/DAPeakCurvePlotSamples.h"
+#include "Page/DAPeakMarkerLabel.h"
 #include "Page/DAPeakMarkerSamples.h"
 #include "Page/DASignalAnalysisView.h"
 #include "Page/DASignalChartExport.h"
@@ -50,6 +54,7 @@
 #include "qwt_plot_marker.h"
 #include "qwt_plot_shapeitem.h"
 #include "qwt_plot_spectrogram.h"
+#include "qwt_symbol.h"
 
 namespace
 {
@@ -249,8 +254,8 @@ private Q_SLOTS:
     void peakModelColumnsAndData();
     void peakModelAmplitudeMode();
     void stftRasterGrid();
-    // 表单口径：Top N 选项值是整数、最小间距默认 5 倍实际分辨率（评审 U5/U7）
-    void formSpecTopNAndSpacing();
+    // 表单口径：峰值查找常见项（模式/TopN/相对门限）已迁到丝带，对话框只保留高级项
+    void formSpecAdvancedPeakParams();
     // 老表单字符串值兼容（peakTopN 曾是 "10"/"20"/"50"）
     void paramsPeakTopNStringCompat();
     // 频率分辨率 ↔ STFT 窗长联动换算（方案 §6.3 / 评审 C4）
@@ -272,6 +277,10 @@ private Q_SLOTS:
     // 峰值曲线渲染：连续段才连线，跳变/缺峰处插入 NaN 断开（其余帧仍以点保留）
     void peakCurvePlotSamples();
     void peakMarkerSnapping();
+    // 峰值标记文本模板：占位符替换、紧凑数字格式、空模板与未知占位符
+    void peakMarkerLabelText();
+    // 峰值标记显示对话框：模板回显、实时预览（含 dB 口径）
+    void peakMarkerDisplayDialog();
     // T7：视图 figure 为 2×2 网格，波形跨两列，热图与三维瀑布同格
     void signalViewFigureGrid();
     // T7：分析结果图元标 transient，峰值标记保持非 transient
@@ -435,31 +444,29 @@ void DASignalAnalysisTest::peakModelAmplitudeMode()
 }
 
 /**
- * @brief 表单口径：Top N 选项值是整数、最小间距默认 5 倍实际分辨率
+ * @brief 表单口径：峰值查找常见项已迁到丝带，对话框只保留高级项
+ *
+ * 模式 / 标记数量 / 相对门限在丝带「峰值」panel（单一入口），分析设置对话框不能再出现
+ * 同名字段（否则两处状态会分叉、点确定还会覆盖丝带设置）；高级三项仍在对话框里。
  */
-void DASignalAnalysisTest::formSpecTopNAndSpacing()
+void DASignalAnalysisTest::formSpecAdvancedPeakParams()
 {
     const DA::DASignalAnalysisParams params = DA::DASignalAnalysisParams::defaults();
     const QJsonObject spec                  = DA::DASignalFormSpecBuilder::build(params, 10.0);
 
-    const QJsonObject topN = findFormField(spec, QStringLiteral("peakTopN"));
-    QVERIFY2(!topN.isEmpty(), "peakTopN field not found");
-    // 默认值/选项值都必须是数值：字符串会让 QJsonValue::toInt(default) 静默退回默认值（评审 U5）
-    QCOMPARE(topN.value(QStringLiteral("default")).toInt(), 10);
-    const QJsonArray options = topN.value(QStringLiteral("options")).toArray();
-    QCOMPARE(options.size(), 3);
-    QVector< int > values;
-    for (const QJsonValue& ov : options) {
-        const QJsonObject opt = ov.toObject();
-        QVERIFY2(opt.value(QStringLiteral("value")).isDouble(), "Top N option value must be an integer");
-        values.append(opt.value(QStringLiteral("value")).toInt());
-    }
-    QCOMPARE(values, QVector< int >({ 10, 20, 50 }));
+    // 常见峰值查找项：不在对话框表单里（迁到 ribbon 峰值 panel）
+    QVERIFY2(findFormField(spec, QStringLiteral("peakMode")).isEmpty(), "peakMode must not be in the analysis form");
+    QVERIFY2(findFormField(spec, QStringLiteral("peakTopN")).isEmpty(), "peakTopN must not be in the analysis form");
+    QVERIFY2(findFormField(spec, QStringLiteral("peakRelDb")).isEmpty(),
+             "peakRelDb must not be in the analysis form");
 
-    // 最小间距默认 = 5 × 实际分辨率（10 赫兹 → 50 赫兹，评审 U7）
+    // 高级项仍在：最小间距默认 = 5 × 实际分辨率（10 赫兹 → 50 赫兹，评审 U7）
     const QJsonObject spacing = findFormField(spec, QStringLiteral("peakMinSpacingHz"));
     QVERIFY2(!spacing.isEmpty(), "peakMinSpacingHz field not found");
     QCOMPARE(spacing.value(QStringLiteral("default")).toDouble(), 50.0);
+    QVERIFY2(!findFormField(spec, QStringLiteral("peakProminence")).isEmpty(),
+             "peakProminence field not found");
+    QVERIFY2(!findFormField(spec, QStringLiteral("peakMinHeight")).isEmpty(), "peakMinHeight field not found");
 
     // 幅值口径支持四种显示状态（评审 U8）
     const QJsonObject ampMode = findFormField(spec, QStringLiteral("amplitudeMode"));
@@ -976,6 +983,68 @@ void DASignalAnalysisTest::peakMarkerSnapping()
 }
 
 /**
+ * @brief 峰值标记文本模板：占位符替换、紧凑数字、空模板与未知占位符
+ *
+ * 标记文本是纯显示层字符串（与峰值数据/吸附无关），这里锁定渲染口径：
+ * 默认模板渲染成「1-32.5 Hz」这类短文本，dB 模式幅值自动带单位，空模板表示不显示文本。
+ */
+void DASignalAnalysisTest::peakMarkerLabelText()
+{
+    // 默认模板：序号-频率（用户示例：1-32.5 Hz）
+    QCOMPARE(DA::daDefaultPeakMarkerText(), QStringLiteral("{index}-{fre} Hz"));
+    QCOMPARE(DA::daFormatPeakMarkerText(DA::daDefaultPeakMarkerText(), 1, 32.5, 0.85, false),
+             QStringLiteral("1-32.5 Hz"));
+
+    // 三个占位符都能替换；按名次/频率/幅值顺序无关
+    QCOMPARE(DA::daFormatPeakMarkerText(QStringLiteral("{index} {fre}Hz {amp}"), 2, 100.0, 0.5, false),
+             QStringLiteral("2 100Hz 0.5"));
+    // dB 模式幅值带单位，保留两位小数
+    QCOMPARE(DA::daFormatPeakMarkerText(QStringLiteral("{index}-{amp}"), 3, 10.0, -12.345, true),
+             QStringLiteral("3--12.35 dB"));
+    // 空模板：不显示文本；未知占位符原样保留（用户可写单位/备注）
+    QVERIFY(DA::daFormatPeakMarkerText(QString(), 1, 10.0, 1.0, false).isEmpty());
+    QCOMPARE(DA::daFormatPeakMarkerText(QStringLiteral("{peak}"), 1, 10.0, 1.0, false),
+             QStringLiteral("{peak}"));
+
+    // 紧凑数字：尾零去掉、极端值用科学计数法
+    QCOMPARE(DA::daFormatCompactNumber(32.50, 2), QStringLiteral("32.5"));
+    QCOMPARE(DA::daFormatCompactNumber(100.0, 2), QStringLiteral("100"));
+    QCOMPARE(DA::daFormatCompactNumber(0.0, 2), QStringLiteral("0"));
+    QCOMPARE(DA::daFormatCompactNumber(1.0e-9, 2), QStringLiteral("1e-09"));
+    QCOMPARE(DA::daFormatCompactNumber(2.5e7, 2), QStringLiteral("2.5e+07"));
+}
+
+/**
+ * @brief 峰值标记显示对话框：模板回显、实时预览（含 dB 口径）
+ */
+void DASignalAnalysisTest::peakMarkerDisplayDialog()
+{
+    DA::DAPeakMarkerDisplayDialog dlg(QStringLiteral("{index}-{fre} Hz"), false);
+    auto* edit    = dlg.findChild< QLineEdit* >(QStringLiteral("da-peak-marker-edit"));
+    auto* preview = dlg.findChild< QLabel* >(QStringLiteral("da-peak-marker-preview"));
+    QVERIFY(edit != nullptr);
+    QVERIFY(preview != nullptr);
+    QCOMPARE(edit->text(), QStringLiteral("{index}-{fre} Hz"));
+    QCOMPARE(dlg.peakMarkerText(), QStringLiteral("{index}-{fre} Hz"));
+    // 预览用示例值（序号 1 / 频率 32.5 赫兹）渲染，用户示例即「1-32.5 Hz」
+    QVERIFY2(preview->text().contains(QStringLiteral("1-32.5 Hz")), qPrintable(preview->text()));
+    // 编辑框改动实时反映到预览与结果
+    edit->setText(QStringLiteral("{amp}"));
+    QVERIFY2(preview->text().contains(QStringLiteral("0.85")), qPrintable(preview->text()));
+    QCOMPARE(dlg.peakMarkerText(), QStringLiteral("{amp}"));
+    // 空模板：预览不再显示幅值示例（表示不显示文本）
+    edit->setText(QString());
+    QVERIFY(!preview->text().contains(QStringLiteral("0.85")));
+    QCOMPARE(dlg.peakMarkerText(), QString());
+
+    // dB 口径：预览幅值带单位
+    DA::DAPeakMarkerDisplayDialog dbDlg(QStringLiteral("{index} {amp}"), true);
+    auto* dbPreview = dbDlg.findChild< QLabel* >(QStringLiteral("da-peak-marker-preview"));
+    QVERIFY(dbPreview != nullptr);
+    QVERIFY2(dbPreview->text().contains(QStringLiteral("1 -12.3 dB")), qPrintable(dbPreview->text()));
+}
+
+/**
  * @brief T7：信号视图使用 DAFigureWidget 2×2 网格，子图网格坐标正确
  */
 void DASignalAnalysisTest::signalViewFigureGrid()
@@ -1099,6 +1168,28 @@ void DASignalAnalysisTest::signalViewTransientItems()
         }
     }
     QCOMPARE(peakMarkers, 1);
+
+    // 峰值标记形状与文本：倒三角（Path + pinPoint，尖端对准峰值点）+ 默认模板「1-… Hz」
+    QCOMPARE(view.peakMarkers().size(), 1);
+    QwtPlotMarker* peakMarker = view.peakMarkers().first();
+    QVERIFY(peakMarker != nullptr);
+    const QwtSymbol* peakSymbol = peakMarker->symbol();
+    QVERIFY(peakSymbol != nullptr);
+    QCOMPARE(peakSymbol->style(), QwtSymbol::Path);
+    QVERIFY2(peakSymbol->isPinPointEnabled(), "peak marker symbol must anchor its tip with pinPoint");
+    QVERIFY2(peakSymbol->path().elementCount() >= 3, "peak marker symbol path is not a triangle");
+    QVERIFY2(!peakMarker->label().isEmpty(), "peak marker label must show the default template text");
+
+    // 模板可配：空模板隐藏文本，自定义模板按占位符渲染
+    // 注意标记 x 是吸附到已绘制曲线后的频率（本例峰值表给 10 Hz，曲线局部极大在 20 Hz），
+    // 文本里的频率必须与标记实际位置一致，不能按峰值表频率断言
+    const QString markerFrequencyText = DA::daFormatCompactNumber(peakMarker->xValue(), 2);
+    view.setPeakMarkerText(QStringLiteral("{index}@{fre}Hz"));
+    QCOMPARE(view.peakMarkers().first()->label().text(),
+             QStringLiteral("1@%1Hz").arg(markerFrequencyText));
+    view.setPeakMarkerText(QString());
+    QVERIFY(view.peakMarkers().first()->label().isEmpty());
+    view.setPeakMarkerText(DA::daDefaultPeakMarkerText());
 
     // 热图：时频栅格 transient
     bool hasSpectrogram = false;

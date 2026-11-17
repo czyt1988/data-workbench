@@ -7,6 +7,7 @@
 #include <QFrame>
 #include <QMouseEvent>
 #include <QPainter>
+#include <QPainterPath>
 #include <QPixmap>
 #include <QResizeEvent>
 #include <QShowEvent>
@@ -35,6 +36,7 @@
 #include "DAChartWidget.h"
 #include "DAFigureWidget.h"
 #include "Analysis/DASignalAmplitude.h"
+#include "Page/DAPeakMarkerLabel.h"
 #include "Page/DAPeakMarkerSamples.h"
 #include "Render/DAStftRasterData.h"
 #include "Render/DAWaterfallBuilder.h"
@@ -92,6 +94,35 @@ void clearPeakMarkers(QVector< QwtPlotMarker* >& markers, const DAChartWidget* c
 constexpr double cEps             = 1e-30;
 constexpr int cEnvelopeDebounceMs = 200;
 
+// 峰值标记统一颜色：倒三角与上方文本同色，不再按名次区分（只保留一种颜色）
+const QColor cPeakMarkerColor(206, 96, 67);
+// 倒三角尺寸（像素）：宽度 / 高度
+constexpr double cPeakMarkerWidth  = 12.0;
+constexpr double cPeakMarkerHeight = 10.0;
+// 文本与标记点的间距（像素）：须大于倒三角高度，文本落在三角上方
+constexpr int cPeakMarkerLabelSpacing = 15;
+
+/**
+ * @brief 创建峰值标记符号：尖端正好落在峰值点上的倒三角
+ *
+ * 用 QwtSymbol::Path + pinPoint 而不是内置的 DTriangle：内置倒三角以符号中心为锚点，
+ * 尖端会落在峰值点下方半个符号高度（标记「浮」在峰顶旁边）。这里把路径尖端定义在
+ * 坐标原点、并把它设为 pinPoint，QwtSymbol 绘制时把 pinPoint 平移到数据点位置，
+ * 尖端与峰顶严格重合。符号（路径尺寸/pinPoint/画笔/画刷）会被 QwtSymbol 的序列化
+ * 完整保存，工程恢复后形状不变。
+ */
+QwtSymbol* makePeakMarkerSymbol()
+{
+    QPainterPath path;
+    path.moveTo(0.0, 0.0);  // 尖端：坐标原点即峰值点（由 pinPoint 映射到数据点）
+    path.lineTo(-cPeakMarkerWidth / 2.0, -cPeakMarkerHeight);
+    path.lineTo(cPeakMarkerWidth / 2.0, -cPeakMarkerHeight);
+    path.closeSubpath();
+    auto* symbol = new QwtSymbol(path, QBrush(cPeakMarkerColor), QPen(Qt::NoPen));
+    symbol->setPinPoint(QPointF(0.0, 0.0), true);
+    return symbol;
+}
+
 /**
  * @brief 色标下限的有效值（dB）
  *
@@ -133,6 +164,7 @@ bool ensureItemAttached(T*& item, const DAChartWidget* chart)
 DASignalAnalysisView::DASignalAnalysisView(const DASignalPtr& signal, QWidget* parent)
     : QWidget(parent), mSignal(signal)
 {
+    mPeakMarkerText = daDefaultPeakMarkerText();
     buildUI();
     retranslateUi();
 }
@@ -539,6 +571,8 @@ void DASignalAnalysisView::rebuildPeakMarkers()
                 mPeakMarkers.removeAt(i);  // 已被外部（图元树）删除：只移除登记
             }
         }
+        // 存档接管的标记位置不动，但文本按当前模板重写（模板是全局显示偏好）
+        applyPeakMarkerLabels();
         mSpectrumChart->replot();
         return;
     }
@@ -603,13 +637,42 @@ void DASignalAnalysisView::rebuildPeakMarkers()
         auto* marker = new QwtPlotMarker();
         marker->setXValue(pos.x());
         marker->setYValue(pos.y());
-        marker->setSymbol(new QwtSymbol(QwtSymbol::Ellipse,
-                                        QBrush(i == 0 ? QColor(206, 96, 67) : QColor(82, 128, 193)),
-                                        QPen(Qt::NoPen),
-                                        QSize(7, 7)));
+        // 倒三角尖端对准峰值点；文本由 applyPeakMarkerLabels 按模板写入
+        marker->setSymbol(makePeakMarkerSymbol());
+        marker->setLabelAlignment(Qt::AlignHCenter | Qt::AlignTop);
+        marker->setSpacing(cPeakMarkerLabelSpacing);
         marker->attach(mSpectrumChart);
         // 峰值标记不标 transient：T9 会把它写入 chart-data（inline 持久化）
         mPeakMarkers.append(marker);
+    }
+    applyPeakMarkerLabels();
+}
+
+/**
+ * @brief 按当前模板重写全部峰值标记的文本
+ *
+ * 文本只用标记自身的坐标（x=频率、y=当前幅值显示值）与列表序号渲染，因此对重算生成的
+ * 标记和工程恢复的标记同样适用；空模板表示不显示文本（QwtText 为空时 Qwt 不画标签）。
+ */
+void DASignalAnalysisView::applyPeakMarkerLabels()
+{
+    const bool dbMode = DASignalAmplitude::isDbMode(mParams.amplitudeMode);
+    for (int i = 0; i < mPeakMarkers.size(); ++i) {
+        QwtPlotMarker* marker = mPeakMarkers.at(i);
+        if (!marker) {
+            continue;
+        }
+        const QString text =
+            daFormatPeakMarkerText(mPeakMarkerText, i + 1, marker->xValue(), marker->yValue(), dbMode);
+        if (text.isEmpty()) {
+            marker->setLabel(QwtText());
+            continue;
+        }
+        QwtText label(text, QwtText::PlainText);
+        label.setColor(cPeakMarkerColor);
+        marker->setLabel(label);
+        marker->setLabelAlignment(Qt::AlignHCenter | Qt::AlignTop);
+        marker->setSpacing(cPeakMarkerLabelSpacing);
     }
 }
 
@@ -1160,6 +1223,33 @@ void DASignalAnalysisView::setPeakMarkersVisible(bool on)
 }
 
 /**
+ * @brief 峰值标记文本模板（丝带「标记显示」对话框写入）
+ *
+ * 模板只影响文本，不改变标记位置：已从存档接管的标记原地重写文本，其余情况按当前
+ * 峰值数据重建一次（重建会重新吸附到曲线峰顶）。
+ */
+void DASignalAnalysisView::setPeakMarkerText(const QString& textTemplate)
+{
+    if (mPeakMarkerText == textTemplate) {
+        return;
+    }
+    mPeakMarkerText = textTemplate;
+    if (mPeakMarkersRestored && !mPeakMarkers.isEmpty()) {
+        applyPeakMarkerLabels();
+    } else {
+        rebuildPeakMarkers();
+    }
+    if (mSpectrumChart) {
+        mSpectrumChart->replot();
+    }
+}
+
+QString DASignalAnalysisView::peakMarkerText() const
+{
+    return mPeakMarkerText;
+}
+
+/**
  * @brief 当前峰值标记图元（存档保存用）
  */
 QList< QwtPlotMarker* > DASignalAnalysisView::peakMarkers() const
@@ -1183,6 +1273,8 @@ void DASignalAnalysisView::adoptRestoredPeakMarkers(const QList< QwtPlotMarker* 
 {
     for (QwtPlotMarker* marker : markers) {
         if (marker && !mPeakMarkers.contains(marker)) {
+            // 旧工程存档里可能是圆点/按名次配色的样式：位置以存档为准，符号统一换成倒三角
+            marker->setSymbol(makePeakMarkerSymbol());
             mPeakMarkers.append(marker);
         }
     }
@@ -1191,6 +1283,8 @@ void DASignalAnalysisView::adoptRestoredPeakMarkers(const QList< QwtPlotMarker* 
     }
     mPeakMarkersRestored = true;
     mPeakMarkersVisible  = mPeakMarkers.first()->isVisible();
+    // 存档里保存的是当时的文本模板：按当前模板重写文本（位置不动，存档优先）
+    applyPeakMarkerLabels();
 }
 
 /**

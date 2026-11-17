@@ -38,7 +38,7 @@ struct DASignalAnalysisParams
 
     // ---------------- 峰值查找 ----------------
     QString peakMode { "simple" };      ///< 模式：simple / advanced
-    int peakTopN { 10 };                ///< 前 N 个（10/20/50）
+    int peakTopN { 10 };                ///< 标记数量（10/20/50）
     double peakRelDb { 40.0 };          ///< 相对门限（高于最强峰多少 dB）
     double peakProminence { 0.0 };      ///< 突出度（0 表示不限制，仅高级模式生效）
     double peakMinSpacingHz { -1.0 };   ///< 最小间距（赫兹，<0 表示按 5 倍频率分辨率自动）

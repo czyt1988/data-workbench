@@ -69,6 +69,9 @@ public:
     void setPeaks(const DAPeakResult& peaks);
     // 峰值标记显隐（丝带「峰值标记」开关）
     void setPeakMarkersVisible(bool on);
+    // 峰值标记文本模板（{index}/{fre}/{amp}，空串表示不显示文本）
+    void setPeakMarkerText(const QString& textTemplate);
+    QString peakMarkerText() const;
     // 当前峰值标记图元（存档保存用）
     QList< QwtPlotMarker* > peakMarkers() const;
     // 接管从存档恢复的峰值标记（追加、同步显隐状态，不重建/replot）
@@ -199,6 +202,8 @@ private:
     void rebuildWavePlot();
     void rebuildSpectrumPlot();
     void rebuildPeakMarkers();
+    // 按当前模板重写全部峰值标记的文本（原点位置不变：同时适用于重算生成的与存档接管的标记）
+    void applyPeakMarkerLabels();
     void rebuildHeatmap();
     void updatePlayhead();
     void updateStftWindowRect();
@@ -274,6 +279,8 @@ private:
     QwtPlotSpectrogram* mSpectrogramItem { nullptr };
     DAStftRasterData* mStftRaster { nullptr };
     QVector< QwtPlotMarker* > mPeakMarkers;
+    // 峰值标记文本模板（{index}/{fre}/{amp}），由丝带「标记显示」对话框写入
+    QString mPeakMarkerText;
     // 峰值标记已从存档接管：rebuildPeakMarkers 不再删除重建（存档优先，用户可能手动调过）。
     // 该优先只在「加载后到第一次重算前」成立：setParams/setAmplitudeDisplay/切通道复位（SF-13）
     bool mPeakMarkersRestored { false };
