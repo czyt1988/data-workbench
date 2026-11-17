@@ -24,7 +24,7 @@ Ribbon 左上角是应用按钮 `File` / 文件，点开是应用菜单；右上
 |--------|------|--------------|
 | `Main` / 主页 | `File` / 文件 | `Open` / 打开、`Save` / 保存、`Save As` / 另存为 |
 | | `Clipboard` / 剪贴板 | `Undo` / 撤销、`Redo` / 重做、`Cut` / 剪切、`Copy` / 复制、`Paste` / 粘贴、`Delete` / 删除、`Select All` / 全选 |
-| | `Create` / 创建 | `Add Data` / 添加数据、`Add Figure` / 添加绘图、`New Workflow` / 新建工作流 |
+| | `Create` / 创建 | `Add Data` / 添加数据、`Add Figure` / 添加绘图、`New Workflow` / 新建工作流、`Signal Analysis` / 信号分析 |
 | | `Config` / 配置 | `Setting` / 设置、`Plugin Config` / 插件设置、`About` / 关于 |
 | `Data` / 数据 | `Data Operation` / 数据操作 | `Add Data` / 添加数据、`Remove Data` / 移除数据、`Rename Data` / 重命名数据 |
 | | `Export` / 导出 | `Export Data` / 导出数据，菜单 `Export Format` / 导出格式 下有 `Export CSV`、`Export Excel`、`Export Pickle`、`Export Parquet` |

@@ -14387,14 +14387,14 @@
 <context>
     <name>DA::DASignalAnalysisSettingDialog</name>
     <message>
-        <location filename="../../plugins/DASignalAnalysis/Dialogs/DASignalAnalysisSettingDialog.cpp" line="+266"/>
+        <location filename="../../plugins/DASignalAnalysis/Dialogs/DASignalAnalysisSettingDialog.cpp" line="+204"/>
         <source>Segment length: unknown (sample rate is invalid)</source>
         <translation>Segment length: unknown (sample rate is invalid)</translation>
     </message>
     <message>
         <location line="+32"/>
-        <source>Analysis Settings</source>
-        <translation>Analysis Settings</translation>
+        <source>Advanced Analysis Settings</source>
+        <translation>Advanced Analysis Settings</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -14481,212 +14481,187 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</translation>
 <context>
     <name>DA::DASignalAnalysisUI</name>
     <message>
-        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="+340"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="+374"/>
         <source>FFmpeg was not detected; video import is unavailable until a path is specified in Settings &gt; Signal Analysis.</source>
         <translation>FFmpeg was not detected; video import is unavailable until a path is specified in Settings &gt; Signal Analysis.</translation>
     </message>
     <message>
-        <location line="-112"/>
-        <location line="+4418"/>
+        <location line="-106"/>
+        <location line="+4936"/>
         <source>Peak table (CSV)</source>
         <translation>Peak table (CSV)</translation>
     </message>
     <message>
-        <location line="-4415"/>
-        <location line="+4418"/>
+        <location line="-4933"/>
+        <location line="+4936"/>
         <source>Spectrum curve (CSV)</source>
         <translation>Spectrum curve (CSV)</translation>
     </message>
     <message>
-        <location line="-4412"/>
-        <location line="+4418"/>
+        <location line="-4930"/>
+        <location line="+4936"/>
         <source>Heatmap matrix (CSV)</source>
         <translation>Heatmap matrix (CSV)</translation>
     </message>
     <message>
-        <location line="-3984"/>
+        <location line="-4508"/>
         <source>Signal imported: %1 (%2 Hz, %3 s)</source>
         <translation>Signal imported: %1 (%2 Hz, %3 s)</translation>
     </message>
     <message>
         <location line="+242"/>
         <location line="+3"/>
-        <location line="+125"/>
-        <location line="+155"/>
-        <location line="+3259"/>
-        <location line="+3"/>
+        <location line="+413"/>
+        <location line="+3583"/>
         <location line="+27"/>
+        <location line="+19"/>
         <source>Signal Analysis</source>
         <translation>Signal Analysis</translation>
     </message>
     <message>
-        <location line="-3428"/>
-        <location line="+3412"/>
-        <source>Signal</source>
-        <translation>Signal</translation>
-    </message>
-    <message>
-        <location line="-3390"/>
-        <location line="+3393"/>
-        <source>Playback</source>
-        <translation>Playback</translation>
-    </message>
-    <message>
-        <location line="-3377"/>
-        <location line="+3380"/>
-        <source>Analysis</source>
-        <translation>Analysis</translation>
-    </message>
-    <message>
-        <location line="-3365"/>
-        <location line="+199"/>
+        <location line="-3699"/>
+        <location line="+196"/>
         <location line="+2"/>
         <location line="+5"/>
-        <location line="+3146"/>
+        <location line="+3454"/>
         <location line="+16"/>
         <source>Peaks</source>
         <translation>Peaks</translation>
     </message>
     <message>
-        <location line="-3266"/>
-        <location line="+3279"/>
+        <location line="-3585"/>
+        <location line="+3601"/>
         <source>Display</source>
         <translation>Display</translation>
     </message>
     <message>
-        <location line="-3338"/>
-        <location line="+3328"/>
-        <source>Export</source>
-        <translation>Export</translation>
-    </message>
-    <message>
-        <location line="-4237"/>
-        <location line="+4420"/>
+        <location line="-4698"/>
+        <location line="+4938"/>
         <source>Whole page (PNG)...</source>
         <translation>Whole page (PNG)...</translation>
     </message>
     <message>
-        <location line="-4415"/>
-        <location line="+4418"/>
+        <location line="-4933"/>
+        <location line="+4936"/>
         <source>Current sub-chart (PNG/SVG/PDF)...</source>
         <translation>Current sub-chart (PNG/SVG/PDF)...</translation>
     </message>
     <message>
-        <location line="-4412"/>
-        <location line="+4416"/>
+        <location line="-4930"/>
+        <location line="+4934"/>
         <source>Copy whole page to clipboard</source>
         <translation>Copy whole page to clipboard</translation>
     </message>
     <message>
-        <location line="-4414"/>
-        <location line="+4417"/>
+        <location line="-4932"/>
+        <location line="+4935"/>
         <source>Copy current sub-chart to clipboard</source>
         <translation>Copy current sub-chart to clipboard</translation>
     </message>
     <message>
-        <location line="-3550"/>
-        <location line="+3438"/>
+        <location line="-3931"/>
+        <location line="+3765"/>
         <source>Simple</source>
         <translation>Simple</translation>
     </message>
     <message>
-        <location line="-3437"/>
-        <location line="+3438"/>
+        <location line="-3764"/>
+        <location line="+3765"/>
         <source>Advanced</source>
         <translation>Advanced</translation>
     </message>
     <message>
-        <location line="-3432"/>
-        <location line="+3424"/>
+        <location line="-3759"/>
+        <location line="+3751"/>
         <source>Mode</source>
         <translation>Mode</translation>
     </message>
     <message>
-        <location line="-3409"/>
-        <location line="+3412"/>
+        <location line="-3736"/>
+        <location line="+3739"/>
         <source>Threshold</source>
         <translation>Threshold</translation>
     </message>
     <message>
-        <location line="-3356"/>
-        <location line="+3286"/>
+        <location line="-3691"/>
+        <location line="+3608"/>
         <source>Signal Display</source>
         <translation>Signal Display</translation>
     </message>
     <message>
-        <location line="-3270"/>
-        <location line="+3404"/>
+        <location line="-3592"/>
+        <location line="+3793"/>
         <source>Channel</source>
         <translation>Channel</translation>
     </message>
     <message>
-        <location line="-3346"/>
-        <location line="+3218"/>
+        <location line="-3724"/>
+        <location line="+3532"/>
         <source>Tools</source>
         <translation>Tools</translation>
     </message>
     <message>
-        <location line="-3129"/>
-        <location line="+3260"/>
+        <location line="-3442"/>
+        <location line="+3637"/>
         <source>Follow playback</source>
         <translation>Follow playback</translation>
     </message>
     <message>
-        <location line="-3259"/>
-        <location line="+3260"/>
+        <location line="-3636"/>
+        <location line="+3637"/>
         <source>Show the current frame while playback advances</source>
         <translation>Show the current frame while playback advances</translation>
     </message>
     <message>
-        <location line="-3245"/>
-        <location line="+3249"/>
+        <location line="-3608"/>
+        <location line="+3612"/>
         <source>Playback position</source>
         <translation>Playback position</translation>
     </message>
     <message>
-        <location line="-3232"/>
-        <location line="+3235"/>
+        <location line="-3589"/>
+        <location line="+3592"/>
         <source>Heatmap color scale lower limit</source>
         <translation>Heatmap color scale lower limit</translation>
     </message>
     <message>
-        <location line="-3223"/>
-        <location line="+3226"/>
+        <location line="-3580"/>
+        <location line="+3583"/>
         <source>Auto scroll</source>
         <translation>Auto scroll</translation>
     </message>
     <message>
-        <location line="-3225"/>
-        <location line="+3226"/>
+        <location line="-3582"/>
+        <location line="+3583"/>
         <source>Scroll the time-frequency view while playback advances</source>
         <translation>Scroll the time-frequency view while playback advances</translation>
     </message>
     <message>
-        <location line="-2386"/>
-        <location line="+2340"/>
+        <location line="-3970"/>
+        <location line="+3901"/>
         <source>Peak amplitude</source>
         <translation>Peak amplitude</translation>
     </message>
     <message>
-        <location line="-2339"/>
-        <location line="+2342"/>
+        <location line="-3900"/>
+        <location line="+3901"/>
         <source>RMS</source>
         <translation>RMS</translation>
     </message>
     <message>
-        <location line="-2341"/>
-        <location line="+2344"/>
+        <location line="-3900"/>
+        <location line="+3901"/>
         <source>dB (FS)</source>
         <translation>dB (FS)</translation>
     </message>
     <message>
-        <location line="-2343"/>
-        <location line="+2346"/>
+        <location line="-3900"/>
+        <location line="+3901"/>
         <source>dB (re 1.0)</source>
         <translation>dB (re 1.0)</translation>
     </message>
     <message>
-        <location line="-2262"/>
+        <location line="-2595"/>
         <source>No peak data to export.</source>
         <translation>No peak data to export.</translation>
     </message>
@@ -14721,12 +14696,12 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</translation>
         <location line="+31"/>
         <location line="+45"/>
         <location line="+17"/>
-        <location line="+734"/>
+        <location line="+737"/>
         <source>No signal is selected.</source>
         <translation>No signal is selected.</translation>
     </message>
     <message>
-        <location line="-1028"/>
+        <location line="-1031"/>
         <source>No spectrum data to export.</source>
         <translation>No spectrum data to export.</translation>
     </message>
@@ -14772,7 +14747,37 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</translation>
         <translation>Failed to export the heatmap matrix.</translation>
     </message>
     <message>
-        <location line="+1966"/>
+        <location line="+2219"/>
+        <source>Open the signal analysis workspace</source>
+        <translation>Open the signal analysis workspace</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Import</source>
+        <translation>Import</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Import audio, a data frame or a video, or relink a missing data frame source</source>
+        <translation>Import audio, a data frame or a video, or relink a missing data frame source</translation>
+    </message>
+    <message>
+        <location line="+29"/>
+        <source>Stop playback and return to the beginning</source>
+        <translation>Stop playback and return to the beginning</translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Advanced Settings...</source>
+        <translation>Advanced Settings...</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Configure zero padding, power spectrum, advanced peak and calibration options</source>
+        <translation>Configure zero padding, power spectrum, advanced peak and calibration options</translation>
+    </message>
+    <message>
+        <location line="+11"/>
         <source>Mark the detected peaks on the spectrum</source>
         <translation>Mark the detected peaks on the spectrum</translation>
     </message>
@@ -14807,7 +14812,42 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</translation>
         <translation>Only keep peaks within this range below the strongest peak</translation>
     </message>
     <message>
-        <location line="+45"/>
+        <location line="+29"/>
+        <source>Remove the DC offset or a linear trend before analysis</source>
+        <translation>Remove the DC offset or a linear trend before analysis</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Remove the DC offset before analysis</source>
+        <translation>Remove the DC offset before analysis</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Window function shared by the spectrum and the time-frequency view</source>
+        <translation>Window function shared by the spectrum and the time-frequency view</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Amplitude scale used by the plots, the peak table and exports</source>
+        <translation>Amplitude scale used by the plots, the peak table and exports</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Frequency resolution of the spectrum (linked to the STFT window length)</source>
+        <translation>Frequency resolution of the spectrum (linked to the STFT window length)</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Window length of the time-frequency view (linked to the frequency resolution)</source>
+        <translation>Window length of the time-frequency view (linked to the frequency resolution)</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Overlap between consecutive time-frequency frames</source>
+        <translation>Overlap between consecutive time-frequency frames</translation>
+    </message>
+    <message>
+        <location line="+19"/>
         <source>Color bar</source>
         <translation>Color bar</translation>
     </message>
@@ -14822,7 +14862,7 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</translation>
         <translation>Export Image</translation>
     </message>
     <message>
-        <location line="-2063"/>
+        <location line="-2425"/>
         <location line="+37"/>
         <source>PNG Image (*.png)</source>
         <translation>PNG Image (*.png)</translation>
@@ -14848,12 +14888,12 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</translation>
         <translation>Peak table added to the data manager as &quot;%1&quot;.</translation>
     </message>
     <message>
-        <location line="+882"/>
+        <location line="+995"/>
         <source>Spectrum ready: resolution %1 Hz, %2 bins</source>
         <translation>Spectrum ready: resolution %1 Hz, %2 bins</translation>
     </message>
     <message>
-        <location line="+886"/>
+        <location line="+1075"/>
         <source>Import Audio</source>
         <translation>Import Audio</translation>
     </message>
@@ -14878,32 +14918,31 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</translation>
         <translation>Import Video</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="-3175"/>
+        <location line="+2436"/>
+        <location line="+750"/>
         <source>Play</source>
         <translation>Play</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-3186"/>
+        <location line="+2436"/>
         <source>Pause</source>
         <translation>Pause</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+755"/>
         <source>Stop</source>
         <translation>Stop</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="-3906"/>
+        <location line="+3856"/>
         <source>Analysis Settings</source>
         <translation>Analysis Settings</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Configure the analysis parameters of the current signal</source>
-        <translation>Configure the analysis parameters of the current signal</translation>
-    </message>
-    <message>
-        <location line="+4"/>
+        <location line="+65"/>
         <source>Stop Calculation</source>
         <translation>Stop Calculation</translation>
     </message>
@@ -14913,7 +14952,9 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</translation>
         <translation>Stop all running signal analysis computations</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="-3600"/>
+        <location line="+3543"/>
+        <location line="+62"/>
         <source>Peak Markers</source>
         <translation>Peak Markers</translation>
     </message>
@@ -14958,12 +14999,13 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</translation>
         <translation>Hide the waterfall view</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-3855"/>
+        <location line="+3888"/>
         <source>Amplitude</source>
         <translation>Amplitude</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+40"/>
         <source>Log frequency</source>
         <translation>Log frequency</translation>
     </message>
@@ -14998,17 +15040,17 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</translation>
         <translation>Export Peaks</translation>
     </message>
     <message>
-        <location line="-1710"/>
+        <location line="-2072"/>
         <source>Audio/Video files (*.wav *.aiff *.aif *.flac *.ogg *.mp3 *.m4a *.mp4 *.mkv *.avi);;All files (*)</source>
         <translation>Audio/Video files (*.wav *.aiff *.aif *.flac *.ogg *.mp3 *.m4a *.mp4 *.mkv *.avi);;All files (*)</translation>
     </message>
     <message>
-        <location line="+834"/>
+        <location line="+947"/>
         <source>Cannot start playback for this signal.</source>
         <translation>Cannot start playback for this signal.</translation>
     </message>
     <message>
-        <location line="-1989"/>
+        <location line="-2075"/>
         <source>Continue</source>
         <translation>Continue</translation>
     </message>
@@ -15018,7 +15060,7 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</translation>
         <translation>Data frame:</translation>
     </message>
     <message>
-        <location line="+368"/>
+        <location line="+341"/>
         <source>Downsample x2</source>
         <translation>Downsample x2</translation>
     </message>
@@ -15033,7 +15075,7 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</translation>
         <translation>Export full</translation>
     </message>
     <message>
-        <location line="-1982"/>
+        <location line="-2144"/>
         <source>Extract the audio track of a video file</source>
         <translation>Extract the audio track of a video file</translation>
     </message>
@@ -15048,39 +15090,39 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</translation>
         <translation>Failed to create the signal analysis page.</translation>
     </message>
     <message>
-        <location line="+1544"/>
+        <location line="+1706"/>
         <source>Failed to export the power spectral density.</source>
         <translation>Failed to export the power spectral density.</translation>
     </message>
     <message>
-        <location line="+1390"/>
+        <location line="+1512"/>
         <source>Failed to import audio.</source>
         <translation>Failed to import audio.</translation>
     </message>
     <message>
-        <location line="-3252"/>
+        <location line="-3536"/>
         <source>Failed to import data frame.</source>
         <translation>Failed to import data frame.</translation>
     </message>
     <message>
-        <location line="+3252"/>
+        <location line="+3536"/>
         <source>Failed to import video.</source>
         <translation>Failed to import video.</translation>
     </message>
     <message>
-        <location line="-100"/>
-        <location line="+123"/>
+        <location line="-109"/>
+        <location line="+132"/>
         <source>Failed to prepare the playback audio for this signal.</source>
         <translation>Failed to prepare the playback audio for this signal.</translation>
     </message>
     <message>
-        <location line="-1698"/>
+        <location line="-1793"/>
         <location line="+14"/>
         <source>Failed to relink the data frame source.</source>
         <translation>Failed to relink the data frame source.</translation>
     </message>
     <message>
-        <location line="+752"/>
+        <location line="+725"/>
         <source>Failed to restore signal &quot;%1&quot;.</source>
         <translation>Failed to restore signal &quot;%1&quot;.</translation>
     </message>
@@ -15090,7 +15132,7 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</translation>
         <translation>Failed to send the peak table.</translation>
     </message>
     <message>
-        <location line="-971"/>
+        <location line="-944"/>
         <location line="+42"/>
         <source>Large Signal</source>
         <translation>Large Signal</translation>
@@ -15101,7 +15143,7 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</translation>
         <translation>Large signal confirmed: %1 assumes about %2 GB of memory.</translation>
     </message>
     <message>
-        <location line="+1139"/>
+        <location line="+1112"/>
         <source>Locate Signal Source</source>
         <translation>Locate Signal Source</translation>
     </message>
@@ -15111,74 +15153,64 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</translation>
         <translation>Locate...</translation>
     </message>
     <message>
-        <location line="-787"/>
+        <location line="-760"/>
         <source>No data frame is available. Import or create a data frame first.</source>
         <translation>No data frame is available. Import or create a data frame first.</translation>
     </message>
     <message>
-        <location line="+311"/>
+        <location line="+284"/>
         <source>No power spectral density data to export.</source>
         <translation>No power spectral density data to export.</translation>
     </message>
     <message>
-        <location line="+2053"/>
-        <source>Open Signal Analysis Window</source>
-        <translation>Open Signal Analysis Window</translation>
-    </message>
-    <message>
-        <location line="-2038"/>
+        <location line="+15"/>
         <source>PSD (dB re 1.0/Hz)</source>
         <translation>PSD (dB re 1.0/Hz)</translation>
     </message>
     <message>
-        <location line="-2169"/>
+        <location line="-2323"/>
         <source>Playback failed. See the message log for details.</source>
         <translation>Playback failed. See the message log for details.</translation>
     </message>
     <message>
-        <location line="+4226"/>
+        <location line="+4682"/>
         <source>Point a signal whose data frame is missing to an existing data frame</source>
         <translation>Point a signal whose data frame is missing to an existing data frame</translation>
     </message>
     <message>
-        <location line="-4283"/>
-        <location line="+4418"/>
+        <location line="-4741"/>
+        <location line="+4936"/>
         <source>Power spectral density (CSV)</source>
         <translation>Power spectral density (CSV)</translation>
     </message>
     <message>
-        <location line="-2186"/>
+        <location line="-2548"/>
         <source>Power spectral density exported: %1</source>
         <translation>Power spectral density exported: %1</translation>
     </message>
     <message>
-        <location line="-647"/>
+        <location line="-620"/>
         <source>Reduce precision</source>
         <translation>Reduce precision</translation>
     </message>
     <message>
         <location line="+325"/>
-        <location line="+2372"/>
+        <location line="+2647"/>
         <source>Relink Data Frame Source</source>
         <translation>Relink Data Frame Source</translation>
     </message>
     <message>
-        <location line="+143"/>
+        <location line="+203"/>
         <source>Export the chart page or the current sub-chart, or copy it to the clipboard</source>
         <translation>Export the chart page or the current sub-chart, or copy it to the clipboard</translation>
     </message>
     <message>
-        <location line="-160"/>
-        <source>Show the signal analysis workspace; it is created on first use</source>
-        <translation>Show the signal analysis workspace; it is created on first use</translation>
-    </message>
-    <message>
-        <location line="-3832"/>
+        <location line="-4516"/>
         <source>Signal &quot;%1&quot; is a placeholder: its data frame is missing.</source>
         <translation>Signal &quot;%1&quot; is a placeholder: its data frame is missing.</translation>
     </message>
     <message>
-        <location line="+2248"/>
+        <location line="+2410"/>
         <source>Signal &quot;%1&quot; refers to a missing file:
 %2
 
@@ -15189,32 +15221,32 @@ Locate the file again?</source>
 Locate the file again?</translation>
     </message>
     <message>
-        <location line="-701"/>
+        <location line="-674"/>
         <source>Signal &quot;%1&quot; relinked to data frame &quot;%2&quot;.</source>
         <translation>Signal &quot;%1&quot; relinked to data frame &quot;%2&quot;.</translation>
     </message>
     <message>
-        <location line="+700"/>
+        <location line="+673"/>
         <source>Signal Source Missing</source>
         <translation>Signal Source Missing</translation>
     </message>
     <message>
-        <location line="-1130"/>
+        <location line="-1103"/>
         <source>Signal analysis cancelled: %1 needs more than the memory budget.</source>
         <translation>Signal analysis cancelled: %1 needs more than the memory budget.</translation>
     </message>
     <message>
-        <location line="+1855"/>
+        <location line="+1941"/>
         <source>Signal analysis failed. See the message log for details.</source>
         <translation>Signal analysis failed. See the message log for details.</translation>
     </message>
     <message>
-        <location line="-129"/>
+        <location line="-131"/>
         <source>Signal analysis: parameters applied, recomputing.</source>
         <translation>Signal analysis: parameters applied, recomputing.</translation>
     </message>
     <message>
-        <location line="-608"/>
+        <location line="-719"/>
         <source>Signal source missing: data frame &quot;%1&quot; (signal &quot;%2&quot;). Use &quot;Relink Data Frame Source&quot; to point it to an existing data frame.</source>
         <translation>Signal source missing: data frame &quot;%1&quot; (signal &quot;%2&quot;). Use &quot;Relink Data Frame Source&quot; to point it to an existing data frame.</translation>
     </message>
@@ -15224,7 +15256,7 @@ Locate the file again?</translation>
         <translation>Skip</translation>
     </message>
     <message>
-        <location line="-807"/>
+        <location line="-780"/>
         <source>The current signal&apos;s source is available; there is nothing to relink.</source>
         <translation>The current signal&apos;s source is available; there is nothing to relink.</translation>
     </message>
@@ -15236,30 +15268,30 @@ Continue or cancel?</source>
 Continue or cancel?</translation>
     </message>
     <message>
-        <location line="+731"/>
+        <location line="+704"/>
         <source>The heatmap matrix is %1 x %2 = %3 cells (about %4 MB as CSV).
 Export the full matrix or downsample by 2?</source>
         <translation>The heatmap matrix is %1 x %2 = %3 cells (about %4 MB as CSV).
 Export the full matrix or downsample by 2?</translation>
     </message>
     <message>
-        <location line="-1452"/>
-        <location line="+3417"/>
+        <location line="-1476"/>
+        <location line="+3888"/>
         <source>Window</source>
         <translation>Window</translation>
     </message>
     <message>
-        <location line="-2602"/>
+        <location line="-3022"/>
         <source>peak table</source>
         <translation>peak table</translation>
     </message>
     <message>
-        <location line="-1515"/>
+        <location line="-1704"/>
         <source>soundfile is not available; only WAV files can be read directly. Install soundfile or use FFmpeg.</source>
         <translation>soundfile is not available; only WAV files can be read directly. Install soundfile or use FFmpeg.</translation>
     </message>
     <message>
-        <location line="+3313"/>
+        <location line="+3588"/>
         <source>spectrum</source>
         <translation>spectrum</translation>
     </message>
@@ -15269,7 +15301,7 @@ Export the full matrix or downsample by 2?</translation>
         <translation>waveform envelope</translation>
     </message>
     <message>
-        <location line="-3137"/>
+        <location line="-3412"/>
         <source>FFmpeg is available; video import is enabled.</source>
         <translation>FFmpeg is available; video import is enabled.</translation>
     </message>
@@ -15279,19 +15311,146 @@ Export the full matrix or downsample by 2?</translation>
         <translation>FFmpeg is still not available; video import stays disabled.</translation>
     </message>
     <message>
-        <location line="+3305"/>
+        <location line="+3589"/>
         <source>Signal imported.</source>
         <translation>Signal imported.</translation>
     </message>
     <message>
-        <location line="-2044"/>
+        <location line="-2139"/>
         <source>The estimated peak memory for the %1 is about %2 GB, above the 1.5 GB budget.
 Reduce the precision, scan only the visible range, or cancel?</source>
         <translation>The estimated peak memory for the %1 is about %2 GB, above the 1.5 GB budget.
 Reduce the precision, scan only the visible range, or cancel?</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="-905"/>
+        <location line="+3824"/>
+        <source>Import / Export</source>
+        <translation>Import / Export</translation>
+    </message>
+    <message>
+        <location line="-3770"/>
+        <location line="+3773"/>
+        <source>Preprocess</source>
+        <translation>Preprocess</translation>
+    </message>
+    <message>
+        <location line="-3771"/>
+        <location line="+3918"/>
+        <source>Remove DC</source>
+        <translation>Remove DC</translation>
+    </message>
+    <message>
+        <location line="-3911"/>
+        <location line="+3904"/>
+        <source>None</source>
+        <translation>None</translation>
+    </message>
+    <message>
+        <location line="-3903"/>
+        <location line="+3904"/>
+        <source>Constant</source>
+        <translation>Constant</translation>
+    </message>
+    <message>
+        <location line="-3903"/>
+        <location line="+3904"/>
+        <source>Linear</source>
+        <translation>Linear</translation>
+    </message>
+    <message>
+        <location line="-3898"/>
+        <location line="+3892"/>
+        <source>Detrend</source>
+        <translation>Detrend</translation>
+    </message>
+    <message>
+        <location line="-3887"/>
+        <location line="+3754"/>
+        <source>Spectrum</source>
+        <translation>Spectrum</translation>
+    </message>
+    <message>
+        <location line="-3749"/>
+        <location line="+3902"/>
+        <source>Rectangular</source>
+        <translation>Rectangular</translation>
+    </message>
+    <message>
+        <location line="-3901"/>
+        <location line="+3902"/>
+        <source>Hann</source>
+        <translation>Hann</translation>
+    </message>
+    <message>
+        <location line="-3901"/>
+        <location line="+3902"/>
+        <source>Hamming</source>
+        <translation>Hamming</translation>
+    </message>
+    <message>
+        <location line="-3901"/>
+        <location line="+3902"/>
+        <source>Blackman</source>
+        <translation>Blackman</translation>
+    </message>
+    <message>
+        <location line="-3901"/>
+        <location line="+3902"/>
+        <source>Flat top</source>
+        <translation>Flat top</translation>
+    </message>
+    <message>
+        <location line="-3868"/>
+        <location line="+3885"/>
+        <source>Resolution</source>
+        <translation>Resolution</translation>
+    </message>
+    <message>
+        <location line="-3881"/>
+        <location line="+3710"/>
+        <source>Time-Frequency</source>
+        <translation>Time-Frequency</translation>
+    </message>
+    <message>
+        <location line="-3695"/>
+        <location line="+3873"/>
+        <source>Window length</source>
+        <translation>Window length</translation>
+    </message>
+    <message>
+        <location line="-3858"/>
+        <location line="+3865"/>
+        <source>Hop overlap</source>
+        <translation>Hop overlap</translation>
+    </message>
+    <message>
+        <location line="-3820"/>
+        <location line="+3641"/>
+        <source>More</source>
+        <translation>More</translation>
+    </message>
+    <message>
+        <location line="-3382"/>
+        <location line="+3444"/>
+        <source>Playback position / total duration</source>
+        <translation>Playback position / total duration</translation>
+    </message>
+    <message>
+        <location line="-3195"/>
+        <location line="+2436"/>
+        <source>Pause playback</source>
+        <translation>Pause playback</translation>
+    </message>
+    <message>
+        <location line="-2436"/>
+        <location line="+2436"/>
+        <location line="+750"/>
+        <source>Start playback</source>
+        <translation>Start playback</translation>
+    </message>
+    <message>
+        <location line="-2977"/>
         <source>Scan visible range</source>
         <translation>Scan visible range</translation>
     </message>
@@ -15311,7 +15470,7 @@ Reduce the precision, scan only the visible range, or cancel?</translation>
         <translation>Peak curves use a coarser frame step (local scan).</translation>
     </message>
     <message>
-        <location line="+695"/>
+        <location line="+668"/>
         <source>Export Whole Page</source>
         <translation>Export Whole Page</translation>
     </message>
@@ -15361,12 +15520,27 @@ Reduce the precision, scan only the visible range, or cancel?</translation>
         <translation>Failed to copy the current sub-chart to the clipboard.</translation>
     </message>
     <message>
-        <location line="+899"/>
+        <location line="+889"/>
+        <source>Frequency resolution of the time-frequency view</source>
+        <translation>Frequency resolution of the time-frequency view</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Δf ≈ %1 Hz</source>
+        <translation>Δf ≈ %1 Hz</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Frequency resolution derived from the window length</source>
+        <translation>Frequency resolution derived from the window length</translation>
+    </message>
+    <message>
+        <location line="+115"/>
         <source>%1 tasks</source>
         <translation>%1 tasks</translation>
     </message>
     <message>
-        <location line="+395"/>
+        <location line="+454"/>
         <source>heatmap</source>
         <translation>heatmap</translation>
     </message>
@@ -15700,7 +15874,7 @@ Reduce the precision, scan only the visible range, or cancel?</translation>
 <context>
     <name>DA::DASignalPlayer</name>
     <message>
-        <location filename="../../plugins/DASignalAnalysis/Playback/DASignalPlayer.cpp" line="+199"/>
+        <location filename="../../plugins/DASignalAnalysis/Playback/DASignalPlayer.cpp" line="+210"/>
         <source>Signal is invalid.</source>
         <translation>Signal is invalid.</translation>
     </message>
@@ -15718,7 +15892,7 @@ Reduce the precision, scan only the visible range, or cancel?</translation>
 <context>
     <name>DA::DAStatusBarWidget</name>
     <message>
-        <location filename="../DAGui/Common/DAStatusBarWidget.cpp" line="+52"/>
+        <location filename="../DAGui/Common/DAStatusBarWidget.cpp" line="+55"/>
         <source>Workflow</source>
         <translation>Workflow</translation>
     </message>
@@ -20722,113 +20896,13 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DASignalFormSpecBuilder</name>
     <message>
-        <location filename="../../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="+63"/>
-        <source>Remove DC</source>
-        <translation>Remove DC</translation>
-    </message>
-    <message>
-        <location line="+4"/>
-        <source>Detrend</source>
-        <translation>Detrend</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>None</source>
-        <translation>None</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Constant</source>
-        <translation>Constant</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Linear</source>
-        <translation>Linear</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Signal Preprocessing</source>
-        <translation>Signal Preprocessing</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>Window</source>
-        <translation>Window</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Rectangular</source>
-        <translation>Rectangular</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Hann</source>
-        <translation>Hann</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Hamming</source>
-        <translation>Hamming</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Blackman</source>
-        <translation>Blackman</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Flat top</source>
-        <translation>Flat top</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Amplitude</source>
-        <translation>Amplitude</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Peak amplitude</source>
-        <translation>Peak amplitude</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>RMS</source>
-        <translation>RMS</translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>dB reference</source>
-        <translation>dB reference</translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Full scale (dBFS)</source>
-        <translation>Full scale (dBFS)</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Relative to 1.0</source>
-        <translation>Relative to 1.0</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Frequency resolution (Hz)</source>
-        <translation>Frequency resolution (Hz)</translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <location line="+51"/>
+        <location filename="../../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="+67"/>
+        <location line="+39"/>
         <source>Zero padding points (advanced)</source>
         <translation>Zero padding points (advanced)</translation>
     </message>
     <message>
-        <location line="-45"/>
-        <source>Spectrum</source>
-        <translation>Spectrum</translation>
-    </message>
-    <message>
-        <location line="+8"/>
+        <location line="-23"/>
         <source>Averaging</source>
         <translation>Averaging</translation>
     </message>
@@ -20848,27 +20922,22 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Overlap (%)</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+7"/>
         <source>Power Spectrum</source>
         <translation>Power Spectrum</translation>
     </message>
     <message>
-        <location line="+8"/>
-        <source>Window length (ms)</source>
-        <translation>Window length (ms)</translation>
+        <location line="-23"/>
+        <source>Spectrum (Advanced)</source>
+        <translation>Spectrum (Advanced)</translation>
     </message>
     <message>
-        <location line="+8"/>
-        <source>Hop overlap (%)</source>
-        <translation>Hop overlap (%)</translation>
+        <location line="+39"/>
+        <source>Time-Frequency (Advanced)</source>
+        <translation>Time-Frequency (Advanced)</translation>
     </message>
     <message>
-        <location line="+14"/>
-        <source>Short-Time Fourier Transform</source>
-        <translation>Short-Time Fourier Transform</translation>
-    </message>
-    <message>
-        <location line="+11"/>
+        <location line="+10"/>
         <source>Prominence (advanced)</source>
         <translation>Prominence (advanced)</translation>
     </message>
@@ -20883,7 +20952,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
         <translation>Minimum height (advanced)</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+7"/>
         <source>Peak Search (Advanced)</source>
         <translation>Peak Search (Advanced)</translation>
     </message>
@@ -20904,18 +20973,8 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
     </message>
     <message>
         <location line="+5"/>
-        <source>Analysis Settings</source>
-        <translation>Analysis Settings</translation>
-    </message>
-    <message>
-        <location line="-139"/>
-        <source>dB (FS)</source>
-        <translation>dB (FS)</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>dB (re 1.0)</source>
-        <translation>dB (re 1.0)</translation>
+        <source>Advanced Analysis Settings</source>
+        <translation>Advanced Analysis Settings</translation>
     </message>
 </context>
 <context>

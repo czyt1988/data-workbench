@@ -1,7 +1,8 @@
 # DASignalAnalysis 插件开发指南
 
-通用时序信号分析插件：主工作区注册「信号分析」中央页面（与绘图/表格/工作流并列，惰性创建），
-页面内每个信号一个标签页；丝带另有一级「信号分析」标签页。信号只认「采样率 + 通道 + 时间原点」，
+通用时序信号分析插件：主页「创建」面板有一个「信号分析」入口（惰性创建中央页面，与绘图/表格/工作流并列），
+页面内每个信号一个标签页；丝带不再占用常驻顶级标签页，只在信号分析页获得焦点时出现
+「分析设置」「信号显示」两个上下文标签页。信号只认「采样率 + 通道 + 时间原点」，
 音频是一等导入格式，但不是唯一格式。
 
 动手前先读 §铁律 与 §常见陷阱，再按修改点查 §关键机制。设计决策 D1–D31 的完整记录在
@@ -29,14 +30,15 @@
 ```
 plugins/DASignalAnalysis/
 ├── DASignalAnalysisPlugin.*      # 插件主类：initialize/finalize/retranslate/createArchiveTask/createSettingPage
-├── DASignalAnalysisUI.*          # 界面层：丝带标签页 + 动作 + 页面/峰值窗口惰性创建 + 存档编排
+├── DASignalAnalysisUI.*          # 界面层：主页入口 + 上下文两页 + 动作 + 页面/峰值窗口惰性创建 + 存档编排
 ├── DASignalAnalysisGlobal.h      # 导出宏
 ├── DASignalAnalysisResource.qrc  # 图标资源（icon/）
 ├── Page/
 │   ├── DASignalAnalysisPage.*    # 页面：空状态 + QTabBar + QStackedWidget（每信号一个视图）
 │   ├── DASignalAnalysisView.*    # 单信号视图：DAFigureWidget 2×2（波形 / 频谱 / 热图或三维瀑布）
-│   ├── DASignalAnalysisSettingContext.*  # 设置上下文 provider：停靠页激活时接管设置面板/图元树/上下文标签/底部工具栏
+│   ├── DASignalAnalysisSettingContext.*  # 设置上下文 provider：停靠页激活时接管设置面板/图元树/上下文标签/播放器控制条
 │   ├── DASignalChartExport.*     # 导出助手：整页 PNG（含 3D 合帧）、当前子图 PNG/SVG/PDF、剪贴板
+│   ├── DASignalTimeText.*        # 播放器控制条时间文本（mm:ss.s 与「当前 / 总长」占位，纯函数）
 │   ├── DAPeakDockWidget.*        # 峰值停靠窗口：上 2/3 峰值表、下 1/3 每帧前 N 曲线
 │   ├── DAPeakCurvePlotSamples.*  # 峰值曲线采样口径：点全画、折线按跳变断开（纯函数）
 │   ├── DAPeakMarkerLabel.*       # 峰值标记文本模板：{index}/{fre}/{amp} 占位符渲染（纯函数）
@@ -63,7 +65,7 @@ plugins/DASignalAnalysis/
 ├── Playback/DASignalPlayer.*     # QMediaPlayer 封装（Qt5/Qt6 分支；数据帧来源先后台导出临时 WAV）
 ├── Dialogs/
 │   ├── DASignalImportDialog.*    # 导入对话框（音频 / 视频 / 数据帧；采样率必须用户确认）
-│   ├── DASignalAnalysisSettingDialog.*  # 按信号生效的分析参数（峰值查找只留高级项）
+│   ├── DASignalAnalysisSettingDialog.*  # 按信号生效的高级分析参数（常用项已搬到丝带；删了 dB 参考）
 │   ├── DAPeakMarkerDisplayDialog.*      # 峰值标记文本模板编辑（占位符按钮 + 编辑框 + 渲染预览）
 │   └── DASignalAnalysisSettingPage.*    # 插件全局设置页（设置 → 信号分析）：FFmpeg 路径
 ├── Form/DASignalFormSpecBuilder.*# DAFormSpec 表单规格（分组 + visible_when 联动）
@@ -124,16 +126,20 @@ plugins/DASignalAnalysis/
    （`DAChartItemArchive::makeSnapshots`），后台任务只写字节、不碰 `QwtPlotItem*`；界面重建走
    `loadedCallBack`。figure 存档键用 `signal-id`（`signal-name` 只兼容旧档）。
 
-10. **全局设置与按信号参数分开。** 与数据无关的全局项（FFmpeg 可执行文件路径、峰值标记文本模板）
-    放插件级配置（FFmpeg 路径在 `createSettingPage()` → `Dialogs/DASignalAnalysisSettingPage`，
-    入口「设置 → 信号分析」；模板在丝带「峰值」panel 的「标记显示」对话框）；
-    「分析设置」对话框只放按信号生效的分析参数。峰值查找的常见项（模式 / 标记数量 / 相对门限）
-    在丝带「峰值」panel，对话框只保留「模式 = 高级」时生效的突出度 / 最小间距 / 绝对高度，
-    不要再把常见项加回对话框（两处入口会分叉）。界面文案引用入口时统一写「设置 → 信号分析」。
+10. **全局设置与按信号参数分开，常用参数在丝带、高级项在对话框。** 与数据无关的全局项（FFmpeg
+    可执行文件路径、峰值标记文本模板）放插件级配置（FFmpeg 路径在 `createSettingPage()` →
+    `Dialogs/DASignalAnalysisSettingPage`，入口「设置 → 信号分析」；模板在「信号显示 → 峰值标注」的
+    「标记显示」对话框）。按信号生效的**常用参数**（预处理 / 窗函数 / 幅值口径 / 频率分辨率 /
+    STFT 窗长与跳步 / 峰值模式、标记数量、相对门限）只在「分析设置」上下文页出现；「更多 → 高级设置…」
+    对话框只保留零填充、功率谱、峰值高级三项、标定，不要再把常用项加回对话框（两处入口会分叉，
+    且 `params()` 必须从打开时基线回填，否则点确定会重置丝带选择）。dB 参考不再有独立入口，由幅值
+    口径派生（`dbRef1` → 相对 1.0，其余 → 满量程），字段只保留以兼容旧档，写盘/送 Python/读档统一经
+    `DASignalAnalysisParams::normalizeDbReference()` 规范化。界面文案引用入口时统一写「设置 → 信号分析」。
 
 11. **插件必须能热卸载干净。** 动作经宿主 `DAActionsInterface` 创建/销毁；`CDockWidget*` 与页面指针
     用 `QPointer`（宿主可能先销毁 dockManager）；对话框以页面为父；`finalize()` 清理峰值窗口、页面
-    dock、播放器、worker、丝带标签与动作，且 `mUI`/`mCategory` 为空时**不能提前 return**。
+    dock、播放器、worker、上下文标签与动作，并摘掉主页「创建」panel 里注入的按钮（只摘按钮、不删宿主
+    panel）；且 `mUI`/`mContextCategory` 为空时**不能提前 return**（后续动作清理必须执行）。
     设置页指针不得长期缓存（宿主每次打开设置对话框都重建，见 §4.9）。
 
 12. **类型转换边界照根 AGENTS.md 执行。** 任何 `.cpp` 出现「Qt 类型进 Python」（`attr(...)(QString)`、
@@ -153,17 +159,22 @@ plugins/DASignalAnalysis/
 
 ## 四、关键机制
 
-### 4.1 页面惰性加载
+### 4.1 页面惰性加载与丝带入口
 
-- `initialize()` 只建丝带标签页、动作与后台 worker，**不建**中央页面和峰值窗口——多数用户用不到
-  信号分析，程序启动不该多出一个空标签页。
-- 页面统一走 `ensurePageCreated()`：建页面 + 连接导入/标签事件 + 建峰值窗口 + 读色带偏好。三个导入槽、
-  `addSignalAndActivate`、`restoreState`、丝带「打开信号分析窗口」都先调它。
-- `openSignalAnalysisPage()`：首次调用创建页面；页面已关闭时恢复显示并 raise。
+- `initialize()` 只建主页「创建」panel 的「信号分析」入口（`installHomeEntry()`）、上下文标签两页、动作与
+  后台 worker，**不建**中央页面和峰值窗口——多数用户用不到信号分析，程序启动不该多出一个空标签页。
+- 插件**不再占用顶级丝带标签页**：入口是宿主主页「创建」panel 里注入的一个 Large 按钮（动作
+  `actionSignalOpenPage`，objectName 沿用旧值），卸载时只摘按钮、不删宿主 panel。宿主 panel 按
+  `DA::UiNames::Ribbon::MainCreatePanel` 查找，找不到只 `qWarning`，不影响工程恢复等其它建页路径。
+- 页面统一走 `ensurePageCreated()`：建页面 + 连接导入/标签事件 + 建峰值窗口 + 播放器控制条 + 读色带偏好。
+  三个导入槽、`addSignalAndActivate`、`restoreState`、主页「信号分析」入口都先调它。
+- `openSignalAnalysisPage()`：首次调用创建页面；页面已关闭时恢复显示并 raise；打开后丝带默认停在
+  「分析设置」页（上下文标签已显示时也会切回页 1）。
 - `serializeState()` / `finalize()` / `retranslateUi()` / 各后台结果回填都必须容忍 `mPage == nullptr`
   （页面从未打开过的会话）。页面 dock 图标为 `icon/showSignalAnalysis.svg`。
-- 页面 dock 激活时由 `DASignalAnalysisSettingContext` 接管设置面板、图元树、上下文标签与底部工具栏；
-  失活时还原宿主绘图区目标。
+- 页面 dock 激活时由 `DASignalAnalysisSettingContext` 接管设置面板、图元树、上下文标签与播放器控制条；
+  失活时还原宿主绘图区目标，并停止播放（D6：停止只挂在 provider 失活，不挂在
+  `setSignalToolbarVisible(false)`——该函数在激活流程里也会被调用）。
 
 ### 4.2 导入
 
@@ -195,15 +206,24 @@ plugins/DASignalAnalysis/
 
 ### 4.4 参数、幅值与内存预算
 
-- 参数六组（预处理 / 频谱 / 功率谱 / STFT / 峰值（高级项）/ 标定），一个信号标签页记一份，
-  不进全局撤销栈；改参数后立即重算一次。峰值查找的模式 / 标记数量 / 相对门限在丝带「峰值」
-  panel（改后只重算峰值表与曲线，不重算频谱）；分析设置对话框不含这三项，`params()` 必须从
-  打开时的基线参数回填，否则点确定会把 ribbon 上的选择重置成默认值。
-- `resolutionHz` 与 `stftWindowMs` 二选一联动（Δf = 1/窗长），换算函数
-  `signalStftWindowMsFromResolution` / `signalResolutionFromStftWindowMs`；峰值最小间距 `<=0` 是自动哨兵，
-  按 5×实际分辨率派生。
-- 参数对话框确定后必须 `syncAmplitudeUiFromParams()`（`QSignalBlocker` 同步丝带勾选与
-  `mAmplitudeMode/mDbReference`），否则峰值表、导出与存档口径会和视图分叉。
+- 参数一个信号标签页记一份，不进全局撤销栈。常用项在「分析设置」上下文页（预处理：去直流/去趋势；
+  频谱：窗函数/幅值口径/频率分辨率；时频：窗长/跳步重叠；峰值：标记数量/模式/相对门限），高级项在
+  「更多 → 高级设置…」对话框（零填充/功率谱/峰值高级三项/标定）。
+- **统一写重回填入口**：控件 → `applyParamsPatch(sig, patchFn, ParamScope)`（拷贝参数 → 改字段 →
+  `mParamsPerSignal` → `bumpParamsVersion()` → 按 scope 分级重算）；参数 → 控件 `syncParamsRibbonControls()`
+  由 `syncSignalContextControls()` 调用，全部 `QSignalBlocker` 防回环，无当前信号时置灰。
+- **分级重算**：`ParamScope::Preprocess`/`Spectrum` → 频谱+热图+峰值；`TimeFreq`（跳步）→ 热图+峰值曲线；
+  `Peaks` → 只重算峰值表与曲线；`DisplayOnly`（幅值口径）→ 只重绘。不要所有改动都走
+  `recomputeCurrentSignal()` 全量（大信号改跳步重算整段频谱会明显变慢）。
+- `resolutionHz` 与 `stftWindowMs` 双向联动（Δf = 1/窗长），换算函数
+  `signalStftWindowMsFromResolution` / `signalResolutionFromStftWindowMs`；改一个时用阻断信号回填另一个
+  控件，`applyParamsPatch` 里同时写两个字段，scope 用 `Spectrum`（联动时含频谱）。峰值最小间距 `<=0`
+  是自动哨兵，按 5×实际分辨率派生。
+- 幅值口径（peak/rms/dbFS/dbRef1）只影响显示与导出；dB 参考由幅值口径派生（D7），改口径不递增参数
+  版本、不提交计算，只 `syncAmplitudeUiFromParams()` 同步全局 `mAmplitudeMode/mDbReference`、视图与
+  峰值表重绘。
+- 对话框确定后必须 `syncParamsRibbonControls()` 全量回填丝带，否则峰值表、导出与存档口径会和视图分叉。
+- spin 一律 `setKeyboardTracking(false)`；单位用 suffix（` Hz` / ` ms` / ` %`）。
 - 预算：频谱/热图/包络流式或按区段，峰值表/曲线含整段 float32 副本并按并发系数放大；
   详见 `DASignalMemoryEstimate.h` 的公式注释。
 
@@ -211,9 +231,14 @@ plugins/DASignalAnalysis/
 
 - 布局：`DAFigureWidget` 2×2 保留式网格——波形 (0,0,1,2)、频谱 (1,0)、热图/三维瀑布 (1,1)；
   瀑布默认二维（`setWaterfallMode` 0=二维 / 1=三维 / 2=隐藏）；播放头、STFT 窗口矩形、峰值标记是
-  画布图元。视图内不放 inline 控件：峰值/分析类控件在丝带「峰值」与「分析」panel、显示类控件在
-  上下文标签、播放类在底部工具栏、外观类在右侧设置面板，视图的 setter/getter 是这些入口共同
+  画布图元。视图内不放 inline 控件：分析参数在「分析设置」上下文页、显示类在「信号显示」页、
+  播放类在窗口底部播放器控制条、外观类在右侧设置面板，视图的 setter/getter 是这些入口共同
   操作的状态源。
+- **窗口底部播放器控制条**（`buildSignalToolbar`，只在信号分析页激活时显示）：跟随播放 / ▶⏸ 单切换 /
+  ■ / 时间滑块 / 时间文本（`Page/DASignalTimeText` 纯函数，`mm:ss.s` 与「当前 / 总长」占位）/
+  dB 下限 / 自动滚动。`actionPlay` 是可勾选动作（勾选 = 正在播放），`DASignalPlayer::stateChanged(bool)`
+  驱动图标与勾选；`actionPause` 已删除。失活停止播放挂在 provider 失活，不挂在
+  `setSignalToolbarVisible(false)`。
 - **坐标轴**：`DAFigureWidget::createChart()` 会给新子图显式设 X 0..800 / Y 0..500 占位刻度（同时关掉
   autoscale）。`buildFigure()` 只在建图时对三张 2D 子图调用 `setAxisAutoScale(..., true)`；
   `rebuild*` 不无条件重开，否则用户缩放会被覆盖。工程恢复走存档轴状态。
@@ -242,11 +267,10 @@ plugins/DASignalAnalysis/
   按模板渲染（`{index}` / `{fre}` / `{amp}`，默认 `{index}-{fre} Hz` → `1-32.5 Hz`），幅值取标记自身
   的显示坐标（与 `DASignalAmplitude` 同口径，dB 模式自动带单位），空模板表示不显示文本。
   标记非 transient、随工程存档；恢复时位置以存档为准，文本按当前模板重写（`applyPeakMarkerLabels()`）。
-- 丝带入口：峰值相关动作统一在顶级「信号分析」→「峰值」panel：峰值标记、标记数量、模式（small
-  combobox）、相对门限（small spin）、标记显示（弹出模板编辑对话框）、峰值窗口；**上下文标签不再有**
-  峰值标记/峰值表（重复入口已删除），峰值窗口是打开峰值表停靠窗口的唯一入口。
-  模式/相对门限改后只重算峰值表与曲线（`requestPeaks`），不重算频谱；模板改动立即写配置并广播到
-  全部已创建视图。
+- 丝带入口（按用途分两页，不再有重复入口）：**分析设置 → 峰值**放标记数量（大按钮 + 10/20/50 菜单）、
+  模式（small combobox）、相对门限（small spin）；**信号显示 → 峰值标注**放峰值标记（勾选）、标记显示
+  （弹出模板编辑对话框）、峰值窗口（打开峰值表停靠窗口的唯一入口）。模式/相对门限/标记数量改后只重算
+  峰值表与曲线（`ParamScope::Peaks`），不重算频谱；模板改动立即写配置并广播到全部已创建视图。
 - 存档优先：加载后到第一次重算之间，`mPeakMarkersRestored` 保证不删除重建用户调整过的标记；
   `setPeaks()` 收到新计算结果时复位该窗口。
 - 窗口显隐偏好 `peakDockVisible`：`ensurePageCreated()` 读取、`finalize()` 写回；首次导入只按偏好决定
@@ -286,7 +310,11 @@ plugins/DASignalAnalysis/
 ### 4.9 设置
 
 - 两个入口、两份内容：插件全局设置页（`createSettingPage()`，主页 → 设置 → 信号分析）只放与数据
-  无关的全局项（FFmpeg 路径）；标签页「分析设置」对话框只放按信号生效的分析参数。
+  无关的全局项（FFmpeg 路径）；「更多 → 高级设置…」（`DASignalAnalysisSettingDialog`）只放按信号生效
+  的高级参数（零填充/功率谱/峰值高级三项/标定），常用参数在上下文页。
+- 对话框 `params()` 必须从打开时基线参数回填丝带字段（removeDc / detrend / window / amplitudeMode /
+  resolutionHz / stftWindowMs / stftOverlap / peakMode / peakTopN / peakRelDb），否则点确定会把这些
+  选择重置成默认值；返回前再 `normalizeDbReference()`（D7）。
 - 宿主 `AppMainWindow::showSettingDialog()` **每次打开都重建设置对话框**，目的是让插件设置页不会活过
   提供它的插件（插件可被停用并卸载 DLL，常驻页面析构会跳进已卸载代码段）。因此插件**不得**把设置页
   指针缓存为长期成员，`finalize()` 也不需要清理设置页。
