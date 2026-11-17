@@ -1,367 +1,349 @@
 # DASignalAnalysis 插件开发指南
 
-通用时序信号分析插件。主工作区可打开「信号分析」页面（惰性创建，与绘图/表格/工作流并列），
-页面内每个信号一个标签页；丝带新增「信号分析」标签页。开发方案见
-`tmp/信号分析插件开发方案.md`（决策记录 D1–D31 为定稿口径；**D11 已按用户要求修订为惰性创建**，
-见 §页面惰性加载；**D7 已在 v1.3 修订**：FFmpeg 路径入口从分析设置对话框移到插件全局设置页，
-探测顺序与配置键不变，见 §v1.3 修正要点；其余不得擅自更改）。
+通用时序信号分析插件：主工作区注册「信号分析」中央页面（与绘图/表格/工作流并列，惰性创建），
+页面内每个信号一个标签页；丝带另有一级「信号分析」标签页。信号只认「采样率 + 通道 + 时间原点」，
+音频是一等导入格式，但不是唯一格式。
 
-## 目录结构
+动手前先读 §铁律 与 §常见陷阱，再按修改点查 §关键机制。设计决策 D1–D31 的完整记录在
+`tmp/信号分析插件开发方案.md`；本文只写当前有效口径，两者不一致时以代码和本文为准，先停下报告。
+
+## 一、数据流
+
+```
+导入（音频 / 视频 / 数据帧）
+  └─ DASignal（元数据）+ DASignalSource（跨线程 readRange 取数）
+       └─ DASignalAnalysisWorker（GUI 线程提交、Python 守护线程计算、QTimer 轮询）
+            └─ Python 编排（PyScripts/DASignalAnalysis/*.py → 核心层 DAPyBase/spectral.py）
+                 └─ 结果结构体（DASpectrumResult / DAStftResult / DAPeakResult）
+                      └─ 视图 / 峰值窗口 / 导出；工程只存来源引用、参数、视图状态与非 transient 图元
+```
+
+两条分层约束贯穿全插件：
+
+- **计算与显示分离**：Python 只出数值（峰值幅度），显示换算、绘图与存档都在 C++。
+- **DSP 纯函数在核心层**（`src/PyScripts/DAWorkbench/DAPyBase/spectral.py`），插件 Python 包只做面向
+  信号的编排（读哪段、怎么分块、怎么池化、进度与取消）。不在 `DAGui` 写 DSP，不在 `DAFigure` 放界面控件。
+
+## 二、目录结构
 
 ```
 plugins/DASignalAnalysis/
-├── DASignalAnalysisPlugin.*      # 插件主类（DAAbstractPlugin，非节点插件）
-├── DASignalAnalysisUI.*          # 丝带标签页 + 中央页面 + 动作 + 工程存档入口
+├── DASignalAnalysisPlugin.*      # 插件主类：initialize/finalize/retranslate/createArchiveTask/createSettingPage
+├── DASignalAnalysisUI.*          # 界面层：丝带标签页 + 动作 + 页面/峰值窗口惰性创建 + 存档编排
+├── DASignalAnalysisGlobal.h      # 导出宏
+├── DASignalAnalysisResource.qrc  # 图标资源（icon/）
 ├── Page/
-│   ├── DASignalAnalysisPage.*    # 页面：QTabBar + QStackedWidget（每信号一个视图）
-│   ├── DASignalAnalysisView.*    # 单信号视图：DAFigureWidget 2×2 网格（波形+频谱+热图/三维瀑布+播放头）
-│   ├── DASignalAnalysisSettingContext.*  # 设置上下文 provider（页面 dock 激活时接管设置面板/图元树/上下文标签，并声明内置「绘图操作」的 figure 目标）
-│   ├── DASignalChartExport.*     # 导出助手（整页/当前子图 PNG/SVG/PDF + 剪贴板）
-│   ├── DAPeakCurvePlotSamples.*  # 峰值曲线渲染采样（点/折线断开口径，v1.6）
-│   ├── DAPeakMarkerSamples.*     # 峰值标记吸附采样（标记落到已绘制曲线峰顶，v1.8）
-│   └── DAPeakDockWidget.*        # 峰值停靠窗口（表 2/3 + 曲线 1/3）
+│   ├── DASignalAnalysisPage.*    # 页面：空状态 + QTabBar + QStackedWidget（每信号一个视图）
+│   ├── DASignalAnalysisView.*    # 单信号视图：DAFigureWidget 2×2（波形 / 频谱 / 热图或三维瀑布）
+│   ├── DASignalAnalysisSettingContext.*  # 设置上下文 provider：停靠页激活时接管设置面板/图元树/上下文标签/底部工具栏
+│   ├── DASignalChartExport.*     # 导出助手：整页 PNG（含 3D 合帧）、当前子图 PNG/SVG/PDF、剪贴板
+│   ├── DAPeakDockWidget.*        # 峰值停靠窗口：上 2/3 峰值表、下 1/3 每帧前 N 曲线
+│   ├── DAPeakCurvePlotSamples.*  # 峰值曲线采样口径：点全画、折线按跳变断开（纯函数）
+│   └── DAPeakMarkerSamples.*     # 峰值标记吸附：落到当前已绘制曲线的最近局部极大（纯函数）
 ├── Signal/
-│   ├── DASignal.*                # 信号对象（元数据 + 会话内唯一 id + 转发取数）
-│   ├── DASignalSource.h          # 来源抽象（readRange 必须可跨线程）
-│   ├── DAFileSignalSource.*      # 文件来源（音频/视频抽取结果）
-│   ├── DADataFrameSignalSource.* # 数据帧来源（引用式）
-│   └── DASignalImporter.*        # 导入编排 + FFmpeg 探测 + 临时文件清理
+│   ├── DASignal.*                # 信号对象：元数据 + 会话内唯一 id + 转发 readRange
+│   ├── DASignalSource.h          # 来源抽象（readRange 必须可跨线程调用）
+│   ├── DAFileSignalSource.*      # 文件来源（音频 / 视频抽取结果）
+│   ├── DADataFrameSignalSource.* # 数据帧来源（引用式、按块 float64→float32、「来源缺失」占位）
+│   └── DASignalImporter.*        # 导入编排 + FFmpeg 探测 + 会话临时文件 + 插件配置读写
 ├── Analysis/
-│   ├── DASignalAnalysisParams.*  # 参数结构体（JSON 键名与 Python 编排一致）
-│   ├── DASignalAnalysisWorker.*  # Python 守护线程任务 + QTimer 轮询
-│   ├── DASpectrumResult.h        # 频谱结果
+│   ├── DASignalAnalysisParams.*  # 参数结构体（工程 JSON / 表单 / Python 字典三套映射）
+│   ├── DASignalAnalysisWorker.*  # 后台任务协调：提交/轮询/去重/取消/同步短调用
+│   ├── DASignalTaskContext.h     # 任务上下文（信号 + 通道 + 参数版本）
+│   ├── DASignalAmplitude.h       # 幅值显示换算唯一入口（peak/rms/dbFS/dbRef1）
+│   ├── DASignalMemoryEstimate.h  # 各阶段峰值内存估算（纯逻辑，测试直接断言）
+│   ├── DASpectrumResult.h        # 频谱 / 功率谱结果
 │   ├── DAStftResult.h            # 时频显示栅格结果
 │   ├── DAPeakResult.h            # 峰值表 + 每帧前 N 曲线
 │   └── DAPeakTableModel.*        # 峰值表模型
 ├── Render/
 │   ├── DAStftRasterData.*        # QwtMatrixRasterData 子类（显式 Z 色标范围）
 │   └── DAWaterfallBuilder.*      # 三维瀑布抽帧抽频点
-├── Playback/DASignalPlayer.*     # QMediaPlayer 封装（Qt5/Qt6 分支）
-├── Dialogs/                      # 导入对话框 + 参数设置对话框 + 插件全局设置页
-│   ├── DASignalImportDialog.*    # 导入对话框（音频 / 视频 / 数据帧）
-│   ├── DASignalAnalysisSettingDialog.*  # 信号分析标签页「分析设置」：按信号生效的分析参数
-│   └── DASignalAnalysisSettingPage.*    # 插件全局设置页（主页 → 设置 → 信号分析）：FFmpeg 路径
+├── Playback/DASignalPlayer.*     # QMediaPlayer 封装（Qt5/Qt6 分支；数据帧来源先后台导出临时 WAV）
+├── Dialogs/
+│   ├── DASignalImportDialog.*    # 导入对话框（音频 / 视频 / 数据帧；采样率必须用户确认）
+│   ├── DASignalAnalysisSettingDialog.*  # 按信号生效的分析参数（六组）
+│   └── DASignalAnalysisSettingPage.*    # 插件全局设置页（设置 → 信号分析）：FFmpeg 路径
 ├── Form/DASignalFormSpecBuilder.*# DAFormSpec 表单规格（分组 + visible_when 联动）
 ├── Archive/
-│   ├── DASignalArchiveTask.*     # 工程存档任务（写模式携带图元字节快照，BLK-01）
-│   └── DASignalFigureArchive.*   # figures.xml 保存/恢复助手（signal-id 存档键 + 防争用，BLK-02）
+│   ├── DASignalArchiveTask.*     # 工程存档任务（signals.json + figures.xml + chart-data）
+│   └── DASignalFigureArchive.*   # figure XML 保存/恢复（signal-id 键、防争用）
+├── icon/                         # 丝带与页面图标（改图标前先读根目录 DESIGN.md）
 └── PyScripts/DASignalAnalysis/   # Python 包（安装到 <app>/PyScripts）
-    ├── importer.py               # 音频/视频读取与 FFmpeg 转码编排
-    ├── spectrum.py               # 整段频谱/功率谱编排（调核心层纯函数）
-    ├── stft.py                   # STFT 显示栅格（分块 + 双向池化）
+    ├── importer.py               # 音频/视频读取、FFmpeg 转码、WAV 兜底解析、异步导入准备
+    ├── spectrum.py               # 整段频谱/功率谱编排（流式 provider）
+    ├── stft.py                   # 热图栅格（分块池化）+ 单帧真实幅值谱
     ├── peaks.py                  # 峰值表 + 每帧前 N 单趟扫描
     ├── envelope.py               # 波形包络降采样
-    └── exporter.py               # 峰值/频谱/热图导出与送表格页
+    └── exporter.py               # 峰值/频谱/热图 CSV 导出
 ```
 
-## 铁律
+## 三、铁律
 
-1. **v2 清单一条都不做**（`tmp/信号分析插件开发方案.md` §2.2）：滤波、重采样、包络解调、倒谱、
-   倍频程、阶次分析、热图对数频率轴、声压级换算、选区循环播放、变速、智能体工具、工作流节点等。
-   结构留口即可。**例外（chart-ops 线修订）**：矢量导出限制已解除——当前子图为 2D 时支持
-   PNG/SVG/PDF 导出；3D 子图固定 PNG（qwt3d 的 saveVector 依赖 GL 上下文、目标环境可用性
-   未验证，矢量导出留作后续项）。
-2. **决策记录 D1–D31 是定稿口径**：采样率必须用户确认（不静默用推断值）；峰值曲线每帧独立取前 N；
-   瀑布默认二维；深色主题 v1 不做。发现冲突先停下报告。
-3. **DSP 纯函数放核心层**（`src/PyScripts/DAWorkbench/DAPyBase/spectral.py`），
-   插件只放面向信号的编排；不得在 `DAGui` 写 DSP，不得在 `DAFigure` 放界面控件。
-4. **并发只走一套**：Python 守护线程 + `thread_status_manager` + C++ `QTimer` 轮询
-   （`DASignalAnalysisWorker`）。不要新起 `QThread`；界面线程禁止 O(N) 计算。
-   轮询槽里必须**让出 GIL**（`pybind11::gil_scoped_release` + `QThread::msleep`）：内嵌解释器
-   由 GUI 线程初始化后一直持有 GIL，只轮询不让出时 Python 守护线程每帧只能等一个轮询周期，
-   大信号会被拖到几十分钟（见 v1.5 修正要点）。
-5. **STFT 不整矩阵常驻**：`stft.py` 分块（256 帧）计算并池化进显示栅格后丢弃块矩阵；
-   峰值曲线单趟扫描（512 帧/块，只留前 N）。
-6. **`.cpp` 里出现 Qt↔Python 类型转换必须包含 `DAPybind11QtCaster.hpp`**；
-   pybind11 类型入口用 `DAPybind11InQt.h`（内含 `#undef slots`），不要直接 include `python.h`。
-7. **参数单一口径**：`DASignalAnalysisParams` 的 JSON 键名 = Python 编排读取的键名
-   （`spectrum.py`/`stft.py`/`peaks.py`）；窗函数只有一份（频谱与 STFT 共用 `window`）。
-8. **`overlap` 单位是百分比**（50 表示 50%），Python 侧自行除以 100。
-9. **界面文本**：`tr("English") //cn:中文`；非 QObject 类（`DASignalFormSpecBuilder`）
-   必须用 `QCoreApplication::translate("上下文", "字面量")`（lupdate 只认字面量）。
-10. **动作经宿主 `DAActionsInterface` 创建与销毁**；停靠窗口用 `CDockWidget` 并在 `finalize()` 显式清理；
-    插件持有的 `CDockWidget*` 与页面指针必须用 `QPointer` 保存（宿主可能在插件卸载前销毁 dockManager，
-    裸指针会悬空）；对话框以插件页面为父（`mPage`），避免卸载后残留。
-11. **信号来源干净**：文件来源读块、数据帧来源引用式（按块转换）；临时 WAV 随信号/控制器生命周期清理。
-12. **工程只存来源引用、参数与视图状态，以及非 transient 图元**（峰值标记、用户添加的
-    参考线/文本/标注，经 `chart-data`；`Archive/DASignalArchiveTask` + `Archive/DASignalFigureArchive`）；
-    **不存**分析结果图元（包络/频谱曲线/热图/瀑布数据）、STFT 矩阵与峰值表/峰值曲线数据。
-    写模式携带 GUI 线程预序列化的图元**字节快照**（`DAChartItemArchive::makeSnapshots`，
-    BLK-01），后台任务只写字节不触碰 `QwtPlotItem*`；界面重建走 `loadedCallBack`。
-    figure 存档键是 `signal-id`（信号会话内唯一 id，随 signals.json 持久化），`signal-name`
-    仅兼容旧档（BLK-02）。
-13. **全局设置与按信号参数分开**：与具体信号/数据无关的全局项（当前为 FFmpeg 可执行文件路径）放插件设置页
-    （`DASignalAnalysisPlugin::createSettingPage()` → `Dialogs/DASignalAnalysisSettingPage`，入口是 主页 → 设置）；
-    信号分析标签页的「分析设置」对话框（`DASignalAnalysisSettingDialog`）只放按信号生效的分析参数，
-    不得加入与数据无关的全局项。界面文案引用设置入口时统一写「设置 → 信号分析」。
+1. **并发只有一套：Python 守护线程 + `thread_status_manager` + C++ `QTimer` 轮询。**
+   不新起 `QThread`，不在界面线程做 O(N)。轮询槽在仍有任务时必须
+   `pybind11::gil_scoped_release` + `QThread::msleep`：嵌入解释器由 GUI 线程初始化后一直持有 GIL，
+   只轮询不让出时守护线程每帧只能等一个轮询周期，9M 点 @32kHz 的频谱实测从数秒拖到 20 分钟。
+   当前 `cPollIntervalMs = 20`、`cGilYieldMs = 12`，调整要同时权衡回填延迟与界面事件处理。
+   架构说明见 [embedded-python-gil.md](../../docs/zh/dev-guide/python-binding/embedded-python-gil.md)。
 
-## 页面惰性加载（修订 D11）
+2. **界面线程只做短调用与显示换算。** 单次 C++→Python 调用控制在 ~10 ms 内（如
+   `computeFrameSpectrumSync()` 只算一帧，失败写 `qWarning` 不弹消息）；其余一律提交给 worker。
 
-- `DASignalAnalysisUI::initialize()` 只创建丝带标签页、动作与后台 worker，**不创建**中央页面和峰值停靠窗口：
-  大部分用户用不到信号分析，程序启动时不应多出一个空的中央标签页。
-- 页面创建统一走 `ensurePageCreated()`：创建页面 + 页面内导入/标签事件连接 + 峰值停靠窗口 + 上次色带偏好；
-  所有依赖页面的入口（三个导入槽、`addSignalAndActivate`、`restoreState`、丝带「打开信号分析窗口」）先调用它。
-- `openSignalAnalysisPage()` 由丝带「窗口」面板的「打开信号分析窗口」大按钮触发：首次调用创建页面，
-  页面已关闭时恢复显示并 raise（相当于 PPT 的「编辑模板」入口）。
-- `serializeState()` / `finalize()` / `retranslateUi()` / 各后台结果回填必须容忍 `mPage == nullptr`
-  （页面从未打开过的会话）；`DASignalAnalysisUI::page()` 未创建时返回 nullptr。
-- 页面 dock 图标为 `icon/showSignalAnalysis.svg`（与绘图/表格/工作流中央页图标同一「窗口」语义）。
+3. **同一份分析只提交一次。** worker 用 `dedupeKey`（任务类型 + 信号 + 通道 + 参数版本；包络、热图、
+   峰值曲线再拼请求尺寸/区段，频谱与峰值表只按类型+信号+通道+版本）命中在跑任务即复用。视图会在
+   首次显示、外部连接后、resize 防抖、峰值窗口显示等时机重复请求，不挡的话同一份 O(N) 计算会跑多遍、
+   出图成倍变慢。新增分析任务必须给出能区分「参数相同才算重复」的键。
 
-## 构建与测试
+4. **取数只有一条出口：`source["read"]`。** `buildSourceDict()` 注入
+   `read(channel, start, count) -> float32 ndarray`，Python 侧优先用它流式分块；返回长度必须等于
+   请求 count，`sampleCount` 必须与可读长度一致。新增分析任务前先 `ensureAnalyzable()` 探测可读性；
+   来源缺失、数据帧改名/移除、文件不可用都要给可翻译的明确提示，**不允许**用「静默空结果」兜底。
+
+5. **参数单一口径。** `DASignalAnalysisParams::toPythonDict()` 的键名就是 `spectrum.py`/`stft.py`/
+   `peaks.py` 读取的键名；窗函数只有一份（频谱与 STFT 共用 `window`）；`overlap`/`stftOverlap` 是
+   百分比（50 = 50%），Python 侧自行除以 100；`zeroPadding` 是「额外点数」（0 表示等于段长）。
+
+6. **计算层只出峰值幅度，换算只在 `DASignalAmplitude`。** 频谱图、峰值表、峰值曲线、导出一律调用
+   `toDisplay()`；dB 参考 <=0 时回退 1.0（不要用 cEps 算出 +600 dB 的荒谬值）。dBFS 参考峰值取
+   去直流/去趋势后的统计口径（`signalPeak()`），原始峰值只用于波形与 STFT 矩形纵向范围。
+
+7. **后台结果必须带上下文并经版本校验。** 所有 `*Ready` 信号首参是 `DASignalTaskContext`，界面层
+   `isContextCurrent()` 通过才回填；参数或通道变化必须 `bumpParamsVersion()`。`poll()` 先摘除已完成
+   任务再发信号，遍历任务表用快照。峰值表/曲线缓存要带所属信号与通道，切信号先清空，否则上一个
+   信号的峰值会停在新标签页下。
+
+8. **大内存必须过预算门，不许静默 OOM。** 估算统一在 `DASignalMemoryEstimate.h`；超过预算
+   （`cAnalysisBudgetBytes`，1.5 GB）给三选：降低精度 / 只扫可见区段 / 取消。局部扫描要在峰值窗口
+   标注「局部扫描」。判定结果按信号缓存，参数变化时清掉重新询问。
+
+9. **工程只存来源引用、参数、视图状态与非 transient 图元。** 不存分析结果图元（包络/频谱/热图/
+   瀑布）、STFT 矩阵、峰值表与峰值曲线数据。写模式携带 GUI 线程预序列化的**图元字节快照**
+   （`DAChartItemArchive::makeSnapshots`），后台任务只写字节、不碰 `QwtPlotItem*`；界面重建走
+   `loadedCallBack`。figure 存档键用 `signal-id`（`signal-name` 只兼容旧档）。
+
+10. **全局设置与按信号参数分开。** 与数据无关的全局项（目前只有 FFmpeg 可执行文件路径）只放插件
+    设置页（`createSettingPage()` → `Dialogs/DASignalAnalysisSettingPage`，入口「设置 → 信号分析」）；
+    「分析设置」对话框只放按信号生效的分析参数。界面文案引用入口时统一写「设置 → 信号分析」。
+
+11. **插件必须能热卸载干净。** 动作经宿主 `DAActionsInterface` 创建/销毁；`CDockWidget*` 与页面指针
+    用 `QPointer`（宿主可能先销毁 dockManager）；对话框以页面为父；`finalize()` 清理峰值窗口、页面
+    dock、播放器、worker、丝带标签与动作，且 `mUI`/`mCategory` 为空时**不能提前 return**。
+    设置页指针不得长期缓存（宿主每次打开设置对话框都重建，见 §4.9）。
+
+12. **类型转换边界照根 AGENTS.md 执行。** 任何 `.cpp` 出现「Qt 类型进 Python」（`attr(...)(QString)`、
+    `pybind11::cast<QVariant>`、`.cast<QString>()` 等）必须 include `DAPybind11QtCaster.hpp`；
+    pybind11 入口用 `DAPybind11InQt.h`（内含 `#undef slots`），不直接 include `python.h`。
+    遗漏不报编译错误，运行时静默失败。
+
+13. **界面文本与日志各走各的。** 用户可见文本用 `tr("English") //cn:中文`（Python 用
+    `_("English")  # cn:中文`）；非 QObject 类（`DASignalFormSpecBuilder`）用
+    `QCoreApplication::translate("上下文", "字面量")`，lupdate 只认字面量。技术诊断与异常原文用
+    `qWarning/qCritical` 英文写日志；界面失败提示统一走 `reportOperationFailure(提示, 细节)`。
+
+14. **不扩 v2 范围。** 滤波、重采样、包络解调、倒谱、倍频程、阶次分析、声压级换算、选区循环播放、
+    变速、深色主题、智能体工具、工作流节点都不做，只留结构口。对数频率轴只做到频谱图，不要扩到
+    热图。矢量导出是既有例外：2D 子图 PNG/SVG/PDF，3D 固定 PNG（`saveVector` 依赖 GL 上下文，
+    未验证不扩）。
+
+## 四、关键机制
+
+### 4.1 页面惰性加载
+
+- `initialize()` 只建丝带标签页、动作与后台 worker，**不建**中央页面和峰值窗口——多数用户用不到
+  信号分析，程序启动不该多出一个空标签页。
+- 页面统一走 `ensurePageCreated()`：建页面 + 连接导入/标签事件 + 建峰值窗口 + 读色带偏好。三个导入槽、
+  `addSignalAndActivate`、`restoreState`、丝带「打开信号分析窗口」都先调它。
+- `openSignalAnalysisPage()`：首次调用创建页面；页面已关闭时恢复显示并 raise。
+- `serializeState()` / `finalize()` / `retranslateUi()` / 各后台结果回填都必须容忍 `mPage == nullptr`
+  （页面从未打开过的会话）。页面 dock 图标为 `icon/showSignalAnalysis.svg`。
+- 页面 dock 激活时由 `DASignalAnalysisSettingContext` 接管设置面板、图元树、上下文标签与底部工具栏；
+  失活时还原宿主绘图区目标。
+
+### 4.2 导入
+
+- **音频**：WAV/AIFF/FLAC/OGG 直读；MP3/M4A/AAC 及视频走 FFmpeg 转临时 WAV。运行时缺 `soundfile` 时，
+  WAV 用标准库 RIFF 头解析 + 按帧 seek（PCM 8/16/24/32、float32/64、EXTENSIBLE），AIFF/FLAC/OGG
+  自动改走 FFmpeg；没有 FFmpeg 给明确错误，不静默失败，视频导入入口置灰。
+- **数据帧**：引用式（不复制），时间列可选、采样率**必须用户确认**（推断值只作候选，不静默采用）。
+- **异步**：视频/压缩音频导入拆两段——`importer.prepare_import_async()` 在守护线程做音频轨探测与
+  FFmpeg 转码（可取消、删半成品）；`poll()` 在界面线程调 `DASignalImporter::importPreparedMedia()`
+  只做文件头探测与信号构造（不转码）。结果走 `importFinished(signal, error)`：成功 signal 非空，
+  失败 error 是只写日志的英文细节，取消时两者都为空（界面据此复位、不弹失败）。
+- 导入在途 `mImportTaskActive` 期间三个导入入口置灰；切工程、取消、finalize 都要复位。
+- **临时文件**：插件临时目录 `<tempDir>/session-<uuid>/`，由 `sessionTempDir()`/
+  `newSessionTempWavPath()`/`registerTempFile()` 分配登记，`cleanupTempFiles()` 只删本会话登记过的文件。
+  **禁止**按 `*.wav` 后缀通删共享临时目录。
+
+### 4.3 后台任务
+
+- 任务种类：频谱（含 PSD）、包络、热图、峰值表、峰值曲线、播放 WAV 导出、媒体导入。全部经
+  `DASignalAnalysisWorker` 提交，进度写状态栏；`cancelAll()` 与丝带「取消计算」入口，
+  enabled 绑 `runningTaskCount() > 0`；取消只走 `canceled(taskId)` 清进度，不弹失败。
+- 失败经 `failed(error)`（英文细节）→ 界面 `reportOperationFailure()` 只显示翻译后的提示，并
+  `clearProgressIfIdle()`；上下文过期丢弃结果的分支同样要清进度。
+- 视图侧只发请求信号（`spectrumRequested`/`envelopeRequested`/`heatmapRequested`/`followFrameSpectrumRequested`），
+  不自己算、也不缓存跨信号结果。
+
+### 4.4 参数、幅值与内存预算
+
+- 参数六组（预处理 / 频谱 / 功率谱 / STFT / 峰值 / 标定），一个信号标签页记一份，不进全局撤销栈；
+  改参数后立即重算一次。
+- `resolutionHz` 与 `stftWindowMs` 二选一联动（Δf = 1/窗长），换算函数
+  `signalStftWindowMsFromResolution` / `signalResolutionFromStftWindowMs`；峰值最小间距 `<=0` 是自动哨兵，
+  按 5×实际分辨率派生。
+- 参数对话框确定后必须 `syncAmplitudeUiFromParams()`（`QSignalBlocker` 同步丝带勾选与
+  `mAmplitudeMode/mDbReference`），否则峰值表、导出与存档口径会和视图分叉。
+- 预算：频谱/热图/包络流式或按区段，峰值表/曲线含整段 float32 副本并按并发系数放大；
+  详见 `DASignalMemoryEstimate.h` 的公式注释。
+
+### 4.5 视图与三图联动
+
+- 布局：`DAFigureWidget` 2×2 保留式网格——波形 (0,0,1,2)、频谱 (1,0)、热图/三维瀑布 (1,1)；
+  瀑布默认二维（`setWaterfallMode` 0=二维 / 1=三维 / 2=隐藏）；播放头、STFT 窗口矩形、峰值标记是
+  画布图元。视图内不放 inline 控件：显示类控件在丝带上下文标签、播放类在底部工具栏、外观类在右侧
+  设置面板，视图的 setter/getter 是这些入口共同操作的状态源。
+- **坐标轴**：`DAFigureWidget::createChart()` 会给新子图显式设 X 0..800 / Y 0..500 占位刻度（同时关掉
+  autoscale）。`buildFigure()` 只在建图时对三张 2D 子图调用 `setAxisAutoScale(..., true)`；
+  `rebuild*` 不无条件重开，否则用户缩放会被覆盖。工程恢复走存档轴状态。
+- **色标**：`applyHeatmapColors()` 统一设 yRight 轴范围 `[mDbFloor, 0]`、色标宽 18、间距 4；隐藏时
+  `setAxisVisible(yRight, false)` 不占横向空间。`setDbFloor`/`rebuildHeatmap`/`refreshAfterFigureRestore`
+  都走这一入口，避免刻度与颜色对不上。显隐偏好存配置 `colorBarVisible`。
+- **跟随播放**：频谱必须画「当前帧真实幅值谱」，不能拿热图显示栅格的当前列——栅格在频率方向做过
+  max 池化（Δf_row 远大于峰值网格），两条曲线口径不同，峰值标记会落在下降沿。当前实现走
+  `stft.frame_spectrum_sync()` + 帧号换算，与 `peaks.py` 单帧同口径、只读一帧（O(nperseg)）。
+- 交互：STFT 矩形拖动必须「按下只记候选 → 超过 `QApplication::startDragDistance()` 才进入拖动 →
+  未拖动的释放交回 QwtPicker 定位」，命中判定用包围盒（X/Y 都比）；缩放/平移/十字线启用时关闭
+  「点击波形即定位」。
+
+### 4.6 峰值
+
+- 计算语义：**每帧独立取前 N**（D10）。峰值表整段一次算完；峰值曲线单趟扫描（512 帧/块，只留前 N），
+  超预算时可按可见区段 + 隔帧降精度。
+- 渲染：每帧第 k 名在相邻帧不一定是同一个峰，所以 `DAPeakCurvePlotSamples` 把每个名次拆成两层——
+  点全画（缺峰帧跳过），折线只在相邻帧频率跳变 ≤ `8 × fs / nperseg` 时连接，跳变/缺帧处插入 NaN
+  断开。不要为了「连成轨迹」改成跨帧匹配，那属于新功能。
+- 标记：`snapPeakMarkersToCurve()` 把标记吸附到**当前已绘制曲线**（跟随播放时是当前帧谱）的最近局部
+  极大，邻域半径 2、峰值数量由 Top N（10/20/50）决定；峰频超出曲线范围时跳过，无快照时回退旧口径。
+  吸附是显示层口径，不改峰值表数值，也不要去改 Python 侧峰值算法的频率网格。
+- 存档优先：加载后到第一次重算之间，`mPeakMarkersRestored` 保证不删除重建用户调整过的标记；
+  `setPeaks()` 收到新计算结果时复位该窗口。
+- 窗口显隐偏好 `peakDockVisible`：`ensurePageCreated()` 读取、`finalize()` 写回；首次导入只按偏好决定
+  是否显示峰值窗口，**不得**覆盖用户关闭过的选择。
+- 导出：峰值表 / 频谱 / 功率谱密度 / 热图矩阵 CSV，整页或当前子图图片，峰值表还可送表格页；
+  数值一律先过 `DASignalAmplitude`，PSD 是功率量（10·log10），不随幅值模式变化。
+
+### 4.7 内置「绘图操作」上下文
+
+- 页面 dock 激活时，除插件自己的上下文标签外还要显示内置「绘图操作」标签，网格/缩放/平移/拾取/图例/
+  主题/复制/导出/选区/标记等动作作用到当前信号 figure。宿主契约是
+  `DASettingContextProvider::chartContextFigure()`，本插件由 `DASignalAnalysisSettingContext` 返回当前
+  视图 figure。**插件不要自己 show/hide 内置 Chart 上下文。**
+- 切信号、切 2D/3D 子图后 `refreshTarget()` 末尾调
+  `DADockingAreaInterface::notifySettingContextChanged()`；失活还原后也要 notify。
+- 交互工具由内置标签提供，插件不再自建缩放/平移/十字线/数据拾取动作；需要联动时监听当前
+  `DAChartWidget::chartPropertiesChanged`（先断后连、`QPointer` 防悬空），`finalize()` 开头解绑。
+- 结构性动作（新建绘图窗口/新建坐标系/调整子图大小/数据探针）由宿主在插件上下文中置灰；
+  3D 子图保持标签显示，2D 类动作置灰。
+
+### 4.8 工程存档
+
+- 一个任务写三部分：`signal-analysis/signals.json`（来源引用 + 参数 + 视图状态）、
+  `signal-analysis/figures.xml`（网格 + 子图样式 + 非 transient 图元 key）、
+  `signal-analysis/chart-data`（图元二进制）。后两者只在有 figure 内容时写，旧工程可正常加载。
+- 保存流程在主线程收集 figure XML 与图元快照，后台线程只写文件；恢复在主线程 `loadedCallBack` 里
+  重建界面并应用 XML。figure 元素同时写 `signal-id`（精确匹配）与 `signal-name`（旧档回退）；
+  一个 figure 元素只能被一个视图消费、一个 chart-data key 只能 attach 到一个子图（重复命中跳过并
+  `qWarning`）。
+- 宿主 `DAProjectInterface::projectIsCleaned`（新建工程 / 加载前 / 快照回滚）必须触发幂等清理：停
+  worker/播放器、清信号与峰值缓存、清临时文件，否则「工程包里没有 signals.json」会把上一工程的
+  信号带进新工程。
+- 缺失来源：文件不存在时弹「重新指定」，恢复后保留采样率与参数；数据帧缺失保留「来源缺失」占位
+  信号（`isMissing()`，不参与计算），丝带「重新指定数据帧来源」重选后 `replaceSignalAt()` 原地替换
+  并沿用参数与视图状态。
+
+### 4.9 设置
+
+- 两个入口、两份内容：插件全局设置页（`createSettingPage()`，主页 → 设置 → 信号分析）只放与数据
+  无关的全局项（FFmpeg 路径）；标签页「分析设置」对话框只放按信号生效的分析参数。
+- 宿主 `AppMainWindow::showSettingDialog()` **每次打开都重建设置对话框**，目的是让插件设置页不会活过
+  提供它的插件（插件可被停用并卸载 DLL，常驻页面析构会跳进已卸载代码段）。因此插件**不得**把设置页
+  指针缓存为长期成员，`finalize()` 也不需要清理设置页。
+- 全局设置 `apply()` 后调 `DASignalAnalysisUI::onGlobalSettingsApplied()` 刷新 FFmpeg 可用性；路径无效
+  时不落盘、表单回退到已保存值。所有配置共用 `signal-analysis-config.json`
+  （`ffmpegPath`、`colormap`、`peakDockVisible`、`colorBarVisible`），由 `DASignalImporter` 读写。
+
+### 4.10 Python 包契约
+
+- 每个编排模块提供 `compute_xxx_sync()`（测试直用）与 `compute_xxx_async()`（返回 task_id，守护线程执行），
+  外加 `take_result(task_id)`、`cancel_task(task_id)`、`is_cancelled(task_id)`；进度经
+  `thread_status_manager` 上报，C++ `poll()` 轮询。
+- 取数优先用 `source["read"]`（流式）；没有 reader 时保留整段读取路径，供 pytest 与旧口径使用。
+- `spectrum.py` 出整段频谱/PSD；`stft.py` 分块（256 帧）池化进显示栅格后丢弃块矩阵，并提供单帧
+  幅值谱；`peaks.py` 单趟扫描每帧前 N；`envelope.py` 按区段降采样；`exporter.py` 只负责 CSV 与
+  送表格页的数据准备。
+
+## 五、常见陷阱
+
+| 症状 | 根因 | 正确做法 |
+|---|---|---|
+| 大信号分析几十分钟不回来，空闲时后台 Python 线程完全不动 | 轮询槽只查状态、没让出 GIL | `gil_scoped_release` + `QThread::msleep(12)`（§铁律 1） |
+| 同一份分析被跑好几遍，出图成倍变慢 | 视图多入口重复提交 | 按 `dedupeKey` 去重，新增任务必须给键 |
+| 导入信号后三张图坐标轴固定在 0..800 / 0..500 | `createChart()` 显式设了占位刻度并关掉 autoscale | 建图时对 2D 子图打开 autoscale，`rebuild*` 不重开 |
+| 色标刻度与颜色对不上、色带贴着绘图区 | yRight 轴仍是 Qwt 默认 0..1000 | 统一走 `applyHeatmapColors()` 设 `[dbFloor, 0]` |
+| 峰值标记停在曲线旁边或下降沿 | 峰值表网格 ≠ 已绘制曲线网格；跟随用了热图栅格列 | 吸附到已绘制曲线快照；跟随改用帧谱（§4.6） |
+| 峰值曲线窗口像「笼子」 | 相邻帧同名次不是同一个峰，却被直接连线 | 点全画、折线按 `8×Δf` 跳变断开 |
+| 数据帧时间列明明选上了，却提示无时间列/采样率 0 | 接了 `currentChanged`，此时选中尚未生效 | 只接 `selectionChanged` |
+| 波形矩形内单击无法定位（被拖动吞掉） | 没有拖动阈值，按下即进入拖动 | 超过 `startDragDistance()` 才拖，未拖动释放交回 picker |
+| 关闭程序或卸载插件时崩溃 | `CDockWidget`/页面已被宿主销毁，插件仍用裸指针 | 用 `QPointer`，`finalize()` 判空 |
+| 设置页析构跳进已卸载插件代码 | 插件缓存了设置页/设置对话框常驻 | 不缓存，依赖宿主每次重建（§4.9） |
+| 工程加载后仍显示上一个工程的信号 | 只靠 `restoreState()` 的防御分支 | 连 `projectIsCleaned` 做幂等清理（§4.8） |
+| 新加任务后 Python 侧静默失败（KeyError、参数丢失） | 忘了 include `DAPybind11QtCaster.hpp` | 每个做 Qt↔Python 转换的 `.cpp` 都要 include（§铁律 12） |
+| 遍历被修改的 Qt 容器时出现莫名深拷贝/性能抖动 | 非 const 容器范围迭代触发 COW | `const` 声明或 `std::as_const()` |
+
+## 六、构建与测试
 
 ```powershell
 .\scripts\build.ps1 -Target DASignalAnalysis        # 构建插件
 .\scripts\build.ps1 -Target DASignalAnalysisTest    # 构建 C++ 测试（SUITE data）
 .\scripts\test.ps1 -Suite data                      # 跑 data 套件（含本测试）
-python -I -m pytest tests/test_signal_dsp.py tests/test_signal_import.py -q   # 纯 Python 测试
+.\scripts\test.ps1 -Changed                         # 按改动自动选 data 套件，并先构建插件目标
+
+# 本插件的 Python 测试（DSP / 导入 / 峰值 / 取消）。要逐个列文件：整目录收集会撞上别的模块的采集错误
+python -I -m pytest tests/test_signal_dsp.py tests/test_signal_import.py `
+    tests/test_signal_peaks.py tests/test_signal_cancel.py -q
 ```
 
-新增源文件放在上表的子目录后**无需手动 reconfigure**：插件 CMake 各目录的 `file(GLOB)`
-都带 `CONFIGURE_DEPENDS`，新增/删除文件后构建会自动重新配置。
+`tests/test_signal_manager.py` 测的是工作流信号管理器（`DAWorkFlowPy.signal_manager`），不属于本插件。
 
-## v1.1 修正要点（评审整改后新增约定）
+- `test.ps1 -Changed` 对 `plugins/DASignalAnalysis/` 的改动会选中 `data` 套件，并额外构建
+  `DASignalAnalysis` 插件目标：UI/Page/Dialogs/Playback 源码只被插件 DLL 编译，测试目标只直接编译
+  部分 `.cpp`，只构建测试目标会漏掉这些文件的编译错误。
+- 新增源文件放进上表子目录后**无需手动 reconfigure**：各目录 `file(GLOB ... CONFIGURE_DEPENDS)`。
+  但 `src/tst/DASignalAnalysisTest/CMakeLists.txt` 的 SOURCES 是显式列表，新增**参与测试**的纯逻辑
+  文件（如 `Page/DAPeakMarkerSamples.cpp`）要手动补。
+- C++ 测试覆盖纯逻辑：参数与幅值换算、内存估算、峰值曲线采样、峰值标记吸附、存档、导出。
+  Python 测试覆盖 DSP（与 scipy 对拍）、provider 取数契约、导入与取消。
+- Qt 运行时：`Multimedia` 不在主程序 exe 依赖链里。插件 CMake 构建后对插件 DLL 跑 `windeployqt`，
+  安装期由 `dafun_install_deploy_qt_runtime(... REQUIRED_QT_MODULES Multimedia)` 校验，缺 DLL 直接
+  安装失败。
 
-- **后台结果路由**：任务上下文统一用 `Analysis/DASignalTaskContext.h`（信号 + 通道 + 参数版本），
-  worker 的 `*Ready` 信号首参都是它，界面层 `isContextCurrent()` 校验后才回填；
-  不要再用 `mPendingSignal` 之类的单值回填槽（评审 U3/B4）。
-- **参数版本**：参数变化（对话框确定、Top N、通道切换）时 `bumpParamsVersion()`，迟到结果直接丢弃；
-  `poll()` 必须先摘除已完成任务再发信号，遍历 `mTasks` 用快照（评审 B2）。
-- **幅值口径**：Python 计算层始终返回峰值幅度，均方根/dB 只在显示与导出层换算，
-  唯一入口是 `Analysis/DASignalAmplitude.h`（频谱图、峰值表、CSV 共用，评审 C2/C4/I9）。
-- **参数语义**：`zeroPadding` 是「额外点数」（频谱/峰值表/STFT 一致）；频率分辨率决定频谱与峰值表段长，
-  STFT 计算仍按 `stftWindowMs` 取窗，但参数对话框里两者**二选一联动**（Δf = 1/窗长，换算函数
-  `signalStftWindowMsFromResolution` / `signalResolutionFromStftWindowMs`），保证改分辨率时热图同步变化（评审 C3/C4）。
-- **卸载清理**：`finalize()` 必须清理峰值停靠窗口、页面停靠窗口、播放器、worker、丝带标签页与动作；
-  `mUI`/`mCategory` 为空时不能提前 return（评审 B5）。
-- **峰值归属**：峰值表/曲线缓存带 `mCurrentPeaksSignal`/`mCurrentPeaksChannel`；切信号走
-  `onCurrentSignalChanged()` 先清空再按新信号重算，禁止把上一个信号的峰值停在新标签页下（评审 U4）。
-- **缺失信号源**：`restoreState()` 遇到文件不存在时弹「重新指定」，恢复后保留采样率与参数；
-  数据帧缺失在 v1.2 起保留「来源缺失」占位信号并提供「重新指定数据帧来源」入口（见下节，评审 U16/Q7）。
-- **PSD 出口**：韦尔奇功率谱密度已提供 CSV 导出（导出下拉里的「功率谱密度（CSV）」），
-  换算口径为 10·log10（功率量），不随幅值模式变化（评审 C10）。
-- **Qt 运行时**：插件私有的 `Multimedia` 不在主程序 exe 依赖链里。插件 CMake 在构建后以插件 DLL 为扫描目标
-  调 `windeployqt` 补齐 `build/bin`；安装目录由顶层 `dafun_install_deploy_qt_runtime(... REQUIRED_QT_MODULES Multimedia)`
-  在安装期校验，缺 DLL 直接安装失败（评审 D1）。
-- **音频解码降级**：运行时缺 `soundfile` 时，**WAV 走标准库自实现的 RIFF 头解析 + 按帧 seek**
-  （支持 PCM 8/16/24/32 位、IEEE float32/64、EXTENSIBLE 格式；`probe_audio` 只读文件头，
-  不再整文件读入），AIFF/FLAC/OGG 在 `DASignalImporter::importAudioFile()` 里自动改走 FFmpeg 转码，
-  没有 FFmpeg 才给出明确错误，不允许静默失败（评审 I1/N-I1a）；
-  `scipy.io.wavfile` 仅用于**导出** WAV 的写路径。
-- **测试选择**：`plugins/DASignalAnalysis/` 的改动在 `scripts/test.ps1 -Changed` 下会选中 `data` 套件。
+## 七、相关文档
 
-## v1.2 修正要点（2026-11-09 复核整改）
+- [内嵌 Python 的 GIL 架构约束](../../docs/zh/dev-guide/python-binding/embedded-python-gil.md)——并发与轮询的架构依据
+- [设置上下文提供者](../../docs/zh/dev-guide/ui/setting-context-provider.md)——§4.7 的宿主侧机制
+- [图表格布局](../../docs/zh/dev-guide/graphics/figure-grid-layout.md)——2×2 网格与子图 API
+- [测试体系](../../docs/zh/dev-guide/general/testing.md)——套件分组与 `test.ps1` 用法
+- [用户指南：信号分析](../../docs/zh/use-guide/analysis/signal-analysis.md)——面向用户的功能说明
+- [DESIGN.md](../../DESIGN.md)——改界面或 SVG 图标前必读
+- [根 AGENTS.md](../../AGENTS.md)——模块依赖、i18n、日志、构建与提交规范
+- `tmp/信号分析插件开发方案.md`——D1–D31 设计决策的历史记录（只作背景，不作规范）
 
-- **工程生命周期**：`DASignalAnalysisUI::initialize()` 连接宿主 `DAProjectInterface::projectIsCleaned`
-  （经 `core->getProjectInterface()`）。新建工程 / 加载工程前 / 快照回滚时宿主 `clear()` 会发该信号，
-  `onProjectCleaned()` 幂等清理：停 worker/播放器、清信号与峰值缓存、`cleanupTempFiles()`。
-  这样「工程包里没有 `signal-analysis/signals.json`」也不会把上一工程残留信号带进新工程（评审 N-U2/P5/U15）；
-  `restoreState()` 的 `!doc.isObject()` 分支仍保留防御性清理，`DASignalArchiveTask::archiveEntryFound()`
-  记录条目是否存在供界面判断。
-- **临时文件按会话隔离**：插件临时目录为 `<tempDir>/session-<uuid>/`，统一由
-  `DASignalImporter::sessionTempDir()/newSessionTempWavPath()/registerTempFile()` 分配与登记，
-  `cleanupTempFiles()` 只删本会话登记过的文件；**禁止**再按 `*.wav` 后缀通删共享临时目录（评审 N-I12）。
-  播放器（`DASignalPlayer`）不再自己按后缀删文件，只清自己的缓存表。
-- **数据帧播放音频后台导出**：数据帧来源没有真实音频文件，`syncPlayerSource()` 先查
-  `DASignalPlayer::cachedWavPath(信号, 通道)`，未缓存则 `DASignalAnalysisWorker::computePlaybackWav(ctx)`
-  在 Python 守护线程导出（`playbackWavReady` 回填）；导出期间 `mPlaybackWavPendingKey` 非空，
-  播放/暂停/停止动作置灰、状态栏显示进度，完成后 `setPreparedDataFrameWav()` 切源并恢复。
-  迟到的导出结果按 `isContextCurrent()` 校验丢弃（评审 U9）。
-- **取消入口**：丝带「分析」面板「取消计算」`actionCancelAnalysis`，enabled 绑
-  `mWorker->runningTaskCount()>0`；触发 `cancelAll()`，每个任务走 `canceled(taskId)` →
-  `onWorkerCanceled()` 只清进度不弹失败（评审 N-C7 UI 侧）。
-- **幅值口径单一同步点**：参数对话框确定后必须调用 `syncAmplitudeUiFromParams(params)`，
-  用 `QSignalBlocker` 同步 `actionAmpPeak/Rms/DbFs/DbRef1` 勾选并更新 `mAmplitudeMode/mDbReference`，
-  否则峰值表/导出/工程存档会与视图口径分叉（评审 N-U3）。
-- **内存预算门**：频谱、峰值表、包络、热图共用 `cAnalysisBudgetBytes`（1.5 GB）与
-  `checkMemoryBudget()`；判定结果按信号缓存在 `mMemoryBudgetVerdict`（1=确认继续、2=拒绝），
-  参数变化（对话框确定）时清除重新询问（评审 N-C1c/D19）。
-- **dBFS 参考口径**：`DASignalAnalysisView::signalPeak()` 返回**去直流/去趋势后**的峰值
-  （`updateSignalPeaks()` 由包络统计），原始峰值只用于波形/STFT 矩形纵向范围；
-  `DASignalAmplitude::toDisplay()` 在参考 `<=0` 时回退 1.0（不再用 cEps 算出 +600 dB 的荒谬值，评审 N-C2）。
-- **交互阈值**：波形画布上的 STFT 矩形拖动必须「按下只记候选 → 位移超过
-  `QApplication::startDragDistance()` 才进入拖动 → 未拖动的释放交回 QwtPicker 定位」，
-  命中判定用矩形包围盒（X/Y 都判断）；否则矩形内单击会被拖动逻辑吞掉（评审 N-U5）。
-- **峰值窗口显隐偏好**：`peakDockVisible` 在 `ensurePageCreated()` 读取、`finalize()` 写回；
-  首次导入信号时 `showPeakDockForFirstSignal()` 按偏好决定是否自动切到峰值窗口，
-  用户关闭过的偏好不再被「首次导入自动显示」覆盖（评审 N-U1/P2）。
-- **数据帧来源缺失占位**：`DADataFrameSignalSource` 支持「缺失占位」构造（数据帧名/列名/采样率保留、
-  `isMissing()==true`、`isValid()==false` 不参与计算）；工程恢复时不再直接跳过，而是保留占位信号，
-  丝带「信号」面板「重新指定数据帧来源」（`actionRelinkSource`）从数据管理器重选数据帧后
-  `DASignalAnalysisPage::replaceSignalAt()` 原地替换并沿用参数与视图状态（评审 U16）。
-- **失败消息口径**：UI 侧统一走 `reportOperationFailure(用户提示, 细节)`：界面只显示 `tr()` 后的提示，
-  英文异常原文（worker `failed`、`e.what()`）只写日志（评审 §七-9）。
-- **其他**：`ensurePageCreated()` 同时校验 `mPage` 与 `mPageDock`，dock 创建失败时删页面并
-  `reportError`（N-U8）；所有「上下文过期丢弃结果」分支也要 `clearProgressIfIdle()`（N-U7）；
-  `retranslateUi()` 必须重译峰值停靠窗口标题（§七-5）；视图与峰值窗口首次显示时显式 `setSizes`
-  （上下/左右 1:1、峰值表:曲线 2:1，§七-1）；`mWaterfallItem` 重建前用 `getWaterfalls()` 校验挂载
-  （N-H4）；视图类中非 const Qt 容器迭代已全部改 `std::as_const`/索引（N-U10）。
+## 八、维护约定
 
-## v1.3 修正要点（全局设置拆分，2026-11-10）
-
-- **动机**：`ffmpegPath` 原先混在「分析设置」对话框（`DASignalAnalysisSettingDialog`）里，
-  未导入数据时该对话框不可打开，导致无法配置 FFmpeg。
-- **新增插件设置页**：`DASignalAnalysisPlugin::createSettingPage()` 返回
-  `Dialogs/DASignalAnalysisSettingPage`（`DAAbstractSettingPage` 子类），由宿主
-  `AppMainWindow::showSettingDialog()` 追加到设置对话框页列表末尾；页面标题 `tr("Signal Analysis")`
-  （cn:信号分析）。
-- **页面内容**：`DAPropertyFormWidget` 表单（`tr("External Tools")`/外部工具 分组 + `tr("FFmpeg executable")`/
-  FFmpeg 可执行文件 字段 + 浏览按钮），表单下方内联状态标签（留空显示 PATH 探测结果、有效绿色、
-  无效橙红「文件不存在」）与一行说明「频率分辨率、窗函数、峰值门限与标定等分析参数在「信号分析」标签页的
-  「分析设置」里按信号单独配置」；`setSignalAnalysisUI()` 注入插件 UI，`apply()` 后调用
-  `DASignalAnalysisUI::onGlobalSettingsApplied()`（内部 `refreshFFmpegAvailability()` 并在消息面板留结果），
-  视频导入入口立即刷新；路径无效时不落盘、表单回退到已保存值，`apply()` 里用 `daWarning` 记一条「路径未保存」。
-- **设置页生命周期（与宿主约定）**：宿主 `AppMainWindow::showSettingDialog()` **每次打开都重建设置对话框**
-  （`exec()` 返回即销毁），这是为了让插件设置页不会活过提供它的插件——插件在本进程内可被停用并卸载 DLL，
-  若对话框常驻缓存，页面析构/绘制会跳进已卸载代码段。因此：插件不得把设置页指针缓存为长期成员；
-  `finalize()` 也不需要清理设置页（对话框已先销毁）。宿主侧改动见 `src/APP/AppMainWindow.cpp`。
-- **file 字段逐字符变更**：`DAGui` 的 `DAFormEditorRegistry::connectFile` 现在同时连
-  `DAFilePathEditWidget::selectedPath` 与 `pathChanged`，表单值随输入即时变化（供内联校验与 dirty 标记）；
-  程序化回填经 `QSignalBlocker` 不会误触发。输入路径的即时校验口径与 `DASignalImporter::ffmpegPath()` 一致：
-  `exists + isFile + isExecutable`。
-- **分析设置对话框**：移除 FFmpeg 路径行，只保留六组按信号生效的分析参数；未导入数据时
-  「分析设置」按钮仍不可点（预期语义）。
-- **文案**：所有「未检测到 FFmpeg，请在分析设置里指定路径」提示统一改为指向「设置 → 信号分析」。
-- **配置不变**：仍为 `DASignalImporter` 读写的 `signal-analysis-config.json`（`ffmpegPath`、`colormap`、
-  `peakDockVisible`），设置页与导入层共用同一份。
-
-## v1.4 修正要点（取数架构与异步导入，2026-11-10）
-
-- **取数唯一出口**：`DASignalAnalysisWorker::buildSourceDict()` 除 `type/path/dataframeName/column/channel/sampleRate/sampleCount` 外，
-  额外注入 `source["read"]`（pybind11::cpp_function，捕获 `DASignalPtr`，签名为 `read(channel:int, start:int, count:int) -> float32 ndarray`，
-  内部走 `DASignalSource::readRange` 的跨线程契约）。**Python 侧取数一律优先走它**：`spectrum._source_provider()` 识别后交给
-  `spectral.amplitude_spectrum_segmented_provider / welch_psd_provider` 流式计算；`stft.compute_heatmap_sync` 按 256 帧块请求样本、
-  块内池化进显示栅格后丢弃。无 reader 时保留原整段读取路径（pytest / 数据帧回退与旧口径不变）。
-- **新增分析任务前先探测可读性**：`ensureAnalyzable()` 在提交任务前 `readRange(channel,0,1)` 探测；来源缺失占位与「数据帧改名/移除、
-  文件不可用」分别给出可翻译的明确提示（英文细节只进日志），不要用「静默空结果」兜底。
-- **Python 侧契约**：`source["read"]` 返回长度必须等于请求 count（不是则抛 RuntimeError）；`source["sampleCount"]` 必须与可读长度一致，
-  否则流式分块会对不上尾部。频谱/STFT 的流式实现由 `tests/test_signal_dsp.py`、`tests/test_signal_import.py` 的 provider 用例锁定
-  （帧位置 k*hop、frame_count、median 缓冲、linear detrend 与 scipy 一致性、请求有界且不整段）。
-- **导入异步化（I2）**：视频/压缩音频导入拆成「Python 后台准备 + 界面收尾」——`importer.prepare_import_async(path, mode, ffmpeg_path, temp_wav)` 
-  在守护线程做音频轨探测、FFmpeg 转码（`run_ffmpeg(..., cancel_check=...)` 用 Popen 轮询等待，可取消、删半成品）与结果可读性校验；
-  `DASignalAnalysisWorker::importMediaAsync()` 提交 `ImportTask`，`poll()` 在界面线程调用
-  `DASignalImporter::importPreparedMedia()` 做文件头 probe 与信号构造（不做转码），结果走 `importFinished(signal, error)`：
-  成功 signal 非空；失败 error 为英文细节（只写日志）；取消时 signal 与 error 都为空（界面据此复位、不弹失败）。
-- **导入在途状态**：`DASignalAnalysisUI::mImportTaskActive` 期间三个导入入口置灰（`updateImportActionsState()`），
-  切工程/finalize/取消都要复位；临时 WAV 由 `newSessionTempWavPath()` 预分配并在取消/失败/构造失败时删除，
-  成功构造的信号持有它，由 `cleanupTempFiles()` 按会话清理。
-- **内存预算与降级（D5，2026-11-10 落地）**：估算公式统一在 `Analysis/DASignalMemoryEstimate.h`
-  （纯逻辑、DASignalAnalysisTest 覆盖）：频谱/热图为流式，峰值内存只与段长/栅格相关；峰值表/峰值曲线
-  含整段 float32 副本并按并发系数放大；包络按可见区段估算。超预算时三选：**降低精度**（热图栅格减半 +
-  分块帧数 64；峰值曲线隔帧 `frame_step=2`）/ **只扫可见区段**（`view->visibleTimeRange()` 换算采样点，
-  经 worker 传给 Python 的 `start_sample/end_sample`）/ **取消**。峰值曲线局部扫描时
-  `DAPeakDockWidget::setPartialScan(true)` 在窗口上标注「局部扫描」；切信号/清空峰值状态必须复位。
-  峰值表/峰值曲线仍整段取数（E 阶段再流式化），「降低精度」对它们只减少扫描帧数、不减少整段取数内存。
-
-## v1.5 修正要点（导入推断与 GIL 让出，2026-11-11）
-
-- **时间列选择推断采样率**：`DASignalImportDialog` 的时间列列表只接
-  `QItemSelectionModel::selectionChanged`（不再接 `currentChanged`）：鼠标点击时
-  `QAbstractItemView::mousePressEvent` 先 `setCurrentIndex(NoUpdate)` 再 `select`，
-  `currentChanged` 发射时 `selectedIndexes()` 仍为空/还是上一行，按它推断会读到空选择
-  （采样率一直是 0、提示误报「无时间列」）或白算一次旧列；`selectionChanged` 在真正选中后发射，
-  单选模式下鼠标与键盘选择都会发。
-- **轮询让出 GIL**：`DASignalAnalysisWorker::poll()` 在仍有任务时 `pybind11::gil_scoped_release`
-  + `QThread::msleep(cGilYieldMs)`。内嵌解释器由 GUI 线程初始化后一直持有 GIL（`main.cpp` 的
-  `app.exec()` 前后都没有 `PyEval_SaveThread`），Python 守护线程只能等 GUI 线程进入 Python 的瞬间；
-  不让出时实测每帧≈一个轮询周期，9M 点 @32kHz 的频谱要 20 分钟才回填，且频谱/时频/峰值表长时间空白。
-  该口径与 `plugins/DataAnalysis/DataframeIOWorker` 的后台等待一致；`cPollIntervalMs=20`、
-  `cGilYieldMs=12`。改这里要同时兼顾：结果回填延迟（轮询间隔）与界面事件处理（休眠时长）。
-  架构级完整说明（症状判定、参数取值、review 清单）见
-  [内嵌 Python 的 GIL 架构约束](../../docs/zh/dev-guide/python-binding/embedded-python-gil.md)。
-- **同类任务去重**：`DASignalAnalysisWorker` 给任务带 `dedupeKey`（任务类型 + 信号 + 通道 + 参数版本，
-  谱/包络/热图/曲线再拼请求尺寸/区段），`computeXxx` 命中在跑任务时直接返回「已受理」。
-  视图会在首次显示、外部连接后、resize 防抖、峰值窗口显示等时机重复请求同一份分析，
-  重复提交会让 O(N) 计算跑多遍、大信号出图成倍变慢（实测 9M 点首导入的包络/热图各被请求 3 次）。
-
-## v1.6 修正要点（峰值曲线渲染，2026-11-12）
-
-- **问题**：峰值窗口下半区（`DAPeakDockWidget` 的曲线区）把「每帧第 k 名」按帧直接连成折线。
-  但 D10 的口径是**每帧独立取前 N**——同名次在相邻帧不一定是同一个峰；噪声底、名次互换、
-  采样率填错（频率整体缩放）时，相邻帧会产生横跨整个频段的连线，窗口看起来像一张「笼子」。
-- **渲染口径**：`Page/DAPeakCurvePlotSamples.*` 把每个名次拆成两层：
-  - **点**（`QwtPlotCurve::Dots`）：所有有效帧都画，缺峰帧跳过，跳变处不丢数据；
-  - **折线**（`Lines` + `QwtPlotCurve::BreakAtNan`）：只在相邻帧频率跳变 ≤ `8 × Δf` 时连线，
-    跳变/缺帧处插入 NaN 断开，折线因此只表示「连续的峰」（斜扫频、跳频的水平段、稳定音调）。
-- **跳变阈值**：`daPeakCurveJumpThresholdHz()` = `8 × fs / nperseg`；采样率/段长未知返回 0
-  （不断开，退化为旧行为）。采样率由 worker 回填到 `DAPeakCurveResult::sampleRateHz`
-  （Python 返回字典不变，只加 C++ 侧字段）。
-- **界面说明**：曲线区顶部加一行说明「每帧前 N 名峰值：频率随时间变化（颜色 = 名次）」，
-  tooltip 解释「相邻帧跳变过大只画点不连线」；曲线区改为 `QWidget` 容器（说明行 + `QwtPlot`）。
-- **测试**：`src/tst/DASignalAnalysisTest` 增加 `peakCurveJumpThreshold` 与 `peakCurvePlotSamples`
-  （阈值换算、连续段断开位置、缺帧断开、timeOrigin 平移、阈值 0 的旧行为、越界空结果）。
-- **注意**：这是显示层口径，不改变 D10 的计算语义（每帧独立取前 N）；不要为了「连成轨迹」
-  改成跨帧匹配/跟踪，那属于新功能（需另立方案）。
-
-## v1.7 修正要点（接入内置「绘图操作」上下文，2026-11-13）
-
-- **目标**：信号分析窗口激活时，除插件自己的「信号分析」上下文标签外，还要显示内置
-  「绘图操作」上下文标签，并把网格/缩放/平移/拾取/图例/主题/复制/导出/选区/标记等动作
-  作用到当前信号 figure（不再只保留插件自建的四个工具开关）。
-- **宿主契约**：`DASettingContextProvider` 新增 `virtual DAFigureWidget* chartContextFigure() const`；
-  `DASignalAnalysisSettingContext` 返回当前视图 figure（无视图为 nullptr）。宿主据此显示/隐藏
-  内置 Chart 上下文并路由 `DAAppController::getChartContextFigure()/getChartContextChart()`。
-  **插件不要自己 show/hide 内置 Chart 上下文**。
-- **内部变化通知**：切信号、切 2D/3D 子图后 `refreshTarget()` 末尾调用
-  `DADockingAreaInterface::notifySettingContextChanged()`；失活还原后也要 notify
-  （注册表已先清空 current provider，卸载/注销路径靠它恢复宿主状态）。
-- **重复工具移除**：不再自建 `actionZoom/actionPan/actionCrosshair/actionDataPicking`
-  （内置标签已提供）；「信号显示」页 Tools 只保留「添加图元」。
-- **SF-12 同步改法**：交互工具由内置标签开关后，插件监听当前 `DAChartWidget::chartPropertiesChanged`
-  （先断后连、QPointer 防悬空），仅在 `ZoomStateChanged/PanStateChanged/CrosshairStateChanged`
-  时重算「点击定位」互斥；`finalize()` 开头解绑。
-- **结构性动作**：内置 Chart 页的「新建绘图窗口/新建坐标系/调整子图大小/数据探针」由宿主在
-  插件上下文中置灰；「应用到所有绘图」只作用于当前信号 figure 的二维子图。
-- **3D 子图**：内置 Chart 标签保持显示；主题/复制/导出可用，2D 类动作置灰。
-- **文档**：宿主侧机制见 `docs/zh/dev-guide/ui/setting-context-provider.md`
-  §内置绘图操作上下文（chartContextFigure）。
-
-## v1.8 修正要点（绘图自适应、色标与峰值标记吸附，2026-11-16）
-
-- **坐标轴自适应（用户报告）**：`DAFigureWidget::createChart()` 会给新建子图显式设
-  X 0..800 / Y 0..500 占位刻度（`setAxisScale` 同时关闭 autoscale），视图此前从未重新打开，
-  导入信号后三张图坐标轴固定为默认刻度。现在 `buildFigure()` 对波形/频谱/时频三张 2D 子图
-  调用 `setAxisAutoScale(xBottom/yLeft, true)`；**只在建图时打开一次**，`rebuild*` 不无条件重开
-  （用户用缩放工具后 Qwt 会自动关闭 autoscale，视图不得覆盖用户缩放）。工程恢复仍走存档轴状态。
-- **色标（colorbar）**：① yRight 轴刻度此前保持 Qwt 默认 0..1000，与色标区间 `[mDbFloor, 0]`
-  不一致（刻度与颜色对不上，色带看起来贴在绘图区里）。现在 `applyHeatmapColors()` 统一
-  `setAxisScale(yRight, mDbFloor, 0.0)` + `setColorBarWidth(18)` + `setSpacing(4)`；隐藏时
-  `setAxisVisible(yRight, false)` 不占横向空间。`setDbFloor` / `rebuildHeatmap` /
-  `refreshAfterFigureRestore` 全部走同一入口。②「信号显示」上下文标签的「显示」面板新增
-  checkable「色标」开关（`actionSignalColorBar`），视图侧 `setColorBarVisible()/isColorBarVisible()`；
-  偏好存 `signal-analysis-config.json` 的 `colorBarVisible`（默认 true，`ensurePageCreated()`
-  读取、`onColorBarToggled()` 即时写、`finalize()` 兜底写）。三维瀑布/隐藏瀑布模式下置灰，
-  切回二维自动恢复。图标复用宿主 `:/app/bright/Icon/chart-grid-y.svg`（不新增 SVG）。
-- **峰值标记吸附（用户报告）**：`rebuildPeakMarkers()` 不再用「峰值表频率 + 峰值表幅值换算」
-  直接落点（峰值表频率与按离散频点绘制的曲线可能差一两个 bin，标记会落在曲线旁边），而是用
-  `rebuildSpectrumPlot()` 记录的**当前已绘制曲线快照**（跟随播放时是当前帧谱）经纯函数
-  `snapPeakMarkersToCurve()`（`Page/DAPeakMarkerSamples.*`）吸附到曲线最近局部极大，x/y 都取
-  曲线显示值；峰频超出曲线范围（如对数轴去掉 0 Hz）跳过；无快照时回退旧口径。算法
-  O(N·log M + N·k)，峰值上限 50、邻域半径 2，界面线程可接受。
-- **跟随播放改画「当前帧真实幅值谱」（用户报告峰值标记偏离的真正根因）**：此前跟随模式
-  （mFollowSlider）的频谱曲线取 `mStft` 的**热图显示栅格**当前列——该栅格把频率方向 max 池化到
-  画布高度（Δf_row ≈ fs/2/rows ≈ 82 Hz，且窗口大小会改变谱形），而峰值标记来自 10 Hz 细网格的
-  每帧前 N 峰值，两个网格不同 → 标记落在曲线下降沿。现在：
-  - `stft.py` 新增 `frame_spectrum_sync(source, params, frame_index)`：按 `stftWindowMs` 反推段长、
-    与 `peaks.py` 的单帧完全同口径（同 hop、同窗、同 `|rfft(seg*w)|/Σw` 单边倍增），**只按
-    `source["read"]` 读一帧（O(nperseg)）**，默认参数下不整段读；`frame_index_for_time()` 负责
-    时间→帧号（帧中心 `(k*hop+nperseg/2)/fs`）。
-  - `DASignalAnalysisWorker::computeFrameSpectrumSync()` 是 GUI 线程直调的短同步调用
-    （实测 0.3~1 ms/帧，< 10 ms 门限），失败只写 qWarning 不弹界面消息。
-  - 视图 `setFollowFrameSpectrum()` 保存真实帧谱，`rebuildSpectrumPlot()` 跟随分支优先用它，
-    mStft 栅格列只作过渡 fallback；`updatePlayhead()` / `setFollowSlider()` 按当前时间算帧号并
-    `Q_EMIT followFrameSpectrumRequested(frame)`（同帧不重复请求）；UI 收到后同步算完回填。
-  - 注意：`detrend`/`removeDc` 非默认时需要整段预处理后取帧（慢），默认参数不走该路径；
-    若以后要支持大信号 + 去趋势跟随，应改为在 Python 侧缓存全局去趋势参数而不是每帧整段读。
-- **存档优先窗口口径修正（SF-13 收口）**：`setPeaks()` 收到新计算结果时复位
-  `mPeakMarkersRestored`——此前只在 `setParams`/`setAmplitudeDisplay`/切通道复位，峰值窗口或
-  峰值标记开关触发重算后旧存档标记会一直停在旧位置（表现为标记与曲线偏离）。
-  `adoptRestoredPeakMarkers()` 之后、还没有新结果时仍保持存档标记优先。
-- **测试**：`DASignalAnalysisTest` 新增 `peakMarkerSnapping`（命中峰顶不变、偏一个 bin / 上升沿 /
-  谷底吸附、越界与 NaN 跳过、空/长度不一致/频率非单调安全返回）；
-  `signalPeakMarkersRestoredUntilRecompute` 按新口径更新（setPeaks 即结束存档窗口、合成频谱
-  改为 10 Hz 局部极大；断言不复用已释放标记指针，避免堆地址复用导致 flaky）；测试 CMake 的
-  显式 SOURCES 补 `Page/DAPeakMarkerSamples.cpp`。`tests/test_signal_dsp.py` 新增
-  `test_frame_spectrum_matches_peak_curves`（帧谱与 peaks 单帧对拍 1e-6、provider 只读一帧、
-  帧号越界 clamp、时间↔帧号往返）。
-- **注意**：吸附是显示层口径，不改变峰值表计算（D10 每帧独立取前 N、峰值表自身数值不变）；
-  不要为了「让标记更贴近某个峰」改 Python 侧峰值算法的频率网格。
+- 本文只记录**当前有效**的约束、机制与陷阱，不按版本号累积「修正要点」；行为变化时直接改对应章节，
+  历史看 `git log` 与方案文档。
+- 新增分析任务时必须同时补齐：`dedupeKey`、内存估算、取消路径、上下文版本校验、Python 侧流式
+  provider 实现与 pytest 用例。
+- 新增纯逻辑（不依赖 pybind11/GUI）优先做成可单测的纯函数（参考 `DASignalMemoryEstimate.h`、
+  `DAPeakCurvePlotSamples.*`），并加入 `DASignalAnalysisTest` 的显式 SOURCES。
