@@ -39,6 +39,7 @@
 #include "Page/DAPeakMarkerLabel.h"
 #include "Page/DAPeakMarkerSamples.h"
 #include "Render/DAStftRasterData.h"
+#include "Render/DATimeScaleDraw.h"
 #include "Render/DAWaterfallBuilder.h"
 #include "qwt3d_waterfall.h"
 
@@ -353,6 +354,9 @@ void DASignalAnalysisView::buildFigure()
     // 默认二维热图（D12）：三维瀑布隐藏
     mHeatmapChart->setVisible(true);
     mWaterfallChart->setVisible(false);
+
+    // 时间轴标签格式（默认秒）与轴标题：波形 x 与云图 x 用同一格式
+    applyTimeAxisFormat();
 
     connect(mFigure, &DAFigureWidget::currentChartChanged, this, &DASignalAnalysisView::onFigureCurrentChartChanged);
     connect(mFigure, &DAFigureWidget::current3DChartChanged, this, &DASignalAnalysisView::onFigureCurrent3DChartChanged);
@@ -796,6 +800,116 @@ void DASignalAnalysisView::setTimeCursorVisible(bool on)
 }
 
 /**
+ * @brief 是否开启联动缩放（波形 x↔云图 x、频谱 x↔云图 y）
+ */
+bool DASignalAnalysisView::isLinkedZoom() const
+{
+    return mLinkedZoom;
+}
+
+/**
+ * @brief 开关联动缩放（坐标轴同步在视图交互信号接通后生效）
+ * @param on true 开启
+ */
+void DASignalAnalysisView::setLinkedZoom(bool on)
+{
+    mLinkedZoom = on;
+}
+
+/**
+ * @brief 是否开启双光标测量
+ */
+bool DASignalAnalysisView::isDualCursorEnabled() const
+{
+    return mDualCursorEnabled;
+}
+
+/**
+ * @brief 开关双光标测量（图元与读数在测量实现里维护）
+ * @param on true 开启
+ */
+void DASignalAnalysisView::setDualCursorEnabled(bool on)
+{
+    mDualCursorEnabled = on;
+}
+
+/**
+ * @brief 是否开启峰值保持（Max Hold）
+ */
+bool DASignalAnalysisView::isPeakHoldEnabled() const
+{
+    return mPeakHoldEnabled;
+}
+
+/**
+ * @brief 开关峰值保持（缓冲与曲线在峰值保持实现里维护）
+ * @param on true 开启
+ */
+void DASignalAnalysisView::setPeakHoldEnabled(bool on)
+{
+    mPeakHoldEnabled = on;
+}
+
+/**
+ * @brief 当前时间轴标签格式（0=秒 / 1=毫秒 / 2=mm:ss.s）
+ */
+int DASignalAnalysisView::timeFormat() const
+{
+    return mTimeFormat;
+}
+
+/**
+ * @brief 设置时间轴标签格式：换新 ScaleDraw 并同步轴标题
+ *
+ * 切换格式时不复用旧实例：QwtPlot 接管 scaleDraw 所有权，换新实例交给
+ * setAxisScaleDraw 后旧实例随 plot 释放。
+ * @param format 0=秒 / 1=毫秒 / 2=mm:ss.s
+ */
+void DASignalAnalysisView::setTimeFormat(int format)
+{
+    const int bounded = qBound(0, format, 2);
+    if (mTimeFormat == bounded) {
+        return;
+    }
+    mTimeFormat = bounded;
+    applyTimeAxisFormat();
+}
+
+/**
+ * @brief 时间轴标题（随格式变）
+ */
+QString DASignalAnalysisView::timeAxisTitle() const
+{
+    switch (mTimeFormat) {
+    case 1:
+        return tr("Time (ms)");  // cn:时间（毫秒）
+    case 2:
+        return tr("Time (mm:ss)");  // cn:时间（分:秒）
+    default:
+        return tr("Time (s)");  // cn:时间（秒）
+    }
+}
+
+/**
+ * @brief 把时间轴格式应用到波形 x 与云图 x
+ *
+ * 只换刻度标签，不改坐标轴范围；三维瀑布没有时间轴，不受影响。
+ */
+void DASignalAnalysisView::applyTimeAxisFormat()
+{
+    if (mWaveChart) {
+        mWaveChart->setAxisScaleDraw(QwtPlot::xBottom, new DATimeScaleDraw(mTimeFormat, mTimeOrigin));
+        mWaveChart->setAxisTitle(QwtPlot::xBottom, timeAxisTitle());
+        mWaveChart->replot();
+    }
+    if (mHeatmapChart) {
+        mHeatmapChart->setAxisScaleDraw(QwtPlot::xBottom, new DATimeScaleDraw(mTimeFormat, mTimeOrigin));
+        mHeatmapChart->setAxisTitle(QwtPlot::xBottom, timeAxisTitle());
+        mHeatmapChart->replot();
+    }
+}
+
+/**
  * @brief 时频图色标（colorbar）显隐
  *
  * 状态变化后立即应用（yRight 轴显隐 + 色带 + 刻度区间）并重绘；隐藏时 yRight 轴不再占
@@ -825,6 +939,8 @@ void DASignalAnalysisView::setTimeOrigin(double seconds)
     if (mStft.isValid()) {
         rebuildHeatmap();
     }
+    // mm:ss.s 以时间原点为 0 点：原点变化后时间轴标签要跟着重算
+    applyTimeAxisFormat();
     updatePlayhead();
 }
 
@@ -1077,7 +1193,7 @@ void DASignalAnalysisView::rebuildHeatmap()
     // 色标（yRight 轴）的显隐、刻度区间 [mDbFloor, 0]、色带宽度与色图统一由
     // applyHeatmapColors 应用：不做这一步时 yRight 用 Qwt 默认 0..1000 刻度，与色标区间
     // [mDbFloor, 0] 不一致（用户报告的色标刻度对不上问题）
-    mHeatmapChart->setAxisTitle(QwtPlot::xBottom, tr("Time (s)"));      // cn:时间（秒）
+    mHeatmapChart->setAxisTitle(QwtPlot::xBottom, timeAxisTitle());       // cn:时间（秒/毫秒/分:秒）
     mHeatmapChart->setAxisTitle(QwtPlot::yLeft, tr("Frequency (Hz)"));  // cn:频率（赫兹）
     applyHeatmapColors();
     mHeatmapChart->replot();
@@ -1316,7 +1432,7 @@ double DASignalAnalysisView::dbReferenceValue() const
 void DASignalAnalysisView::updateAxisTitles()
 {
     if (mWaveChart) {
-        mWaveChart->setAxisTitle(QwtPlot::xBottom, tr("Time (s)"));  // cn:时间（秒）
+        mWaveChart->setAxisTitle(QwtPlot::xBottom, timeAxisTitle());
         QString ampTitle = tr("Amplitude");                          // cn:幅值
         if (!mParams.unit.isEmpty()) {
             ampTitle += QStringLiteral(" [%1]").arg(mParams.unit);
@@ -1781,6 +1897,8 @@ void DASignalAnalysisView::refreshAfterFigureRestore()
     if (mHeatmapChart) {
         mHeatmapChart->replot();
     }
+    // 时间轴格式（秒/毫秒/mm:ss.s）在恢复后重新下发：存档里的轴状态会重设刻度绘制
+    applyTimeAxisFormat();
     if (mWaterfallChart) {
         // 3D 子图是 QOpenGLWidget（Qwt3DPlot），没有 replot，交给 Qt 重新绘制
         mWaterfallChart->update();
@@ -1878,5 +1996,7 @@ void DASignalAnalysisView::retranslateUi()
         mWaterfallItem = nullptr;  // 已被外部（clearAllData3D 等）销毁：置空待重建
     }
     updateAxisTitles();
+    // 时间轴标题随格式与语言变化（Time (s)/(ms)/(mm:ss)）
+    applyTimeAxisFormat();
 }
 }  // namespace DA

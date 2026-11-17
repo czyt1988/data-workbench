@@ -21,6 +21,7 @@
         <file>icon/amplitude.svg</file>
         <file>icon/colorMap.svg</file>
         <file>icon/colorBar.svg</file>
+        <file>icon/viewOptions.svg</file>
         <file>icon/exportTable.svg</file>
         <file>icon/exportImage.svg</file>
     </qresource>

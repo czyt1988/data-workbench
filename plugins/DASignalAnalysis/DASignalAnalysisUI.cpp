@@ -129,6 +129,35 @@ QString signalPluginIcon(const char* file)
     return QString::fromUtf8(cIconPrefix) + QString::fromUtf8(file);
 }
 
+/**
+ * @brief 布局比例预设的行高（归一化，和≈1）
+ *
+ * 2×2 网格：第 1 行是波形（跨两列）、第 2 行是频谱 / 时频图。
+ * 0=默认（与 buildFigure 一致）/ 1=1:1 / 2=波形优先 / 3=分析优先。
+ * @param preset 预设编号，越界按默认处理
+ * @return 两行比例
+ */
+QList< qreal > layoutRowsForPreset(int preset)
+{
+    switch (preset) {
+    case 1:
+        return { 0.50, 0.50 };
+    case 2:
+        return { 0.65, 0.35 };
+    case 3:
+        return { 0.35, 0.65 };
+    case 0:
+    default:
+        return { 0.56, 0.44 };
+    }
+}
+
+/// 布局预设的列宽（左右 1:1，所有预设一致）
+QList< qreal > layoutColumnsDefault()
+{
+    return { 0.50, 0.50 };
+}
+
 /// 宿主应用级图标路径（复用宿主通用图标）
 QString signalAppIcon(const char* file)
 {
@@ -1499,6 +1528,39 @@ void DASignalAnalysisUI::buildSignalContextCategory()
     actionTimeCursor = createIconAction("actionSignalTimeCursor", signalAppIcon("chart-vline-marker.svg"), true);
     connect(actionTimeCursor, &QAction::toggled, this, &DASignalAnalysisUI::onTimeCursorToggled);
     mPanelTimeFreqView->addLargeAction(actionTimeCursor);
+    // 视图 ▾：时间格式 / 布局比例 / 重置显示（都只影响显示，不重算分析）
+    actionViewOptions = createIconAction("actionSignalViewOptions", pluginIcon("viewOptions.svg"), false);
+    mViewOptionsMenu  = new QMenu();
+    mTimeFormatMenu   = mViewOptionsMenu->addMenu(tr("Time format"));  // cn:时间格式
+    mTimeFormatGroup  = new QActionGroup(this);
+    mTimeFormatGroup->setExclusive(true);
+    // 时间格式三态：0=秒 / 1=毫秒 / 2=mm:ss.s（data 里存格式编号）
+    const QStringList timeFormatNames = { tr("Seconds"), tr("Milliseconds"), tr("mm:ss.s") };
+    // cn:秒 / 毫秒 / 分:秒.十分位
+    for (int i = 0; i < timeFormatNames.size(); ++i) {
+        QAction* act = mTimeFormatMenu->addAction(timeFormatNames.at(i));
+        act->setCheckable(true);
+        act->setData(i);
+        act->setActionGroup(mTimeFormatGroup);
+        mTimeFormatActions.append(act);
+    }
+    connect(mTimeFormatGroup, &QActionGroup::triggered, this, &DASignalAnalysisUI::onTimeFormatTriggered);
+    mLayoutPresetMenu = mViewOptionsMenu->addMenu(tr("Layout"));  // cn:布局比例
+    // 布局比例预设：0=1:1 / 1=波形优先 / 2=分析优先 / 3=恢复默认（data 里存预设编号）
+    const QStringList layoutPresetNames = { tr("1:1"), tr("Waveform priority"), tr("Analysis priority"), tr("Restore default") };
+    // cn:1:1 / 波形优先 / 分析优先 / 恢复默认
+    for (int i = 0; i < layoutPresetNames.size(); ++i) {
+        QAction* act = mLayoutPresetMenu->addAction(layoutPresetNames.at(i));
+        act->setData(i);
+        mLayoutPresetActions.append(act);
+    }
+    connect(mLayoutPresetMenu, &QMenu::triggered, this, &DASignalAnalysisUI::onLayoutPresetTriggered);
+    mViewOptionsMenu->addSeparator();
+    actionDisplayReset = mViewOptionsMenu->addAction(tr("Reset display"));  // cn:重置显示
+    actionDisplayReset->setObjectName(QStringLiteral("actionSignalDisplayReset"));
+    connect(actionDisplayReset, &QAction::triggered, this, &DASignalAnalysisUI::resetDisplaySettings);
+    actionViewOptions->setMenu(mViewOptionsMenu);
+    mPanelTimeFreqView->addMediumAction(actionViewOptions);
 
     // ---------- 云图设置：色带 / 色标（只影响二维时频热图） ----------
     mPanelHeatmap = mContextDisplayPage->addPanel(tr("Heatmap"));  // cn:云图设置
@@ -1753,6 +1815,27 @@ void DASignalAnalysisUI::syncSignalContextControls()
         actionTimeCursor->setEnabled(hasView);
         actionTimeCursor->setChecked(view ? view->isTimeCursorVisible() : true);
     }
+    // 视图 ▾：时间格式勾选跟随视图；无视图时整组置灰
+    if (actionViewOptions) {
+        actionViewOptions->setEnabled(hasView);
+    }
+    if (actionDisplayReset) {
+        actionDisplayReset->setEnabled(hasView);
+    }
+    const int timeFormat = (view ? view->timeFormat() : 0);
+    for (QAction* formatAction : std::as_const(mTimeFormatActions)) {
+        if (nullptr == formatAction) {
+            continue;
+        }
+        const QSignalBlocker blocker(formatAction);
+        formatAction->setEnabled(hasView);
+        formatAction->setChecked(formatAction->data().toInt() == timeFormat);
+    }
+    for (QAction* presetAction : std::as_const(mLayoutPresetActions)) {
+        if (presetAction) {
+            presetAction->setEnabled(hasView);
+        }
+    }
     // 云图设置整组：只在二维热图可见时可用（三维/隐藏时置灰，色标也只有二维有意义）
     const bool heatmapActive = hasView && waterfallMode == 0;
     if (actionColormap) {
@@ -1963,6 +2046,71 @@ void DASignalAnalysisUI::onHeatmapDbFloorChanged(double value)
 {
     if (DASignalAnalysisView* view = currentView()) {
         view->setDbFloor(value);
+    }
+}
+
+/**
+ * @brief 「视图 → 时间格式」：写当前视图的时间轴标签格式（只重绘）
+ * @param action 菜单项，data 为格式编号（0=秒 / 1=毫秒 / 2=mm:ss.s）
+ */
+void DASignalAnalysisUI::onTimeFormatTriggered(QAction* action)
+{
+    if (nullptr == action) {
+        return;
+    }
+    if (DASignalAnalysisView* view = currentView()) {
+        view->setTimeFormat(action->data().toInt());
+    }
+}
+
+/**
+ * @brief 「视图 → 布局比例」：套用 2×2 网格比例预设（只影响一次布局，不改存档语义）
+ *
+ * 工程里保存的仍是实际比例：预设只在点选时套用一次。
+ * @param action 菜单项，data 为预设编号（0=默认 / 1=1:1 / 2=波形优先 / 3=分析优先）
+ */
+void DASignalAnalysisUI::onLayoutPresetTriggered(QAction* action)
+{
+    if (nullptr == action) {
+        return;
+    }
+    if (DASignalAnalysisView* view = currentView()) {
+        view->setGridSizes(layoutRowsForPreset(action->data().toInt()), layoutColumnsDefault());
+    }
+}
+
+/**
+ * @brief 重置显示：一键把显示类设置恢复成默认（不弹确认，写一条消息）
+ *
+ * 覆盖：显示模式、当前帧标记、联动缩放、双光标、峰值保持、时间格式、布局比例、
+ * 云图色带与 dB 范围、色标、自动滚动。分析参数（窗函数/幅值口径等）不在重置范围内。
+ */
+void DASignalAnalysisUI::resetDisplaySettings()
+{
+    DASignalAnalysisView* view = currentView();
+    if (nullptr == view) {
+        return;
+    }
+    view->setWaterfallMode(0);
+    view->setTimeCursorVisible(true);
+    view->setLinkedZoom(false);
+    view->setDualCursorEnabled(false);
+    view->setPeakHoldEnabled(false);
+    view->setTimeFormat(0);
+    view->setGridSizes(layoutRowsForPreset(0), layoutColumnsDefault());
+    view->setColormapName(QStringLiteral("viridis"));
+    view->setDbFloor(-80.0);
+    view->setColorBarVisible(true);
+    view->setHeatmapAutoScroll(false);
+    // 色标显隐是插件级偏好：重置后同步回偏好，避免下一个信号又回到旧值
+    mColorBarVisible = true;
+    QJsonObject cfg                          = DASignalImporter::loadPluginConfig();
+    cfg[ QStringLiteral("colorBarVisible") ] = true;
+    DASignalImporter::savePluginConfig(cfg);
+    syncSignalContextControls();
+    syncSignalToolbar();
+    if (mUI) {
+        mUI->addInfoLogMessage(tr("Display settings reset."));  // cn:显示设置已重置。
     }
 }
 
@@ -3027,6 +3175,13 @@ QByteArray DASignalAnalysisUI::serializeState() const
                 view[ QStringLiteral("colormap") ]      = v->colormapName();
                 view[ QStringLiteral("dbFloor") ]       = v->dbFloor();
                 view[ QStringLiteral("autoScroll") ]    = v->isHeatmapAutoScroll();
+                // 显示类开关（D6）：当前帧标记 / 联动缩放 / 双光标 / 峰值保持 / 时间格式 / 色标
+                view[ QStringLiteral("timeCursor") ]     = v->isTimeCursorVisible();
+                view[ QStringLiteral("linkedZoom") ]     = v->isLinkedZoom();
+                view[ QStringLiteral("dualCursor") ]     = v->isDualCursorEnabled();
+                view[ QStringLiteral("peakHold") ]       = v->isPeakHoldEnabled();
+                view[ QStringLiteral("timeFormat") ]     = v->timeFormat();
+                view[ QStringLiteral("colorBarVisible") ] = v->isColorBarVisible();
                 // 峰值标记开关（视图无 getter：以 UI 记录的开关状态存，恢复后新视图据此应用）
                 view[ QStringLiteral("peakMarkersVisible") ] = mPeakMarkersVisible;
                 // T7 起布局是保留式网格：存归一化行/列比例（旧 splitter 像素比例在加载时归一化兼容）
@@ -3212,6 +3367,17 @@ void DASignalAnalysisUI::restoreState(const QByteArray& json,
                 v->setDbFloor(view.value(QStringLiteral("dbFloor")).toDouble(v->dbFloor()));
             }
             v->setHeatmapAutoScroll(view.value(QStringLiteral("autoScroll")).toBool(false));
+            // 显示类开关（D6）：缺键取默认（旧档兼容）
+            v->setTimeCursorVisible(view.value(QStringLiteral("timeCursor")).toBool(true));
+            v->setLinkedZoom(view.value(QStringLiteral("linkedZoom")).toBool(false));
+            v->setDualCursorEnabled(view.value(QStringLiteral("dualCursor")).toBool(false));
+            v->setPeakHoldEnabled(view.value(QStringLiteral("peakHold")).toBool(false));
+            v->setTimeFormat(view.value(QStringLiteral("timeFormat")).toInt(0));
+            if (view.contains(QStringLiteral("colorBarVisible"))) {
+                const bool colorBar = view.value(QStringLiteral("colorBarVisible")).toBool(mColorBarVisible);
+                v->setColorBarVisible(colorBar);
+                mColorBarVisible = colorBar;  // 偏好跟随最后一个恢复的信号
+            }
             // 网格比例：优先新键 gridRows/gridColumns；旧工程只有 splitterVertical/splitterHorizontal
             // （像素值），交给 setGridSizes 内部归一化，保证旧存档仍能还原比例
             QList< qreal > gridRows;
@@ -3433,6 +3599,20 @@ void DASignalAnalysisUI::finalize()
         mColormapMenu = nullptr;
     }
     mColormapGroup = nullptr;
+    // 「视图 ▾」菜单：子菜单/菜单项随父菜单销毁，这里只释放父菜单并清空指针
+    if (actionViewOptions) {
+        actionViewOptions->setMenu(nullptr);
+    }
+    if (mViewOptionsMenu) {
+        delete mViewOptionsMenu;
+        mViewOptionsMenu = nullptr;
+    }
+    mTimeFormatMenu         = nullptr;
+    mLayoutPresetMenu       = nullptr;
+    mTimeFormatGroup        = nullptr;
+    actionDisplayReset      = nullptr;
+    mTimeFormatActions.clear();
+    mLayoutPresetActions.clear();
     if (actionExportPeaks) {
         actionExportPeaks->setMenu(nullptr);
     }
@@ -3556,7 +3736,8 @@ void DASignalAnalysisUI::finalize()
             actionPeakMarkerDisplay, actionPeakWindow,   actionWaterfall2D,     actionWaterfall3D,
             actionWaterfallHide,  actionExportPeaks,
             actionExportImage,    actionRelinkSource,
-            actionTimeCursor,     actionColormap,        actionColorBar
+            actionTimeCursor,     actionViewOptions,     actionColormap,
+            actionColorBar
         };
         for (QAction* act : allActions) {
             if (act) {
@@ -3585,6 +3766,8 @@ void DASignalAnalysisUI::finalize()
     actionWaterfall3D       = nullptr;
     actionWaterfallHide    = nullptr;
     actionTimeCursor        = nullptr;
+    actionViewOptions       = nullptr;
+    actionDisplayReset      = nullptr;
     actionExportPeaks       = nullptr;
     actionExportImage       = nullptr;
     actionRelinkSource      = nullptr;
@@ -4956,7 +5139,8 @@ void DASignalAnalysisUI::setSignalDependentActionsEnabled(bool on)
         actionPlay,         actionStop,
         actionAnalysisSetting, actionPeakMarker, actionPeakTopN,
         actionPeakMarkerDisplay, actionPeakWindow, actionWaterfall2D, actionWaterfall3D,
-        actionWaterfallHide, actionExportPeaks, actionTimeCursor,
+        actionWaterfallHide, actionExportPeaks, actionTimeCursor, actionViewOptions,
+        actionDisplayReset,
         actionExportImage,  actionRelinkSource,
         actionColormap,     actionColorBar
     };
@@ -5131,6 +5315,35 @@ void DASignalAnalysisUI::retranslateUi()
         actionTimeCursor->setToolTip(
             tr("Mark the current frame: a dashed line on the heatmap and a highlighted trace in the 3D waterfall"));
         // cn:标记当前帧：二维云图上的虚线，三维瀑布里的当前迹线高亮
+    }
+    if (actionViewOptions) {
+        actionViewOptions->setText(tr("View"));  // cn:视图
+        actionViewOptions->setToolTip(tr("Time axis format, sub-chart layout and reset display"));
+        // cn:时间轴格式、子图布局比例与重置显示
+    }
+    if (mTimeFormatMenu) {
+        mTimeFormatMenu->setTitle(tr("Time format"));  // cn:时间格式
+    }
+    // 时间格式三态菜单项（顺序与 mTimeFormatActions 一致：秒 / 毫秒 / mm:ss.s）
+    if (mTimeFormatActions.size() >= 3) {
+        mTimeFormatActions.at(0)->setText(tr("Seconds"));       // cn:秒
+        mTimeFormatActions.at(1)->setText(tr("Milliseconds"));  // cn:毫秒
+        mTimeFormatActions.at(2)->setText(tr("mm:ss.s"));       // cn:分:秒.十分位
+    }
+    if (mLayoutPresetMenu) {
+        mLayoutPresetMenu->setTitle(tr("Layout"));  // cn:布局比例
+    }
+    // 布局比例菜单项（顺序与 mLayoutPresetActions 一致：1:1 / 波形优先 / 分析优先 / 恢复默认）
+    if (mLayoutPresetActions.size() >= 4) {
+        mLayoutPresetActions.at(0)->setText(tr("1:1"));               // cn:1:1
+        mLayoutPresetActions.at(1)->setText(tr("Waveform priority"));  // cn:波形优先
+        mLayoutPresetActions.at(2)->setText(tr("Analysis priority"));  // cn:分析优先
+        mLayoutPresetActions.at(3)->setText(tr("Restore default"));    // cn:恢复默认
+    }
+    if (actionDisplayReset) {
+        actionDisplayReset->setText(tr("Reset display"));  // cn:重置显示
+        actionDisplayReset->setToolTip(tr("Restore all display settings to their defaults"));
+        // cn:把所有显示类设置恢复为默认值
     }
     // 分析设置页参数控件（标签 / combo 项文本；动作文本另见下方「分析」）
     if (mChannelLabel) {

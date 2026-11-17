@@ -87,6 +87,18 @@ public:
     // 当前帧标记开关（二维云图竖线 + 三维当前迹线高亮的时间游标；默认开）
     bool isTimeCursorVisible() const;
     void setTimeCursorVisible(bool on);
+    // 联动缩放（波形 x↔云图 x、频谱 x↔云图 y；默认关）
+    bool isLinkedZoom() const;
+    void setLinkedZoom(bool on);
+    // 双光标测量（默认关）
+    bool isDualCursorEnabled() const;
+    void setDualCursorEnabled(bool on);
+    // 峰值保持（Max Hold，默认关；只在跟随播放时有效）
+    bool isPeakHoldEnabled() const;
+    void setPeakHoldEnabled(bool on);
+    // 时间轴标签格式：0=秒 / 1=毫秒 / 2=mm:ss.s（作用到波形 x 与云图 x）
+    int timeFormat() const;
+    void setTimeFormat(int format);
     // 时频图色标（colorbar）显隐：隐藏时不占横向空间（默认显示）
     void setColorBarVisible(bool on);
     bool isColorBarVisible() const;
@@ -213,6 +225,10 @@ private:
     void ensureWaveDecorItems();
     // 当前时间对应的 STFT 列索引（跟随滑块用）
     int currentStftColumn() const;
+    // 时间轴标签格式应用到波形 x 与云图 x（换新 ScaleDraw 实例，plot 接管所有权）
+    void applyTimeAxisFormat();
+    // 时间轴标题（随格式变：Time (s) / Time (ms) / Time (mm:ss)）
+    QString timeAxisTitle() const;
     // 按当前时间请求「当前帧幅值谱」（同一帧不重复请求）；跟随关闭/STFT 未就绪时不做
     void requestFollowFrameSpectrum();
     // 作废跟随帧快照（切通道/参数变化/STFT 栅格变化时调用）
@@ -266,6 +282,12 @@ private:
     double mTimeOrigin { 0.0 };
     // 当前帧标记开关（默认开）：二维云图竖线 / STFT 窗宽带 / 三维当前迹线高亮
     bool mTimeCursorVisible { true };
+    // 联动缩放 / 双光标测量 / 峰值保持（默认关；由丝带「测量 ▾」与「时频图设置」驱动）
+    bool mLinkedZoom { false };
+    bool mDualCursorEnabled { false };
+    bool mPeakHoldEnabled { false };
+    // 时间轴格式：0=秒 / 1=毫秒 / 2=mm:ss.s
+    int mTimeFormat { 0 };
 
     // T7 临时工具栏已删除（T8）：控件迁到 Ribbon 上下文标签与窗口底部工具栏
     QTimer* mResizeDebounce { nullptr };

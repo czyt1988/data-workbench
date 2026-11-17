@@ -202,6 +202,12 @@ private Q_SLOTS:
     void onTimeCursorToggled(bool on);
     // 云图设置 dB 范围：写当前视图的二维色域下限（[floor, 0]）
     void onHeatmapDbFloorChanged(double value);
+    // 「视图 ▾」时间格式子菜单：写当前视图的时间轴标签格式
+    void onTimeFormatTriggered(QAction* action);
+    // 「视图 ▾」布局比例子菜单：套用 2×2 网格比例预设
+    void onLayoutPresetTriggered(QAction* action);
+    // 「视图 ▾」重置显示：一键回到默认显示状态
+    void resetDisplaySettings();
     // 当前视图「跟随滑块」变化（回勾底部工具栏）
     void onViewFollowSliderToggled(bool on);
     // 当前视图请求跟随帧幅值谱（同步短调用：成功回填、失败静默，不弹消息）
@@ -356,6 +362,14 @@ private:
     // 云图设置 dB 范围（二维色域下限；从底部播放器控制条迁入，D5）
     QDoubleSpinBox* mHeatmapDbFloorSpin { nullptr };
     QLabel* mHeatmapDbFloorLabel { nullptr };
+    // 「视图 ▾」菜单（时间格式 / 布局比例 / 重置显示）
+    QMenu* mViewOptionsMenu { nullptr };
+    QMenu* mTimeFormatMenu { nullptr };
+    QMenu* mLayoutPresetMenu { nullptr };
+    QActionGroup* mTimeFormatGroup { nullptr };
+    // 菜单项指针（重译需要逐条改写文本；data 里存格式/预设编号）
+    QList< QAction* > mTimeFormatActions;
+    QList< QAction* > mLayoutPresetActions;
     // 峰值标记开关（视图无 getter：UI 记录状态并在新视图创建时应用）
     bool mPeakMarkersVisible { false };
     // 全局偏好：峰值标记文本模板（{index}/{fre}/{amp}，signal-analysis-config.json 的 peakMarkerText）
@@ -466,6 +480,8 @@ public:
     QAction* actionWaterfall3D { nullptr };       ///< 时频图设置：三维瀑布
     QAction* actionWaterfallHide { nullptr };     ///< 时频图设置：隐藏
     QAction* actionTimeCursor { nullptr };        ///< 时频图设置：当前帧标记（勾选）
+    QAction* actionViewOptions { nullptr };       ///< 时频图设置：视图 ▾（时间格式/布局比例/重置显示）
+    QAction* actionDisplayReset { nullptr };      ///< 视图 ▾：重置显示
     QAction* actionColormap { nullptr };          ///< 云图设置：色带（带菜单，只影响二维谱图与色标）
     QAction* actionColorBar { nullptr };          ///< 云图设置：色标显隐（勾选）
 

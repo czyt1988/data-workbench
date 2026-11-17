@@ -12,6 +12,7 @@
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
+#include <QLocale>
 #include <QOpenGLContext>
 #include <QSignalSpy>
 #include <QMetaType>
@@ -49,6 +50,7 @@
 #include "Page/DASignalChartExport.h"
 #include "Page/DASignalTimeText.h"
 #include "Render/DAStftRasterData.h"
+#include "Render/DATimeScaleDraw.h"
 #include "DAChart3DWidget.h"
 #include "DAChartWidget.h"
 #include "DAFigureWidget.h"
@@ -318,6 +320,8 @@ private Q_SLOTS:
     void signalPeakMarkersRestoredUntilRecompute();
     // 播放器控制条时间文本：mm:ss.s 格式、占位与越界夹取（纯函数）
     void playbackTimeTextFormatting();
+    // 时间轴标签格式（纯函数）：秒/毫秒/mm:ss.s（含时间原点）
+    void timeAxisFormatLabels();
     // dB 参考由幅值口径派生（D7）：dbRef1 → one，其余 → fullScale，旧档矛盾组合按幅值口径解释
     void dbReferenceDerivedFromAmplitudeMode();
 };
@@ -2245,6 +2249,34 @@ void DASignalAnalysisTest::playbackTimeTextFormatting()
     // 位置越界（后端偶发值）夹在 [0, 总长]
     QCOMPARE(daSignalFormatTimeRange(-500, 90500, true), QStringLiteral("00:00.0 / 01:30.5"));
     QCOMPARE(daSignalFormatTimeRange(99999999, 90500, true), QStringLiteral("01:30.5 / 01:30.5"));
+}
+
+/**
+ * @brief 时间轴标签格式（纯函数）：秒 / 毫秒 / mm:ss.s（含时间原点）
+ */
+void DASignalAnalysisTest::timeAxisFormatLabels()
+{
+    using DA::daFormatTimeAxisLabel;
+    // 秒：与 Qwt 默认标签同源（QLocale 数值格式）
+    QCOMPARE(daFormatTimeAxisLabel(1.5, 0, 0.0), QLocale().toString(1.5));
+    QCOMPARE(daFormatTimeAxisLabel(12.0, 0, 0.0), QLocale().toString(12.0));
+    // 毫秒：值 × 1000 取整
+    QCOMPARE(daFormatTimeAxisLabel(0.5, 1, 0.0), QStringLiteral("500"));
+    QCOMPARE(daFormatTimeAxisLabel(1.25, 1, 0.0), QStringLiteral("1250"));
+    QCOMPARE(daFormatTimeAxisLabel(0.0, 1, 0.0), QStringLiteral("0"));
+    // mm:ss.s：以时间原点为 0 点，秒补两位、十分位一位
+    QCOMPARE(daFormatTimeAxisLabel(0.0, 2, 0.0), QStringLiteral("0:00.0"));
+    QCOMPARE(daFormatTimeAxisLabel(12.3, 2, 0.0), QStringLiteral("0:12.3"));
+    QCOMPARE(daFormatTimeAxisLabel(90.5, 2, 0.0), QStringLiteral("1:30.5"));
+    // 时间原点非 0：绝对轴值减去原点后格式化
+    QCOMPARE(daFormatTimeAxisLabel(100.0, 2, 100.0), QStringLiteral("0:00.0"));
+    QCOMPARE(daFormatTimeAxisLabel(160.0, 2, 100.0), QStringLiteral("1:00.0"));
+    // 原点前（无效值）钳到 0，不出现负时间
+    QCOMPARE(daFormatTimeAxisLabel(50.0, 2, 100.0), QStringLiteral("0:00.0"));
+    // 超过 1 小时：分钟位自然增长
+    QCOMPARE(daFormatTimeAxisLabel(3661.0, 2, 0.0), QStringLiteral("61:01.0"));
+    // 未知格式按秒处理
+    QCOMPARE(daFormatTimeAxisLabel(2.5, 99, 0.0), QLocale().toString(2.5));
 }
 
 QTEST_MAIN(DASignalAnalysisTest)
