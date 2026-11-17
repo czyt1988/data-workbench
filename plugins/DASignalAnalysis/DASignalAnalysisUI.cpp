@@ -19,6 +19,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QLabel>
+#include <QLayoutItem>
 #include <QMainWindow>
 #include <QMessageBox>
 #include <QPushButton>
@@ -38,6 +39,7 @@
 #include "SARibbonCategory.h"
 #include "SARibbonContextCategory.h"
 #include "SARibbonPanel.h"
+#include "SARibbonPanelLayout.h"
 #include "SARibbonTabBar.h"
 // ADS
 #include "DockManager.h"
@@ -52,6 +54,7 @@
 #include "DADataManagerInterface.h"
 #include "DAProjectInterface.h"
 #include "DAStatusBarInterface.h"
+#include "DAUiObjectNames.h"
 #include "DockAreaWidget.h"
 // DAFigure / DAGui / qwt
 #include "DAChartWidget.h"
@@ -87,19 +90,19 @@ namespace DA
 namespace
 {
 /// 丝带标签页 / 面板 / 动作的 object name（唯一名，供样式与查找使用）
-const char* const cCategoryObjectName      = "da-category-signal-analysis";
-const char* const cPanelOpenName           = "da-panel-signal.open";
-const char* const cPanelSignalName         = "da-panel-signal.signal";
+// 插件不再占用顶级丝带标签页：主页「创建」panel 一个入口 + 上下文标签两页。
+const char* const cPanelImportName         = "da-panel-signal.import";
 const char* const cPanelPlaybackName       = "da-panel-signal.playback";
 const char* const cPanelAnalysisName       = "da-panel-signal.analysis";
 const char* const cPanelPeaksName          = "da-panel-signal.peaks";
 const char* const cPanelExportName         = "da-panel-signal.export";
 const char* const cPageDockObjectName      = "da-dock-signal-analysis-page";
 // 插件自建的 Ribbon 上下文标签（SARibbon 按 objectName 查找，任务卡固定值）
-const char* const cContextCategoryObjectName = "ContextCategorySignalAnalysis";
-const char* const cContextPageObjectName     = "da-category-signal-context";
-const char* const cPanelContextDisplayName   = "da-panel-signal-context.display";
-const char* const cPanelContextToolsName     = "da-panel-signal-context.tools";
+const char* const cContextCategoryObjectName     = "ContextCategorySignalAnalysis";
+const char* const cContextAnalysisPageObjectName = "da-category-signal-analysis";
+const char* const cContextDisplayPageObjectName  = "da-category-signal-context";
+const char* const cPanelContextDisplayName       = "da-panel-signal.display";
+const char* const cPanelContextToolsName         = "da-panel-signal.display.tools";
 // 窗口底部播放工具栏
 const char* const cToolbarObjectName = "da-signal-playback-toolbar";
 
@@ -148,6 +151,31 @@ QWidget* makeRibbonSmallRow(const QString& text, QWidget* field, QWidget* parent
     }
     return row;
 }
+
+/**
+ * @brief 从宿主 ribbon 面板中摘除某个动作对应的按钮（不删宿主面板）
+ *
+ * 插件往宿主主页「创建」panel 注入过「信号分析」大按钮；热卸载时只摘按钮、
+ * 不删宿主 panel（面板归宿主所有）。写法与 plugins/DataAnalysis/DataAnalysisUI.cpp 一致。
+ * @param panel 宿主面板，可为 nullptr
+ * @param act 待摘除的动作，可为 nullptr
+ */
+void removeActionFromPanel(SARibbonPanel* panel, QAction* act)
+{
+    if (nullptr == panel || nullptr == act) {
+        return;
+    }
+    SARibbonPanelLayout* lay = panel->panelLayout();
+    if (nullptr == lay) {
+        return;
+    }
+    const int idx = lay->indexByAction(act);
+    if (idx >= 0) {
+        // takeAt 内部已对按钮控件 hide + deleteLater，item 本身需手动释放
+        QLayoutItem* item = lay->takeAt(idx);
+        delete item;
+    }
+}
 }  // namespace
 
 DASignalAnalysisUI::DASignalAnalysisUI(QObject* par) : QObject(par)
@@ -185,7 +213,15 @@ bool DASignalAnalysisUI::initialize(DACoreInterface* core)
     mPeakMarkerText                 = initialConfig.contains(QStringLiteral("peakMarkerText"))
                                           ? initialConfig.value(QStringLiteral("peakMarkerText")).toString()
                                           : daDefaultPeakMarkerText();
-    buildSignalCategory();
+    // 「取消计算」动作只挂状态栏进度条右侧（不进丝带）：与丝带布局无关，先建出来，
+    // 保证丝带区域不可用/上下文构建提前返回时状态栏仍能绑定它（不得替换/删除/重建）
+    actionCancelAnalysis = mActions->createAction(
+        "actionSignalCancelAnalysis",
+        (QString::fromUtf8(cIconPrefix) + QStringLiteral("cancelAnalysis.svg")).toUtf8().constData());
+    actionCancelAnalysis->setEnabled(false);  // 有任务在跑才可用
+    // 主页「创建」panel 一个入口 + 上下文标签两页（插件不再占用顶级丝带标签页）
+    installHomeEntry();
+    buildSignalContextCategory();
     retranslateUi();
     // 无信号阶段：依赖信号的动作全部置灰（方案 §8.1）
     setSignalDependentActionsEnabled(false);
@@ -991,8 +1027,8 @@ bool DASignalAnalysisUI::ensurePageCreated()
 /**
  * @brief 打开信号分析页面（首次调用时惰性创建）
  *
- * 丝带「打开信号分析窗口」入口。页面关闭后再次触发会重新显示并唤起到前台，
- * 与首次打开的路径一致。
+ * 主页「创建」panel 的「信号分析」入口。页面关闭后再次触发会重新显示并唤起到前台，
+ * 与首次打开的路径一致；打开后丝带停在「分析设置」页（D1/D2）。
  */
 void DASignalAnalysisUI::openSignalAnalysisPage()
 {
@@ -1004,6 +1040,22 @@ void DASignalAnalysisUI::openSignalAnalysisPage()
     }
     if (DADockingAreaInterface* dockingArea = mUI->getDockingArea()) {
         dockingArea->raiseDockByWidget(mPage);
+    }
+    // 上下文标签已显示（页面已激活过）时切回页 1「分析设置」：默认页就是它，重新打开保持一致
+    if (mContextCategory && mContextAnalysisPage) {
+        if (DARibbonAreaInterface* ribbonArea = mUI->getRibbonArea()) {
+            if (SARibbonBar* ribbon = ribbonArea->ribbonBar()) {
+                if (ribbon->isContextCategoryVisible(mContextCategory)) {
+                    const QList< int > tabs = ribbon->currentVisibleContextCategoryTabIndexs();
+                    for (int index : tabs) {
+                        if (ribbon->categoryByIndex(index) == mContextAnalysisPage) {
+                            ribbon->ribbonTabBar()->setCurrentIndex(index);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -1027,35 +1079,56 @@ QAction* DASignalAnalysisUI::createRibbonIconAction(const char* objectName, cons
 }
 
 /**
- * @brief 构建「信号分析」丝带顶级标签页
+ * @brief 主页「创建」panel 注入「信号分析」入口（插件不再占用顶级丝带标签页）
+ *
+ * 动作 objectName 沿用 actionSignalOpenPage，点击走 openSignalAnalysisPage()（页面惰性创建）；
+ * 宿主面板按 DA::UiNames::Ribbon::MainCreatePanel 查找，找不到时只告警、不影响其它功能
+ * （工程恢复等路径仍可创建页面）。卸载时只摘按钮，不删宿主 panel（见 finalize()）。
  */
-void DASignalAnalysisUI::buildSignalCategory()
+void DASignalAnalysisUI::installHomeEntry()
 {
-    DARibbonAreaInterface* ribbonArea = mUI->getRibbonArea();
-    if (nullptr == ribbonArea || nullptr == ribbonArea->ribbonBar()) {
-        qWarning() << "DASignalAnalysisUI::buildSignalCategory: ribbon area is unavailable";
+    if (nullptr == mActions) {
+        qWarning() << "DASignalAnalysisUI::installHomeEntry: action interface is unavailable";
         return;
     }
-    SARibbonBar* ribbon = ribbonArea->ribbonBar();
-    // 注意：SARibbonBar 没有 addCategory()，新增标签页用 addCategoryPage()（方案 T13）
-    mCategory = ribbon->addCategoryPage(tr("Signal Analysis"));  // cn:信号分析
-    if (nullptr == mCategory) {
-        qWarning() << "DASignalAnalysisUI::buildSignalCategory: addCategoryPage failed";
-        return;
-    }
-    mCategory->setObjectName(QString::fromUtf8(cCategoryObjectName));
-
-    // ---------- Window：打开信号分析窗口（页面惰性创建，未打开/被关闭时从这里进入） ----------
-    mPanelOpen = mCategory->addPanel(tr("Window"));  // cn:窗口
-    mPanelOpen->setObjectName(QString::fromUtf8(cPanelOpenName));
     actionOpenSignalPage = mActions->createAction(
         "actionSignalOpenPage",
         (QString::fromUtf8(cIconPrefix) + QStringLiteral("showSignalAnalysis.svg")).toUtf8().constData());
-    mPanelOpen->addLargeAction(actionOpenSignalPage);
+    DARibbonAreaInterface* ribbonArea = (mUI ? mUI->getRibbonArea() : nullptr);
+    SARibbonPanel* createPanel        = (ribbonArea
+                                             ? ribbonArea->getPanelByObjectName(
+                                                   QString::fromUtf8(UiNames::Ribbon::MainCreatePanel))
+                                             : nullptr);
+    if (nullptr == createPanel) {
+        qWarning() << "DASignalAnalysisUI::installHomeEntry: host main create panel not found";
+        return;
+    }
+    createPanel->addLargeAction(actionOpenSignalPage);
+}
 
-    // ---------- Signal：导入三入口 ----------
-    mPanelSignal = mCategory->addPanel(tr("Signal"));  // cn:信号
-    mPanelSignal->setObjectName(QString::fromUtf8(cPanelSignalName));
+/**
+ * @brief 构建上下文页 1「分析设置」（常用分析参数）
+ *
+ * 该页必须排在「信号显示」页之前：宿主把上下文标签里「新出现页中的第一个」设为当前页，
+ * 排前面的才是默认页。峰值相关动作在步骤 2 拆到两页：常见项留本页、标注类去显示页。
+ * @param contextCategory 插件自建的上下文标签（由 buildSignalContextCategory 创建）
+ */
+void DASignalAnalysisUI::buildAnalysisSettingsPage(SARibbonContextCategory* contextCategory)
+{
+    if (nullptr == contextCategory) {
+        qWarning() << "DASignalAnalysisUI::buildAnalysisSettingsPage: context category is null";
+        return;
+    }
+    mContextAnalysisPage = contextCategory->addCategoryPage(tr("Analysis Settings"));  // cn:分析设置
+    if (nullptr == mContextAnalysisPage) {
+        qWarning() << "DASignalAnalysisUI::buildAnalysisSettingsPage: addCategoryPage failed";
+        return;
+    }
+    mContextAnalysisPage->setObjectName(QString::fromUtf8(cContextAnalysisPageObjectName));
+
+    // ---------- 信号：导入三入口 ----------
+    mPanelImport = mContextAnalysisPage->addPanel(tr("Signal"));  // cn:信号
+    mPanelImport->setObjectName(QString::fromUtf8(cPanelImportName));
     actionImportAudio = mActions->createAction(
         "actionSignalImportAudio",
         (QString::fromUtf8(cIconPrefix) + QStringLiteral("importAudio.svg")).toUtf8().constData());
@@ -1069,14 +1142,14 @@ void DASignalAnalysisUI::buildSignalCategory()
     actionRelinkSource = mActions->createAction(
         "actionSignalRelinkSource",
         (QString::fromUtf8(cIconPrefix) + QStringLiteral("relinkSource.svg")).toUtf8().constData());
-    mPanelSignal->addLargeAction(actionImportAudio);
-    mPanelSignal->addLargeAction(actionImportDataFrame);
-    mPanelSignal->addLargeAction(actionImportVideo);
-    mPanelSignal->addMediumAction(actionRelinkSource);
+    mPanelImport->addLargeAction(actionImportAudio);
+    mPanelImport->addLargeAction(actionImportDataFrame);
+    mPanelImport->addLargeAction(actionImportVideo);
+    mPanelImport->addMediumAction(actionRelinkSource);
     actionRelinkSource->setEnabled(false);  // 只有当前信号来源缺失时才可用
 
-    // ---------- Playback：播放/暂停/停止 ----------
-    mPanelPlayback = mCategory->addPanel(tr("Playback"));  // cn:播放
+    // ---------- Playback：播放/暂停/停止（步骤 4 迁到底部播放器控制条后删除本 panel） ----------
+    mPanelPlayback = mContextAnalysisPage->addPanel(tr("Playback"));  // cn:播放
     mPanelPlayback->setObjectName(QString::fromUtf8(cPanelPlaybackName));
     actionPlay = mActions->createAction(
         "actionSignalPlay",
@@ -1092,22 +1165,17 @@ void DASignalAnalysisUI::buildSignalCategory()
     mPanelPlayback->addLargeAction(actionStop);
 
     // ---------- Analysis：统一参数对话框 ----------
-    mPanelAnalysis = mCategory->addPanel(tr("Analysis"));  // cn:分析
+    mPanelAnalysis = mContextAnalysisPage->addPanel(tr("Analysis"));  // cn:分析
     mPanelAnalysis->setObjectName(QString::fromUtf8(cPanelAnalysisName));
     actionAnalysisSetting = mActions->createAction(
         "actionSignalAnalysisSetting",
         (QString::fromUtf8(cIconPrefix) + QStringLiteral("analysisSetting.svg")).toUtf8().constData());
-    // 取消全部后台计算（评审 N-C7）：动作只挂在状态栏进度条右侧，不再占丝带面板
-    actionCancelAnalysis = mActions->createAction(
-        "actionSignalCancelAnalysis",
-        (QString::fromUtf8(cIconPrefix) + QStringLiteral("cancelAnalysis.svg")).toUtf8().constData());
     mPanelAnalysis->addLargeAction(actionAnalysisSetting);
-    actionCancelAnalysis->setEnabled(false);  // 有任务在跑才可用
 
     // ---------- Peaks：峰值标记 / 标记数量 / 模式 / 相对门限 / 标记显示 / 峰值窗口 ----------
-    // 峰值标记原在上下文标签「显示」组，与峰值表重复：统一收拢到本 panel（第一个动作），
-    // 峰值查找的模式与相对门限也从「分析设置」对话框迁到这里，常见设置有单一入口。
-    mPanelPeaks = mCategory->addPanel(tr("Peaks"));  // cn:峰值
+    // 步骤 2 起：标记数量 + 模式 + 相对门限留本页「峰值」panel；峰值标记/标记显示/峰值窗口
+    // 迁到「信号显示」页的「峰值标注」panel。
+    mPanelPeaks = mContextAnalysisPage->addPanel(tr("Peaks"));  // cn:峰值
     mPanelPeaks->setObjectName(QString::fromUtf8(cPanelPeaksName));
     actionPeakMarker = createRibbonIconAction("actionSignalPeakMarker", signalPluginIcon("peaks.svg"), true);
     actionPeakTopN   = createRibbonIconAction("actionSignalPeakTopN", signalPluginIcon("peakCount.svg"), false);
@@ -1149,8 +1217,8 @@ void DASignalAnalysisUI::buildSignalCategory()
     mPanelPeaks->addLargeAction(actionPeakWindow);
     buildPeakTopNMenu();
 
-    // ---------- Export：峰值表 / 图片 ----------
-    mPanelExport = mCategory->addPanel(tr("Export"));  // cn:导出
+    // ---------- Export：峰值表 / 图片（步骤 3 与导入合并为「导入导出」panel） ----------
+    mPanelExport = mContextAnalysisPage->addPanel(tr("Export"));  // cn:导出
     mPanelExport->setObjectName(QString::fromUtf8(cPanelExportName));
     actionExportPeaks = mActions->createAction(
         "actionSignalExportPeaks",
@@ -1160,10 +1228,6 @@ void DASignalAnalysisUI::buildSignalCategory()
         (QString::fromUtf8(cIconPrefix) + QStringLiteral("exportImage.svg")).toUtf8().constData());
     mPanelExport->addLargeAction(actionExportPeaks);
     mPanelExport->addLargeAction(actionExportImage);
-
-    // ---------- 插件自建的上下文标签：显示类（Display）+ 工具类（Tools） ----------
-    // 原顶级「Display」面板整体取消，动作对象与连接全部保留并迁移到上下文页，避免双入口。
-    buildSignalContextCategory();
 }
 
 /**
@@ -1199,17 +1263,19 @@ void DASignalAnalysisUI::buildSignalContextCategory()
         return;
     }
     mContextCategory->setObjectName(QString::fromUtf8(cContextCategoryObjectName));
-    mContextPage = mContextCategory->addCategoryPage(tr("Signal Display"));  // cn:信号显示
-    if (nullptr == mContextPage) {
+    // 页 1「分析设置」必须排在最前：showContextCategory 会把「新出现页中的第一个」设为当前页
+    buildAnalysisSettingsPage(mContextCategory);
+    mContextDisplayPage = mContextCategory->addCategoryPage(tr("Signal Display"));  // cn:信号显示
+    if (nullptr == mContextDisplayPage) {
         qWarning() << "DASignalAnalysisUI::buildSignalContextCategory: addCategoryPage failed";
         return;
     }
-    mContextPage->setObjectName(QString::fromUtf8(cContextPageObjectName));
+    mContextDisplayPage->setObjectName(QString::fromUtf8(cContextDisplayPageObjectName));
 
     // ---------- Display：通道 / 对数频率 / 色带 / 瀑布模式 / 幅值模式 ----------
     // 峰值标记已迁到「峰值」panel（本标签页删除重复入口），峰值表的重复入口一并删除
     // （峰值窗口 = 峰值表 + 峰值曲线，统一由「峰值」panel 的「峰值窗口」动作打开）。
-    mContextDisplayPanel = mContextPage->addPanel(tr("Display"));  // cn:显示
+    mContextDisplayPanel = mContextDisplayPage->addPanel(tr("Display"));  // cn:显示
     mContextDisplayPanel->setObjectName(QString::fromUtf8(cPanelContextDisplayName));
     // 通道选择：一次分析一个通道（多通道信号）
     mContextChannelCombo = new QComboBox(mContextDisplayPanel);
@@ -1273,7 +1339,7 @@ void DASignalAnalysisUI::buildSignalContextCategory()
     // ---------- Tools：添加图元 ----------
     // 缩放/平移/十字线/数据拾取等交互工具由内置「绘图操作」上下文标签提供，这里不再重复放置，
     // 避免两个上下文页出现同名开关且状态各自同步。Tools 页只保留插件特有的「添加图元」。
-    mContextToolsPanel = mContextPage->addPanel(tr("Tools"));  // cn:工具
+    mContextToolsPanel = mContextDisplayPage->addPanel(tr("Tools"));  // cn:工具
     mContextToolsPanel->setObjectName(QString::fromUtf8(cPanelContextToolsName));
     // 添加图元：复用宿主 DADialogChartGuide，目标 = 当前视图的当前子图
     actionAddFigure = createIconAction("actionSignalAddFigure", appIcon("addFigure.svg"), false);
@@ -3266,7 +3332,8 @@ void DASignalAnalysisUI::finalize()
         }
         mContextCategory = nullptr;
     }
-    mContextPage         = nullptr;
+    mContextDisplayPage  = nullptr;
+    mContextAnalysisPage = nullptr;
     mContextDisplayPanel = nullptr;
     mContextToolsPanel   = nullptr;
     mContextChannelCombo = nullptr;
@@ -3297,15 +3364,15 @@ void DASignalAnalysisUI::finalize()
         mPageDock = nullptr;
     }
     mPage = nullptr;
-    // 丝带标签页（mUI/mCategory 任一为空时不能提前 return，后面的动作清理必须执行）
-    if (mUI && mCategory) {
+    // 主页「创建」panel：只摘插件注入的按钮，不删宿主 panel（面板归宿主所有）。
+    // mUI 为空时不能提前 return，后面的动作清理必须执行（铁律 11）
+    if (mUI && actionOpenSignalPage) {
         if (DARibbonAreaInterface* ribbonArea = mUI->getRibbonArea()) {
-            if (ribbonArea->ribbonBar()) {
-                ribbonArea->ribbonBar()->removeCategory(mCategory);
-            }
+            SARibbonPanel* createPanel = ribbonArea->getPanelByObjectName(
+                QString::fromUtf8(UiNames::Ribbon::MainCreatePanel));
+            removeActionFromPanel(createPanel, actionOpenSignalPage);
         }
     }
-    mCategory = nullptr;
     // 经宿主接口销毁全部动作（含上下文标签新增动作）
     if (mActions) {
         const QList< QAction* > allActions = {
@@ -3355,8 +3422,7 @@ void DASignalAnalysisUI::finalize()
     actionColormap          = nullptr;
     actionColorBar          = nullptr;
     actionAddFigure         = nullptr;
-    mPanelOpen              = nullptr;
-    mPanelSignal            = nullptr;
+    mPanelImport            = nullptr;
     mPanelPlayback          = nullptr;
     mPanelAnalysis          = nullptr;
     mPanelPeaks             = nullptr;
@@ -4453,10 +4519,7 @@ void DASignalAnalysisUI::setSignalDependentActionsEnabled(bool on)
  */
 void DASignalAnalysisUI::retranslateUi()
 {
-    // 标签页
-    if (mCategory) {
-        mCategory->setCategoryName(tr("Signal Analysis"));  // cn:信号分析
-    }
+    // 页面 dock（插件不再有顶级丝带标签页：主页入口 + 上下文两页）
     if (mPageDock) {
         mPageDock->setWindowTitle(tr("Signal Analysis"));  // cn:信号分析
     }
@@ -4464,12 +4527,9 @@ void DASignalAnalysisUI::retranslateUi()
     if (mPeakDock) {
         mPeakDock->setWindowTitle(tr("Peaks"));  // cn:峰值
     }
-    // 面板
-    if (mPanelOpen) {
-        mPanelOpen->setPanelName(tr("Window"));  // cn:窗口
-    }
-    if (mPanelSignal) {
-        mPanelSignal->setPanelName(tr("Signal"));  // cn:信号
+    // 上下文标签页 1「分析设置」的面板
+    if (mPanelImport) {
+        mPanelImport->setPanelName(tr("Signal"));  // cn:信号
     }
     if (mPanelPlayback) {
         mPanelPlayback->setPanelName(tr("Playback"));  // cn:播放
@@ -4483,12 +4543,15 @@ void DASignalAnalysisUI::retranslateUi()
     if (mPanelExport) {
         mPanelExport->setPanelName(tr("Export"));  // cn:导出
     }
-    // 插件上下文标签：标题 / 上下文页 / 两组面板
+    // 插件上下文标签：标题 / 两页 / 显示页的两组面板
     if (mContextCategory) {
         mContextCategory->setContextTitle(tr("Signal Analysis"));  // cn:信号分析
     }
-    if (mContextPage) {
-        mContextPage->setCategoryName(tr("Signal Display"));  // cn:信号显示
+    if (mContextAnalysisPage) {
+        mContextAnalysisPage->setCategoryName(tr("Analysis Settings"));  // cn:分析设置
+    }
+    if (mContextDisplayPage) {
+        mContextDisplayPage->setCategoryName(tr("Signal Display"));  // cn:信号显示
     }
     if (mContextDisplayPanel) {
         mContextDisplayPanel->setPanelName(tr("Display"));  // cn:显示
@@ -4496,11 +4559,10 @@ void DASignalAnalysisUI::retranslateUi()
     if (mContextToolsPanel) {
         mContextToolsPanel->setPanelName(tr("Tools"));  // cn:工具
     }
-    // 窗口
+    // 主页入口
     if (actionOpenSignalPage) {
-        actionOpenSignalPage->setText(tr("Open Signal Analysis Window"));  // cn:打开信号分析窗口
-        actionOpenSignalPage->setToolTip(tr("Show the signal analysis workspace; it is created on first use"));
-        // cn:显示信号分析界面（首次使用时创建）
+        actionOpenSignalPage->setText(tr("Signal Analysis"));  // cn:信号分析
+        actionOpenSignalPage->setToolTip(tr("Open the signal analysis workspace"));  // cn:打开信号分析界面
     }
     // 信号
     if (actionImportAudio) {

@@ -195,8 +195,11 @@ private Q_SLOTS:
 
 private:
     void buildCenterPage();
-    void buildSignalCategory();
-    // 构建插件 Ribbon 上下文标签（Display/Tools 两组）
+    // 主页「创建」panel 注入「信号分析」入口（插件不再占用顶级丝带标签页）
+    void installHomeEntry();
+    // 构建「分析设置」上下文页（导入/分析/峰值等常用参数）
+    void buildAnalysisSettingsPage(SARibbonContextCategory* contextCategory);
+    // 构建插件 Ribbon 上下文标签（分析设置 / 信号显示 两页）
     void buildSignalContextCategory();
     // 构建窗口底部播放工具栏（默认隐藏）
     void buildSignalToolbar();
@@ -288,10 +291,11 @@ private:
     DACoreInterface* mCore { nullptr };
     DAUIInterface* mUI { nullptr };
     DAActionsInterface* mActions { nullptr };
-    SARibbonCategory* mCategory { nullptr };
     // 插件自建的 Ribbon 上下文标签（objectName 固定，供 show/hide 查找）
+    // 两页：「分析设置」（常用参数，排在前保证默认页）与「信号显示」
     SARibbonContextCategory* mContextCategory { nullptr };
-    SARibbonCategory* mContextPage { nullptr };
+    SARibbonCategory* mContextAnalysisPage { nullptr };
+    SARibbonCategory* mContextDisplayPage { nullptr };
     SARibbonPanel* mContextDisplayPanel { nullptr };
     SARibbonPanel* mContextToolsPanel { nullptr };
     // 上下文标签控件与色带菜单
@@ -343,14 +347,13 @@ private:
 
 public:
     //===================================================
-    // 丝带面板
+    // 丝带面板（全部位于插件自建的上下文标签页）
     //===================================================
-    SARibbonPanel* mPanelOpen { nullptr };      ///< 窗口（打开信号分析窗口）
-    SARibbonPanel* mPanelSignal { nullptr };    ///< 信号（导入）
-    SARibbonPanel* mPanelPlayback { nullptr };  ///< 播放
-    SARibbonPanel* mPanelAnalysis { nullptr };  ///< 分析
+    SARibbonPanel* mPanelImport { nullptr };    ///< 分析设置页：信号（导入）[步骤3 合并为「导入导出」]
+    SARibbonPanel* mPanelPlayback { nullptr };  ///< 播放（步骤4 迁到底部播放器控制条后删除）
+    SARibbonPanel* mPanelAnalysis { nullptr };  ///< 分析（步骤5 起为「更多」：高级设置…）
     SARibbonPanel* mPanelPeaks { nullptr };     ///< 峰值
-    SARibbonPanel* mPanelExport { nullptr };    ///< 导出
+    SARibbonPanel* mPanelExport { nullptr };    ///< 导出（步骤3 并入「导入导出」）
 
     //===================================================
     // 窗口（Window）
