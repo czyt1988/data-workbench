@@ -1,18 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
   <!-- data-workbench 官方色板：#5280C1/#497CAD/#BDCDE8/#727272/#B2B2B2/#5D6D7E/#669E8B/#CE6043/#E6C27C/#80559F/#3CAED5/#FFFFFF -->
-  <!-- 三维瀑布：透视坐标轴 + 前后两片曲面（后片半透明，前片带网格） -->
-  <g fill="none" stroke="#727272" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M26 40 L26 174"/>
-    <path d="M26 174 L178 174"/>
-    <path d="M26 174 L54 146"/>
+  <!-- 三维瀑布：透视坐标轴 + 沿时间轴错位叠放的三片频谱（每片为填充的谱面，两侧深度连线），即三维瀑布图的典型形态 -->
+  <path d="M24 40 L24 176 L176 176" fill="none" stroke="#727272" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <g fill="none" stroke="#497CAD" stroke-width="5" stroke-linecap="round">
+    <path d="M30 152 L60 108 L90 64"/>
+    <path d="M122 152 L152 108 L182 64"/>
   </g>
-  <path d="M42 108 L80 62 L160 62 L122 108 Z" fill="#BDCDE8" fill-opacity="0.5" stroke="#497CAD" stroke-width="5" stroke-linejoin="round"/>
-  <path d="M42 148 L42 108 M122 148 L122 108" fill="none" stroke="#497CAD" stroke-width="4"/>
-  <path d="M42 148 L80 102 L160 102 L122 148 Z" fill="#BDCDE8" stroke="#497CAD" stroke-width="5" stroke-linejoin="round"/>
-  <g fill="none" stroke="#497CAD" stroke-width="3">
-    <path d="M54.7 133.3 L134.7 133.3"/>
-    <path d="M67.3 118.7 L147.3 118.7"/>
-    <path d="M68.7 148 L106.7 102"/>
-    <path d="M95.3 148 L133.3 102"/>
-  </g>
+  <!-- 后排（最远） -->
+  <path d="M90 64 C100 61 104 52 114 52 C124 52 128 59 138 59 C148 59 152 46 162 46 C172 46 176 61 182 64 L182 70 L90 70 Z" fill="#BDCDE8" stroke="#5280C1" stroke-width="4" stroke-linejoin="round"/>
+  <!-- 中排 -->
+  <path d="M60 108 C70 105 74 88 84 88 C94 88 98 103 108 103 C118 103 122 84 132 84 C142 84 146 105 152 108 L152 114 L60 114 Z" fill="#BDCDE8" stroke="#5280C1" stroke-width="4" stroke-linejoin="round"/>
+  <!-- 前排（最近） -->
+  <path d="M30 152 C40 149 44 130 54 130 C64 130 68 147 78 147 C88 147 92 128 102 128 C112 128 116 149 122 152 L122 158 L30 158 Z" fill="#BDCDE8" stroke="#5280C1" stroke-width="4" stroke-linejoin="round"/>
 </svg>

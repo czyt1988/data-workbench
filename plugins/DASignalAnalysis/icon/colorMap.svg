@@ -1,9 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
   <!-- data-workbench 官方色板：#5280C1/#497CAD/#BDCDE8/#727272/#B2B2B2/#5D6D7E/#669E8B/#CE6043/#E6C27C/#80559F/#3CAED5/#FFFFFF -->
-  <!-- 色带：四段横向色阶（深蓝→主蓝→青蓝→浅蓝），表达可选的热图配色 -->
-  <rect x="24" y="68" width="38" height="64" fill="#497CAD"/>
-  <rect x="62" y="68" width="38" height="64" fill="#5280C1"/>
-  <rect x="100" y="68" width="38" height="64" fill="#3CAED5"/>
-  <rect x="138" y="68" width="38" height="64" fill="#BDCDE8"/>
-  <rect x="24" y="68" width="152" height="64" fill="none" stroke="#727272" stroke-width="5"/>
+  <!-- 色带：五段多色色阶（紫→深蓝→青蓝→绿→金黄），表示热图可选配色；色值取自图表系列取色池 -->
+  <rect x="24" y="60" width="31" height="80" fill="#80559F"/>
+  <rect x="55" y="60" width="31" height="80" fill="#497CAD"/>
+  <rect x="86" y="60" width="31" height="80" fill="#3CAED5"/>
+  <rect x="117" y="60" width="31" height="80" fill="#669E8B"/>
+  <rect x="148" y="60" width="28" height="80" fill="#E6C27C"/>
+  <rect x="24" y="60" width="152" height="80" fill="none" stroke="#727272" stroke-width="5"/>
 </svg>
