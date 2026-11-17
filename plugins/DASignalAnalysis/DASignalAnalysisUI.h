@@ -348,12 +348,12 @@ private:
     bool mPeakMarkersVisible { false };
     // 全局偏好：峰值标记文本模板（{index}/{fre}/{amp}，signal-analysis-config.json 的 peakMarkerText）
     QString mPeakMarkerText;
-    // 峰值 panel 的峰值搜索控件（small 行）：模式 / 相对门限
+    // 峰值 panel 的峰值搜索控件（参数网格）：模式 / 相对门限
     QComboBox* mPeakModeCombo { nullptr };
     QDoubleSpinBox* mPeakRelDbSpin { nullptr };
     QLabel* mPeakModeLabel { nullptr };
     QLabel* mPeakRelDbLabel { nullptr };
-    // 分析设置页「预处理 / 频谱 / 时频」参数控件（small 行；标签随语言切换重译）
+    // 分析设置页「预处理 / 频谱 / 时频」参数控件（参数网格；标签随语言切换重译）
     QCheckBox* mPreprocessDcCheck { nullptr };
     QComboBox* mDetrendCombo { nullptr };
     QLabel* mDetrendLabel { nullptr };

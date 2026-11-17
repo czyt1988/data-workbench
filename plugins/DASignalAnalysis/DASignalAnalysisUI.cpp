@@ -12,7 +12,7 @@
 #include <QDoubleSpinBox>
 #include <QFileDialog>
 #include <QFileInfo>
-#include <QHBoxLayout>
+#include <QGridLayout>
 #include <QIcon>
 #include <QInputDialog>
 #include <QJsonArray>
@@ -136,25 +136,58 @@ QString signalAppIcon(const char* file)
 }
 
 /**
- * @brief 构造 Ribbon small 行：左侧标签 + 右侧控件
+ * @brief 丝带参数网格：把一组「标签 + 控件」行放进共享列宽的 QGridLayout
  *
- * SARibbon 的 small 项只占一行高度、不显示文字标签，所以「模式 / 相对门限」
- * 这类控件把标签和控件放在同一行里；label 回传给调用方供语言切换时重译。
+ * 丝带的 small 项逐行独立排布，每行标签宽度按自身文本自适应，同一组内的标签与
+ * 控件左边界因此参差不齐。整组参数装进同一个网格控件、以 Large 占比加入面板后，
+ * 标签列与控件列共享列宽：标签左对齐、控件列统一左边界，行距与丝带 small 行一致。
+ * 末尾压一个弹性空白行，参数行保持自然高度、贴顶排列，不被面板高度均分拉伸。
  */
-QWidget* makeRibbonSmallRow(const QString& text, QWidget* field, QWidget* parent, QLabel** outLabel)
+class DASignalRibbonParamGrid : public QWidget
 {
-    auto* row = new QWidget(parent);
-    auto* lay = new QHBoxLayout(row);
-    lay->setContentsMargins(2, 0, 2, 0);
-    lay->setSpacing(4);
-    auto* label = new QLabel(text, row);
-    lay->addWidget(label);
-    lay->addWidget(field, 1);
-    if (outLabel) {
-        *outLabel = label;
+public:
+    explicit DASignalRibbonParamGrid(QWidget* parent) : QWidget(parent), mGrid(new QGridLayout(this))
+    {
+        mGrid->setContentsMargins(0, 0, 0, 0);
+        mGrid->setHorizontalSpacing(4);
+        mGrid->setVerticalSpacing(2);
+        mGrid->setColumnStretch(1, 1);
     }
-    return row;
-}
+
+    /// 追加一行「标签 + 控件」，返回标签指针供语言切换时重译
+    QLabel* addRow(const QString& text, QWidget* field)
+    {
+        auto* label = new QLabel(text, this);
+        label->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+        const int row = mGrid->rowCount();
+        mGrid->addWidget(label, row, 0);
+        mGrid->addWidget(field, row, 1);
+        return label;
+    }
+
+    /// 追加一行没有标签的控件（复选框），与上面的输入控件左边界对齐
+    void addFieldOnly(QWidget* field)
+    {
+        mGrid->addWidget(field, mGrid->rowCount(), 1);
+    }
+
+    /// 追加一行跨两列的只读提示（如 Δf），文本自带标签
+    void addHint(QWidget* hint)
+    {
+        mGrid->addWidget(hint, mGrid->rowCount(), 0, 1, 2);
+    }
+
+    /// 收尾：压弹性空白行，避免参数行被面板高度均分拉伸
+    void finish()
+    {
+        const int row = mGrid->rowCount();
+        mGrid->addItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding), row, 0, 1, 2);
+        mGrid->setRowStretch(row, 1);
+    }
+
+private:
+    QGridLayout* mGrid { nullptr };
+};
 
 /**
  * @brief 从宿主 ribbon 面板中摘除某个动作对应的按钮（不删宿主面板）
@@ -1186,7 +1219,6 @@ void DASignalAnalysisUI::buildAnalysisSettingsPage(SARibbonContextCategory* cont
     mPreprocessDcCheck = new QCheckBox(tr("Remove DC"), mPanelPreprocess);  // cn:去直流
     mPreprocessDcCheck->setObjectName(QStringLiteral("da-signal-preprocess-removedc"));
     connect(mPreprocessDcCheck, &QCheckBox::toggled, this, &DASignalAnalysisUI::onPreprocessDcToggled);
-    mPanelPreprocess->addSmallWidget(mPreprocessDcCheck);
     mDetrendCombo = new QComboBox(mPanelPreprocess);
     mDetrendCombo->setObjectName(QStringLiteral("da-signal-preprocess-detrend"));
     mDetrendCombo->setMinimumWidth(96);
@@ -1197,8 +1229,12 @@ void DASignalAnalysisUI::buildAnalysisSettingsPage(SARibbonContextCategory* cont
             QOverload< int >::of(&QComboBox::currentIndexChanged),
             this,
             &DASignalAnalysisUI::onDetrendChanged);
-    mPanelPreprocess->addSmallWidget(
-        makeRibbonSmallRow(tr("Detrend"), mDetrendCombo, mPanelPreprocess, &mDetrendLabel));  // cn:去趋势
+    // 去直流复选框与去趋势下拉框放进同一个参数网格：复选框左边界与下拉框对齐
+    auto* preprocessGrid = new DASignalRibbonParamGrid(mPanelPreprocess);
+    preprocessGrid->addFieldOnly(mPreprocessDcCheck);
+    mDetrendLabel = preprocessGrid->addRow(tr("Detrend"), mDetrendCombo);  // cn:去趋势
+    preprocessGrid->finish();
+    mPanelPreprocess->addLargeWidget(preprocessGrid);
 
     // ---------- 频谱：窗函数 / 幅值口径 / 频率分辨率（S） ----------
     // 幅值口径从「信号显示」页迁入本页（D7：dB 参考由幅值口径派生，不再单独入口）；
@@ -1217,8 +1253,6 @@ void DASignalAnalysisUI::buildAnalysisSettingsPage(SARibbonContextCategory* cont
             QOverload< int >::of(&QComboBox::currentIndexChanged),
             this,
             &DASignalAnalysisUI::onWindowChanged);
-    mPanelSpectrum->addSmallWidget(
-        makeRibbonSmallRow(tr("Window"), mWindowCombo, mPanelSpectrum, &mWindowLabel));  // cn:窗函数
     mAmplitudeModeCombo = new QComboBox(mPanelSpectrum);
     mAmplitudeModeCombo->setObjectName(QStringLiteral("da-signal-spectrum-amplitude"));
     mAmplitudeModeCombo->setMinimumWidth(118);
@@ -1230,9 +1264,6 @@ void DASignalAnalysisUI::buildAnalysisSettingsPage(SARibbonContextCategory* cont
             QOverload< int >::of(&QComboBox::currentIndexChanged),
             this,
             &DASignalAnalysisUI::onAmplitudeModeComboChanged);
-    mPanelSpectrum->addSmallWidget(
-        makeRibbonSmallRow(tr("Amplitude"), mAmplitudeModeCombo, mPanelSpectrum, &mAmplitudeModeLabel));
-    // cn:幅值口径
     mResolutionSpin = new QDoubleSpinBox(mPanelSpectrum);
     mResolutionSpin->setObjectName(QStringLiteral("da-signal-spectrum-resolution"));
     mResolutionSpin->setRange(0.01, 100000.0);
@@ -1245,8 +1276,13 @@ void DASignalAnalysisUI::buildAnalysisSettingsPage(SARibbonContextCategory* cont
             QOverload< double >::of(&QDoubleSpinBox::valueChanged),
             this,
             &DASignalAnalysisUI::onResolutionChanged);
-    mPanelSpectrum->addSmallWidget(
-        makeRibbonSmallRow(tr("Resolution"), mResolutionSpin, mPanelSpectrum, &mResolutionLabel));  // cn:频率分辨率
+    // 窗函数 / 幅值口径 / 频率分辨率三行放进同一个参数网格：标签列与控件列共享列宽
+    auto* spectrumGrid  = new DASignalRibbonParamGrid(mPanelSpectrum);
+    mWindowLabel        = spectrumGrid->addRow(tr("Window"), mWindowCombo);            // cn:窗函数
+    mAmplitudeModeLabel = spectrumGrid->addRow(tr("Amplitude"), mAmplitudeModeCombo);  // cn:幅值口径
+    mResolutionLabel    = spectrumGrid->addRow(tr("Resolution"), mResolutionSpin);     // cn:频率分辨率
+    spectrumGrid->finish();
+    mPanelSpectrum->addLargeWidget(spectrumGrid);
 
     // ---------- 时频：窗长 / 跳步重叠 / Δf（S） ----------
     // 窗长与频谱页的频率分辨率联动（改一个同步另一个）；Δf 是只读提示，不参与输入。
@@ -1264,9 +1300,6 @@ void DASignalAnalysisUI::buildAnalysisSettingsPage(SARibbonContextCategory* cont
             QOverload< double >::of(&QDoubleSpinBox::valueChanged),
             this,
             &DASignalAnalysisUI::onStftWindowChanged);
-    mPanelTimeFreq->addSmallWidget(
-        makeRibbonSmallRow(tr("Window length"), mStftWindowSpin, mPanelTimeFreq, &mStftWindowLabel));
-    // cn:窗长
     mStftOverlapSpin = new QDoubleSpinBox(mPanelTimeFreq);
     mStftOverlapSpin->setObjectName(QStringLiteral("da-signal-stft-overlap"));
     mStftOverlapSpin->setRange(0.0, 95.0);
@@ -1279,13 +1312,16 @@ void DASignalAnalysisUI::buildAnalysisSettingsPage(SARibbonContextCategory* cont
             QOverload< double >::of(&QDoubleSpinBox::valueChanged),
             this,
             &DASignalAnalysisUI::onStftOverlapChanged);
-    mPanelTimeFreq->addSmallWidget(
-        makeRibbonSmallRow(tr("Hop overlap"), mStftOverlapSpin, mPanelTimeFreq, &mStftOverlapLabel));
-    // cn:跳步重叠
     mDeltaFLabel = new QLabel(mPanelTimeFreq);
     mDeltaFLabel->setObjectName(QStringLiteral("da-signal-stft-deltaf"));
     mDeltaFLabel->setText(QStringLiteral("Δf —"));
-    mPanelTimeFreq->addSmallWidget(mDeltaFLabel);
+    // 窗长 / 跳步重叠 / Δf 提示放进同一个参数网格（Δf 是跨两列的只读提示）
+    auto* timeFreqGrid = new DASignalRibbonParamGrid(mPanelTimeFreq);
+    mStftWindowLabel   = timeFreqGrid->addRow(tr("Window length"), mStftWindowSpin);  // cn:窗长
+    mStftOverlapLabel  = timeFreqGrid->addRow(tr("Hop overlap"), mStftOverlapSpin);   // cn:跳步重叠
+    timeFreqGrid->addHint(mDeltaFLabel);
+    timeFreqGrid->finish();
+    mPanelTimeFreq->addLargeWidget(timeFreqGrid);
 
     // ---------- Peaks：标记数量 + 模式 + 相对门限（峰值标注类动作在「信号显示」页） ----------
     // 步骤 2 起一分为二：常见搜索参数留本页；峰值标记/标记显示/峰值窗口迁到「信号显示」页
@@ -1294,7 +1330,7 @@ void DASignalAnalysisUI::buildAnalysisSettingsPage(SARibbonContextCategory* cont
     mPanelPeaks->setObjectName(QString::fromUtf8(cPanelPeaksName));
     actionPeakTopN = createRibbonIconAction("actionSignalPeakTopN", signalPluginIcon("peakCount.svg"), false);
     mPanelPeaks->addLargeAction(actionPeakTopN);
-    // 峰值查找：模式 / 相对门限（small 行，两行叠在同一列；标签随语言切换重译）
+    // 峰值查找：模式 / 相对门限（参数网格，标签列与控件列共享列宽；标签随语言切换重译）
     mPeakModeCombo = new QComboBox(mPanelPeaks);
     mPeakModeCombo->setObjectName(QStringLiteral("da-signal-peak-mode"));
     mPeakModeCombo->setMinimumWidth(84);
@@ -1304,8 +1340,6 @@ void DASignalAnalysisUI::buildAnalysisSettingsPage(SARibbonContextCategory* cont
             QOverload< int >::of(&QComboBox::currentIndexChanged),
             this,
             &DASignalAnalysisUI::onPeakModeChanged);
-    mPanelPeaks->addSmallWidget(
-        makeRibbonSmallRow(tr("Mode"), mPeakModeCombo, mPanelPeaks, &mPeakModeLabel));  // cn:模式
     mPeakRelDbSpin = new QDoubleSpinBox(mPanelPeaks);
     mPeakRelDbSpin->setObjectName(QStringLiteral("da-signal-peak-reldb"));
     mPeakRelDbSpin->setRange(0.0, 200.0);
@@ -1319,8 +1353,12 @@ void DASignalAnalysisUI::buildAnalysisSettingsPage(SARibbonContextCategory* cont
             QOverload< double >::of(&QDoubleSpinBox::valueChanged),
             this,
             &DASignalAnalysisUI::onPeakRelDbChanged);
-    mPanelPeaks->addSmallWidget(
-        makeRibbonSmallRow(tr("Threshold"), mPeakRelDbSpin, mPanelPeaks, &mPeakRelDbLabel));  // cn:相对门限
+    // 模式 / 相对门限两行放进同一个参数网格：标签列与控件列共享列宽
+    auto* peaksGrid = new DASignalRibbonParamGrid(mPanelPeaks);
+    mPeakModeLabel  = peaksGrid->addRow(tr("Mode"), mPeakModeCombo);       // cn:模式
+    mPeakRelDbLabel = peaksGrid->addRow(tr("Threshold"), mPeakRelDbSpin);  // cn:相对门限
+    peaksGrid->finish();
+    mPanelPeaks->addLargeWidget(peaksGrid);
     buildPeakTopNMenu();
 
     // ---------- 更多：高级设置…（对话框唯一入口） ----------

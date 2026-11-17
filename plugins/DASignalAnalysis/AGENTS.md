@@ -223,6 +223,9 @@ plugins/DASignalAnalysis/
   版本、不提交计算，只 `syncAmplitudeUiFromParams()` 同步全局 `mAmplitudeMode/mDbReference`、视图与
   峰值表重绘。
 - 对话框确定后必须 `syncParamsRibbonControls()` 全量回填丝带，否则峰值表、导出与存档口径会和视图分叉。
+- 丝带参数行统一用 `DASignalRibbonParamGrid`（`DASignalAnalysisUI.cpp` 内部类，以 Large 占比加入面板）：
+  一组参数放进同一个 `QGridLayout`，标签列与控件列共享列宽，标签由 `addRow()` 返回给调用方保存用于重译；
+  **不要**再用 `addSmallWidget` 逐行拼「标签 + 控件」——每行标签宽度按自身文本自适应，控件列会参差不齐。
 - spin 一律 `setKeyboardTracking(false)`；单位用 suffix（` Hz` / ` ms` / ` %`）。
 - 预算：频谱/热图/包络流式或按区段，峰值表/曲线含整段 float32 副本并按并发系数放大；
   详见 `DASignalMemoryEstimate.h` 的公式注释。
@@ -268,7 +271,7 @@ plugins/DASignalAnalysis/
   的显示坐标（与 `DASignalAmplitude` 同口径，dB 模式自动带单位），空模板表示不显示文本。
   标记非 transient、随工程存档；恢复时位置以存档为准，文本按当前模板重写（`applyPeakMarkerLabels()`）。
 - 丝带入口（按用途分两页，不再有重复入口）：**分析设置 → 峰值**放标记数量（大按钮 + 10/20/50 菜单）、
-  模式（small combobox）、相对门限（small spin）；**信号显示 → 峰值标注**放峰值标记（勾选）、标记显示
+  模式与相对门限（同一个 `DASignalRibbonParamGrid` 参数网格）；**信号显示 → 峰值标注**放峰值标记（勾选）、标记显示
   （弹出模板编辑对话框）、峰值窗口（打开峰值表停靠窗口的唯一入口）。模式/相对门限/标记数量改后只重算
   峰值表与曲线（`ParamScope::Peaks`），不重算频谱；模板改动立即写配置并广播到全部已创建视图。
 - 存档优先：加载后到第一次重算之间，`mPeakMarkersRestored` 保证不删除重建用户调整过的标记；
