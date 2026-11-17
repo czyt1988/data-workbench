@@ -13123,6 +13123,79 @@
     </message>
 </context>
 <context>
+    <name>DA::DAPeakMarkerDisplayDialog</name>
+    <message>
+        <location filename="../../plugins/DASignalAnalysis/Dialogs/DAPeakMarkerDisplayDialog.cpp" line="+166"/>
+        <source>Preview: (no text)</source>
+        <translation>预览：（不显示文本）</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Preview: %1</source>
+        <translation>预览：%1</translation>
+    </message>
+    <message>
+        <location line="+14"/>
+        <source>Marker Display</source>
+        <translation>标记显示</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Insert placeholders into the text shown above each peak marker. Placeholders: %1 = rank, %2 = frequency, %3 = amplitude.</source>
+        <translation>把占位符插入峰值标记上方显示的文字。占位符：%1 = 排序号，%2 = 频率，%3 = 幅值。</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Index</source>
+        <translation>序号</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Insert the rank placeholder %1</source>
+        <translation>插入排序号占位符 %1</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Frequency</source>
+        <translation>频率</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Insert the frequency placeholder %1</source>
+        <translation>插入频率占位符 %1</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Amplitude</source>
+        <translation>幅值</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Insert the amplitude placeholder %1</source>
+        <translation>插入幅值占位符 %1</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Template for the text above peak markers; leave it empty to hide the text</source>
+        <translation>峰值标记上方文本的模板；留空则不显示文本</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Restore Default</source>
+        <translation>恢复默认</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>OK</source>
+        <translation>确定</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+</context>
+<context>
     <name>DA::DAPeakTableModel</name>
     <message>
         <location filename="../../plugins/DASignalAnalysis/Analysis/DAPeakTableModel.cpp" line="+192"/>
@@ -14330,7 +14403,7 @@
 <context>
     <name>DA::DASignalAnalysisSettingDialog</name>
     <message>
-        <location filename="../../plugins/DASignalAnalysis/Dialogs/DASignalAnalysisSettingDialog.cpp" line="+259"/>
+        <location filename="../../plugins/DASignalAnalysis/Dialogs/DASignalAnalysisSettingDialog.cpp" line="+266"/>
         <source>Segment length: unknown (sample rate is invalid)</source>
         <translation>段长：未知（采样率无效）</translation>
     </message>
@@ -14424,188 +14497,212 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
 <context>
     <name>DA::DASignalAnalysisUI</name>
     <message>
-        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="+285"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="+326"/>
         <source>FFmpeg was not detected; video import is unavailable until a path is specified in Settings &gt; Signal Analysis.</source>
         <translation>未检测到 FFmpeg，在「设置 → 信号分析」里指定路径前视频导入不可用。</translation>
     </message>
     <message>
-        <location line="-113"/>
-        <location line="+4147"/>
+        <location line="-112"/>
+        <location line="+4344"/>
         <source>Peak table (CSV)</source>
         <translation>峰值表（CSV）</translation>
     </message>
     <message>
-        <location line="-4144"/>
-        <location line="+4147"/>
+        <location line="-4341"/>
+        <location line="+4344"/>
         <source>Spectrum curve (CSV)</source>
         <translation>频谱曲线（CSV）</translation>
     </message>
     <message>
-        <location line="-4141"/>
-        <location line="+4147"/>
+        <location line="-4338"/>
+        <location line="+4344"/>
         <source>Heatmap matrix (CSV)</source>
         <translation>热图矩阵（CSV）</translation>
     </message>
     <message>
-        <location line="-3712"/>
+        <location line="-3910"/>
         <source>Signal imported: %1 (%2 Hz, %3 s)</source>
         <translation>信号已导入：%1（%2 赫兹，%3 秒）</translation>
     </message>
     <message>
-        <location line="+240"/>
+        <location line="+242"/>
         <location line="+3"/>
-        <location line="+106"/>
-        <location line="+128"/>
-        <location line="+3057"/>
+        <location line="+125"/>
+        <location line="+156"/>
+        <location line="+3185"/>
         <location line="+3"/>
         <location line="+27"/>
         <source>Signal Analysis</source>
         <translation>信号分析</translation>
     </message>
     <message>
-        <location line="-3199"/>
-        <location line="+3183"/>
+        <location line="-3355"/>
+        <location line="+3339"/>
         <source>Signal</source>
         <translation>信号</translation>
     </message>
     <message>
-        <location line="-3161"/>
-        <location line="+3164"/>
+        <location line="-3317"/>
+        <location line="+3320"/>
         <source>Playback</source>
         <translation>播放</translation>
     </message>
     <message>
-        <location line="-3148"/>
-        <location line="+3151"/>
+        <location line="-3304"/>
+        <location line="+3307"/>
         <source>Analysis</source>
         <translation>分析</translation>
     </message>
     <message>
-        <location line="-3137"/>
-        <location line="+177"/>
+        <location line="-3291"/>
+        <location line="+199"/>
         <location line="+2"/>
         <location line="+5"/>
-        <location line="+2940"/>
+        <location line="+3072"/>
         <location line="+16"/>
         <source>Peaks</source>
         <translation>峰值</translation>
     </message>
     <message>
-        <location line="-3066"/>
-        <location line="+3079"/>
+        <location line="-3192"/>
+        <location line="+3205"/>
         <source>Display</source>
         <translation>显示</translation>
     </message>
     <message>
-        <location line="-3137"/>
-        <location line="+3127"/>
+        <location line="-3264"/>
+        <location line="+3254"/>
         <source>Export</source>
         <translation>导出</translation>
     </message>
     <message>
-        <location line="-3988"/>
-        <location line="+4149"/>
+        <location line="-4164"/>
+        <location line="+4346"/>
         <source>Whole page (PNG)...</source>
         <translation>整页（PNG）...</translation>
     </message>
     <message>
-        <location line="-4144"/>
-        <location line="+4147"/>
+        <location line="-4341"/>
+        <location line="+4344"/>
         <source>Current sub-chart (PNG/SVG/PDF)...</source>
         <translation>当前子图（PNG/SVG/PDF）...</translation>
     </message>
     <message>
-        <location line="-4141"/>
-        <location line="+4145"/>
+        <location line="-4338"/>
+        <location line="+4342"/>
         <source>Copy whole page to clipboard</source>
         <translation>复制整页到剪贴板</translation>
     </message>
     <message>
-        <location line="-4143"/>
-        <location line="+4146"/>
+        <location line="-4340"/>
+        <location line="+4343"/>
         <source>Copy current sub-chart to clipboard</source>
         <translation>复制当前子图到剪贴板</translation>
     </message>
     <message>
-        <location line="-3248"/>
-        <location line="+3084"/>
+        <location line="-3475"/>
+        <location line="+3363"/>
+        <source>Simple</source>
+        <translation>简单</translation>
+    </message>
+    <message>
+        <location line="-3362"/>
+        <location line="+3363"/>
+        <source>Advanced</source>
+        <translation>高级</translation>
+    </message>
+    <message>
+        <location line="-3357"/>
+        <location line="+3349"/>
+        <source>Mode</source>
+        <translation>模式</translation>
+    </message>
+    <message>
+        <location line="-3334"/>
+        <location line="+3337"/>
+        <source>Threshold</source>
+        <translation>相对门限</translation>
+    </message>
+    <message>
+        <location line="-3281"/>
+        <location line="+3212"/>
         <source>Signal Display</source>
         <translation>信号显示</translation>
     </message>
     <message>
-        <location line="-3070"/>
-        <location line="+3182"/>
+        <location line="-3196"/>
+        <location line="+3329"/>
         <source>Channel</source>
         <translation>通道</translation>
     </message>
     <message>
-        <location line="-3118"/>
-        <location line="+3012"/>
+        <location line="-3271"/>
+        <location line="+3144"/>
         <source>Tools</source>
         <translation>工具</translation>
     </message>
     <message>
-        <location line="-2919"/>
-        <location line="+3028"/>
+        <location line="-3055"/>
+        <location line="+3185"/>
         <source>Follow playback</source>
         <translation>跟随播放</translation>
     </message>
     <message>
-        <location line="-3027"/>
-        <location line="+3028"/>
+        <location line="-3184"/>
+        <location line="+3185"/>
         <source>Show the current frame while playback advances</source>
         <translation>播放推进时显示当前帧</translation>
     </message>
     <message>
-        <location line="-3013"/>
-        <location line="+3017"/>
+        <location line="-3170"/>
+        <location line="+3174"/>
         <source>Playback position</source>
         <translation>播放位置</translation>
     </message>
     <message>
-        <location line="-3000"/>
-        <location line="+3003"/>
+        <location line="-3157"/>
+        <location line="+3160"/>
         <source>Heatmap color scale lower limit</source>
         <translation>热图色标下限</translation>
     </message>
     <message>
-        <location line="-2991"/>
-        <location line="+2994"/>
+        <location line="-3148"/>
+        <location line="+3151"/>
         <source>Auto scroll</source>
         <translation>自动滚动</translation>
     </message>
     <message>
-        <location line="-2993"/>
-        <location line="+2994"/>
+        <location line="-3150"/>
+        <location line="+3151"/>
         <source>Scroll the time-frequency view while playback advances</source>
         <translation>播放推进时滚动时频视图</translation>
     </message>
     <message>
-        <location line="-2154"/>
-        <location line="+2108"/>
+        <location line="-2312"/>
+        <location line="+2266"/>
         <source>Peak amplitude</source>
         <translation>峰值幅度</translation>
     </message>
     <message>
-        <location line="-2107"/>
-        <location line="+2110"/>
+        <location line="-2265"/>
+        <location line="+2268"/>
         <source>RMS</source>
         <translation>均方根</translation>
     </message>
     <message>
-        <location line="-2109"/>
-        <location line="+2112"/>
+        <location line="-2267"/>
+        <location line="+2270"/>
         <source>dB (FS)</source>
         <translation>dB（满量程）</translation>
     </message>
     <message>
-        <location line="-2111"/>
-        <location line="+2114"/>
+        <location line="-2269"/>
+        <location line="+2272"/>
         <source>dB (re 1.0)</source>
         <translation>dB（相对 1.0）</translation>
     </message>
     <message>
-        <location line="-2030"/>
+        <location line="-2188"/>
         <source>No peak data to export.</source>
         <translation>没有可导出的峰值数据。</translation>
     </message>
@@ -14640,12 +14737,12 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <location line="+31"/>
         <location line="+45"/>
         <location line="+17"/>
-        <location line="+721"/>
+        <location line="+726"/>
         <source>No signal is selected.</source>
         <translation>未选中信号。</translation>
     </message>
     <message>
-        <location line="-1015"/>
+        <location line="-1020"/>
         <source>No spectrum data to export.</source>
         <translation>没有可导出的频谱数据。</translation>
     </message>
@@ -14691,12 +14788,12 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>热图矩阵导出失败。</translation>
     </message>
     <message>
-        <location line="+1848"/>
+        <location line="+2006"/>
         <source>Export Image</source>
         <translation>导出图片</translation>
     </message>
     <message>
-        <location line="-1831"/>
+        <location line="-1989"/>
         <location line="+37"/>
         <source>PNG Image (*.png)</source>
         <translation>PNG 图片 (*.png)</translation>
@@ -14722,7 +14819,7 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>峰值表已作为「%1」加入数据管理器。</translation>
     </message>
     <message>
-        <location line="+774"/>
+        <location line="+779"/>
         <source>Signal analysis: %1 (%2%)</source>
         <translation>信号分析：%1（%2%）</translation>
     </message>
@@ -14732,7 +14829,7 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>频谱计算完成：分辨率 %1 赫兹，%2 个频点</translation>
     </message>
     <message>
-        <location line="+754"/>
+        <location line="+886"/>
         <source>Import Audio</source>
         <translation>导入音频</translation>
     </message>
@@ -14787,17 +14884,7 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>峰值标记</translation>
     </message>
     <message>
-        <location line="+3"/>
-        <source>Top N</source>
-        <translation>前 N 个</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Number of peaks to keep (10/20/50)</source>
-        <translation>保留的峰值数量</translation>
-    </message>
-    <message>
-        <location line="+3"/>
+        <location line="+28"/>
         <source>Peak Window</source>
         <translation>峰值窗口</translation>
     </message>
@@ -14877,8 +14964,8 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>导出峰值表</translation>
     </message>
     <message>
-        <location line="-3342"/>
-        <location line="+3188"/>
+        <location line="-3519"/>
+        <location line="+3344"/>
         <source>Window</source>
         <translation>窗口</translation>
     </message>
@@ -14893,12 +14980,12 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>显示信号分析界面（首次使用时创建）</translation>
     </message>
     <message>
-        <location line="-1357"/>
+        <location line="-1494"/>
         <source>Audio/Video files (*.wav *.aiff *.aif *.flac *.ogg *.mp3 *.m4a *.mp4 *.mkv *.avi);;All files (*)</source>
         <translation>音频/视频文件 (*.wav *.aiff *.aif *.flac *.ogg *.mp3 *.m4a *.mp4 *.mkv *.avi);;所有文件 (*)</translation>
     </message>
     <message>
-        <location line="+1395"/>
+        <location line="+1532"/>
         <source>Cancel Analysis</source>
         <translation>取消计算</translation>
     </message>
@@ -14908,12 +14995,12 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>取消全部在跑的后台计算</translation>
     </message>
     <message>
-        <location line="-640"/>
+        <location line="-772"/>
         <source>Cannot start playback for this signal.</source>
         <translation>无法开始播放该信号。</translation>
     </message>
     <message>
-        <location line="-1910"/>
+        <location line="-1915"/>
         <source>Continue</source>
         <translation>继续</translation>
     </message>
@@ -14938,7 +15025,7 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>导出完整矩阵</translation>
     </message>
     <message>
-        <location line="-1942"/>
+        <location line="-1982"/>
         <source>Extract the audio track of a video file</source>
         <translation>抽取视频音频轨</translation>
     </message>
@@ -14948,27 +15035,27 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>未检测到 FFmpeg，请在「设置 → 信号分析」里指定路径。</translation>
     </message>
     <message>
-        <location line="+393"/>
+        <location line="+395"/>
         <source>Failed to create the signal analysis page.</source>
         <translation>创建信号分析页面失败。</translation>
     </message>
     <message>
-        <location line="+1506"/>
+        <location line="+1544"/>
         <source>Failed to export the power spectral density.</source>
         <translation>功率谱密度导出失败。</translation>
     </message>
     <message>
-        <location line="+1312"/>
+        <location line="+1317"/>
         <source>Failed to import audio.</source>
         <translation>导入音频失败。</translation>
     </message>
     <message>
-        <location line="-3134"/>
+        <location line="-3179"/>
         <source>Failed to import data frame.</source>
         <translation>导入数据帧失败。</translation>
     </message>
     <message>
-        <location line="+3134"/>
+        <location line="+3179"/>
         <source>Failed to import video.</source>
         <translation>导入视频失败。</translation>
     </message>
@@ -14979,7 +15066,7 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>准备该信号的播放音频失败。</translation>
     </message>
     <message>
-        <location line="-1620"/>
+        <location line="-1625"/>
         <location line="+14"/>
         <source>Failed to relink the data frame source.</source>
         <translation>重新指定数据帧来源失败。</translation>
@@ -15031,7 +15118,42 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>功率谱密度（dB，相对 1.0/赫兹）</translation>
     </message>
     <message>
-        <location line="+1920"/>
+        <location line="+2010"/>
+        <source>Mark the detected peaks on the spectrum</source>
+        <translation>在频谱图上标出检测到的峰值</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Marker Count</source>
+        <translation>标记数量</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Number of peaks to mark (10/20/50)</source>
+        <translation>标记的峰值数量（10/20/50）</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Marker Display</source>
+        <translation>标记显示</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Edit the text shown above peak markers</source>
+        <translation>编辑峰值标记上方显示的文字</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Peak search mode: simple or advanced</source>
+        <translation>峰值查找模式：简单/高级</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Only keep peaks within this range below the strongest peak</source>
+        <translation>只保留低于最强峰不超过该门限的峰值</translation>
+    </message>
+    <message>
+        <location line="+45"/>
         <source>Color bar</source>
         <translation>色标</translation>
     </message>
@@ -15046,28 +15168,23 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>导出整页/当前子图或复制到剪贴板</translation>
     </message>
     <message>
-        <location line="+19"/>
-        <source>Peak Table</source>
-        <translation>峰值表</translation>
-    </message>
-    <message>
-        <location line="-4116"/>
+        <location line="-4294"/>
         <source>Playback failed. See the message log for details.</source>
         <translation>播放失败，详情见消息日志。</translation>
     </message>
     <message>
-        <location line="+3977"/>
+        <location line="+4153"/>
         <source>Point a signal whose data frame is missing to an existing data frame</source>
         <translation>把数据帧缺失的信号重新指向现有数据帧</translation>
     </message>
     <message>
-        <location line="-4034"/>
-        <location line="+4147"/>
+        <location line="-4210"/>
+        <location line="+4344"/>
         <source>Power spectral density (CSV)</source>
         <translation>功率谱密度（CSV）</translation>
     </message>
     <message>
-        <location line="-1954"/>
+        <location line="-2112"/>
         <source>Power spectral density exported: %1</source>
         <translation>功率谱密度已导出：%1</translation>
     </message>
@@ -15078,22 +15195,17 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
     </message>
     <message>
         <location line="+324"/>
-        <location line="+2162"/>
+        <location line="+2299"/>
         <source>Relink Data Frame Source</source>
         <translation>重新指定数据帧来源</translation>
     </message>
     <message>
-        <location line="+141"/>
-        <source>Show or hide the peak table window</source>
-        <translation>显示或隐藏峰值表窗口</translation>
-    </message>
-    <message>
-        <location line="-3740"/>
+        <location line="-3776"/>
         <source>Signal &quot;%1&quot; is a placeholder: its data frame is missing.</source>
         <translation>信号「%1」为占位：其数据帧缺失。</translation>
     </message>
     <message>
-        <location line="+2208"/>
+        <location line="+2248"/>
         <source>Signal &quot;%1&quot; refers to a missing file:
 %2
 
@@ -15116,7 +15228,7 @@ Locate the file again?</source>
         <translation>已取消信号分析：%1 超出内存预算。</translation>
     </message>
     <message>
-        <location line="+1776"/>
+        <location line="+1781"/>
         <source>Signal analysis failed. See the message log for details.</source>
         <translation>信号分析失败，详情见消息日志。</translation>
     </message>
@@ -15126,7 +15238,7 @@ Locate the file again?</source>
         <translation>信号分析：参数已应用，正在重算。</translation>
     </message>
     <message>
-        <location line="-595"/>
+        <location line="-600"/>
         <source>Signal source missing: data frame &quot;%1&quot; (signal &quot;%2&quot;). Use &quot;Relink Data Frame Source&quot; to point it to an existing data frame.</source>
         <translation>信号源缺失：数据帧「%1」（信号「%2」）。可用「重新指定数据帧来源」指向现有数据帧。</translation>
     </message>
@@ -15158,12 +15270,12 @@ Export the full matrix or downsample by 2?</source>
         <translation>峰值表</translation>
     </message>
     <message>
-        <location line="-1476"/>
+        <location line="-1516"/>
         <source>soundfile is not available; only WAV files can be read directly. Install soundfile or use FFmpeg.</source>
         <translation>未安装 soundfile，只能直接读取 WAV；可安装 soundfile 或改用 FFmpeg。</translation>
     </message>
     <message>
-        <location line="+3195"/>
+        <location line="+3240"/>
         <source>spectrum</source>
         <translation>频谱</translation>
     </message>
@@ -15173,7 +15285,7 @@ Export the full matrix or downsample by 2?</source>
         <translation>波形包络</translation>
     </message>
     <message>
-        <location line="-3019"/>
+        <location line="-3064"/>
         <source>FFmpeg is available; video import is enabled.</source>
         <translation>FFmpeg 可用，视频导入已启用。</translation>
     </message>
@@ -15183,12 +15295,12 @@ Export the full matrix or downsample by 2?</source>
         <translation>仍未检测到 FFmpeg，视频导入保持置灰。</translation>
     </message>
     <message>
-        <location line="+3187"/>
+        <location line="+3232"/>
         <source>Signal imported.</source>
         <translation>信号导入完成。</translation>
     </message>
     <message>
-        <location line="-1965"/>
+        <location line="-1970"/>
         <source>The estimated peak memory for the %1 is about %2 GB, above the 1.5 GB budget.
 Reduce the precision, scan only the visible range, or cancel?</source>
         <translation>%1 的预计峰值内存约 %2 GB，超过 1.5 GB 预算。降低精度、只扫可见区段，还是取消？</translation>
@@ -15264,7 +15376,7 @@ Reduce the precision, scan only the visible range, or cancel?</source>
         <translation>复制当前子图到剪贴板失败。</translation>
     </message>
     <message>
-        <location line="+1216"/>
+        <location line="+1221"/>
         <source>heatmap</source>
         <translation>热图</translation>
     </message>
@@ -15282,43 +15394,43 @@ Reduce the precision, scan only the visible range, or cancel?</source>
 <context>
     <name>DA::DASignalAnalysisView</name>
     <message>
-        <location filename="../../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="+404"/>
-        <location line="+1375"/>
+        <location filename="../../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="+436"/>
+        <location line="+1437"/>
         <source>Envelope</source>
         <translation>包络</translation>
     </message>
     <message>
-        <location line="-1332"/>
-        <location line="+1335"/>
+        <location line="-1394"/>
+        <location line="+1397"/>
         <source>Amplitude spectrum</source>
         <translation>幅值谱</translation>
     </message>
     <message>
-        <location line="-824"/>
-        <location line="+832"/>
+        <location line="-855"/>
+        <location line="+863"/>
         <source>Waterfall</source>
         <translation>三维瀑布</translation>
     </message>
     <message>
-        <location line="-779"/>
-        <location line="+774"/>
+        <location line="-810"/>
+        <location line="+805"/>
         <source>Spectrogram</source>
         <translation>时频图</translation>
     </message>
     <message>
-        <location line="-721"/>
+        <location line="-752"/>
         <source>dB</source>
         <translation>分贝</translation>
     </message>
     <message>
         <location line="-39"/>
-        <location line="+208"/>
+        <location line="+239"/>
         <source>Time (s)</source>
         <translation>时间（秒）</translation>
     </message>
     <message>
-        <location line="-207"/>
-        <location line="+215"/>
+        <location line="-238"/>
+        <location line="+246"/>
         <source>Frequency (Hz)</source>
         <translation>频率（赫兹）</translation>
     </message>
@@ -20620,7 +20732,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DASignalFormSpecBuilder</name>
     <message>
-        <location filename="../../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="+70"/>
+        <location filename="../../plugins/DASignalAnalysis/Form/DASignalFormSpecBuilder.cpp" line="+63"/>
         <source>Remove DC</source>
         <translation>去直流</translation>
     </message>
@@ -20766,52 +20878,27 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>短时傅里叶变换</translation>
     </message>
     <message>
-        <location line="+9"/>
-        <source>Mode</source>
-        <translation>模式</translation>
+        <location line="+11"/>
+        <source>Prominence (advanced)</source>
+        <translation>突出度（高级）</translation>
     </message>
     <message>
-        <location line="+2"/>
-        <source>Simple</source>
-        <translation>简单</translation>
-    </message>
-    <message>
-        <location line="+1"/>
-        <source>Advanced</source>
-        <translation>高级</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>Top N</source>
-        <translation>前 N 个</translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>Relative threshold (dB)</source>
-        <translation>相对门限（dB）</translation>
-    </message>
-    <message>
-        <location line="+12"/>
-        <source>Prominence</source>
-        <translation>突出度</translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>Minimum spacing (Hz)</source>
-        <translation>最小间距（赫兹）</translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>Minimum height</source>
-        <translation>绝对高度门限</translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>Peak Search</source>
-        <translation>峰值查找</translation>
+        <location line="+11"/>
+        <source>Minimum spacing (Hz, advanced)</source>
+        <translation>最小间距（赫兹，高级）</translation>
     </message>
     <message>
         <location line="+8"/>
+        <source>Minimum height (advanced)</source>
+        <translation>绝对高度门限（高级）</translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>Peak Search (Advanced)</source>
+        <translation>峰值查找（高级）</translation>
+    </message>
+    <message>
+        <location line="+9"/>
         <source>Calibration factor</source>
         <translation>标定系数</translation>
     </message>
@@ -20831,7 +20918,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
         <translation>分析设置</translation>
     </message>
     <message>
-        <location line="-169"/>
+        <location line="-139"/>
         <source>dB (FS)</source>
         <translation>dB（满量程）</translation>
     </message>
