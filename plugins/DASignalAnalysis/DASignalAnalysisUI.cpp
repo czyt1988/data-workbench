@@ -12,11 +12,13 @@
 #include <QDoubleSpinBox>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QHBoxLayout>
 #include <QIcon>
 #include <QInputDialog>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QLabel>
 #include <QMainWindow>
 #include <QMessageBox>
 #include <QPushButton>
@@ -62,8 +64,10 @@
 #include "Page/DASignalAnalysisView.h"
 #include "Page/DASignalAnalysisSettingContext.h"
 #include "Page/DAPeakDockWidget.h"
+#include "Page/DAPeakMarkerLabel.h"
 #include "Dialogs/DASignalImportDialog.h"
 #include "Dialogs/DASignalAnalysisSettingDialog.h"
+#include "Dialogs/DAPeakMarkerDisplayDialog.h"
 #include "Signal/DASignalImporter.h"
 #include "Analysis/DASignalAmplitude.h"
 #include "Analysis/DASignalMemoryEstimate.h"
@@ -107,6 +111,39 @@ constexpr qint64 cAnalysisBudgetBytes = qint64(1.5 * 1024 * 1024 * 1024);
 constexpr int cBudgetUnasked  = 0;
 constexpr int cBudgetAllowed  = 1;
 constexpr int cBudgetDeclined = 2;
+
+/// 插件自带图标路径
+QString signalPluginIcon(const char* file)
+{
+    return QString::fromUtf8(cIconPrefix) + QString::fromUtf8(file);
+}
+
+/// 宿主通用图标路径（复用现有资源，禁止为单个动作新增 SVG）
+QString signalAppIcon(const char* file)
+{
+    return QString::fromUtf8(cAppIconPath) + QString::fromUtf8(file);
+}
+
+/**
+ * @brief 构造 Ribbon small 行：左侧标签 + 右侧控件
+ *
+ * SARibbon 的 small 项只占一行高度、不显示文字标签，所以「模式 / 相对门限」
+ * 这类控件把标签和控件放在同一行里；label 回传给调用方供语言切换时重译。
+ */
+QWidget* makeRibbonSmallRow(const QString& text, QWidget* field, QWidget* parent, QLabel** outLabel)
+{
+    auto* row = new QWidget(parent);
+    auto* lay = new QHBoxLayout(row);
+    lay->setContentsMargins(2, 0, 2, 0);
+    lay->setSpacing(4);
+    auto* label = new QLabel(text, row);
+    lay->addWidget(label);
+    lay->addWidget(field, 1);
+    if (outLabel) {
+        *outLabel = label;
+    }
+    return row;
+}
 }  // namespace
 
 DASignalAnalysisUI::DASignalAnalysisUI(QObject* par) : QObject(par)
@@ -139,6 +176,11 @@ bool DASignalAnalysisUI::initialize(DACoreInterface* core)
     }
 
     // 注意：页面不在这里创建（惰性加载），见 ensurePageCreated()
+    // 全局显示偏好：峰值标记文本模板（缺省用默认模板；显式空串表示不显示标记文本）
+    const QJsonObject initialConfig = DASignalImporter::loadPluginConfig();
+    mPeakMarkerText                 = initialConfig.contains(QStringLiteral("peakMarkerText"))
+                                          ? initialConfig.value(QStringLiteral("peakMarkerText")).toString()
+                                          : daDefaultPeakMarkerText();
     buildSignalCategory();
     retranslateUi();
     // 无信号阶段：依赖信号的动作全部置灰（方案 §8.1）
@@ -265,12 +307,11 @@ bool DASignalAnalysisUI::initialize(DACoreInterface* core)
     if (actionPeakWindow) {
         connect(actionPeakWindow, &QAction::toggled, this, &DASignalAnalysisUI::onPeakWindowToggled);
     }
-    if (actionPeakTable) {
-        // 峰值表按钮与该停靠窗口显隐同步（评审 U14/§七-8）
-        connect(actionPeakTable, &QAction::toggled, this, &DASignalAnalysisUI::onPeakWindowToggled);
-    }
     if (actionPeakMarker) {
         connect(actionPeakMarker, &QAction::toggled, this, &DASignalAnalysisUI::onPeakMarkerToggled);
+    }
+    if (actionPeakMarkerDisplay) {
+        connect(actionPeakMarkerDisplay, &QAction::triggered, this, &DASignalAnalysisUI::openPeakMarkerDisplaySettings);
     }
     if (actionPeakTop10) {
         connect(actionPeakTop10, &QAction::triggered, this, &DASignalAnalysisUI::onPeakTopNChanged);
@@ -661,6 +702,8 @@ void DASignalAnalysisUI::connectSignalView(const DASignalPtr& sig)
     }
     // 峰值标记开关由 UI 记录（视图无 getter）：新视图按当前开关状态应用
     view->setPeakMarkersVisible(mPeakMarkersVisible);
+    // 峰值标记文本模板是全局显示偏好：新视图直接应用（之后的模板修改由对话框统一广播）
+    view->setPeakMarkerText(mPeakMarkerText);
     // 把信号 figure 的撤销栈加入宿主 QUndoGroup（SF-11）：全局撤销/重做才能作用于信号图。
     // 栈由 figure 持有（值成员），figure 销毁时栈随 QObject 析构被 QUndoGroup 自动摘除
     if (DAFigureWidget* fig = view->figure()) {
@@ -951,6 +994,25 @@ void DASignalAnalysisUI::openSignalAnalysisPage()
 }
 
 /**
+ * @brief 经宿主动作管理器创建带图标的动作
+ *
+ * 动作归宿主 DAActionsInterface 所有（parent 是宿主接口），插件 finalize() 统一
+ * removeAction 销毁；丝带顶级标签页与上下文标签页共用本入口，避免各写一份。
+ * @param objectName 动作 objectName（样式/查找用，全插件唯一）
+ * @param iconPath 图标资源路径（插件 icon/ 或宿主通用图标）
+ * @param checkable 是否可勾选（勾选初值由同步逻辑回填）
+ */
+QAction* DASignalAnalysisUI::createRibbonIconAction(const char* objectName, const QString& iconPath, bool checkable)
+{
+    if (nullptr == mActions) {
+        qWarning() << "DASignalAnalysisUI::createRibbonIconAction: action interface is unavailable";
+        return nullptr;
+    }
+    const QByteArray iconPathUtf8 = iconPath.toUtf8();
+    return mActions->createAction(objectName, iconPathUtf8.constData(), checkable, false, nullptr);
+}
+
+/**
  * @brief 构建「信号分析」丝带顶级标签页
  */
 void DASignalAnalysisUI::buildSignalCategory()
@@ -1029,19 +1091,48 @@ void DASignalAnalysisUI::buildSignalCategory()
     mPanelAnalysis->addMediumAction(actionCancelAnalysis);
     actionCancelAnalysis->setEnabled(false);  // 有任务在跑才可用
 
-    // ---------- Peaks：前 N / 峰值窗口（峰值标记/峰值表迁到上下文标签 Display 组） ----------
+    // ---------- Peaks：峰值标记 / 标记数量 / 模式 / 相对门限 / 标记显示 / 峰值窗口 ----------
+    // 峰值标记原在上下文标签「显示」组，与峰值表重复：统一收拢到本 panel（第一个动作），
+    // 峰值查找的模式与相对门限也从「分析设置」对话框迁到这里，常见设置有单一入口。
     mPanelPeaks = mCategory->addPanel(tr("Peaks"));  // cn:峰值
     mPanelPeaks->setObjectName(QString::fromUtf8(cPanelPeaksName));
-    actionPeakTopN = mActions->createAction(
-        "actionSignalPeakTopN",
-        (QString::fromUtf8(cIconPrefix) + QStringLiteral("peaks.svg")).toUtf8().constData());
-    actionPeakWindow = mActions->createAction(
-        "actionSignalPeakWindow",
-        (QString::fromUtf8(cIconPrefix) + QStringLiteral("peaksWindow.svg")).toUtf8().constData(),
-        true,
-        false,
-        nullptr);
+    actionPeakMarker = createRibbonIconAction("actionSignalPeakMarker", signalPluginIcon("peaks.svg"), true);
+    actionPeakTopN   = createRibbonIconAction("actionSignalPeakTopN", signalPluginIcon("peaks.svg"), false);
+    // 标记显示：没有专用图标资源，复用「分析设置」的齿轮图标（同为弹出设置对话框）
+    actionPeakMarkerDisplay =
+        createRibbonIconAction("actionSignalPeakMarkerDisplay", signalPluginIcon("analysisSetting.svg"), false);
+    actionPeakWindow = createRibbonIconAction("actionSignalPeakWindow", signalPluginIcon("peaksWindow.svg"), true);
+    mPanelPeaks->addLargeAction(actionPeakMarker);
     mPanelPeaks->addLargeAction(actionPeakTopN);
+    // 峰值查找：模式 / 相对门限（small 行，两行叠在同一列；标签随语言切换重译）
+    mPeakModeCombo = new QComboBox(mPanelPeaks);
+    mPeakModeCombo->setObjectName(QStringLiteral("da-signal-peak-mode"));
+    mPeakModeCombo->setMinimumWidth(84);
+    mPeakModeCombo->addItem(tr("Simple"), QStringLiteral("simple"));      // cn:简单
+    mPeakModeCombo->addItem(tr("Advanced"), QStringLiteral("advanced"));  // cn:高级
+    connect(mPeakModeCombo,
+            QOverload< int >::of(&QComboBox::currentIndexChanged),
+            this,
+            &DASignalAnalysisUI::onPeakModeChanged);
+    mPanelPeaks->addSmallWidget(
+        makeRibbonSmallRow(tr("Mode"), mPeakModeCombo, mPanelPeaks, &mPeakModeLabel));  // cn:模式
+    mPeakRelDbSpin = new QDoubleSpinBox(mPanelPeaks);
+    mPeakRelDbSpin->setObjectName(QStringLiteral("da-signal-peak-reldb"));
+    mPeakRelDbSpin->setRange(0.0, 200.0);
+    mPeakRelDbSpin->setDecimals(1);
+    mPeakRelDbSpin->setSingleStep(5.0);
+    mPeakRelDbSpin->setSuffix(QStringLiteral(" dB"));
+    mPeakRelDbSpin->setMinimumWidth(96);
+    // 关闭键盘跟踪：输入过程中不逐字符触发重算，回车/失焦或点上下箭头时才提交
+    mPeakRelDbSpin->setKeyboardTracking(false);
+    connect(mPeakRelDbSpin,
+            QOverload< double >::of(&QDoubleSpinBox::valueChanged),
+            this,
+            &DASignalAnalysisUI::onPeakRelDbChanged);
+    mPanelPeaks->addSmallWidget(
+        makeRibbonSmallRow(tr("Threshold"), mPeakRelDbSpin, mPanelPeaks, &mPeakRelDbLabel));  // cn:相对门限
+    mPanelPeaks->addLargeAction(actionPeakMarkerDisplay);
+    // 峰值窗口（峰值表 + 每帧前 N 曲线停靠窗口）：上下文标签的「峰值表」已删除，这里是唯一入口
     mPanelPeaks->addLargeAction(actionPeakWindow);
     buildPeakTopNMenu();
 
@@ -1086,8 +1177,7 @@ void DASignalAnalysisUI::buildSignalContextCategory()
     };
     // 经宿主动作管理器创建带图标的动作（checkable 动作初始未勾选，状态由同步逻辑回填）
     auto createIconAction = [this](const char* objName, const QString& iconPath, bool checkable) -> QAction* {
-        const QByteArray iconPathUtf8 = iconPath.toUtf8();
-        return mActions->createAction(objName, iconPathUtf8.constData(), checkable, false, nullptr);
+        return createRibbonIconAction(objName, iconPath, checkable);
     };
 
     mContextCategory = ribbon->addContextCategory(tr("Signal Analysis"), QColor(), QVariant());  // cn:信号分析
@@ -1103,7 +1193,9 @@ void DASignalAnalysisUI::buildSignalContextCategory()
     }
     mContextPage->setObjectName(QString::fromUtf8(cContextPageObjectName));
 
-    // ---------- Display：通道 / 对数频率 / 色带 / 瀑布模式 / 峰值标记 / 幅值模式 / 峰值表 ----------
+    // ---------- Display：通道 / 对数频率 / 色带 / 瀑布模式 / 幅值模式 ----------
+    // 峰值标记已迁到「峰值」panel（本标签页删除重复入口），峰值表的重复入口一并删除
+    // （峰值窗口 = 峰值表 + 峰值曲线，统一由「峰值」panel 的「峰值窗口」动作打开）。
     mContextDisplayPanel = mContextPage->addPanel(tr("Display"));  // cn:显示
     mContextDisplayPanel->setObjectName(QString::fromUtf8(cPanelContextDisplayName));
     // 通道选择：一次分析一个通道（多通道信号）
@@ -1160,16 +1252,10 @@ void DASignalAnalysisUI::buildSignalContextCategory()
     mContextDisplayPanel->addMediumAction(actionWaterfall3D);
     mContextDisplayPanel->addMediumAction(actionWaterfallHide);
     mContextDisplayPanel->addSeparator();
-    // 峰值标记（原顶级「峰值」面板迁入，动作连接保持不变）
-    actionPeakMarker = createIconAction("actionSignalPeakMarker", pluginIcon("peaks.svg"), true);
-    mContextDisplayPanel->addLargeAction(actionPeakMarker);
     // 幅值模式（带菜单）
     actionAmplitudeMode = createIconAction("actionSignalAmplitudeMode", pluginIcon("amplitude.svg"), false);
     mContextDisplayPanel->addLargeAction(actionAmplitudeMode);
     buildAmplitudeModeMenu();
-    // 峰值表（停靠窗口显隐；与 actionPeakWindow 共用同一开关语义）
-    actionPeakTable = createIconAction("actionSignalPeakTable", pluginIcon("peaksWindow.svg"), true);
-    mContextDisplayPanel->addMediumAction(actionPeakTable);
 
     // ---------- Tools：添加图元 ----------
     // 缩放/平移/十字线/数据拾取等交互工具由内置「绘图操作」上下文标签提供，这里不再重复放置，
@@ -1220,10 +1306,6 @@ void DASignalAnalysisUI::buildPeakDock()
             if (actionPeakWindow) {
                 const QSignalBlocker blocker(actionPeakWindow);
                 actionPeakWindow->setChecked(visible);
-            }
-            if (actionPeakTable) {
-                const QSignalBlocker blocker(actionPeakTable);
-                actionPeakTable->setChecked(visible);
             }
             if (!mCreatingPeakDock) {
                 mPeakDockVisiblePref = visible ? 1 : 0;  // 记录用户偏好（N-U1/P2）
@@ -1411,15 +1493,14 @@ void DASignalAnalysisUI::syncSignalContextControls()
     if (view && view->isColorBarVisible() != mColorBarVisible) {
         view->setColorBarVisible(mColorBarVisible);
     }
-    // 峰值标记（视图无 getter：以 UI 记录的开关状态为准）
+    // 峰值标记（视图无 getter：以 UI 记录的开关状态为准；动作在「峰值」panel）
     if (actionPeakMarker) {
         const QSignalBlocker blocker(actionPeakMarker);
         actionPeakMarker->setEnabled(view != nullptr);
         actionPeakMarker->setChecked(view && mPeakMarkersVisible);
     }
-    if (actionPeakTable) {
-        actionPeakTable->setEnabled(view != nullptr);
-    }
+    // 峰值 panel 的模式/相对门限跟随当前信号参数
+    syncPeakRibbonControls();
     // 幅值模式（全局状态，与 syncAmplitudeUiFromParams 同一口径）
     QAction* amplitudeAction = actionAmpPeak;
     if (mAmplitudeMode == QLatin1String("rms")) {
@@ -2121,7 +2202,7 @@ void DASignalAnalysisUI::relinkCurrentSignalSource()
 }
 
 /**
- * @brief 构建「前 N 个峰值」下拉菜单（10/20/50，互斥）
+ * @brief 构建「标记数量」下拉菜单（10/20/50，互斥）
  */
 void DASignalAnalysisUI::buildPeakTopNMenu()
 {
@@ -3208,9 +3289,9 @@ void DASignalAnalysisUI::finalize()
             actionOpenSignalPage, actionImportAudio,     actionImportDataFrame, actionImportVideo,
             actionPlay,           actionPause,           actionStop,
             actionAnalysisSetting, actionCancelAnalysis, actionPeakMarker,     actionPeakTopN,
-            actionPeakWindow,     actionWaterfall2D,     actionWaterfall3D,
+            actionPeakMarkerDisplay, actionPeakWindow,   actionWaterfall2D,     actionWaterfall3D,
             actionWaterfallHide,  actionAmplitudeMode,   actionExportPeaks,
-            actionExportImage,    actionPeakTable,       actionRelinkSource,
+            actionExportImage,    actionRelinkSource,
             actionLogFrequency,   actionColormap,        actionAddFigure,       actionColorBar
         };
         for (QAction* act : allActions) {
@@ -3231,6 +3312,7 @@ void DASignalAnalysisUI::finalize()
     actionCancelAnalysis    = nullptr;
     actionPeakMarker        = nullptr;
     actionPeakTopN          = nullptr;
+    actionPeakMarkerDisplay = nullptr;
     actionPeakWindow        = nullptr;
     actionPeakTop10         = nullptr;
     actionPeakTop20         = nullptr;
@@ -3245,7 +3327,6 @@ void DASignalAnalysisUI::finalize()
     actionAmpDbRef1         = nullptr;
     actionExportPeaks       = nullptr;
     actionExportImage       = nullptr;
-    actionPeakTable         = nullptr;
     actionRelinkSource      = nullptr;
     actionLogFrequency      = nullptr;
     actionColormap          = nullptr;
@@ -3257,6 +3338,11 @@ void DASignalAnalysisUI::finalize()
     mPanelAnalysis          = nullptr;
     mPanelPeaks             = nullptr;
     mPanelExport            = nullptr;
+    // 峰值 panel 控件随所属面板/category 一并销毁，这里只置空指针
+    mPeakModeCombo          = nullptr;
+    mPeakRelDbSpin          = nullptr;
+    mPeakModeLabel          = nullptr;
+    mPeakRelDbLabel         = nullptr;
     mPeakMarkersVisible     = false;
     mParamsPerSignal.clear();
     mParamsVersion.clear();
@@ -4005,7 +4091,7 @@ void DASignalAnalysisUI::onPeakWindowToggled(bool on)
 }
 
 /**
- * @brief 峰值标记显隐（上下文标签 Display 组的快捷开关）
+ * @brief 峰值标记显隐（峰值 panel 第一个动作）
  *
  * 视图没有该状态的 getter：UI 记录 mPeakMarkersVisible，新建/切换视图时由
  * connectSignalView 应用，保证各信号标签页口径一致。
@@ -4045,6 +4131,138 @@ void DASignalAnalysisUI::onPeakTopNChanged()
     mPeakCurvesRequested = false;  // 名次数改变后需要重扫曲线
     clearPeakState();
     requestPeaks(true);
+}
+
+/**
+ * @brief 峰值 panel「模式」改变（simple/advanced）：更新当前信号参数并重算峰值
+ *
+ * 模式只影响峰值查找（peaks.py 的高级选项是否生效），不影响频谱/热图，
+ * 因此只重新提交峰值表与峰值曲线，不触发整段频谱重算。
+ */
+void DASignalAnalysisUI::onPeakModeChanged(int index)
+{
+    Q_UNUSED(index)
+    if (nullptr == mPeakModeCombo || nullptr == mPage) {
+        return;
+    }
+    DASignalPtr sig = mPage->currentSignal();
+    if (!sig) {
+        return;
+    }
+    const QString mode = mPeakModeCombo->currentData().toString();
+    if (mode.isEmpty()) {
+        return;
+    }
+    DASignalAnalysisParams params = paramsForSignal(sig);
+    if (params.peakMode == mode) {
+        return;  // 程序化回填触发的信号：参数没变不重算
+    }
+    params.peakMode               = mode;
+    mParamsPerSignal[ sig.get() ] = params;
+    bumpParamsVersion(sig);
+    mPeakCurvesRequested = false;  // 查找口径变了，名次对应关系可能变化
+    clearPeakState();
+    requestPeaks(true);
+    syncPeakRibbonControls();
+}
+
+/**
+ * @brief 峰值 panel「相对门限」改变（dB，相对最强峰）：更新当前信号参数并重算峰值
+ */
+void DASignalAnalysisUI::onPeakRelDbChanged(double value)
+{
+    if (nullptr == mPage) {
+        return;
+    }
+    DASignalPtr sig = mPage->currentSignal();
+    if (!sig) {
+        return;
+    }
+    DASignalAnalysisParams params = paramsForSignal(sig);
+    if (qFuzzyCompare(params.peakRelDb + 1.0, value + 1.0)) {
+        return;  // 程序化回填触发的信号：参数没变不重算
+    }
+    params.peakRelDb              = value;
+    mParamsPerSignal[ sig.get() ] = params;
+    bumpParamsVersion(sig);
+    mPeakCurvesRequested = false;
+    clearPeakState();
+    requestPeaks(true);
+    syncPeakRibbonControls();
+}
+
+/**
+ * @brief 峰值 panel「标记显示」：弹出峰值标记文本模板编辑对话框
+ *
+ * 模板是全局显示偏好（所有信号共用）：确定后立即写入配置并广播到已创建的全部视图；
+ * 新建视图在 connectSignalView 里应用。模板只影响标记上方文本，不改标记位置与峰值数据。
+ */
+void DASignalAnalysisUI::openPeakMarkerDisplaySettings()
+{
+    QString textTemplate = mPeakMarkerText;
+    // 预览幅值口径取当前信号的幅值显示模式（没有信号时用全局记录）
+    bool dbMode = DASignalAmplitude::isDbMode(mAmplitudeMode);
+    if (mPage) {
+        if (DASignalPtr sig = mPage->currentSignal()) {
+            dbMode = DASignalAmplitude::isDbMode(paramsForSignal(sig).amplitudeMode);
+        }
+    }
+    QWidget* parent = (mPage ? static_cast< QWidget* >(mPage) : (mUI ? mUI->getMainWindow() : nullptr));
+    if (!DAPeakMarkerDisplayDialog::edit(&textTemplate, dbMode, parent)) {
+        return;
+    }
+    mPeakMarkerText = textTemplate;
+    // 立即落盘（与色标显隐同一「读-改-写」模式，保留 ffmpegPath/colormap 等其它键）
+    QJsonObject cfg                          = DASignalImporter::loadPluginConfig();
+    cfg[ QStringLiteral("peakMarkerText") ] = mPeakMarkerText;
+    DASignalImporter::savePluginConfig(cfg);
+    applyPeakMarkerTextToViews();
+}
+
+/**
+ * @brief 峰值 panel「模式 / 相对门限」控件回填当前信号参数
+ *
+ * 切信号、参数变化、页面未创建都要能安全调用：控件写值一律用 QSignalBlocker，
+ * 避免回填触发 onPeakModeChanged/onPeakRelDbChanged 造成反向参数覆盖。
+ */
+void DASignalAnalysisUI::syncPeakRibbonControls()
+{
+    const DASignalPtr sig = (mPage ? mPage->currentSignal() : DASignalPtr());
+    const bool hasSignal  = static_cast< bool >(sig);
+    const DASignalAnalysisParams params = hasSignal ? paramsForSignal(sig) : DASignalAnalysisParams::defaults();
+    if (mPeakModeCombo) {
+        const QSignalBlocker blocker(mPeakModeCombo);
+        int comboIndex = mPeakModeCombo->findData(params.peakMode);
+        if (comboIndex < 0) {
+            comboIndex = 0;
+        }
+        mPeakModeCombo->setCurrentIndex(comboIndex);
+        mPeakModeCombo->setEnabled(hasSignal);
+    }
+    if (mPeakRelDbSpin) {
+        const QSignalBlocker blocker(mPeakRelDbSpin);
+        mPeakRelDbSpin->setValue(params.peakRelDb);
+        mPeakRelDbSpin->setEnabled(hasSignal);
+    }
+}
+
+/**
+ * @brief 把全局峰值标记文本模板应用到已创建的全部信号视图
+ */
+void DASignalAnalysisUI::applyPeakMarkerTextToViews()
+{
+    if (nullptr == mPage) {
+        return;
+    }
+    const QList< DASignalPtr > signalList = mPage->allSignals();
+    for (const DASignalPtr& sig : signalList) {
+        if (!sig) {
+            continue;
+        }
+        if (DASignalAnalysisView* view = mPage->viewForSignal(sig.get())) {
+            view->setPeakMarkerText(mPeakMarkerText);
+        }
+    }
 }
 
 /**
@@ -4117,9 +4335,9 @@ void DASignalAnalysisUI::setSignalDependentActionsEnabled(bool on)
     const QList< QAction* > acts = {
         actionPlay,         actionPause,         actionStop,
         actionAnalysisSetting, actionPeakMarker, actionPeakTopN,
-        actionPeakWindow,   actionWaterfall2D,   actionWaterfall3D,
+        actionPeakMarkerDisplay, actionPeakWindow, actionWaterfall2D, actionWaterfall3D,
         actionWaterfallHide, actionAmplitudeMode, actionExportPeaks,
-        actionExportImage,  actionPeakTable,     actionRelinkSource,
+        actionExportImage,  actionRelinkSource,
         actionLogFrequency, actionColormap,      actionAddFigure,
         actionColorBar
     };
@@ -4235,10 +4453,31 @@ void DASignalAnalysisUI::retranslateUi()
     // 峰值
     if (actionPeakMarker) {
         actionPeakMarker->setText(tr("Peak Markers"));  // cn:峰值标记
+        actionPeakMarker->setToolTip(tr("Mark the detected peaks on the spectrum"));  // cn:在频谱图上标出检测到的峰值
     }
     if (actionPeakTopN) {
-        actionPeakTopN->setText(tr("Top N"));  // cn:前 N 个
-        actionPeakTopN->setToolTip(tr("Number of peaks to keep (10/20/50)"));  // cn:保留的峰值数量
+        actionPeakTopN->setText(tr("Marker Count"));  // cn:标记数量
+        actionPeakTopN->setToolTip(tr("Number of peaks to mark (10/20/50)"));  // cn:标记的峰值数量（10/20/50）
+    }
+    if (actionPeakMarkerDisplay) {
+        actionPeakMarkerDisplay->setText(tr("Marker Display"));  // cn:标记显示
+        actionPeakMarkerDisplay->setToolTip(tr("Edit the text shown above peak markers"));  // cn:编辑峰值标记上方显示的文字
+    }
+    if (mPeakModeLabel) {
+        mPeakModeLabel->setText(tr("Mode"));  // cn:模式
+    }
+    if (mPeakRelDbLabel) {
+        mPeakRelDbLabel->setText(tr("Threshold"));  // cn:相对门限
+    }
+    if (mPeakModeCombo) {
+        const QSignalBlocker blocker(mPeakModeCombo);
+        mPeakModeCombo->setItemText(0, tr("Simple"));    // cn:简单
+        mPeakModeCombo->setItemText(1, tr("Advanced"));  // cn:高级
+        mPeakModeCombo->setToolTip(tr("Peak search mode: simple or advanced"));  // cn:峰值查找模式：简单/高级
+    }
+    if (mPeakRelDbSpin) {
+        mPeakRelDbSpin->setToolTip(tr("Only keep peaks within this range below the strongest peak"));
+        // cn:只保留低于最强峰不超过该门限的峰值
     }
     if (actionPeakWindow) {
         actionPeakWindow->setText(tr("Peak Window"));  // cn:峰值窗口
@@ -4346,10 +4585,6 @@ void DASignalAnalysisUI::retranslateUi()
     if (mActionCopyCurrentSubChart) {
         mActionCopyCurrentSubChart->setText(tr("Copy current sub-chart to clipboard"));
         // cn:复制当前子图到剪贴板
-    }
-    if (actionPeakTable) {
-        actionPeakTable->setText(tr("Peak Table"));  // cn:峰值表
-        actionPeakTable->setToolTip(tr("Show or hide the peak table window"));  // cn:显示或隐藏峰值表窗口
     }
     // 页面
     if (mPage) {

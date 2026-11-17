@@ -39,13 +39,6 @@ QJsonObject makeGroup(const QString& name, const QString& label, const QJsonArra
     return g;
 }
 
-QJsonObject withVisibleWhen(const QJsonObject& field, const QString& expr)
-{
-    QJsonObject o = field;
-    o[ "visible_when" ] = expr;
-    return o;
-}
-
 QJsonObject withRange(const QJsonObject& field, double min, double max, double step, int decimals)
 {
     QJsonObject o      = field;
@@ -183,72 +176,42 @@ QJsonObject DASignalFormSpecBuilder::build(const DASignalAnalysisParams& current
         // cn:短时傅里叶变换
     }
 
-    // ---------------- 峰值查找 ----------------
+    // ---------------- 峰值查找（高级） ----------------
+    // 模式 / 标记数量 / 相对门限已迁到丝带「峰值」panel（常见设置不需要打开本对话框）；
+    // 这里只保留「模式 = 高级」时生效的三个参数，避免同一设置两处入口、两个真相。
     {
         QJsonArray items;
-        QJsonObject mode = makeField(QStringLiteral("peakMode"),
-                                     QStringLiteral("enum"),
-                                     QCoreApplication::translate("DASignalFormSpecBuilder", "Mode"),  // cn:模式
-                                     current.peakMode);
-        mode[ "options" ] = QJsonArray { enumOption("simple", QCoreApplication::translate("DASignalFormSpecBuilder", "Simple")),        // cn:简单
-                                         enumOption("advanced", QCoreApplication::translate("DASignalFormSpecBuilder", "Advanced")) };  // cn:高级
-        items.append(mode);
-
-        QJsonObject topN = makeField(QStringLiteral("peakTopN"),
-                                     QStringLiteral("enum"),
-                                     QCoreApplication::translate("DASignalFormSpecBuilder", "Top N"),  // cn:前 N 个
-                                     current.peakTopN);
-        // 选项值必须是整数：字符串值在 QJsonValue::toInt(default) 下会退回默认值（评审 U5）
-        topN[ "options" ] = QJsonArray { enumOption(10, QStringLiteral("10")),
-                                         enumOption(20, QStringLiteral("20")),
-                                         enumOption(50, QStringLiteral("50")) };
-        items.append(topN);
-
-        items.append(withRange(makeField(QStringLiteral("peakRelDb"),
+        items.append(withRange(makeField(QStringLiteral("peakProminence"),
                                          QStringLiteral("float"),
-                                         QCoreApplication::translate("DASignalFormSpecBuilder", "Relative threshold (dB)"),  // cn:相对门限（dB）
-                                         current.peakRelDb),
+                                         QCoreApplication::translate("DASignalFormSpecBuilder", "Prominence (advanced)"),  // cn:突出度（高级）
+                                         current.peakProminence),
                                0.0,
-                               200.0,
-                               5.0,
-                               1));
-
-        // 高级模式字段：visible_when = peakMode == "advanced"
-        const QString advancedExpr = QStringLiteral("peakMode == \"advanced\"");
-        items.append(withVisibleWhen(
-            withRange(makeField(QStringLiteral("peakProminence"),
-                                QStringLiteral("float"),
-                                QCoreApplication::translate("DASignalFormSpecBuilder", "Prominence"),  // cn:突出度
-                                current.peakProminence),
-                      0.0,
-                      1.0e9,
-                      0.01,
-                      6),
-            advancedExpr));
+                               1.0e9,
+                               0.01,
+                               6));
         // 最小间距默认 5 倍频率分辨率（D17）；用户手改后由对话框保持用户值。
         // 参数为 -1/0（自动哨兵）时换算为派生值，避免表单 min=0 把 -1 夹成 0（评审 N-U6/N-C5）
         const double spacingDefault = signalEffectivePeakMinSpacingHz(current, derivedResolutionHz);
-        items.append(withVisibleWhen(
-            withRange(makeField(QStringLiteral("peakMinSpacingHz"),
-                                QStringLiteral("float"),
-                                QCoreApplication::translate("DASignalFormSpecBuilder", "Minimum spacing (Hz)"),  // cn:最小间距（赫兹）
-                                spacingDefault),
-                      0.0,
-                      1.0e9,
-                      1.0,
-                      4),
-            advancedExpr));
-        items.append(withVisibleWhen(
-            withRange(makeField(QStringLiteral("peakMinHeight"),
-                                QStringLiteral("float"),
-                                QCoreApplication::translate("DASignalFormSpecBuilder", "Minimum height"),  // cn:绝对高度门限
-                                current.peakMinHeight),
-                      0.0,
-                      1.0e9,
-                      0.01,
-                      6),
-            advancedExpr));
-        topItems.append(makeGroup(QStringLiteral("peaks"), QCoreApplication::translate("DASignalFormSpecBuilder", "Peak Search"), items));  // cn:峰值查找
+        items.append(withRange(makeField(QStringLiteral("peakMinSpacingHz"),
+                                         QStringLiteral("float"),
+                                         QCoreApplication::translate("DASignalFormSpecBuilder", "Minimum spacing (Hz, advanced)"),  // cn:最小间距（赫兹，高级）
+                                         spacingDefault),
+                               0.0,
+                               1.0e9,
+                               1.0,
+                               4));
+        items.append(withRange(makeField(QStringLiteral("peakMinHeight"),
+                                         QStringLiteral("float"),
+                                         QCoreApplication::translate("DASignalFormSpecBuilder", "Minimum height (advanced)"),  // cn:绝对高度门限（高级）
+                                         current.peakMinHeight),
+                               0.0,
+                               1.0e9,
+                               0.01,
+                               6));
+        topItems.append(
+            makeGroup(QStringLiteral("peaks"),
+                      QCoreApplication::translate("DASignalFormSpecBuilder", "Peak Search (Advanced)"),  // cn:峰值查找（高级）
+                      items));
     }
 
     // ---------------- 标定 ----------------

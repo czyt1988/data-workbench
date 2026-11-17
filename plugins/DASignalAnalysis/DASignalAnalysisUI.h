@@ -22,6 +22,7 @@ class QActionGroup;
 class QCheckBox;
 class QComboBox;
 class QDoubleSpinBox;
+class QLabel;
 class QSlider;
 class QToolBar;
 class SARibbonCategory;
@@ -144,6 +145,12 @@ private Q_SLOTS:
     void onPeakWindowToggled(bool on);
     void onPeakMarkerToggled(bool on);
     void onPeakTopNChanged();
+    // 峰值 panel「模式」下拉：写当前信号参数并重算峰值表/曲线
+    void onPeakModeChanged(int index);
+    // 峰值 panel「相对门限」：写当前信号参数并重算峰值表/曲线
+    void onPeakRelDbChanged(double value);
+    // 峰值 panel「标记显示」：弹出峰值标记文本模板编辑对话框
+    void openPeakMarkerDisplaySettings();
     void onPlayerPositionChanged(qint64 ms);
     // 信号标签页关闭：清理该信号的参数/结果缓存
     void onSignalRemoved(const DA::DASignalPtr& signal);
@@ -203,6 +210,12 @@ private:
     void buildPeakTopNMenu();
     void buildAmplitudeModeMenu();
     void buildPeakDock();
+    // 经宿主动作管理器创建带图标的动作（丝带面板共用）
+    QAction* createRibbonIconAction(const char* objectName, const QString& iconPath, bool checkable = false);
+    // 峰值 panel 控件 → 当前信号参数回填（模式/相对门限；QSignalBlocker 防回环）
+    void syncPeakRibbonControls();
+    // 把全局标记文本模板应用到已创建的全部信号视图
+    void applyPeakMarkerTextToViews();
     // 惰性创建页面（首次打开/导入/工程恢复时调用），已创建返回 true
     bool ensurePageCreated();
     // 触发当前信号的峰值表与峰值曲线计算
@@ -286,6 +299,13 @@ private:
     QCheckBox* mToolbarAutoScrollCheck { nullptr };
     // 峰值标记开关（视图无 getter：UI 记录状态并在新视图创建时应用）
     bool mPeakMarkersVisible { false };
+    // 全局偏好：峰值标记文本模板（{index}/{fre}/{amp}，signal-analysis-config.json 的 peakMarkerText）
+    QString mPeakMarkerText;
+    // 峰值 panel 的峰值搜索控件（small 行）：模式 / 相对门限
+    QComboBox* mPeakModeCombo { nullptr };
+    QDoubleSpinBox* mPeakRelDbSpin { nullptr };
+    QLabel* mPeakModeLabel { nullptr };
+    QLabel* mPeakRelDbLabel { nullptr };
     // 设置上下文提供者（注册到宿主停靠区，finalize 前注销并销毁）
     DASignalAnalysisSettingContext* mSettingContext { nullptr };
     // 当前绑定 chartPropertiesChanged 的 2D 子图：用户经内置「绘图操作」标签切换
@@ -354,10 +374,11 @@ public:
     //===================================================
     // 峰值（Peaks）
     //===================================================
-    QAction* actionPeakMarker { nullptr };  ///< 峰值标记（上下文标签 Display 组的快捷开关）
-    QAction* actionPeakTopN { nullptr };    ///< 前 N 个峰值（10/20/50，带菜单）
-    QAction* actionPeakWindow { nullptr };  ///< 峰值窗口显隐
-    // 前 N 菜单项
+    QAction* actionPeakMarker { nullptr };        ///< 峰值标记（峰值 panel 第一个动作）
+    QAction* actionPeakTopN { nullptr };          ///< 标记数量（10/20/50，带菜单）
+    QAction* actionPeakMarkerDisplay { nullptr }; ///< 标记显示（弹出峰值标记文本模板对话框）
+    QAction* actionPeakWindow { nullptr };        ///< 峰值窗口显隐
+    // 标记数量菜单项
     QAction* actionPeakTop10 { nullptr };
     QAction* actionPeakTop20 { nullptr };
     QAction* actionPeakTop50 { nullptr };
@@ -369,7 +390,6 @@ public:
     QAction* actionWaterfall3D { nullptr };    ///< 三维曲面瀑布
     QAction* actionWaterfallHide { nullptr };  ///< 隐藏瀑布
     QAction* actionAmplitudeMode { nullptr };  ///< 幅值模式（带菜单）
-    QAction* actionPeakTable { nullptr };      ///< 峰值表窗口显隐
     QAction* actionLogFrequency { nullptr };   ///< 对数频率轴
     QAction* actionColormap { nullptr };       ///< 色带（带菜单）
     QAction* actionColorBar { nullptr };       ///< 时频图色标显隐（显示面板开关）

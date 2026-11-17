@@ -14,9 +14,10 @@ class DAPropertyFormWidget;
 /**
  * @brief 信号分析统一参数对话框（方案 §8.6 / D20 / D21）
  *
- * 只放按信号生效的分析参数（信号预处理/频谱/功率谱/短时傅里叶变换/峰值查找/标定）：
- * 内容由 DAFormSpec 生成（可折叠分组），点确定后由调用方立即重算一次；
- * 参数不进全局撤销栈；记住上次生效参数，提供「恢复默认」。
+ * 只放按信号生效的分析参数（信号预处理/频谱/功率谱/短时傅里叶变换/峰值查找高级项/标定）：
+ * 峰值查找的常见项（模式/标记数量/相对门限）在丝带「峰值」panel，本对话框只保留
+ * 「模式 = 高级」时生效的三个高级参数；内容由 DAFormSpec 生成（可折叠分组），
+ * 点确定后由调用方立即重算一次；参数不进全局撤销栈；记住上次生效参数，提供「恢复默认」。
  *
  * 与数据无关的全局设置（FFmpeg 路径等）不在本对话框里，而在 主页 → 设置 → 信号分析
  * （DASignalAnalysisSettingPage），这样没有导入数据时也能配置。
@@ -62,6 +63,9 @@ private:
 
 private:
     double mSampleRate { 0.0 };
+    // 打开对话框时的参数：峰值查找的常见项（模式/标记数量/相对门限）已迁到丝带，表单里没有它们，
+    // 关闭时从这份基线回填，避免「确定」把 ribbon 上的设置重置成默认值
+    DASignalAnalysisParams mBaseParams;
     bool mPeakSpacingAuto { false };  ///< 最小间距是否自动跟随分辨率（参数里写回 -1 哨兵，评审 N-C5）
     bool mFormReady { false };        ///< 表单规格是否已就绪（retranslateUi 在构造早期也会被调用）
     DAPropertyFormWidget* mForm { nullptr };

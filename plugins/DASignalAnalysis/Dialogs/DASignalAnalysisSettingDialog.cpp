@@ -17,7 +17,7 @@ namespace DA
 DASignalAnalysisSettingDialog::DASignalAnalysisSettingDialog(const DASignalAnalysisParams& params,
                                                              double sampleRate,
                                                              QWidget* parent)
-    : QDialog(parent), mSampleRate(sampleRate)
+    : QDialog(parent), mSampleRate(sampleRate), mBaseParams(params)
 {
     setModal(true);
     setMinimumSize(520, 560);
@@ -67,6 +67,10 @@ bool DASignalAnalysisSettingDialog::edit(DASignalAnalysisParams* params, double 
  *
  * 最小间距仍处于自动状态时写回 -1 哨兵（Python 侧对 <=0 按 5 倍实际分辨率兜底），
  * 这样下次打开对话框仍然「未手改」，改分辨率继续跟随（评审 N-C5）。
+ *
+ * 峰值查找的模式/标记数量/相对门限已迁到丝带「峰值」panel，本对话框表单里没有这三个字段：
+ * fromVariantMap() 会把缺失键填成默认值，这里从打开对话框时的基线参数回填，
+ * 否则「确定」会把用户在丝带上选的模式/Top N/门限静默重置。
  */
 DASignalAnalysisParams DASignalAnalysisSettingDialog::params() const
 {
@@ -74,6 +78,9 @@ DASignalAnalysisParams DASignalAnalysisSettingDialog::params() const
         return DASignalAnalysisParams();
     }
     DASignalAnalysisParams p = DASignalAnalysisParams::fromVariantMap(mForm->values());
+    p.peakMode               = mBaseParams.peakMode;
+    p.peakTopN               = mBaseParams.peakTopN;
+    p.peakRelDb              = mBaseParams.peakRelDb;
     if (mPeakSpacingAuto) {
         p.peakMinSpacingHz = -1.0;
     }
