@@ -259,7 +259,7 @@ bool DASignalAnalysisWorker::computeSpectrum(const DASignalTaskContext& ctx, con
         }
         mTasks[ entry.id ] = entry;
         updateTimer();
-        Q_EMIT progressChanged(0.0, tr("Computing spectrum..."));  // cn:正在计算频谱...
+        Q_EMIT progressChanged(0.0, tr("Computing spectrum..."), mTasks.size());  // cn:正在计算频谱...
         return true;
     } catch (const std::exception& e) {
         qWarning() << "DASignalAnalysisWorker::computeSpectrum:" << e.what();
@@ -536,7 +536,7 @@ bool DASignalAnalysisWorker::computePlaybackWav(const DASignalTaskContext& ctx)
         }
         mTasks[ entry.id ] = entry;
         updateTimer();
-        Q_EMIT progressChanged(0.0, tr("Preparing playback audio..."));  // cn:正在准备播放音频...
+        Q_EMIT progressChanged(0.0, tr("Preparing playback audio..."), mTasks.size());  // cn:正在准备播放音频...
         return true;
     } catch (const std::exception& e) {
         qWarning() << "DASignalAnalysisWorker::computePlaybackWav:" << e.what();
@@ -595,7 +595,7 @@ bool DASignalAnalysisWorker::importMediaAsync(const QString& path, bool isVideo)
         }
         mTasks[ entry.id ] = entry;
         updateTimer();
-        Q_EMIT progressChanged(0.0, tr("Preparing import..."));  // cn:正在准备导入...
+        Q_EMIT progressChanged(0.0, tr("Preparing import..."), mTasks.size());  // cn:正在准备导入...
         return true;
     } catch (const std::exception& e) {
         QFile::remove(tempWav);
@@ -813,6 +813,11 @@ void DASignalAnalysisWorker::poll()
         Q_EMIT failed(tr("Failed to query background tasks."));  // cn:查询后台任务失败。
         return;
     }
+    // 本轮在跑任务的进度汇总：多条任务并发时界面只显示一条状态栏进度，
+    // 因此按轮询周期聚合一次（平均进度 + 任务数），避免多个任务每 20ms 互相覆盖进度文本。
+    int runningCount  = 0;
+    double percentSum = 0.0;
+    QString singleStage;
     for (const QString& id : ids) {
         auto it = mTasks.find(id);
         if (it == mTasks.end()) {
@@ -831,7 +836,11 @@ void DASignalAnalysisWorker::poll()
             if (isRunning) {
                 const double percent = d[ "progress" ].cast< double >();
                 const QString stage  = QString::fromStdString(d[ "current_stage" ].cast< std::string >());
-                Q_EMIT progressChanged(percent, stage);
+                ++runningCount;
+                percentSum += qIsFinite(percent) ? qBound(0.0, percent, 100.0) : 0.0;
+                if (runningCount == 1) {
+                    singleStage = stage;
+                }
                 continue;
             }
             // 先摘除，再发信号：回调里同步发起的新任务只会插入新条目，不影响本轮快照遍历
@@ -1006,6 +1015,10 @@ void DASignalAnalysisWorker::poll()
             qWarning() << "DASignalAnalysisWorker::poll task" << id << ":" << e.what();
             Q_EMIT failed(tr("Failed to read the background result."));  // cn:读取后台结果失败。
         }
+    }
+    // 统一发一次聚合进度（单任务带阶段名，多任务由界面显示任务数）
+    if (runningCount > 0) {
+        Q_EMIT progressChanged(percentSum / runningCount, runningCount == 1 ? singleStage : QString(), runningCount);
     }
     // 让出 GIL 给 Python 守护线程：任务在跑时，GUI 线程若不主动释放，分析线程只能等到
     // 下一次进入 Python 的瞬间，几乎每帧一次轮询周期（大信号会从秒级拖到几十分钟）。

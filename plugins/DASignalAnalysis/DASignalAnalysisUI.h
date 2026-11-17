@@ -25,6 +25,7 @@ class QDoubleSpinBox;
 class QLabel;
 class QSlider;
 class QToolBar;
+class QTimer;
 class SARibbonCategory;
 class SARibbonContextCategory;
 class SARibbonPanel;
@@ -123,7 +124,7 @@ public Q_SLOTS:
     void recomputeCurrentSignal();
 
 private Q_SLOTS:
-    void onWorkerProgress(double percent, const QString& stage);
+    void onWorkerProgress(double percent, const QString& stage, int runningTaskCount);
     void onWorkerSpectrumReady(const DA::DASignalTaskContext& ctx, const DA::DASpectrumResult& result);
     void onWorkerEnvelopeReady(const DA::DASignalTaskContext& ctx,
                                const QVector< double >& xs,
@@ -234,6 +235,12 @@ private:
     int channelOfSignal(const DA::DASignalPtr& sig) const;
     // 后台任务全部结束时清空状态栏进度（评审 §七-4）
     void clearProgressIfIdle();
+    // 状态栏计算进度（防抖）：短任务不显示进度条与停止按钮，超过延迟仍在算才显示
+    void applyProgressIndicator();
+    // 清掉本插件显示的状态栏进度与停止按钮（不抢其它调用方的进度条）
+    void hideProgressIndicator();
+    // 进度文本：单任务显示阶段名，多任务显示任务数
+    QString progressStageText() const;
     // 统一错误上报：进界面消息队列（da.user）+ 唤起界面日志窗口，避免功能静默缺失
     void reportError(const QString& text);
     // 统一失败上报：界面只显示翻译后的提示，英文诊断原文只写日志（评审 §七-9）
@@ -455,6 +462,12 @@ private:
     QString mPlaybackWavPendingKey;
     // 导入在途状态（I2）：true 表示后台正在准备导入，期间三个导入入口置灰
     bool mImportTaskActive { false };
+    // 状态栏计算进度（防抖）：延迟窗口内结束的小计算不闪进度条；进度/任务数供延迟到点后回填
+    QTimer* mProgressDelayTimer { nullptr };
+    bool mProgressVisible { false };
+    double mProgressPercent { 0.0 };
+    QString mProgressStage;
+    int mProgressTaskCount { 0 };
     // 在途导入是否为视频（失败提示用「导入视频失败」还是「导入音频失败」）
     bool mPendingImportIsVideo { false };
 };

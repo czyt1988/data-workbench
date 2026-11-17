@@ -1,4 +1,4 @@
-﻿#include "DASignalAnalysisUI.h"
+#include "DASignalAnalysisUI.h"
 // Qt
 #include <QMenu>
 #include <QActionGroup>
@@ -25,6 +25,7 @@
 #include <QSignalBlocker>
 #include <QSlider>
 #include <QStandardPaths>
+#include <QTimer>
 #include <QToolBar>
 #include "DAPybind11InQt.h"
 #include "DAPyModule.h"
@@ -111,6 +112,9 @@ constexpr qint64 cAnalysisBudgetBytes = qint64(1.5 * 1024 * 1024 * 1024);
 constexpr int cBudgetUnasked  = 0;
 constexpr int cBudgetAllowed  = 1;
 constexpr int cBudgetDeclined = 2;
+// 状态栏计算进度的防抖窗口（毫秒）：短任务在窗口内结束就完全不显示进度条与停止按钮，
+// 避免小计算让状态栏闪一下；超过窗口仍在算才显示。
+constexpr int cProgressIndicatorDelayMs = 500;
 
 /// 插件自带图标路径
 QString signalPluginIcon(const char* file)
@@ -185,6 +189,16 @@ bool DASignalAnalysisUI::initialize(DACoreInterface* core)
     retranslateUi();
     // 无信号阶段：依赖信号的动作全部置灰（方案 §8.1）
     setSignalDependentActionsEnabled(false);
+
+    // 状态栏计算进度：防抖定时器到点才显示进度条/停止按钮，短任务不闪烁
+    mProgressDelayTimer = new QTimer(this);
+    mProgressDelayTimer->setSingleShot(true);
+    mProgressDelayTimer->setInterval(cProgressIndicatorDelayMs);
+    connect(mProgressDelayTimer, &QTimer::timeout, this, &DASignalAnalysisUI::applyProgressIndicator);
+    // 「取消计算」入口放在状态栏进度条右侧（不占丝带面板）：动作由宿主管理，按钮随进度条显示
+    if (DAStatusBarInterface* statusBar = mUI->getStatusBar()) {
+        statusBar->setProgressCancelAction(actionCancelAnalysis);
+    }
 
     // 打开信号分析窗口：首次调用创建页面，已关闭时恢复显示
     if (actionOpenSignalPage) {
@@ -1083,12 +1097,11 @@ void DASignalAnalysisUI::buildSignalCategory()
     actionAnalysisSetting = mActions->createAction(
         "actionSignalAnalysisSetting",
         (QString::fromUtf8(cIconPrefix) + QStringLiteral("analysisSetting.svg")).toUtf8().constData());
-    // 取消全部后台计算（评审 N-C7）：长任务（PSD/峰值曲线/WAV 导出）用户可随时中止
+    // 取消全部后台计算（评审 N-C7）：动作只挂在状态栏进度条右侧，不再占丝带面板
     actionCancelAnalysis = mActions->createAction(
         "actionSignalCancelAnalysis",
         (QString::fromUtf8(cIconPrefix) + QStringLiteral("cancelAnalysis.svg")).toUtf8().constData());
     mPanelAnalysis->addLargeAction(actionAnalysisSetting);
-    mPanelAnalysis->addMediumAction(actionCancelAnalysis);
     actionCancelAnalysis->setEnabled(false);  // 有任务在跑才可用
 
     // ---------- Peaks：峰值标记 / 标记数量 / 模式 / 相对门限 / 标记显示 / 峰值窗口 ----------
@@ -1956,6 +1969,7 @@ bool DASignalAnalysisUI::isContextCurrent(const DASignalTaskContext& ctx, bool c
 void DASignalAnalysisUI::clearProgressIfIdle()
 {
     if (mUI && mWorker && !mWorker->isRunning()) {
+        hideProgressIndicator();
         mUI->getStatusBar()->clearMessage();
     }
 }
@@ -3132,6 +3146,15 @@ void DASignalAnalysisUI::applyFiguresXml(const QByteArray& figuresXml, const DAC
  */
 void DASignalAnalysisUI::finalize()
 {
+    // 状态栏进度入口：先清本插件的进度（只在自己显示过时隐藏），再解绑取消按钮；
+    // 取消动作随后由宿主动作管理器销毁，状态栏按钮不能再引用它
+    hideProgressIndicator();
+    if (mUI) {
+        if (DAStatusBarInterface* statusBar = mUI->getStatusBar()) {
+            statusBar->setProgressCancelVisible(false);
+            statusBar->setProgressCancelAction(nullptr);
+        }
+    }
     // 先解绑当前 2D 子图的属性变化连接：页面/dock 即将销毁，避免残留连接与悬空 QPointer
     unbindCurrentChartSignals();
     // 保存插件偏好：峰值窗口显隐与上次色带（P2）；FFmpeg 路径等其它键原样保留。
@@ -3493,16 +3516,83 @@ void DASignalAnalysisUI::recomputeCurrentSignal()
 }
 
 /**
- * @brief 后台进度 → 状态栏
+ * @brief 后台进度 → 状态栏进度条（带防抖）与停止按钮可用性
+ *
+ * 多个任务并发时 worker 上报的是平均进度与任务数，进度文本显示「N 项任务」；
+ * 只有进度条真正显示期间才刷新界面，短任务不会让状态栏闪一下。
  */
-void DASignalAnalysisUI::onWorkerProgress(double percent, const QString& stage)
+void DASignalAnalysisUI::onWorkerProgress(double percent, const QString& stage, int runningTaskCount)
 {
-    if (mUI) {
-        mUI->getStatusBar()->showMessage(tr("Signal analysis: %1 (%2%)").arg(stage).arg(percent, 0, 'f', 0));
-        // cn:信号分析：%1（%2%）
-    }
-    // 进度信号是「任务在跑」的最早信号：在这里刷新取消按钮可用性（评审 N-C7）
+    mProgressPercent   = qIsFinite(percent) ? qBound(0.0, percent, 100.0) : 0.0;
+    mProgressStage     = stage;
+    mProgressTaskCount = qMax(1, runningTaskCount);
+    // 进度信号是「任务在跑」的最早信号：在这里刷新停止按钮可用性（评审 N-C7）
     updateCancelActionState();
+    if (mProgressVisible) {
+        applyProgressIndicator();
+        return;
+    }
+    // 防抖：只在首次进入「有任务在跑」时起表；后续进度更新不重置定时器，
+    // 否则连续进度会让显示时间被无限推迟
+    if (mProgressDelayTimer && !mProgressDelayTimer->isActive() && mWorker && mWorker->isRunning()) {
+        mProgressDelayTimer->start();
+    }
+}
+
+/**
+ * @brief 把缓存的进度/阶段写到状态栏进度条（含进度条右侧的停止按钮）
+ */
+void DASignalAnalysisUI::applyProgressIndicator()
+{
+    if (!mUI || !mWorker || !mWorker->isRunning()) {
+        hideProgressIndicator();
+        return;
+    }
+    DAStatusBarInterface* statusBar = mUI->getStatusBar();
+    if (!statusBar) {
+        return;
+    }
+    mProgressVisible = true;
+    statusBar->setProgressCancelVisible(true);  // 只在本插件进度显示期间带出停止按钮
+    statusBar->showProgressBar();
+    statusBar->setProgress(qRound(mProgressPercent));
+    statusBar->setProgressText(progressStageText());
+}
+
+/**
+ * @brief 清掉本插件显示的状态栏进度与停止按钮
+ *
+ * 只有本插件确实显示过进度条时才隐藏：避免在防抖窗口内结束的小计算去关掉
+ * 其它调用方（例如工程保存/加载）正在显示的进度条。
+ */
+void DASignalAnalysisUI::hideProgressIndicator()
+{
+    if (mProgressDelayTimer) {
+        mProgressDelayTimer->stop();
+    }
+    if (!mProgressVisible) {
+        return;
+    }
+    mProgressVisible = false;
+    if (!mUI) {
+        return;
+    }
+    if (DAStatusBarInterface* statusBar = mUI->getStatusBar()) {
+        statusBar->setProgressCancelVisible(false);
+        statusBar->hideProgressBar();
+        statusBar->clearProgressText();
+    }
+}
+
+/**
+ * @brief 进度文本：单任务显示阶段名，多任务显示任务数（进度百分比由进度条自身显示）
+ */
+QString DASignalAnalysisUI::progressStageText() const
+{
+    if (mProgressTaskCount > 1) {
+        return tr("%1 tasks").arg(mProgressTaskCount);  // cn:%1 项任务
+    }
+    return mProgressStage;
 }
 
 /**
@@ -4447,8 +4537,9 @@ void DASignalAnalysisUI::retranslateUi()
         // cn:配置当前信号的分析参数
     }
     if (actionCancelAnalysis) {
-        actionCancelAnalysis->setText(tr("Cancel Analysis"));  // cn:取消计算
-        actionCancelAnalysis->setToolTip(tr("Cancel all running background computations"));  // cn:取消全部在跑的后台计算
+        actionCancelAnalysis->setText(tr("Stop Calculation"));  // cn:停止计算
+        actionCancelAnalysis->setToolTip(tr("Stop all running signal analysis computations"));
+        // cn:停止全部正在进行的信号分析计算
     }
     // 峰值
     if (actionPeakMarker) {

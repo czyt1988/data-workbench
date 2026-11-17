@@ -78,7 +78,9 @@ public:
     bool isRunning() const;
 
 Q_SIGNALS:
-    void progressChanged(double percent, const QString& stage);
+    // 后台任务进度：percent 为全部在跑任务的平均进度（0~100），runningTaskCount 为在跑任务数；
+    // 多任务并发时 stage 为空（界面按任务数显示），单任务时给出该任务的阶段文案
+    void progressChanged(double percent, const QString& stage, int runningTaskCount);
     void spectrumReady(const DA::DASignalTaskContext& ctx, const DA::DASpectrumResult& result);
     // 包络结果（x 为采样点下标，mins/maxs 为每列极值）
     void envelopeReady(const DA::DASignalTaskContext& ctx,

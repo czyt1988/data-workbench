@@ -183,8 +183,11 @@ plugins/DASignalAnalysis/
 ### 4.3 后台任务
 
 - 任务种类：频谱（含 PSD）、包络、热图、峰值表、峰值曲线、播放 WAV 导出、媒体导入。全部经
-  `DASignalAnalysisWorker` 提交，进度写状态栏；`cancelAll()` 与丝带「取消计算」入口，
-  enabled 绑 `runningTaskCount() > 0`；取消只走 `canceled(taskId)` 清进度，不弹失败。
+  `DASignalAnalysisWorker` 提交，进度写状态栏进度条；`cancelAll()` 与状态栏进度条右侧的「停止计算」
+  按钮（`DAStatusBarInterface::setProgressCancelAction` 绑定 `actionCancelAnalysis`，动作不再放进
+  丝带「分析」panel），enabled 绑 `runningTaskCount() > 0`；取消只走 `canceled(taskId)` 清进度，
+  不弹失败。状态栏进度显示有 500 ms 防抖（`cProgressIndicatorDelayMs`）：短任务在窗口内结束就完全
+  不显示进度条与停止按钮；多任务并发时 worker 上报平均进度 + 任务数，状态栏文本显示任务数。
 - 失败经 `failed(error)`（英文细节）→ 界面 `reportOperationFailure()` 只显示翻译后的提示，并
   `clearProgressIfIdle()`；上下文过期丢弃结果的分支同样要清进度。
 - 视图侧只发请求信号（`spectrumRequested`/`envelopeRequested`/`heatmapRequested`/`followFrameSpectrumRequested`），
