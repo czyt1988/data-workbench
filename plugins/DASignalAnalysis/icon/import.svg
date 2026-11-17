@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- data-workbench 官方色板：#5280C1/#497CAD/#BDCDE8/#727272/#B2B2B2/#5D6D7E/#669E8B/#CE6043/#E6C27C/#80559F/#3CAED5/#FFFFFF -->
+  <!-- 导入：托盘（中性结构）+ 入向箭头（主操作），DESIGN.md §4.2.2 功能操作图标口径 -->
+  <path d="M34 108 L34 148 Q34 162 48 162 L152 162 Q166 162 166 148 L166 108" fill="#FFFFFF" stroke="#727272" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M100 26 L100 104" fill="none" stroke="#5280C1" stroke-width="10" stroke-linecap="round"/>
+  <path d="M68 76 L100 110 L132 76" fill="none" stroke="#5280C1" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

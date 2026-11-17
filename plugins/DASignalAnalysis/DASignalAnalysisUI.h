@@ -329,6 +329,8 @@ private:
     QPointer< ads::CDockWidget > mPageDock;
     QPointer< DASignalAnalysisPage > mPage;
     QMenu* mPeakTopNMenu { nullptr };
+    // 导入菜单（父动作 actionImport；菜单不是 QAction 的父子，finalize() 先 setMenu(nullptr) 再删）
+    QMenu* mImportMenu { nullptr };
     QMenu* mExportMenu { nullptr };
     // 图片导出菜单（整页 / 当前子图 / 复制剪贴板，T9）
     QMenu* mExportImageMenu { nullptr };
@@ -350,11 +352,10 @@ public:
     //===================================================
     // 丝带面板（全部位于插件自建的上下文标签页）
     //===================================================
-    SARibbonPanel* mPanelImport { nullptr };    ///< 分析设置页：信号（导入）[步骤3 合并为「导入导出」]
+    SARibbonPanel* mPanelImportExport { nullptr };  ///< 分析设置页：导入导出（导入▾/导出数据▾/导出图片▾）
     SARibbonPanel* mPanelPlayback { nullptr };  ///< 播放（步骤4 迁到底部播放器控制条后删除）
     SARibbonPanel* mPanelAnalysis { nullptr };  ///< 分析（步骤5 起为「更多」：高级设置…）
     SARibbonPanel* mPanelPeaks { nullptr };     ///< 峰值
-    SARibbonPanel* mPanelExport { nullptr };    ///< 导出（步骤3 并入「导入导出」）
 
     //===================================================
     // 窗口（Window）
@@ -364,6 +365,7 @@ public:
     //===================================================
     // 信号（Signal）
     //===================================================
+    QAction* actionImport { nullptr };           ///< 导入（大按钮 + 菜单：音频/数据帧/视频/重新指定来源）
     QAction* actionImportAudio { nullptr };      ///< 导入音频
     QAction* actionImportDataFrame { nullptr };  ///< 导入数据帧
     QAction* actionImportVideo { nullptr };      ///< 导入视频

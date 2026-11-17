@@ -91,11 +91,10 @@ namespace
 {
 /// 丝带标签页 / 面板 / 动作的 object name（唯一名，供样式与查找使用）
 // 插件不再占用顶级丝带标签页：主页「创建」panel 一个入口 + 上下文标签两页。
-const char* const cPanelImportName         = "da-panel-signal.import";
+const char* const cPanelImportExportName   = "da-panel-signal.importExport";
 const char* const cPanelPlaybackName       = "da-panel-signal.playback";
 const char* const cPanelAnalysisName       = "da-panel-signal.analysis";
 const char* const cPanelPeaksName          = "da-panel-signal.peaks";
-const char* const cPanelExportName         = "da-panel-signal.export";
 const char* const cPageDockObjectName      = "da-dock-signal-analysis-page";
 // 插件自建的 Ribbon 上下文标签（SARibbon 按 objectName 查找，任务卡固定值）
 const char* const cContextCategoryObjectName     = "ContextCategorySignalAnalysis";
@@ -561,7 +560,7 @@ void DASignalAnalysisUI::refreshFFmpegAvailability()
 {
     const bool available = DASignalImporter::isFFmpegAvailable();
     if (actionImportVideo) {
-        actionImportVideo->setEnabled(available);
+        actionImportVideo->setEnabled(available && !mImportTaskActive);
         actionImportVideo->setToolTip(
             available ? tr("Extract the audio track of a video file")  // cn:抽取视频音频轨
                       : tr("FFmpeg was not detected. Specify its path in Settings > Signal Analysis."));
@@ -1127,9 +1126,15 @@ void DASignalAnalysisUI::buildAnalysisSettingsPage(SARibbonContextCategory* cont
     }
     mContextAnalysisPage->setObjectName(QString::fromUtf8(cContextAnalysisPageObjectName));
 
-    // ---------- 信号：导入三入口 ----------
-    mPanelImport = mContextAnalysisPage->addPanel(tr("Signal"));  // cn:信号
-    mPanelImport->setObjectName(QString::fromUtf8(cPanelImportName));
+    // ---------- 导入导出：导入▾ / 导出数据▾ / 导出图片▾ ----------
+    // 步骤 3 把原「信号」「导出」两个 panel 合并：导入 4 个入口收进统一「导入」菜单，
+    // 与两类导出共用本 panel（导入是进入信号分析的第一步，导出是分析结果的出口）。
+    mPanelImportExport = mContextAnalysisPage->addPanel(tr("Import / Export"));  // cn:导入导出
+    mPanelImportExport->setObjectName(QString::fromUtf8(cPanelImportExportName));
+    // 导入父动作（大按钮，点击展开菜单）
+    actionImport = mActions->createAction(
+        "actionSignalImport",
+        (QString::fromUtf8(cIconPrefix) + QStringLiteral("import.svg")).toUtf8().constData());
     actionImportAudio = mActions->createAction(
         "actionSignalImportAudio",
         (QString::fromUtf8(cIconPrefix) + QStringLiteral("importAudio.svg")).toUtf8().constData());
@@ -1143,11 +1148,27 @@ void DASignalAnalysisUI::buildAnalysisSettingsPage(SARibbonContextCategory* cont
     actionRelinkSource = mActions->createAction(
         "actionSignalRelinkSource",
         (QString::fromUtf8(cIconPrefix) + QStringLiteral("relinkSource.svg")).toUtf8().constData());
-    mPanelImport->addLargeAction(actionImportAudio);
-    mPanelImport->addLargeAction(actionImportDataFrame);
-    mPanelImport->addLargeAction(actionImportVideo);
-    mPanelImport->addMediumAction(actionRelinkSource);
     actionRelinkSource->setEnabled(false);  // 只有当前信号来源缺失时才可用
+    // 导入菜单：工具提示必须可见（FFmpeg 缺失时菜单里的视频项要靠 tooltip 说明原因）
+    mImportMenu = new QMenu();
+    mImportMenu->setToolTipsVisible(true);
+    mImportMenu->addAction(actionImportAudio);
+    mImportMenu->addAction(actionImportDataFrame);
+    mImportMenu->addAction(actionImportVideo);
+    mImportMenu->addSeparator();
+    mImportMenu->addAction(actionRelinkSource);
+    actionImport->setMenu(mImportMenu);
+    mPanelImportExport->addLargeAction(actionImport);
+    // 导出：峰值/频谱/功率谱/热图 CSV（actionExportPeaks 的菜单在 initialize 里建）
+    actionExportPeaks = mActions->createAction(
+        "actionSignalExportPeaks",
+        (QString::fromUtf8(cIconPrefix) + QStringLiteral("exportTable.svg")).toUtf8().constData());
+    // 导出图片：整页 / 当前子图 / 复制剪贴板（actionExportImage 的菜单在 initialize 里建）
+    actionExportImage = mActions->createAction(
+        "actionSignalExportImage",
+        (QString::fromUtf8(cIconPrefix) + QStringLiteral("exportImage.svg")).toUtf8().constData());
+    mPanelImportExport->addLargeAction(actionExportPeaks);
+    mPanelImportExport->addLargeAction(actionExportImage);
 
     // ---------- Playback：播放/暂停/停止（步骤 4 迁到底部播放器控制条后删除本 panel） ----------
     mPanelPlayback = mContextAnalysisPage->addPanel(tr("Playback"));  // cn:播放
@@ -1208,18 +1229,6 @@ void DASignalAnalysisUI::buildAnalysisSettingsPage(SARibbonContextCategory* cont
     mPanelPeaks->addSmallWidget(
         makeRibbonSmallRow(tr("Threshold"), mPeakRelDbSpin, mPanelPeaks, &mPeakRelDbLabel));  // cn:相对门限
     buildPeakTopNMenu();
-
-    // ---------- Export：峰值表 / 图片（步骤 3 与导入合并为「导入导出」panel） ----------
-    mPanelExport = mContextAnalysisPage->addPanel(tr("Export"));  // cn:导出
-    mPanelExport->setObjectName(QString::fromUtf8(cPanelExportName));
-    actionExportPeaks = mActions->createAction(
-        "actionSignalExportPeaks",
-        (QString::fromUtf8(cIconPrefix) + QStringLiteral("exportTable.svg")).toUtf8().constData());
-    actionExportImage = mActions->createAction(
-        "actionSignalExportImage",
-        (QString::fromUtf8(cIconPrefix) + QStringLiteral("exportImage.svg")).toUtf8().constData());
-    mPanelExport->addLargeAction(actionExportPeaks);
-    mPanelExport->addLargeAction(actionExportImage);
 }
 
 /**
@@ -3256,6 +3265,13 @@ void DASignalAnalysisUI::finalize()
     if (actionPeakTopN) {
         actionPeakTopN->setMenu(nullptr);
     }
+    if (actionImport) {
+        actionImport->setMenu(nullptr);
+    }
+    if (mImportMenu) {
+        delete mImportMenu;
+        mImportMenu = nullptr;
+    }
     if (actionAmplitudeMode) {
         actionAmplitudeMode->setMenu(nullptr);
     }
@@ -3383,8 +3399,8 @@ void DASignalAnalysisUI::finalize()
     // 经宿主接口销毁全部动作（含上下文标签新增动作）
     if (mActions) {
         const QList< QAction* > allActions = {
-            actionOpenSignalPage, actionImportAudio,     actionImportDataFrame, actionImportVideo,
-            actionPlay,           actionPause,           actionStop,
+            actionOpenSignalPage, actionImport,          actionImportAudio,     actionImportDataFrame,
+            actionImportVideo,    actionPlay,            actionPause,           actionStop,
             actionAnalysisSetting, actionCancelAnalysis, actionPeakMarker,     actionPeakTopN,
             actionPeakMarkerDisplay, actionPeakWindow,   actionWaterfall2D,     actionWaterfall3D,
             actionWaterfallHide,  actionAmplitudeMode,   actionExportPeaks,
@@ -3399,6 +3415,7 @@ void DASignalAnalysisUI::finalize()
     }
     // 全部置空，防止悬空访问
     actionOpenSignalPage    = nullptr;
+    actionImport            = nullptr;
     actionImportAudio       = nullptr;
     actionImportDataFrame   = nullptr;
     actionImportVideo       = nullptr;
@@ -3429,11 +3446,10 @@ void DASignalAnalysisUI::finalize()
     actionColormap          = nullptr;
     actionColorBar          = nullptr;
     actionAddFigure         = nullptr;
-    mPanelImport            = nullptr;
+    mPanelImportExport      = nullptr;
     mPanelPlayback          = nullptr;
     mPanelAnalysis          = nullptr;
     mPanelPeaks             = nullptr;
-    mPanelExport            = nullptr;
     // 峰值 panel 控件随所属面板/category 一并销毁，这里只置空指针
     mPeakModeCombo          = nullptr;
     mPeakRelDbSpin          = nullptr;
@@ -3890,8 +3906,15 @@ void DASignalAnalysisUI::updateCancelActionState()
 void DASignalAnalysisUI::updateImportActionsState()
 {
     const bool enabled = !mImportTaskActive;
+    // 父动作（导入大按钮）随在途状态置灰：菜单整体不可打开，避免并发导入互相覆盖
+    if (actionImport) {
+        actionImport->setEnabled(enabled);
+    }
     if (actionImportAudio) {
         actionImportAudio->setEnabled(enabled);
+    }
+    if (actionImportDataFrame) {
+        actionImportDataFrame->setEnabled(enabled);
     }
     if (actionImportVideo) {
         // 视频入口还要看 FFmpeg 是否可用（refreshFFmpegAvailability 已负责该条件）
@@ -4535,8 +4558,8 @@ void DASignalAnalysisUI::retranslateUi()
         mPeakDock->setWindowTitle(tr("Peaks"));  // cn:峰值
     }
     // 上下文标签页 1「分析设置」的面板
-    if (mPanelImport) {
-        mPanelImport->setPanelName(tr("Signal"));  // cn:信号
+    if (mPanelImportExport) {
+        mPanelImportExport->setPanelName(tr("Import / Export"));  // cn:导入导出
     }
     if (mPanelPlayback) {
         mPanelPlayback->setPanelName(tr("Playback"));  // cn:播放
@@ -4546,9 +4569,6 @@ void DASignalAnalysisUI::retranslateUi()
     }
     if (mPanelPeaks) {
         mPanelPeaks->setPanelName(tr("Peaks"));  // cn:峰值
-    }
-    if (mPanelExport) {
-        mPanelExport->setPanelName(tr("Export"));  // cn:导出
     }
     // 插件上下文标签：标题 / 两页 / 显示页的两组面板
     if (mContextCategory) {
@@ -4575,6 +4595,11 @@ void DASignalAnalysisUI::retranslateUi()
         actionOpenSignalPage->setToolTip(tr("Open the signal analysis workspace"));  // cn:打开信号分析界面
     }
     // 信号
+    if (actionImport) {
+        actionImport->setText(tr("Import"));  // cn:导入
+        actionImport->setToolTip(tr("Import audio, a data frame or a video, or relink a missing data frame source"));
+        // cn:导入音频/数据帧/视频，或重新指定缺失的数据帧来源
+    }
     if (actionImportAudio) {
         actionImportAudio->setText(tr("Import Audio"));  // cn:导入音频
         actionImportAudio->setToolTip(tr("Import an audio file (WAV/AIFF/FLAC/OGG)"));  // cn:导入音频文件

@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/DASignalAnalysis">
+        <file>icon/import.svg</file>
         <file>icon/importAudio.svg</file>
         <file>icon/importDataframe.svg</file>
         <file>icon/importVideo.svg</file>
