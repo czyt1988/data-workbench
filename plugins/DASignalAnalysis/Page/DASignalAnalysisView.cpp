@@ -518,18 +518,11 @@ void DASignalAnalysisView::rebuildSpectrumPlot()
                                                         signalPeak() * mParams.calibration);
         }
     }
-    // 对数频率轴从第一个正频率点开始（0 赫兹在对数轴下无意义）
-    int startIdx = 0;
-    if (mLogFrequency) {
-        while (startIdx < srcFreqs.size() && srcFreqs[ startIdx ] <= 0.0) {
-            ++startIdx;
-        }
-    }
-    QVector< double > freqs(srcFreqs.size() - startIdx);
-    QVector< double > values(qMax(0, srcAmps.size() - startIdx));
-    for (int i = startIdx; i < srcFreqs.size(); ++i) {
-        freqs[ i - startIdx ]  = srcFreqs[ i ];
-        values[ i - startIdx ] = (i < srcAmps.size()) ? srcAmps[ i ] : 0.0;
+    // 曲线快照与曲线点：频率/幅值长度不一致时按频率截断/补零（QwtPlotCurve 要求等长）
+    QVector< double > freqs  = srcFreqs;
+    QVector< double > values = srcAmps;
+    if (values.size() != freqs.size()) {
+        values.resize(freqs.size());
     }
     // 记录当前真正绘制到频谱图的曲线快照：峰值标记按它吸附到曲线峰顶（跟随播放时是当前帧谱）
     mDisplayedFreqs  = freqs;
@@ -743,30 +736,6 @@ int DASignalAnalysisView::waterfallMode() const
 }
 
 /**
- * @brief 是否对数频率轴
- */
-bool DASignalAnalysisView::isLogFrequency() const
-{
-    return mLogFrequency;
-}
-
-/**
- * @brief 设置频率轴线性/对数（同步临时工具栏下拉，触发重绘）
- */
-void DASignalAnalysisView::setLogFrequency(bool on)
-{
-    mLogFrequency = on;
-    if (mSpectrumChart) {
-        if (on) {
-            mSpectrumChart->setAxisScaleEngine(QwtPlot::xBottom, new QwtLogScaleEngine());
-        } else {
-            mSpectrumChart->setAxisScaleEngine(QwtPlot::xBottom, new QwtLinearScaleEngine());
-        }
-    }
-    rebuildSpectrumPlot();
-}
-
-/**
  * @brief 当前色带名
  */
 QString DASignalAnalysisView::colormapName() const
@@ -801,6 +770,29 @@ void DASignalAnalysisView::setDbFloor(double dbFloor)
 {
     mDbFloor = dbFloor;
     applyHeatmapColors();
+}
+
+/**
+ * @brief 当前帧标记是否显示
+ */
+bool DASignalAnalysisView::isTimeCursorVisible() const
+{
+    return mTimeCursorVisible;
+}
+
+/**
+ * @brief 显示/隐藏当前帧标记（二维云图竖线 / 三维当前迹线高亮的时间游标）
+ *
+ * 只记录开关；标记图元随播放头更新时按该开关显隐。
+ * @param on true 显示当前帧标记
+ */
+void DASignalAnalysisView::setTimeCursorVisible(bool on)
+{
+    if (mTimeCursorVisible == on) {
+        return;
+    }
+    mTimeCursorVisible = on;
+    updatePlayhead();
 }
 
 /**

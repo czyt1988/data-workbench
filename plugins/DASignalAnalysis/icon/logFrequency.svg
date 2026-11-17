@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
-  <!-- data-workbench 官方色板：#5280C1/#497CAD/#BDCDE8/#727272/#B2B2B2/#5D6D7E/#669E8B/#CE6043/#E6C27C/#80559F/#3CAED5/#FFFFFF -->
-  <!-- 对数频率：频率轴 + 对数递增刻度（间距递减）+ 对数曲线 -->
-  <path d="M34 36 L34 168 L176 168" fill="none" stroke="#727272" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M56 168 L56 156 M82 168 L82 156 M104 168 L104 156 M122 168 L122 156 M137 168 L137 156 M149 168 L149 156" stroke="#727272" stroke-width="4" stroke-linecap="round"/>
-  <path d="M46 150 C56 128 66 112 82 100 C100 87 122 78 142 73 C154 70 164 68 172 67" fill="none" stroke="#5280C1" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>

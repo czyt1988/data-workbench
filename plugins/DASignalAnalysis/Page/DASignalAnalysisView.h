@@ -79,14 +79,14 @@ public:
     // 瀑布模式：0=二维热图 / 1=三维曲面 / 2=隐藏（D12 / D25）
     void setWaterfallMode(int mode);
     int waterfallMode() const;
-    // 频率轴线性/对数（D16）
-    bool isLogFrequency() const;
-    void setLogFrequency(bool on);
     // 色带与 dB 动态范围下限（视图状态持久化用）
     QString colormapName() const;
     void setColormapName(const QString& name);
     double dbFloor() const;
     void setDbFloor(double dbFloor);
+    // 当前帧标记开关（二维云图竖线 + 三维当前迹线高亮的时间游标；默认开）
+    bool isTimeCursorVisible() const;
+    void setTimeCursorVisible(bool on);
     // 时频图色标（colorbar）显隐：隐藏时不占横向空间（默认显示）
     void setColorBarVisible(bool on);
     bool isColorBarVisible() const;
@@ -264,8 +264,8 @@ private:
     int mWaterfallMode { 0 };  ///< 0=二维 / 1=三维 / 2=隐藏
     // 显示用时间原点（秒）：数据帧时间列首值非 0 时三图横向对齐
     double mTimeOrigin { 0.0 };
-    // 频率轴模式：false 线性 / true 对数
-    bool mLogFrequency { false };
+    // 当前帧标记开关（默认开）：二维云图竖线 / STFT 窗宽带 / 三维当前迹线高亮
+    bool mTimeCursorVisible { true };
 
     // T7 临时工具栏已删除（T8）：控件迁到 Ribbon 上下文标签与窗口底部工具栏
     QTimer* mResizeDebounce { nullptr };

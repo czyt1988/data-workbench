@@ -193,12 +193,13 @@ private Q_SLOTS:
     void relinkCurrentSignalSource();
     // 宿主清空工程（新建/加载前/快照回滚）：清理本插件信号、缓存与临时文件
     void onProjectCleaned();
-    // 上下文标签：通道切换 / 色带菜单 / 色标显隐
-    void onContextChannelChanged(int index);
-    void onContextLogFrequencyToggled(bool on);
+    // 上下文标签：通道切换 / 色带菜单 / 色标显隐 / 当前帧标记
+    void onChannelComboChanged(int index);
     void onContextColormapTriggered(QAction* action);
     // 时频图色标显隐开关：写当前视图并立即持久化偏好
     void onColorBarToggled(bool on);
+    // 当前帧标记开关（二维云图竖线 + 三维当前迹线高亮）
+    void onTimeCursorToggled(bool on);
     // 当前视图「跟随滑块」变化（回勾底部工具栏）
     void onViewFollowSliderToggled(bool on);
     // 当前视图请求跟随帧幅值谱（同步短调用：成功回填、失败静默，不弹消息）
@@ -214,6 +215,8 @@ private:
     void buildAnalysisSettingsPage(SARibbonContextCategory* contextCategory);
     // 构建插件 Ribbon 上下文标签（分析设置 / 信号显示 两页）
     void buildSignalContextCategory();
+    // 给「信号显示」页重新下发面板标题开关（SARibbonBar 样式切换会统一改写，D9）
+    void applyDisplayPagePanelTitles();
     // 构建窗口底部播放工具栏（默认隐藏）
     void buildSignalToolbar();
     // 当前视图状态 → 上下文标签控件（QSignalBlocker 防回环）
@@ -327,12 +330,19 @@ private:
     SARibbonContextCategory* mContextCategory { nullptr };
     SARibbonCategory* mContextAnalysisPage { nullptr };
     SARibbonCategory* mContextDisplayPage { nullptr };
-    SARibbonPanel* mContextDisplayPanel { nullptr };
-    SARibbonPanel* mContextPeakPanel { nullptr };
-    // 上下文标签控件与色带菜单
-    QComboBox* mContextChannelCombo { nullptr };
+    // 「信号显示」页按对象分组的面板：时频图设置 / 云图设置 / 瀑布图设置
+    SARibbonPanel* mPanelTimeFreqView { nullptr };
+    SARibbonPanel* mPanelHeatmap { nullptr };
+    SARibbonPanel* mPanelWaterfall { nullptr };
+    // 上下文标签控件与色带菜单（mColormapMenu 归二维云图，mWaterfallColormapMenu 归三维瀑布）
+    QComboBox* mChannelCombo { nullptr };
     QMenu* mColormapMenu { nullptr };
     QActionGroup* mColormapGroup { nullptr };
+    QMenu* mWaterfallColormapMenu { nullptr };
+    QActionGroup* mWaterfallColormapGroup { nullptr };
+    // Ribbon 样式切换 / 页切换的连接（面板标题只给本插件显示页开启，样式切换后要重新下发）
+    QMetaObject::Connection mRibbonStyleConnection;
+    QMetaObject::Connection mRibbonTabChangedConnection;
     // 窗口底部播放工具栏（默认隐藏，provider 激活时显示）
     QToolBar* mSignalToolbar { nullptr };
     QCheckBox* mToolbarFollowCheck { nullptr };
@@ -355,6 +365,7 @@ private:
     QCheckBox* mPreprocessDcCheck { nullptr };
     QComboBox* mDetrendCombo { nullptr };
     QLabel* mDetrendLabel { nullptr };
+    QLabel* mChannelLabel { nullptr };
     QComboBox* mWindowCombo { nullptr };
     QLabel* mWindowLabel { nullptr };
     QComboBox* mAmplitudeModeCombo { nullptr };
@@ -401,9 +412,9 @@ public:
     //===================================================
     SARibbonPanel* mPanelImportExport { nullptr };  ///< 分析设置页：导入导出（导入▾/导出数据▾/导出图片▾）
     SARibbonPanel* mPanelPreprocess { nullptr };    ///< 分析设置页：预处理（去直流/去趋势）
-    SARibbonPanel* mPanelSpectrum { nullptr };      ///< 分析设置页：频谱（窗函数/幅值口径/频率分辨率）
+    SARibbonPanel* mPanelSpectrum { nullptr };      ///< 分析设置页：频谱（通道/窗函数/幅值口径/频率分辨率）
     SARibbonPanel* mPanelTimeFreq { nullptr };      ///< 分析设置页：时频（窗长/跳步重叠/Δf）
-    SARibbonPanel* mPanelPeaks { nullptr };         ///< 分析设置页：峰值
+    SARibbonPanel* mPanelPeaks { nullptr };         ///< 分析设置页：峰值（全项目唯一峰值入口）
     SARibbonPanel* mPanelMore { nullptr };          ///< 分析设置页：更多（高级设置…）
 
     //===================================================
@@ -445,14 +456,14 @@ public:
     QAction* actionPeakTop50 { nullptr };
 
     //===================================================
-    // 显示（Display，位于 Ribbon 上下文标签）
+    // 显示（Display，位于 Ribbon 上下文标签；按对象分组）
     //===================================================
-    QAction* actionWaterfall2D { nullptr };    ///< 二维时频热图
-    QAction* actionWaterfall3D { nullptr };    ///< 三维曲面瀑布
-    QAction* actionWaterfallHide { nullptr };  ///< 隐藏瀑布
-    QAction* actionLogFrequency { nullptr };   ///< 对数频率轴
-    QAction* actionColormap { nullptr };       ///< 色带（带菜单）
-    QAction* actionColorBar { nullptr };       ///< 时频图色标显隐（显示面板开关）
+    QAction* actionWaterfall2D { nullptr };       ///< 时频图设置：二维云图
+    QAction* actionWaterfall3D { nullptr };       ///< 时频图设置：三维瀑布
+    QAction* actionWaterfallHide { nullptr };     ///< 时频图设置：隐藏
+    QAction* actionTimeCursor { nullptr };        ///< 时频图设置：当前帧标记（勾选）
+    QAction* actionColormap { nullptr };          ///< 云图设置：色带（带菜单，只影响二维谱图与色标）
+    QAction* actionColorBar { nullptr };          ///< 云图设置：色标显隐（勾选）
 
     //===================================================
     // 导出（Export）
