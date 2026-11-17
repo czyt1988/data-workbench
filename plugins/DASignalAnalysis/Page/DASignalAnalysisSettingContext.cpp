@@ -116,6 +116,10 @@ void DASignalAnalysisSettingContext::deactivateSettingContext()
     }
     // 1) 隐藏插件上下文 UI
     if (mUI) {
+        // D6：页面失活即停止播放（只挂在 provider 失活；setSignalToolbarVisible(false) 也会在
+        // 激活流程里被调用，不能在那里停）。工具 dock（设置/峰值/日志）激活不会失活本 provider，
+        // 因此打开峰值窗口不会误停播放。
+        mUI->stopPlayback();
         mUI->setSignalContextCategoryVisible(false);
         mUI->setSignalToolbarVisible(false);
     }

@@ -25,6 +25,7 @@ class QDoubleSpinBox;
 class QLabel;
 class QSlider;
 class QToolBar;
+class QToolButton;
 class QTimer;
 class SARibbonCategory;
 class SARibbonContextCategory;
@@ -80,6 +81,8 @@ public:
     void setSignalContextCategoryVisible(bool on);
     // 显示/隐藏窗口底部播放工具栏（provider 激活/失活时调用）
     void setSignalToolbarVisible(bool on);
+    // 停止播放并把播放头归零（页面失活时 provider 调用：D6）
+    void stopPlayback();
     // 宿主停靠区接口（provider 注册设置上下文/图元树/设置面板用）
     DADockingAreaInterface* getDockingArea() const;
 
@@ -153,6 +156,10 @@ private Q_SLOTS:
     // 峰值 panel「标记显示」：弹出峰值标记文本模板编辑对话框
     void openPeakMarkerDisplaySettings();
     void onPlayerPositionChanged(qint64 ms);
+    // 播放器播放/暂停状态变化：同步 ▶/⏸ 图标、勾选与时间文本
+    void onPlayerStateChanged(bool playing);
+    // 「播放/暂停」动作切换（按钮勾选 = 正在播放）
+    void onPlayPauseToggled(bool on);
     // 信号标签页关闭：清理该信号的参数/结果缓存
     void onSignalRemoved(const DA::DASignalPtr& signal);
     // 当前信号标签页切换：播放源、峰值表与曲线随当前信号重置（评审 U4）
@@ -211,6 +218,8 @@ private:
     void unbindCurrentChartSignals();
     // 当前视图状态 → 底部工具栏控件（QSignalBlocker 防回环）
     void syncSignalToolbar();
+    // 刷新底部工具栏时间文本（mm:ss.s / mm:ss.s；无源显示占位）
+    void updateToolbarTimeText();
     void buildPeakTopNMenu();
     void buildAmplitudeModeMenu();
     void buildPeakDock();
@@ -306,7 +315,10 @@ private:
     // 窗口底部播放工具栏（默认隐藏，provider 激活时显示）
     QToolBar* mSignalToolbar { nullptr };
     QCheckBox* mToolbarFollowCheck { nullptr };
+    QToolButton* mToolbarPlayButton { nullptr };
+    QToolButton* mToolbarStopButton { nullptr };
     QSlider* mToolbarTimeSlider { nullptr };
+    QLabel* mToolbarTimeLabel { nullptr };
     QDoubleSpinBox* mToolbarDbFloorSpin { nullptr };
     QCheckBox* mToolbarAutoScrollCheck { nullptr };
     // 峰值标记开关（视图无 getter：UI 记录状态并在新视图创建时应用）
@@ -353,7 +365,6 @@ public:
     // 丝带面板（全部位于插件自建的上下文标签页）
     //===================================================
     SARibbonPanel* mPanelImportExport { nullptr };  ///< 分析设置页：导入导出（导入▾/导出数据▾/导出图片▾）
-    SARibbonPanel* mPanelPlayback { nullptr };  ///< 播放（步骤4 迁到底部播放器控制条后删除）
     SARibbonPanel* mPanelAnalysis { nullptr };  ///< 分析（步骤5 起为「更多」：高级设置…）
     SARibbonPanel* mPanelPeaks { nullptr };     ///< 峰值
 
@@ -372,10 +383,9 @@ public:
     QAction* actionRelinkSource { nullptr };     ///< 重新指定数据帧来源（来源缺失时可用，评审 U16）
 
     //===================================================
-    // 播放（Playback）
+    // 播放（Playback，仅底部播放器控制条使用）
     //===================================================
-    QAction* actionPlay { nullptr };   ///< 播放
-    QAction* actionPause { nullptr };  ///< 暂停
+    QAction* actionPlay { nullptr };   ///< 播放/暂停（可勾选：勾选=正在播放）
     QAction* actionStop { nullptr };   ///< 停止
 
     //===================================================

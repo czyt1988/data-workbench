@@ -53,6 +53,8 @@ public:
 Q_SIGNALS:
     // 播放位置（毫秒，约 50 毫秒一次）
     void positionChanged(qint64 ms);
+    // 播放还是暂停（true=正在播放）：播放器控制条据此切换 ▶/⏸ 图标与勾选状态
+    void stateChanged(bool playing);
     // 播放失败（格式不支持、后端缺失等）
     void errorOccurred(const QString& error);
 

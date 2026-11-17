@@ -95,6 +95,17 @@ DASignalPlayer::DASignalPlayer(QObject* parent) : QObject(parent)
     mPlayer->setNotifyInterval(50);
 #endif
     connect(mPlayer, &QMediaPlayer::positionChanged, this, &DASignalPlayer::positionChanged);
+    // 媒体状态变化（含播放自然结束、被后端切回 Stopped）统一折算成 stateChanged，
+    // 播放器控制条只认这一个信号来同步 ▶/⏸ 图标与勾选状态
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    connect(mPlayer, &QMediaPlayer::playbackStateChanged, this, [this](QMediaPlayer::PlaybackState) {
+        Q_EMIT stateChanged(isPlaying());
+    });
+#else
+    connect(mPlayer, &QMediaPlayer::stateChanged, this, [this](QMediaPlayer::State) {
+        Q_EMIT stateChanged(isPlaying());
+    });
+#endif
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     connect(mPlayer, &QMediaPlayer::errorOccurred, this, [this](QMediaPlayer::Error, const QString& msg) {
         Q_EMIT errorOccurred(msg);
@@ -241,12 +252,15 @@ void DASignalPlayer::clearSignal()
     }
     mTempWavPath.clear();
     mMediaPath.clear();
+    // 清源一定回到停止态：状态变化信号在部分后端不一定发出，这里显式补一次
+    Q_EMIT stateChanged(false);
 }
 
 void DASignalPlayer::play()
 {
     if (mPlayer) {
         mPlayer->play();
+        Q_EMIT stateChanged(isPlaying());
     }
 }
 
@@ -254,6 +268,7 @@ void DASignalPlayer::pause()
 {
     if (mPlayer) {
         mPlayer->pause();
+        Q_EMIT stateChanged(isPlaying());
     }
 }
 
@@ -261,6 +276,7 @@ void DASignalPlayer::stop()
 {
     if (mPlayer) {
         mPlayer->stop();
+        Q_EMIT stateChanged(false);
     }
 }
 

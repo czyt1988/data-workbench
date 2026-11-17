@@ -47,6 +47,7 @@
 #include "Page/DAPeakMarkerSamples.h"
 #include "Page/DASignalAnalysisView.h"
 #include "Page/DASignalChartExport.h"
+#include "Page/DASignalTimeText.h"
 #include "Render/DAStftRasterData.h"
 #include "DAChart3DWidget.h"
 #include "DAChartWidget.h"
@@ -315,6 +316,8 @@ private Q_SLOTS:
     void undoStackGroupWiring();
     // SF-13：峰值「存档优先」只在加载后到第一次重算前——幅值/参数变化即重建
     void signalPeakMarkersRestoredUntilRecompute();
+    // 播放器控制条时间文本：mm:ss.s 格式、占位与越界夹取（纯函数）
+    void playbackTimeTextFormatting();
 };
 
 /**
@@ -2169,6 +2172,35 @@ void DASignalAnalysisTest::signalPeakMarkersRestoredUntilRecompute()
     QVERIFY2(qAbs(view2.peakMarkers().first()->yValue() - 6.020599913279624) < 1e-6,
              "setParams must reset the archive priority and rebuild the markers with the new amplitude mode");
     QCOMPARE(view2.peakMarkers().first()->xValue(), 10.0);
+}
+
+/**
+ * @brief 播放器控制条时间文本：mm:ss.s 格式、占位文本与越界夹取（纯函数）
+ */
+void DASignalAnalysisTest::playbackTimeTextFormatting()
+{
+    using DA::daSignalFormatTimeRange;
+    using DA::daSignalFormatTimeText;
+    // 基本格式：分:秒.十分之一秒，分/秒补零
+    QCOMPARE(daSignalFormatTimeText(0), QStringLiteral("00:00.0"));
+    QCOMPARE(daSignalFormatTimeText(12300), QStringLiteral("00:12.3"));
+    QCOMPARE(daSignalFormatTimeText(90500), QStringLiteral("01:30.5"));
+    QCOMPARE(daSignalFormatTimeText(60000), QStringLiteral("01:00.0"));
+    // 四舍五入到十分之一秒（整数运算，不出现浮点进位差异）
+    QCOMPARE(daSignalFormatTimeText(12349), QStringLiteral("00:12.3"));
+    QCOMPARE(daSignalFormatTimeText(12350), QStringLiteral("00:12.4"));
+    QCOMPARE(daSignalFormatTimeText(59950), QStringLiteral("01:00.0"));
+    // 超过 99 分钟：分钟位自然增长（不截断）
+    QCOMPARE(daSignalFormatTimeText(6000000), QStringLiteral("100:00.0"));
+    // 无效时间（负数）显示占位
+    QCOMPARE(daSignalFormatTimeText(-1), QStringLiteral("--:--.-"));
+    // 「当前 / 总长」：无播放源整体占位
+    QCOMPARE(daSignalFormatTimeRange(0, 90500, false), QStringLiteral("--:--.- / --:--.-"));
+    // 有播放源：当前位置与总时长
+    QCOMPARE(daSignalFormatTimeRange(12300, 90500, true), QStringLiteral("00:12.3 / 01:30.5"));
+    // 位置越界（后端偶发值）夹在 [0, 总长]
+    QCOMPARE(daSignalFormatTimeRange(-500, 90500, true), QStringLiteral("00:00.0 / 01:30.5"));
+    QCOMPARE(daSignalFormatTimeRange(99999999, 90500, true), QStringLiteral("01:30.5 / 01:30.5"));
 }
 
 QTEST_MAIN(DASignalAnalysisTest)

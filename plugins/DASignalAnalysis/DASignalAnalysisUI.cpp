@@ -1,4 +1,4 @@
-#include "DASignalAnalysisUI.h"
+﻿#include "DASignalAnalysisUI.h"
 // Qt
 #include <QMenu>
 #include <QActionGroup>
@@ -28,6 +28,7 @@
 #include <QStandardPaths>
 #include <QTimer>
 #include <QToolBar>
+#include <QToolButton>
 #include "DAPybind11InQt.h"
 #include "DAPyModule.h"
 #include "DAPyObjectWrapper.h"
@@ -67,6 +68,7 @@
 #include "Page/DASignalAnalysisPage.h"
 #include "Page/DASignalAnalysisView.h"
 #include "Page/DASignalAnalysisSettingContext.h"
+#include "Page/DASignalTimeText.h"
 #include "Page/DAPeakDockWidget.h"
 #include "Page/DAPeakMarkerLabel.h"
 #include "Dialogs/DASignalImportDialog.h"
@@ -92,7 +94,6 @@ namespace
 /// 丝带标签页 / 面板 / 动作的 object name（唯一名，供样式与查找使用）
 // 插件不再占用顶级丝带标签页：主页「创建」panel 一个入口 + 上下文标签两页。
 const char* const cPanelImportExportName   = "da-panel-signal.importExport";
-const char* const cPanelPlaybackName       = "da-panel-signal.playback";
 const char* const cPanelAnalysisName       = "da-panel-signal.analysis";
 const char* const cPanelPeaksName          = "da-panel-signal.peaks";
 const char* const cPageDockObjectName      = "da-dock-signal-analysis-page";
@@ -321,6 +322,8 @@ bool DASignalAnalysisUI::initialize(DACoreInterface* core)
     // 播放控制器（D26）
     mPlayer = new DASignalPlayer(this);
     connect(mPlayer, &DASignalPlayer::positionChanged, this, &DASignalAnalysisUI::onPlayerPositionChanged);
+    // 播放状态（播放/暂停/停止/自然结束）→ 播放器控制条的 ▶/⏸ 勾选与图标
+    connect(mPlayer, &DASignalPlayer::stateChanged, this, &DASignalAnalysisUI::onPlayerStateChanged);
     connect(mPlayer, &DASignalPlayer::errorOccurred, this, [this](const QString& err) {
         // 播放器原始错误是 Qt 的英文诊断信息：只写日志，界面显示翻译后的可理解提示（评审 §七-9）
         qWarning() << "DASignalAnalysisUI: playback error:" << err;
@@ -328,18 +331,10 @@ bool DASignalAnalysisUI::initialize(DACoreInterface* core)
         // cn:播放失败，详情见消息日志。
     });
     if (actionPlay) {
-        connect(actionPlay, &QAction::triggered, this, [this]() { mPlayer->play(); });
-    }
-    if (actionPause) {
-        connect(actionPause, &QAction::triggered, this, [this]() { mPlayer->pause(); });
+        connect(actionPlay, &QAction::toggled, this, &DASignalAnalysisUI::onPlayPauseToggled);
     }
     if (actionStop) {
-        connect(actionStop, &QAction::triggered, this, [this]() {
-            mPlayer->stop();
-            if (DASignalAnalysisView* view = currentView()) {
-                view->setCurrentTime(0.0);
-            }
-        });
+        connect(actionStop, &QAction::triggered, this, &DASignalAnalysisUI::stopPlayback);
     }
     // 峰值停靠窗口（右侧停靠区，与设置/智能体同区做标签页，D24）随页面一起惰性创建，
     // 页面创建前没有信号可显示，这里不建；创建逻辑见 ensurePageCreated()
@@ -1170,21 +1165,16 @@ void DASignalAnalysisUI::buildAnalysisSettingsPage(SARibbonContextCategory* cont
     mPanelImportExport->addLargeAction(actionExportPeaks);
     mPanelImportExport->addLargeAction(actionExportImage);
 
-    // ---------- Playback：播放/暂停/停止（步骤 4 迁到底部播放器控制条后删除本 panel） ----------
-    mPanelPlayback = mContextAnalysisPage->addPanel(tr("Playback"));  // cn:播放
-    mPanelPlayback->setObjectName(QString::fromUtf8(cPanelPlaybackName));
+    // ---------- 播放：动作只绑到底部播放器控制条（D5，不再占丝带 panel） ----------
+    // 播放/暂停升格为唯一动作（可勾选：勾选=正在播放），暂停动作已删除；
+    // 播放器控制条由 buildSignalToolbar() 在页面创建时建好，动作先在这里创建以便 initialize 连接。
     actionPlay = mActions->createAction(
         "actionSignalPlay",
-        (QString::fromUtf8(cIconPrefix) + QStringLiteral("play.svg")).toUtf8().constData());
-    actionPause = mActions->createAction(
-        "actionSignalPause",
-        (QString::fromUtf8(cIconPrefix) + QStringLiteral("pause.svg")).toUtf8().constData());
+        (QString::fromUtf8(cIconPrefix) + QStringLiteral("play.svg")).toUtf8().constData(),
+        true);
     actionStop = mActions->createAction(
         "actionSignalStop",
         (QString::fromUtf8(cIconPrefix) + QStringLiteral("stop.svg")).toUtf8().constData());
-    mPanelPlayback->addLargeAction(actionPlay);
-    mPanelPlayback->addLargeAction(actionPause);
-    mPanelPlayback->addLargeAction(actionStop);
 
     // ---------- Analysis：统一参数对话框 ----------
     mPanelAnalysis = mContextAnalysisPage->addPanel(tr("Analysis"));  // cn:分析
@@ -1419,11 +1409,12 @@ void DASignalAnalysisUI::buildPeakDock()
 }
 
 /**
- * @brief 构建窗口底部播放工具栏（跟随播放 / 时间滑块 / dB 下限 / 自动滚动）
+ * @brief 构建窗口底部播放器控制条
  *
- * 底部工具栏只在信号分析页 dock 激活时显示（provider 调 setSignalToolbarVisible）；
- * 控件只是当前视图状态的视图层：控件变化写回视图，视图状态变化经 syncSignalToolbar() 回填。
- * dB 下限与热图自动滚动按 T8 定稿放在本工具栏（不再做 Ribbon 弹窗）。
+ * 顺序（D5）：跟随播放 → ▶/⏸ → ■ → 时间滑块 → 时间文本 → dB 下限 → 自动滚动。
+ * 只在信号分析页 dock 激活时显示（provider 调 setSignalToolbarVisible）；
+ * 控件只是当前视图/播放器状态的视图层：控件变化写回视图，状态变化经 syncSignalToolbar() 回填。
+ * ▶/⏸ 按钮绑 actionPlay（可勾选 = 正在播放），■ 绑 actionStop；时间文本是纯函数格式化结果。
  */
 void DASignalAnalysisUI::buildSignalToolbar()
 {
@@ -1454,6 +1445,20 @@ void DASignalAnalysisUI::buildSignalToolbar()
     mSignalToolbar->addWidget(mToolbarFollowCheck);
     mSignalToolbar->addSeparator();
 
+    // 播放/暂停（单切换按钮，勾选=正在播放）与停止：动作是唯一状态源，
+    // 按钮经 setDefaultAction 跟随动作的 enabled/checked/icon/text
+    mToolbarPlayButton = new QToolButton(mSignalToolbar);
+    mToolbarPlayButton->setObjectName(QStringLiteral("da-signal-toolbar-play"));
+    mToolbarPlayButton->setDefaultAction(actionPlay);
+    mToolbarPlayButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
+    mSignalToolbar->addWidget(mToolbarPlayButton);
+    mToolbarStopButton = new QToolButton(mSignalToolbar);
+    mToolbarStopButton->setObjectName(QStringLiteral("da-signal-toolbar-stop"));
+    mToolbarStopButton->setDefaultAction(actionStop);
+    mToolbarStopButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
+    mSignalToolbar->addWidget(mToolbarStopButton);
+    mSignalToolbar->addSeparator();
+
     // 时间滑块：毫秒范围（0..信号时长），与视图 currentTime/时间原点口径一致
     mToolbarTimeSlider = new QSlider(Qt::Horizontal, mSignalToolbar);
     mToolbarTimeSlider->setObjectName(QStringLiteral("da-signal-toolbar-time"));
@@ -1466,6 +1471,12 @@ void DASignalAnalysisUI::buildSignalToolbar()
         }
     });
     mSignalToolbar->addWidget(mToolbarTimeSlider);
+
+    // 时间文本：当前位置 / 总时长（mm:ss.s，无源显示 --:--.-）
+    mToolbarTimeLabel = new QLabel(mSignalToolbar);
+    mToolbarTimeLabel->setObjectName(QStringLiteral("da-signal-toolbar-timetext"));
+    mToolbarTimeLabel->setToolTip(tr("Playback position / total duration"));  // cn:播放位置 / 总时长
+    mSignalToolbar->addWidget(mToolbarTimeLabel);
     mSignalToolbar->addSeparator();
 
     // dB 下限：热图色标下限（dB）
@@ -1718,6 +1729,42 @@ void DASignalAnalysisUI::syncSignalToolbar()
         mToolbarAutoScrollCheck->setChecked(hasView && view->isHeatmapAutoScroll());
         mToolbarAutoScrollCheck->setEnabled(hasView);
     }
+    // 播放/暂停：勾选与图标跟随播放器真实状态（D5：▶/⏸ 单切换按钮）
+    const bool hasSource = (mPlayer && mPlayer->hasSource());
+    const bool playing   = (mPlayer && mPlayer->isPlaying());
+    if (actionPlay) {
+        const QSignalBlocker blocker(actionPlay);
+        actionPlay->setChecked(hasSource && playing);
+        actionPlay->setIcon(QIcon(QString::fromUtf8(cIconPrefix)
+                                  + QLatin1String(playing ? "pause.svg" : "play.svg")));
+        actionPlay->setText(playing ? tr("Pause") : tr("Play"));  // cn:暂停 / 播放
+        actionPlay->setToolTip(playing ? tr("Pause playback") : tr("Start playback"));
+        // cn:暂停播放 / 开始播放
+    }
+    updateToolbarTimeText();
+}
+
+/**
+ * @brief 刷新底部工具栏时间文本（mm:ss.s / mm:ss.s；无播放源显示占位）
+ */
+void DASignalAnalysisUI::updateToolbarTimeText()
+{
+    if (nullptr == mToolbarTimeLabel) {
+        return;
+    }
+    const bool hasSource = (mPlayer && mPlayer->hasSource());
+    const DASignalPtr sig = (mPage ? mPage->currentSignal() : DASignalPtr());
+    if (!hasSource || !sig) {
+        mToolbarTimeLabel->setText(daSignalFormatTimeRange(0, 0, false));
+        return;
+    }
+    qint64 durationMs = (mPlayer ? mPlayer->durationMs() : 0);
+    if (durationMs <= 0) {
+        // 媒体刚装入时后端可能还没给出时长：退回信号时长（口径同为毫秒，含时间原点无关）
+        durationMs = qMax< qint64 >(0, qRound64(sig->duration() * 1000.0));
+    }
+    const qint64 positionMs = (mPlayer ? mPlayer->positionMs() : 0);
+    mToolbarTimeLabel->setText(daSignalFormatTimeRange(positionMs, durationMs, true));
 }
 
 /**
@@ -3337,7 +3384,10 @@ void DASignalAnalysisUI::finalize()
         mSignalToolbar = nullptr;
     }
     mToolbarFollowCheck     = nullptr;
+    mToolbarPlayButton      = nullptr;
+    mToolbarStopButton      = nullptr;
     mToolbarTimeSlider      = nullptr;
+    mToolbarTimeLabel       = nullptr;
     mToolbarDbFloorSpin     = nullptr;
     mToolbarAutoScrollCheck = nullptr;
     // 插件 Ribbon 上下文标签：先隐藏再销毁（SARibbonBar 拥有上下文标签的管理权）
@@ -3400,7 +3450,7 @@ void DASignalAnalysisUI::finalize()
     if (mActions) {
         const QList< QAction* > allActions = {
             actionOpenSignalPage, actionImport,          actionImportAudio,     actionImportDataFrame,
-            actionImportVideo,    actionPlay,            actionPause,           actionStop,
+            actionImportVideo,    actionPlay,            actionStop,
             actionAnalysisSetting, actionCancelAnalysis, actionPeakMarker,     actionPeakTopN,
             actionPeakMarkerDisplay, actionPeakWindow,   actionWaterfall2D,     actionWaterfall3D,
             actionWaterfallHide,  actionAmplitudeMode,   actionExportPeaks,
@@ -3420,7 +3470,6 @@ void DASignalAnalysisUI::finalize()
     actionImportDataFrame   = nullptr;
     actionImportVideo       = nullptr;
     actionPlay              = nullptr;
-    actionPause             = nullptr;
     actionStop              = nullptr;
     actionAnalysisSetting   = nullptr;
     actionCancelAnalysis    = nullptr;
@@ -3447,7 +3496,6 @@ void DASignalAnalysisUI::finalize()
     actionColorBar          = nullptr;
     actionAddFigure         = nullptr;
     mPanelImportExport      = nullptr;
-    mPanelPlayback          = nullptr;
     mPanelAnalysis          = nullptr;
     mPanelPeaks             = nullptr;
     // 峰值 panel 控件随所属面板/category 一并销毁，这里只置空指针
@@ -3880,10 +3928,12 @@ void DASignalAnalysisUI::updatePlaybackActionsState()
     const bool exporting = !mPlaybackWavPendingKey.isEmpty();
     const bool canPlay   = !exporting && mPlayer && mPlayer->hasSource();
     if (actionPlay) {
+        const QSignalBlocker blocker(actionPlay);
         actionPlay->setEnabled(canPlay);
-    }
-    if (actionPause) {
-        actionPause->setEnabled(canPlay);
+        if (!canPlay) {
+            // 源不可用/导出期间一定不在播放态：勾选复位，避免按钮停在 ⏸
+            actionPlay->setChecked(false);
+        }
     }
     if (actionStop) {
         actionStop->setEnabled(canPlay);
@@ -4023,7 +4073,7 @@ void DASignalAnalysisUI::onPlayerPositionChanged(qint64 ms)
         }
     }
     mSyncingFromPlayer = false;
-    // 播放推进时回填底部工具栏时间滑块（阻断信号防回环；此时未走 currentTimeChanged）
+    // 播放推进时回填底部工具栏时间滑块与时间文本（阻断信号防回环；此时未走 currentTimeChanged）
     if (mToolbarTimeSlider) {
         DASignalAnalysisView* view = currentView();
         if (view) {
@@ -4034,6 +4084,56 @@ void DASignalAnalysisUI::onPlayerPositionChanged(qint64 ms)
             mToolbarTimeSlider->setValue(int(value));
         }
     }
+    updateToolbarTimeText();
+}
+
+/**
+ * @brief 播放器播放/暂停状态变化：同步 ▶/⏸ 图标、勾选与时间文本
+ *
+ * 勾选写回一律 QSignalBlocker 阻断，否则会再触发 onPlayPauseToggled 反向调用播放器。
+ */
+void DASignalAnalysisUI::onPlayerStateChanged(bool playing)
+{
+    if (actionPlay) {
+        const QSignalBlocker blocker(actionPlay);
+        actionPlay->setChecked(playing);
+        actionPlay->setIcon(QIcon(QString::fromUtf8(cIconPrefix)
+                                  + QLatin1String(playing ? "pause.svg" : "play.svg")));
+        actionPlay->setText(playing ? tr("Pause") : tr("Play"));  // cn:暂停 / 播放
+        actionPlay->setToolTip(playing ? tr("Pause playback") : tr("Start playback"));
+        // cn:暂停播放 / 开始播放
+    }
+    updateToolbarTimeText();
+}
+
+/**
+ * @brief 「播放/暂停」动作切换：勾选 = 开始播放，取消勾选 = 暂停
+ */
+void DASignalAnalysisUI::onPlayPauseToggled(bool on)
+{
+    if (!mPlayer) {
+        return;
+    }
+    if (on) {
+        mPlayer->play();
+    } else {
+        mPlayer->pause();
+    }
+}
+
+/**
+ * @brief 停止播放并把播放头归零（■ 按钮与页面失活时共用）
+ */
+void DASignalAnalysisUI::stopPlayback()
+{
+    if (mPlayer) {
+        mPlayer->stop();
+    }
+    if (DASignalAnalysisView* view = currentView()) {
+        view->setCurrentTime(0.0);
+    }
+    syncSignalToolbar();
+    updatePlaybackActionsState();
 }
 
 /**
@@ -4519,7 +4619,7 @@ void DASignalAnalysisUI::onAmplitudeModeChanged()
 void DASignalAnalysisUI::setSignalDependentActionsEnabled(bool on)
 {
     const QList< QAction* > acts = {
-        actionPlay,         actionPause,         actionStop,
+        actionPlay,         actionStop,
         actionAnalysisSetting, actionPeakMarker, actionPeakTopN,
         actionPeakMarkerDisplay, actionPeakWindow, actionWaterfall2D, actionWaterfall3D,
         actionWaterfallHide, actionAmplitudeMode, actionExportPeaks,
@@ -4560,9 +4660,6 @@ void DASignalAnalysisUI::retranslateUi()
     // 上下文标签页 1「分析设置」的面板
     if (mPanelImportExport) {
         mPanelImportExport->setPanelName(tr("Import / Export"));  // cn:导入导出
-    }
-    if (mPanelPlayback) {
-        mPanelPlayback->setPanelName(tr("Playback"));  // cn:播放
     }
     if (mPanelAnalysis) {
         mPanelAnalysis->setPanelName(tr("Analysis"));  // cn:分析
@@ -4617,15 +4714,21 @@ void DASignalAnalysisUI::retranslateUi()
         actionRelinkSource->setToolTip(tr("Point a signal whose data frame is missing to an existing data frame"));
         // cn:把数据帧缺失的信号重新指向现有数据帧
     }
-    // 播放
+    // 播放（▶/⏸ 文案与图标随播放状态在 syncSignalToolbar/onPlayerStateChanged 中动态切换）
     if (actionPlay) {
-        actionPlay->setText(tr("Play"));  // cn:播放
-    }
-    if (actionPause) {
-        actionPause->setText(tr("Pause"));  // cn:暂停
+        if (!(mPlayer && mPlayer->isPlaying())) {
+            actionPlay->setText(tr("Play"));  // cn:播放
+            actionPlay->setToolTip(tr("Start playback"));  // cn:开始播放
+        }
     }
     if (actionStop) {
         actionStop->setText(tr("Stop"));  // cn:停止
+        actionStop->setToolTip(tr("Stop playback and return to the beginning"));
+        // cn:停止播放并回到开头
+    }
+    if (mToolbarTimeLabel) {
+        mToolbarTimeLabel->setToolTip(tr("Playback position / total duration"));
+        // cn:播放位置 / 总时长
     }
     // 分析
     if (actionAnalysisSetting) {
