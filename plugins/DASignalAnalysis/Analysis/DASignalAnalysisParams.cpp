@@ -29,27 +29,30 @@ int jsonToInt(const QJsonValue& v, int fallback)
  */
 QJsonObject DASignalAnalysisParams::toJson() const
 {
+    // dB 参考由幅值口径派生（D7）：写盘前统一规范化，避免旧参数里 dbFS + one 的矛盾组合被继续传播
+    DASignalAnalysisParams normalized = *this;
+    normalized.normalizeDbReference();
     QJsonObject obj;
-    obj[ QStringLiteral("removeDc") ]       = removeDc;
-    obj[ QStringLiteral("detrend") ]        = detrend;
-    obj[ QStringLiteral("window") ]         = window;
-    obj[ QStringLiteral("amplitudeMode") ]  = amplitudeMode;
-    obj[ QStringLiteral("dbReference") ]    = dbReference;
-    obj[ QStringLiteral("resolutionHz") ]   = resolutionHz;
-    obj[ QStringLiteral("zeroPadding") ]    = zeroPadding;
-    obj[ QStringLiteral("average") ]        = average;
-    obj[ QStringLiteral("overlap") ]        = overlap;
-    obj[ QStringLiteral("stftWindowMs") ]   = stftWindowMs;
-    obj[ QStringLiteral("stftOverlap") ]    = stftOverlap;
-    obj[ QStringLiteral("stftZeroPadding") ]= stftZeroPadding;
-    obj[ QStringLiteral("peakMode") ]       = peakMode;
-    obj[ QStringLiteral("peakTopN") ]       = peakTopN;
-    obj[ QStringLiteral("peakRelDb") ]      = peakRelDb;
-    obj[ QStringLiteral("peakProminence") ] = peakProminence;
-    obj[ QStringLiteral("peakMinSpacingHz") ] = peakMinSpacingHz;
-    obj[ QStringLiteral("peakMinHeight") ]  = peakMinHeight;
-    obj[ QStringLiteral("calibration") ]    = calibration;
-    obj[ QStringLiteral("unit") ]           = unit;
+    obj[ QStringLiteral("removeDc") ]       = normalized.removeDc;
+    obj[ QStringLiteral("detrend") ]        = normalized.detrend;
+    obj[ QStringLiteral("window") ]         = normalized.window;
+    obj[ QStringLiteral("amplitudeMode") ]  = normalized.amplitudeMode;
+    obj[ QStringLiteral("dbReference") ]    = normalized.dbReference;
+    obj[ QStringLiteral("resolutionHz") ]   = normalized.resolutionHz;
+    obj[ QStringLiteral("zeroPadding") ]    = normalized.zeroPadding;
+    obj[ QStringLiteral("average") ]        = normalized.average;
+    obj[ QStringLiteral("overlap") ]        = normalized.overlap;
+    obj[ QStringLiteral("stftWindowMs") ]   = normalized.stftWindowMs;
+    obj[ QStringLiteral("stftOverlap") ]    = normalized.stftOverlap;
+    obj[ QStringLiteral("stftZeroPadding") ]= normalized.stftZeroPadding;
+    obj[ QStringLiteral("peakMode") ]       = normalized.peakMode;
+    obj[ QStringLiteral("peakTopN") ]       = normalized.peakTopN;
+    obj[ QStringLiteral("peakRelDb") ]      = normalized.peakRelDb;
+    obj[ QStringLiteral("peakProminence") ] = normalized.peakProminence;
+    obj[ QStringLiteral("peakMinSpacingHz") ] = normalized.peakMinSpacingHz;
+    obj[ QStringLiteral("peakMinHeight") ]  = normalized.peakMinHeight;
+    obj[ QStringLiteral("calibration") ]    = normalized.calibration;
+    obj[ QStringLiteral("unit") ]           = normalized.unit;
     return obj;
 }
 
@@ -79,6 +82,8 @@ DASignalAnalysisParams DASignalAnalysisParams::fromJson(const QJsonObject& obj)
     p.peakMinHeight   = obj.value(QStringLiteral("peakMinHeight")).toDouble(p.peakMinHeight);
     p.calibration     = obj.value(QStringLiteral("calibration")).toDouble(p.calibration);
     p.unit            = obj.value(QStringLiteral("unit")).toString(p.unit);
+    // 旧工程可能存在「dBFS + 相对 1.0」的矛盾组合：加载时按幅值口径重新解释（D7 兼容说明）
+    p.normalizeDbReference();
     return p;
 }
 
@@ -108,27 +113,30 @@ DASignalAnalysisParams DASignalAnalysisParams::fromVariantMap(const QVariantMap&
  */
 QVariantMap DASignalAnalysisParams::toPythonDict() const
 {
+    // dB 参考由幅值口径派生（D7）：送 Python 前统一规范化
+    DASignalAnalysisParams normalized = *this;
+    normalized.normalizeDbReference();
     QVariantMap p;
-    p[ QStringLiteral("removeDc") ]         = removeDc;
-    p[ QStringLiteral("detrend") ]          = detrend;
-    p[ QStringLiteral("window") ]           = window;
-    p[ QStringLiteral("amplitudeMode") ]    = amplitudeMode;
-    p[ QStringLiteral("dbReference") ]      = dbReference;
-    p[ QStringLiteral("resolutionHz") ]     = resolutionHz;
-    p[ QStringLiteral("zeroPadding") ]      = zeroPadding;
-    p[ QStringLiteral("average") ]          = average;
-    p[ QStringLiteral("overlap") ]          = overlap;
-    p[ QStringLiteral("stftWindowMs") ]     = stftWindowMs;
-    p[ QStringLiteral("stftOverlap") ]      = stftOverlap;
-    p[ QStringLiteral("stftZeroPadding") ]  = stftZeroPadding;
-    p[ QStringLiteral("peakMode") ]         = peakMode;
-    p[ QStringLiteral("peakTopN") ]         = peakTopN;
-    p[ QStringLiteral("peakRelDb") ]        = peakRelDb;
-    p[ QStringLiteral("peakProminence") ]   = peakProminence;
-    p[ QStringLiteral("peakMinSpacingHz") ] = peakMinSpacingHz;
-    p[ QStringLiteral("peakMinHeight") ]    = peakMinHeight;
-    p[ QStringLiteral("calibration") ]      = calibration;
-    p[ QStringLiteral("unit") ]             = unit;
+    p[ QStringLiteral("removeDc") ]         = normalized.removeDc;
+    p[ QStringLiteral("detrend") ]          = normalized.detrend;
+    p[ QStringLiteral("window") ]           = normalized.window;
+    p[ QStringLiteral("amplitudeMode") ]    = normalized.amplitudeMode;
+    p[ QStringLiteral("dbReference") ]      = normalized.dbReference;
+    p[ QStringLiteral("resolutionHz") ]     = normalized.resolutionHz;
+    p[ QStringLiteral("zeroPadding") ]      = normalized.zeroPadding;
+    p[ QStringLiteral("average") ]          = normalized.average;
+    p[ QStringLiteral("overlap") ]          = normalized.overlap;
+    p[ QStringLiteral("stftWindowMs") ]     = normalized.stftWindowMs;
+    p[ QStringLiteral("stftOverlap") ]      = normalized.stftOverlap;
+    p[ QStringLiteral("stftZeroPadding") ]  = normalized.stftZeroPadding;
+    p[ QStringLiteral("peakMode") ]         = normalized.peakMode;
+    p[ QStringLiteral("peakTopN") ]         = normalized.peakTopN;
+    p[ QStringLiteral("peakRelDb") ]        = normalized.peakRelDb;
+    p[ QStringLiteral("peakProminence") ]   = normalized.peakProminence;
+    p[ QStringLiteral("peakMinSpacingHz") ] = normalized.peakMinSpacingHz;
+    p[ QStringLiteral("peakMinHeight") ]    = normalized.peakMinHeight;
+    p[ QStringLiteral("calibration") ]      = normalized.calibration;
+    p[ QStringLiteral("unit") ]             = normalized.unit;
     return p;
 }
 
@@ -141,6 +149,25 @@ QVariantMap DASignalAnalysisParams::toPythonDict() const
 DASignalAnalysisParams DASignalAnalysisParams::defaults()
 {
     return DASignalAnalysisParams();
+}
+
+/**
+ * @brief 由幅值口径派生 dB 参考（D7）
+ *
+ * 界面已取消独立「dB 参考」入口：dB(re 1.0) 口径对应 dbReference=one，
+ * 其余口径（含 dBFS 与非 dB 口径）一律 fullScale。纯函数便于单测。
+ */
+QString DASignalAnalysisParams::dbReferenceForAmplitudeMode(const QString& amplitudeMode)
+{
+    return (amplitudeMode == QLatin1String("dbRef1")) ? QStringLiteral("one") : QStringLiteral("fullScale");
+}
+
+/**
+ * @brief 就地规范化 dbReference（写盘 / 送 Python / 对话框返回前调用）
+ */
+void DASignalAnalysisParams::normalizeDbReference()
+{
+    dbReference = dbReferenceForAmplitudeMode(amplitudeMode);
 }
 
 /**

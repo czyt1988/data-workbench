@@ -318,6 +318,8 @@ private Q_SLOTS:
     void signalPeakMarkersRestoredUntilRecompute();
     // 播放器控制条时间文本：mm:ss.s 格式、占位与越界夹取（纯函数）
     void playbackTimeTextFormatting();
+    // dB 参考由幅值口径派生（D7）：dbRef1 → one，其余 → fullScale，旧档矛盾组合按幅值口径解释
+    void dbReferenceDerivedFromAmplitudeMode();
 };
 
 /**
@@ -329,8 +331,8 @@ void DASignalAnalysisTest::paramsJsonRoundTrip()
     p.removeDc          = true;
     p.detrend           = QStringLiteral("linear");
     p.window            = QStringLiteral("blackman");
-    p.amplitudeMode     = QStringLiteral("rms");
-    p.dbReference       = QStringLiteral("one");
+    p.amplitudeMode     = QStringLiteral("dbRef1");
+    p.dbReference       = QStringLiteral("one");  // 与幅值口径自洽（D7：dB 参考由幅值口径派生）
     p.resolutionHz      = 2.5;
     p.zeroPadding       = 4096;
     p.average           = QStringLiteral("median");
@@ -463,11 +465,17 @@ void DASignalAnalysisTest::formSpecAdvancedPeakParams()
     const DA::DASignalAnalysisParams params = DA::DASignalAnalysisParams::defaults();
     const QJsonObject spec                  = DA::DASignalFormSpecBuilder::build(params, 10.0);
 
-    // 常见峰值查找项：不在对话框表单里（迁到 ribbon 峰值 panel）
-    QVERIFY2(findFormField(spec, QStringLiteral("peakMode")).isEmpty(), "peakMode must not be in the analysis form");
-    QVERIFY2(findFormField(spec, QStringLiteral("peakTopN")).isEmpty(), "peakTopN must not be in the analysis form");
-    QVERIFY2(findFormField(spec, QStringLiteral("peakRelDb")).isEmpty(),
-             "peakRelDb must not be in the analysis form");
+    // 常见项全部搬到丝带（峰值三件套 + 预处理/窗函数/幅值口径/分辨率/STFT 窗长与跳步），
+    // 对话框只留高级项：这些字段不得再出现在表单里，否则就是两处入口、两个真相（D8）
+    const char* const ribbonFields[] = { "peakMode",    "peakTopN",  "peakRelDb",     "removeDc",
+                                         "detrend",     "window",    "amplitudeMode", "dbReference",
+                                         "resolutionHz", "stftWindowMs", "stftOverlap" };
+    for (const char* field : ribbonFields) {
+        QVERIFY2(findFormField(spec, QString::fromLatin1(field)).isEmpty(),
+                 qPrintable(QStringLiteral("%1 must not be in the advanced analysis form")
+                                .arg(QString::fromLatin1(field))));
+    }
+    QCOMPARE(spec.value(QStringLiteral("title")).toString(), QStringLiteral("Advanced Analysis Settings"));
 
     // 高级项仍在：最小间距默认 = 5 × 实际分辨率（10 赫兹 → 50 赫兹，评审 U7）
     const QJsonObject spacing = findFormField(spec, QStringLiteral("peakMinSpacingHz"));
@@ -476,16 +484,52 @@ void DASignalAnalysisTest::formSpecAdvancedPeakParams()
     QVERIFY2(!findFormField(spec, QStringLiteral("peakProminence")).isEmpty(),
              "peakProminence field not found");
     QVERIFY2(!findFormField(spec, QStringLiteral("peakMinHeight")).isEmpty(), "peakMinHeight field not found");
+    // 高级零填充 / 功率谱 / 标定也保留
+    QVERIFY2(!findFormField(spec, QStringLiteral("zeroPadding")).isEmpty(), "zeroPadding field not found");
+    QVERIFY2(!findFormField(spec, QStringLiteral("stftZeroPadding")).isEmpty(), "stftZeroPadding field not found");
+    QVERIFY2(!findFormField(spec, QStringLiteral("average")).isEmpty(), "average field not found");
+    QVERIFY2(!findFormField(spec, QStringLiteral("overlap")).isEmpty(), "overlap field not found");
+    QVERIFY2(!findFormField(spec, QStringLiteral("calibration")).isEmpty(), "calibration field not found");
+    QVERIFY2(!findFormField(spec, QStringLiteral("unit")).isEmpty(), "unit field not found");
+}
 
-    // 幅值口径支持四种显示状态（评审 U8）
-    const QJsonObject ampMode = findFormField(spec, QStringLiteral("amplitudeMode"));
-    QVERIFY2(!ampMode.isEmpty(), "amplitudeMode field not found");
-    QStringList ampValues;
-    for (const QJsonValue& ov : ampMode.value(QStringLiteral("options")).toArray()) {
-        ampValues.append(ov.toObject().value(QStringLiteral("value")).toString());
-    }
-    QCOMPARE(ampValues, QStringList({ QStringLiteral("peak"), QStringLiteral("rms"),
-                                      QStringLiteral("dbFS"), QStringLiteral("dbRef1") }));
+/**
+ * @brief dB 参考由幅值口径派生（D7）：dbRef1 → one，其余 → fullScale
+ *
+ * 旧工程可能存在 dbFS + 相对 1.0 的矛盾组合：加载/写盘/送 Python 时统一按幅值口径重新解释。
+ */
+void DASignalAnalysisTest::dbReferenceDerivedFromAmplitudeMode()
+{
+    QCOMPARE(DA::DASignalAnalysisParams::dbReferenceForAmplitudeMode(QStringLiteral("peak")),
+             QStringLiteral("fullScale"));
+    QCOMPARE(DA::DASignalAnalysisParams::dbReferenceForAmplitudeMode(QStringLiteral("rms")),
+             QStringLiteral("fullScale"));
+    QCOMPARE(DA::DASignalAnalysisParams::dbReferenceForAmplitudeMode(QStringLiteral("dbFS")),
+             QStringLiteral("fullScale"));
+    QCOMPARE(DA::DASignalAnalysisParams::dbReferenceForAmplitudeMode(QStringLiteral("dbRef1")),
+             QStringLiteral("one"));
+
+    // 就地规范化
+    DA::DASignalAnalysisParams p = DA::DASignalAnalysisParams::defaults();
+    p.amplitudeMode              = QStringLiteral("dbRef1");
+    p.dbReference                = QStringLiteral("fullScale");  // 矛盾组合
+    p.normalizeDbReference();
+    QCOMPARE(p.dbReference, QStringLiteral("one"));
+
+    // 旧档加载：dbFS + one 的矛盾组合按满量程解释
+    QJsonObject legacy;
+    legacy[ QStringLiteral("amplitudeMode") ] = QStringLiteral("dbFS");
+    legacy[ QStringLiteral("dbReference") ]   = QStringLiteral("one");
+    const DA::DASignalAnalysisParams loaded   = DA::DASignalAnalysisParams::fromJson(legacy);
+    QCOMPARE(loaded.dbReference, QStringLiteral("fullScale"));
+
+    // 写盘 / 送 Python 前同样规范化（字段保留但口径唯一）
+    DA::DASignalAnalysisParams inconsistent = DA::DASignalAnalysisParams::defaults();
+    inconsistent.amplitudeMode              = QStringLiteral("dbFS");
+    inconsistent.dbReference                = QStringLiteral("one");
+    QCOMPARE(inconsistent.toJson().value(QStringLiteral("dbReference")).toString(), QStringLiteral("fullScale"));
+    QCOMPARE(inconsistent.toPythonDict().value(QStringLiteral("dbReference")).toString(),
+             QStringLiteral("fullScale"));
 }
 
 /**

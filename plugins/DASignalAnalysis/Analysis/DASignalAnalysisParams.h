@@ -59,6 +59,11 @@ struct DASignalAnalysisParams
     QVariantMap toPythonDict() const;
     // 恢复默认
     static DASignalAnalysisParams defaults();
+    // 由幅值口径派生 dB 参考（纯函数，便于单测）：dbRef1 → one，其余 → fullScale。
+    // D7：界面上不再有独立「dB 参考」入口，字段保留只为兼容旧工程存档。
+    static QString dbReferenceForAmplitudeMode(const QString& amplitudeMode);
+    // 就地规范化 dbReference（写盘 / 送 Python / 对话框返回前统一调用）
+    void normalizeDbReference();
 };
 
 // 频率分辨率（赫兹）→ STFT 窗长（毫秒）：Δf = 1 / 窗长(秒)，故窗长(ms) = 1000/Δf

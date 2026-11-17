@@ -3162,6 +3162,8 @@ void DASignalAnalysisUI::restoreState(const QByteArray& json,
         if (view.contains(QStringLiteral("dbReference"))) {
             mDbReference = view.value(QStringLiteral("dbReference")).toString(mDbReference);
         }
+        // D7 兼容：旧档可能存了「dBFS + 相对 1.0」的矛盾组合，加载后统一按幅值口径重新解释
+        mDbReference = DASignalAnalysisParams::dbReferenceForAmplitudeMode(mAmplitudeMode);
         // 峰值标记开关：在 addSignalAndActivate 之前恢复，connectSignalView 会把它应用到新视图
         if (view.contains(QStringLiteral("peakMarkersVisible"))) {
             mPeakMarkersVisible = view.value(QStringLiteral("peakMarkersVisible")).toBool(mPeakMarkersVisible);

@@ -1,4 +1,4 @@
-#include "DASignalAnalysisSettingDialog.h"
+﻿#include "DASignalAnalysisSettingDialog.h"
 #include <QDialogButtonBox>
 #include <QEvent>
 #include <QHBoxLayout>
@@ -20,7 +20,7 @@ DASignalAnalysisSettingDialog::DASignalAnalysisSettingDialog(const DASignalAnaly
     : QDialog(parent), mSampleRate(sampleRate), mBaseParams(params)
 {
     setModal(true);
-    setMinimumSize(520, 560);
+    setMinimumSize(520, 480);
     buildUI();
     retranslateUi();
     // 上次值作为字段默认值（「记住上次值」）；派生分辨率按真实段长算（评审 U7：不能传 fs/100）
@@ -68,9 +68,10 @@ bool DASignalAnalysisSettingDialog::edit(DASignalAnalysisParams* params, double 
  * 最小间距仍处于自动状态时写回 -1 哨兵（Python 侧对 <=0 按 5 倍实际分辨率兜底），
  * 这样下次打开对话框仍然「未手改」，改分辨率继续跟随（评审 N-C5）。
  *
- * 峰值查找的模式/标记数量/相对门限已迁到丝带「峰值」panel，本对话框表单里没有这三个字段：
- * fromVariantMap() 会把缺失键填成默认值，这里从打开对话框时的基线参数回填，
- * 否则「确定」会把用户在丝带上选的模式/Top N/门限静默重置。
+ * 常用参数（预处理 / 窗函数 / 幅值口径 / 分辨率 / STFT 窗长与跳步 / 峰值模式、标记数量、
+ * 相对门限）已搬上丝带，表单里没有这些字段：fromVariantMap() 会把缺失键填成默认值，
+ * 这里从打开对话框时的基线参数回填，否则「确定」会把丝带上的选择静默重置。
+ * dB 参考不再有独立入口，返回前按幅值口径派生（D7）。
  */
 DASignalAnalysisParams DASignalAnalysisSettingDialog::params() const
 {
@@ -78,12 +79,20 @@ DASignalAnalysisParams DASignalAnalysisSettingDialog::params() const
         return DASignalAnalysisParams();
     }
     DASignalAnalysisParams p = DASignalAnalysisParams::fromVariantMap(mForm->values());
+    p.removeDc               = mBaseParams.removeDc;
+    p.detrend                = mBaseParams.detrend;
+    p.window                 = mBaseParams.window;
+    p.amplitudeMode          = mBaseParams.amplitudeMode;
+    p.resolutionHz           = mBaseParams.resolutionHz;
+    p.stftWindowMs           = mBaseParams.stftWindowMs;
+    p.stftOverlap            = mBaseParams.stftOverlap;
     p.peakMode               = mBaseParams.peakMode;
     p.peakTopN               = mBaseParams.peakTopN;
     p.peakRelDb              = mBaseParams.peakRelDb;
     if (mPeakSpacingAuto) {
         p.peakMinSpacingHz = -1.0;
     }
+    p.normalizeDbReference();
     return p;
 }
 
@@ -136,25 +145,19 @@ void DASignalAnalysisSettingDialog::buildUI()
 }
 
 /**
- * @brief 字段值变化：只刷新派生信息（不触发重算，重算在对话框确定后做一次）
+ * @brief 字段值变化：只刷新派生信息与联动（不触发重算，重算在对话框确定后做一次）
+ *
+ * 分辨率 / STFT 窗长的双向联动已随字段迁到丝带（在 DASignalAnalysisUI 里做），
+ * 本对话框只剩峰值高级项，因此这里只需要处理「最小间距是否还处于自动跟随」。
  */
 void DASignalAnalysisSettingDialog::onFieldValueChanged(const QString& fieldName, const QVariant& value)
 {
     Q_UNUSED(value)
-    if (fieldName == QLatin1String("resolutionHz")) {
-        // 分辨率与 STFT 窗长二选一联动：改分辨率时热图窗口同步变化（方案 §6.3 / 评审 C4）
-        syncStftWindowWithResolution();
-        refreshDerivedInfo();
-        // 用户没手改过最小间距时，跟随实际分辨率联动（D17）
-        syncPeakSpacingWithResolution();
-    } else if (fieldName == QLatin1String("stftWindowMs")) {
-        // 反过来改 STFT 窗长时，频谱分辨率同步（同一组 STFT 布局参数）
-        syncResolutionWithStftWindow();
-        refreshDerivedInfo();
-    } else if (fieldName == QLatin1String("peakMinSpacingHz")) {
+    if (fieldName == QLatin1String("peakMinSpacingHz")) {
         // 用户手改后不再跟随分辨率（写回参数时保留显式值，不再写 -1 哨兵）
         mPeakSpacingAuto = false;
     }
+    refreshDerivedInfo();
 }
 
 /**
@@ -167,71 +170,6 @@ double DASignalAnalysisSettingDialog::derivedResolutionFor(const DASignalAnalysi
     }
     const int segLen = qMax(8, int(qRound(mSampleRate / params.resolutionHz)));
     return mSampleRate / double(segLen);
-}
-
-/**
- * @brief 当前表单值对应的实际频率分辨率
- */
-double DASignalAnalysisSettingDialog::currentDerivedResolution() const
-{
-    if (!mForm) {
-        return 0.0;
-    }
-    return derivedResolutionFor(params());
-}
-
-/**
- * @brief 最小间距跟随分辨率联动（仅在用户未手改时）
- */
-void DASignalAnalysisSettingDialog::syncPeakSpacingWithResolution()
-{
-    if (!mForm || !mPeakSpacingAuto) {
-        return;
-    }
-    const double spacing = signalAutoPeakMinSpacingHz(currentDerivedResolution());
-    if (spacing <= 0.0) {
-        return;
-    }
-    mForm->setValue(QStringLiteral("peakMinSpacingHz"), spacing);  // 程序化写入不触发 fieldValueChanged
-}
-
-/**
- * @brief 频率分辨率 → STFT 窗长联动（方案 §6.3：Δf = 1 / 窗长(秒)）
- *
- * 改分辨率时同步更新 STFT 窗长（毫秒），确保热图与频谱口径一致（评审 C4）。
- */
-void DASignalAnalysisSettingDialog::syncStftWindowWithResolution()
-{
-    if (!mForm) {
-        return;
-    }
-    const double derived = currentDerivedResolution();
-    if (derived <= 0.0) {
-        return;
-    }
-    const double windowMs = signalStftWindowMsFromResolution(derived);
-    if (windowMs >= 1.0 && windowMs <= 10000.0) {
-        mForm->setValue(QStringLiteral("stftWindowMs"), windowMs);
-    }
-}
-
-/**
- * @brief STFT 窗长 → 频率分辨率联动（与上一条互为反向，二选一输入）
- */
-void DASignalAnalysisSettingDialog::syncResolutionWithStftWindow()
-{
-    if (!mForm) {
-        return;
-    }
-    const double windowMs = mForm->value(QStringLiteral("stftWindowMs")).toDouble();
-    if (windowMs <= 0.0) {
-        return;
-    }
-    const double resolution = signalResolutionFromStftWindowMs(windowMs);
-    if (resolution >= 0.001 && resolution <= 1.0e6) {
-        mForm->setValue(QStringLiteral("resolutionHz"), resolution);
-        syncPeakSpacingWithResolution();
-    }
 }
 
 /**
@@ -295,7 +233,7 @@ void DASignalAnalysisSettingDialog::changeEvent(QEvent* e)
 
 void DASignalAnalysisSettingDialog::retranslateUi()
 {
-    setWindowTitle(tr("Analysis Settings"));  // cn:分析设置
+    setWindowTitle(tr("Advanced Analysis Settings"));  // cn:高级分析设置
     if (mRestoreButton) {
         mRestoreButton->setText(tr("Restore Defaults"));  // cn:恢复默认
     }

@@ -1,4 +1,4 @@
-#include "DASignalFormSpecBuilder.h"
+﻿#include "DASignalFormSpecBuilder.h"
 #include <QJsonArray>
 #include <QJsonValue>
 #include <QCoreApplication>
@@ -55,64 +55,13 @@ QJsonObject withRange(const QJsonObject& field, double min, double max, double s
  */
 QJsonObject DASignalFormSpecBuilder::build(const DASignalAnalysisParams& current, double derivedResolutionHz)
 {
+    // 常用参数（预处理 / 窗函数 / 幅值口径 / 分辨率 / STFT 窗长与跳步）已搬上丝带，
+    // 本对话框只保留高级项，避免同一设置两处入口、两个真相（D8 / 铁律 10）。
     QJsonArray topItems;
 
-    // ---------------- 信号预处理 ----------------
+    // ---------------- 频谱（高级） ----------------
     {
         QJsonArray items;
-        items.append(makeField(QStringLiteral("removeDc"), QStringLiteral("bool"), QCoreApplication::translate("DASignalFormSpecBuilder", "Remove DC"), current.removeDc));
-        // cn:去直流
-        QJsonObject detrend = makeField(QStringLiteral("detrend"),
-                                        QStringLiteral("enum"),
-                                        QCoreApplication::translate("DASignalFormSpecBuilder", "Detrend"),  // cn:去趋势
-                                        current.detrend);
-        detrend[ "options" ] = QJsonArray { enumOption("none", QCoreApplication::translate("DASignalFormSpecBuilder", "None")),         // cn:无
-                                            enumOption("constant", QCoreApplication::translate("DASignalFormSpecBuilder", "Constant")),  // cn:常数
-                                            enumOption("linear", QCoreApplication::translate("DASignalFormSpecBuilder", "Linear")) };    // cn:线性
-        items.append(detrend);
-        topItems.append(makeGroup(QStringLiteral("preprocess"), QCoreApplication::translate("DASignalFormSpecBuilder", "Signal Preprocessing"), items));  // cn:信号预处理
-    }
-
-    // ---------------- 频谱 ----------------
-    {
-        QJsonArray items;
-        QJsonObject window = makeField(QStringLiteral("window"),
-                                       QStringLiteral("enum"),
-                                       QCoreApplication::translate("DASignalFormSpecBuilder", "Window"),  // cn:窗函数
-                                       current.window);
-        window[ "options" ] = QJsonArray { enumOption("rectangular", QCoreApplication::translate("DASignalFormSpecBuilder", "Rectangular")),  // cn:矩形
-                                           enumOption("hann", QCoreApplication::translate("DASignalFormSpecBuilder", "Hann")),                // cn:汉宁
-                                           enumOption("hamming", QCoreApplication::translate("DASignalFormSpecBuilder", "Hamming")),          // cn:汉明
-                                           enumOption("blackman", QCoreApplication::translate("DASignalFormSpecBuilder", "Blackman")),        // cn:布莱克曼
-                                           enumOption("flattop", QCoreApplication::translate("DASignalFormSpecBuilder", "Flat top")) };       // cn:平顶
-        items.append(window);
-
-        QJsonObject ampMode = makeField(QStringLiteral("amplitudeMode"),
-                                        QStringLiteral("enum"),
-                                        QCoreApplication::translate("DASignalFormSpecBuilder", "Amplitude"),  // cn:幅值口径
-                                        current.amplitudeMode);
-        ampMode[ "options" ] = QJsonArray { enumOption("peak", QCoreApplication::translate("DASignalFormSpecBuilder", "Peak amplitude")),  // cn:峰值幅度
-                                            enumOption("rms", QCoreApplication::translate("DASignalFormSpecBuilder", "RMS")),             // cn:均方根
-                                            enumOption("dbFS", QCoreApplication::translate("DASignalFormSpecBuilder", "dB (FS)")),        // cn:dB（满量程）
-                                            enumOption("dbRef1", QCoreApplication::translate("DASignalFormSpecBuilder", "dB (re 1.0)")) };// cn:dB（相对 1.0）
-        items.append(ampMode);
-
-        QJsonObject dbRef = makeField(QStringLiteral("dbReference"),
-                                      QStringLiteral("enum"),
-                                      QCoreApplication::translate("DASignalFormSpecBuilder", "dB reference"),  // cn:dB 参考
-                                      current.dbReference);
-        dbRef[ "options" ] = QJsonArray { enumOption("fullScale", QCoreApplication::translate("DASignalFormSpecBuilder", "Full scale (dBFS)")),  // cn:满量程
-                                          enumOption("one", QCoreApplication::translate("DASignalFormSpecBuilder", "Relative to 1.0")) };        // cn:相对 1.0
-        items.append(dbRef);
-
-        items.append(withRange(makeField(QStringLiteral("resolutionHz"),
-                                         QStringLiteral("float"),
-                                         QCoreApplication::translate("DASignalFormSpecBuilder", "Frequency resolution (Hz)"),  // cn:频率分辨率（赫兹）
-                                         current.resolutionHz),
-                               0.001,
-                               1.0e6,
-                               1.0,
-                               4));
         items.append(withRange(makeField(QStringLiteral("zeroPadding"),
                                          QStringLiteral("int"),
                                          QCoreApplication::translate("DASignalFormSpecBuilder", "Zero padding points (advanced)"),  // cn:零填充点数（高级）
@@ -121,7 +70,9 @@ QJsonObject DASignalFormSpecBuilder::build(const DASignalAnalysisParams& current
                                1 << 20,
                                1024,
                                0));
-        topItems.append(makeGroup(QStringLiteral("spectrum"), QCoreApplication::translate("DASignalFormSpecBuilder", "Spectrum"), items));  // cn:频谱
+        topItems.append(makeGroup(QStringLiteral("spectrum"),
+                                  QCoreApplication::translate("DASignalFormSpecBuilder", "Spectrum (Advanced)"),  // cn:频谱（高级）
+                                  items));
     }
 
     // ---------------- 功率谱 ----------------
@@ -142,28 +93,14 @@ QJsonObject DASignalFormSpecBuilder::build(const DASignalAnalysisParams& current
                                95.0,
                                5.0,
                                1));
-        topItems.append(makeGroup(QStringLiteral("psd"), QCoreApplication::translate("DASignalFormSpecBuilder", "Power Spectrum"), items));  // cn:功率谱
+        topItems.append(makeGroup(QStringLiteral("psd"),
+                                  QCoreApplication::translate("DASignalFormSpecBuilder", "Power Spectrum"),  // cn:功率谱
+                                  items));
     }
 
-    // ---------------- 短时傅里叶变换 ----------------
+    // ---------------- 时频（高级） ----------------
     {
         QJsonArray items;
-        items.append(withRange(makeField(QStringLiteral("stftWindowMs"),
-                                         QStringLiteral("float"),
-                                         QCoreApplication::translate("DASignalFormSpecBuilder", "Window length (ms)"),  // cn:窗长（毫秒）
-                                         current.stftWindowMs),
-                               1.0,
-                               10000.0,
-                               10.0,
-                               2));
-        items.append(withRange(makeField(QStringLiteral("stftOverlap"),
-                                         QStringLiteral("float"),
-                                         QCoreApplication::translate("DASignalFormSpecBuilder", "Hop overlap (%)"),  // cn:跳步重叠率（%）
-                                         current.stftOverlap),
-                               0.0,
-                               95.0,
-                               5.0,
-                               1));
         items.append(withRange(makeField(QStringLiteral("stftZeroPadding"),
                                          QStringLiteral("int"),
                                          QCoreApplication::translate("DASignalFormSpecBuilder", "Zero padding points (advanced)"),  // cn:零填充点数（高级）
@@ -172,13 +109,13 @@ QJsonObject DASignalFormSpecBuilder::build(const DASignalAnalysisParams& current
                                1 << 20,
                                1024,
                                0));
-        topItems.append(makeGroup(QStringLiteral("stft"), QCoreApplication::translate("DASignalFormSpecBuilder", "Short-Time Fourier Transform"), items));
-        // cn:短时傅里叶变换
+        topItems.append(makeGroup(QStringLiteral("stft"),
+                                  QCoreApplication::translate("DASignalFormSpecBuilder", "Time-Frequency (Advanced)"),  // cn:时频（高级）
+                                  items));
     }
 
     // ---------------- 峰值查找（高级） ----------------
-    // 模式 / 标记数量 / 相对门限已迁到丝带「峰值」panel（常见设置不需要打开本对话框）；
-    // 这里只保留「模式 = 高级」时生效的三个参数，避免同一设置两处入口、两个真相。
+    // 模式 / 标记数量 / 相对门限在丝带「峰值」panel；这里只保留「模式 = 高级」时生效的三个参数。
     {
         QJsonArray items;
         items.append(withRange(makeField(QStringLiteral("peakProminence"),
@@ -189,8 +126,8 @@ QJsonObject DASignalFormSpecBuilder::build(const DASignalAnalysisParams& current
                                1.0e9,
                                0.01,
                                6));
-        // 最小间距默认 5 倍频率分辨率（D17）；用户手改后由对话框保持用户值。
-        // 参数为 -1/0（自动哨兵）时换算为派生值，避免表单 min=0 把 -1 夹成 0（评审 N-U6/N-C5）
+        // 最小间距默认 5 倍频率分辨率（D17）；参数为 -1/0（自动哨兵）时换算为派生值，
+        // 避免表单 min=0 把 -1 夹成 0（评审 N-U6/N-C5）
         const double spacingDefault = signalEffectivePeakMinSpacingHz(current, derivedResolutionHz);
         items.append(withRange(makeField(QStringLiteral("peakMinSpacingHz"),
                                          QStringLiteral("float"),
@@ -208,10 +145,9 @@ QJsonObject DASignalFormSpecBuilder::build(const DASignalAnalysisParams& current
                                1.0e9,
                                0.01,
                                6));
-        topItems.append(
-            makeGroup(QStringLiteral("peaks"),
-                      QCoreApplication::translate("DASignalFormSpecBuilder", "Peak Search (Advanced)"),  // cn:峰值查找（高级）
-                      items));
+        topItems.append(makeGroup(QStringLiteral("peaks"),
+                                  QCoreApplication::translate("DASignalFormSpecBuilder", "Peak Search (Advanced)"),  // cn:峰值查找（高级）
+                                  items));
     }
 
     // ---------------- 标定 ----------------
@@ -232,8 +168,8 @@ QJsonObject DASignalFormSpecBuilder::build(const DASignalAnalysisParams& current
 
     QJsonObject spec;
     spec[ "version" ] = 2;
-    spec[ "title" ]   = QCoreApplication::translate("DASignalFormSpecBuilder", "Analysis Settings");  // cn:分析设置
-    spec[ "items" ]   = topItems;
+    spec[ "title" ] = QCoreApplication::translate("DASignalFormSpecBuilder", "Advanced Analysis Settings");  // cn:高级分析设置
+    spec[ "items" ] = topItems;
     return spec;
 }
 }  // namespace DA

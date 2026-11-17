@@ -52,14 +52,8 @@ private:
     // 语言切换：重建表单规格以重译字段标签，保留当前值（评审 I7）
     void rebuildFormForLanguage();
     void refreshDerivedInfo();
-    // 当前生效的实际分辨率（由分辨率参数反推段长后回算）
+    // 当前生效的实际分辨率（由分辨率参数反推段长后回算；分辨率在丝带上改，这里只用于派生提示与默认值）
     double derivedResolutionFor(const DASignalAnalysisParams& params) const;
-    // 用户未手改最小间距时，跟随分辨率联动（D17）
-    void syncPeakSpacingWithResolution();
-    // 频率分辨率 ↔ STFT 窗长二选一联动（方案 §6.3 / 评审 C4）
-    void syncStftWindowWithResolution();
-    void syncResolutionWithStftWindow();
-    double currentDerivedResolution() const;
 
 private:
     double mSampleRate { 0.0 };
