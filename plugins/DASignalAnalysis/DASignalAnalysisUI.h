@@ -193,13 +193,12 @@ private Q_SLOTS:
     void relinkCurrentSignalSource();
     // 宿主清空工程（新建/加载前/快照回滚）：清理本插件信号、缓存与临时文件
     void onProjectCleaned();
-    // 上下文标签：通道切换 / 对数频率 / 色带菜单 / 色标显隐 / 添加图元
+    // 上下文标签：通道切换 / 色带菜单 / 色标显隐
     void onContextChannelChanged(int index);
     void onContextLogFrequencyToggled(bool on);
     void onContextColormapTriggered(QAction* action);
     // 时频图色标显隐开关：写当前视图并立即持久化偏好
     void onColorBarToggled(bool on);
-    void onContextAddFigure();
     // 当前视图「跟随滑块」变化（回勾底部工具栏）
     void onViewFollowSliderToggled(bool on);
     // 当前视图请求跟随帧幅值谱（同步短调用：成功回填、失败静默，不弹消息）
@@ -330,7 +329,6 @@ private:
     SARibbonCategory* mContextDisplayPage { nullptr };
     SARibbonPanel* mContextDisplayPanel { nullptr };
     SARibbonPanel* mContextPeakPanel { nullptr };
-    SARibbonPanel* mContextToolsPanel { nullptr };
     // 上下文标签控件与色带菜单
     QComboBox* mContextChannelCombo { nullptr };
     QMenu* mColormapMenu { nullptr };
@@ -455,12 +453,6 @@ public:
     QAction* actionLogFrequency { nullptr };   ///< 对数频率轴
     QAction* actionColormap { nullptr };       ///< 色带（带菜单）
     QAction* actionColorBar { nullptr };       ///< 时频图色标显隐（显示面板开关）
-
-    //===================================================
-    // 工具（Tools，位于 Ribbon 上下文标签）
-    //===================================================
-    // 缩放/平移/十字线/数据拾取等交互工具已由内置「绘图操作」上下文标签提供，本插件不再重复
-    QAction* actionAddFigure { nullptr };    ///< 添加图元
 
     //===================================================
     // 导出（Export）

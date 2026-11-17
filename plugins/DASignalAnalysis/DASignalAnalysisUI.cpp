@@ -60,7 +60,6 @@
 // DAFigure / DAGui / qwt
 #include "DAChartWidget.h"
 #include "DAFigureWidget.h"
-#include "DADialogChartGuide.h"
 #include "qwt_colormap_preset.h"
 #include "qwt_plot_item.h"
 #include <QUndoStack>
@@ -106,13 +105,11 @@ const char* const cContextAnalysisPageObjectName = "da-category-signal-analysis"
 const char* const cContextDisplayPageObjectName  = "da-category-signal-context";
 const char* const cPanelContextDisplayName       = "da-panel-signal.display";
 const char* const cPanelContextPeaksName         = "da-panel-signal.display.peaks";
-const char* const cPanelContextToolsName         = "da-panel-signal.display.tools";
 // 窗口底部播放工具栏
 const char* const cToolbarObjectName = "da-signal-playback-toolbar";
 
 // 图标资源前缀
-const char* const cIconPrefix  = ":/DASignalAnalysis/icon/";
-const char* const cAppIconPath = ":/app/bright/Icon/";
+const char* const cIconPrefix = ":/DASignalAnalysis/icon/";
 // 内存预算（方案 §11 / 评审 D5 / N-C1c）：频谱、峰值表、包络与热图共用同一预算门
 constexpr qint64 cAnalysisBudgetBytes = qint64(1.5 * 1024 * 1024 * 1024);
 // 内存预算判定（QHash 值）：0=未询问 / 1=用户已确认继续 / 2=用户拒绝
@@ -127,12 +124,6 @@ constexpr int cProgressIndicatorDelayMs = 500;
 QString signalPluginIcon(const char* file)
 {
     return QString::fromUtf8(cIconPrefix) + QString::fromUtf8(file);
-}
-
-/// 宿主通用图标路径（复用现有资源，禁止为单个动作新增 SVG）
-QString signalAppIcon(const char* file)
-{
-    return QString::fromUtf8(cAppIconPath) + QString::fromUtf8(file);
 }
 
 /**
@@ -1372,11 +1363,11 @@ void DASignalAnalysisUI::buildAnalysisSettingsPage(SARibbonContextCategory* cont
 }
 
 /**
- * @brief 构建插件自建的 Ribbon 上下文标签（Display / Tools 两组）
+ * @brief 构建插件自建的 Ribbon 上下文标签（Display / Peaks 两组）
  *
  * 上下文标签只在信号分析页 dock 激活时显示（provider 调 setSignalContextCategoryVisible），
  * objectName 固定为 cContextCategoryObjectName，供宿主接口按名字 show/hide。
- * 显示类动作用插件自带的语义图标（对数频率 / 色带 / 色标），跨模块同义动作（添加图元）才复用宿主图标。
+ * 显示类动作统一用插件自带的语义图标。
  */
 void DASignalAnalysisUI::buildSignalContextCategory()
 {
@@ -1386,12 +1377,9 @@ void DASignalAnalysisUI::buildSignalContextCategory()
         qWarning() << "DASignalAnalysisUI::buildSignalContextCategory: ribbon bar is unavailable";
         return;
     }
-    // 图标路径辅助：插件自带图标 / 宿主通用图标，均复用现有资源
+    // 图标路径辅助：插件自带图标
     auto pluginIcon = [](const char* file) -> QString {
         return QString::fromUtf8(cIconPrefix) + QString::fromUtf8(file);
-    };
-    auto appIcon = [](const char* file) -> QString {
-        return QString::fromUtf8(cAppIconPath) + QString::fromUtf8(file);
     };
     // 经宿主动作管理器创建带图标的动作（checkable 动作初始未勾选，状态由同步逻辑回填）
     auto createIconAction = [this](const char* objName, const QString& iconPath, bool checkable) -> QAction* {
@@ -1487,16 +1475,6 @@ void DASignalAnalysisUI::buildSignalContextCategory()
     mContextPeakPanel->addLargeAction(actionPeakMarker);
     mContextPeakPanel->addMediumAction(actionPeakMarkerDisplay);
     mContextPeakPanel->addMediumAction(actionPeakWindow);
-
-    // ---------- Tools：添加图元 ----------
-    // 缩放/平移/十字线/数据拾取等交互工具由内置「绘图操作」上下文标签提供，这里不再重复放置，
-    // 避免两个上下文页出现同名开关且状态各自同步。Tools 页只保留插件特有的「添加图元」。
-    mContextToolsPanel = mContextDisplayPage->addPanel(tr("Tools"));  // cn:工具
-    mContextToolsPanel->setObjectName(QString::fromUtf8(cPanelContextToolsName));
-    // 添加图元：复用宿主 DADialogChartGuide，目标 = 当前视图的当前子图
-    actionAddFigure = createIconAction("actionSignalAddFigure", appIcon("addFigure.svg"), false);
-    connect(actionAddFigure, &QAction::triggered, this, &DASignalAnalysisUI::onContextAddFigure);
-    mContextToolsPanel->addLargeAction(actionAddFigure);
 
     // 初始不显示：由 provider 在信号分析页激活时显示
     ribbon->hideContextCategory(mContextCategory);
@@ -1753,12 +1731,9 @@ void DASignalAnalysisUI::syncSignalContextControls()
     }
     // 分析设置页参数控件（预处理/频谱/时频/峰值）跟随当前信号参数
     syncParamsRibbonControls();
-    // 「添加图元」可用性：需要当前视图 figure 与当前 2D 子图
+    // 当前 2D 子图（「点击波形即定位」互斥用）
     DAChartWidget* chart = (view ? view->currentChart() : nullptr);
     const bool chartAvailable = (chart != nullptr);
-    if (actionAddFigure) {
-        actionAddFigure->setEnabled(view && view->figure() && chartAvailable);
-    }
     // 「点击波形即定位」与交互工具互斥（SF-12）：缩放/平移/十字线任一启用时关闭，
     // 避免按下拖动瞬间播放头跳位；全关时恢复。交互工具由内置「绘图操作」上下文标签
     // 负责开关，本插件只读取当前子图状态
@@ -1960,49 +1935,6 @@ void DASignalAnalysisUI::onColorBarToggled(bool on)
     QJsonObject cfg                          = DASignalImporter::loadPluginConfig();
     cfg[ QStringLiteral("colorBarVisible") ] = on;
     DASignalImporter::savePluginConfig(cfg);
-}
-
-/**
- * @brief 上下文标签「添加图元」：复用宿主绘图引导窗口，图元入 figure 的 undo 栈
- *
- * 目标 = 当前视图的当前 2D 子图（spec §5.2）；确认后批量添加（曲线支持 1 个 x + 多个 y），
- * 再重新自动缩放坐标轴并重绘。
- */
-void DASignalAnalysisUI::onContextAddFigure()
-{
-    DASignalAnalysisView* view = currentView();
-    if (nullptr == view || nullptr == view->figure()) {
-        return;
-    }
-    DAChartWidget* chart = view->currentChart();
-    if (nullptr == chart) {
-        return;
-    }
-    QWidget* parent = (mPage ? static_cast< QWidget* >(mPage.data()) : (mUI ? mUI->getMainWindow() : nullptr));
-    DADialogChartGuide dlg(parent);
-    if (mCore) {
-        if (DADataManagerInterface* dataMgrInterface = mCore->getDataManagerInterface()) {
-            dlg.setDataManager(dataMgrInterface->dataManager());
-        }
-    }
-    if (dlg.exec() != QDialog::Accepted) {
-        return;
-    }
-    QList< QwtPlotItem* > items = dlg.createPlotItems();
-    if (items.isEmpty()) {
-        // 非批量类型（如单曲线/标记线）：退回单个图元创建
-        if (QwtPlotItem* item = dlg.createPlotItem()) {
-            items.append(item);
-        }
-    }
-    if (items.isEmpty()) {
-        return;
-    }
-    for (QwtPlotItem* item : std::as_const(items)) {
-        view->figure()->addItem_(chart, item);
-    }
-    chart->rescaleAxes();
-    chart->replot();
 }
 
 /**
@@ -3509,7 +3441,6 @@ void DASignalAnalysisUI::finalize()
     mContextAnalysisPage = nullptr;
     mContextDisplayPanel = nullptr;
     mContextPeakPanel    = nullptr;
-    mContextToolsPanel   = nullptr;
     mContextChannelCombo = nullptr;
     // 峰值停靠窗口：创建点见 buildPeakDock，必须在这里显式移除并销毁，否则禁用插件后右侧残留
     // 「Peaks」标签页（评审 B5，M2 验收「禁用后干净移除」）
@@ -3556,7 +3487,7 @@ void DASignalAnalysisUI::finalize()
             actionPeakMarkerDisplay, actionPeakWindow,   actionWaterfall2D,     actionWaterfall3D,
             actionWaterfallHide,  actionExportPeaks,
             actionExportImage,    actionRelinkSource,
-            actionLogFrequency,   actionColormap,        actionAddFigure,       actionColorBar
+            actionLogFrequency,   actionColormap,        actionColorBar
         };
         for (QAction* act : allActions) {
             if (act) {
@@ -3590,7 +3521,6 @@ void DASignalAnalysisUI::finalize()
     actionLogFrequency      = nullptr;
     actionColormap          = nullptr;
     actionColorBar          = nullptr;
-    actionAddFigure         = nullptr;
     mPanelImportExport      = nullptr;
     mPanelPreprocess        = nullptr;
     mPanelSpectrum          = nullptr;
@@ -4957,8 +4887,7 @@ void DASignalAnalysisUI::setSignalDependentActionsEnabled(bool on)
         actionPeakMarkerDisplay, actionPeakWindow, actionWaterfall2D, actionWaterfall3D,
         actionWaterfallHide, actionExportPeaks,
         actionExportImage,  actionRelinkSource,
-        actionLogFrequency, actionColormap,      actionAddFigure,
-        actionColorBar
+        actionLogFrequency, actionColormap,      actionColorBar
     };
     for (QAction* act : acts) {
         if (act) {
@@ -5021,9 +4950,6 @@ void DASignalAnalysisUI::retranslateUi()
     }
     if (mContextPeakPanel) {
         mContextPeakPanel->setPanelName(tr("Peak Markers"));  // cn:峰值标注
-    }
-    if (mContextToolsPanel) {
-        mContextToolsPanel->setPanelName(tr("Tools"));  // cn:工具
     }
     // 主页入口
     if (actionOpenSignalPage) {
@@ -5195,7 +5121,7 @@ void DASignalAnalysisUI::retranslateUi()
             (mPage && mPage->currentSignal()) ? paramsForSignal(mPage->currentSignal()) : DASignalAnalysisParams::defaults();
         updateDeltaFLabel(params);
     }
-    // 上下文标签新增动作（对数频率 / 色带 / 添加图元）
+    // 上下文标签新增动作（色带 / 色标）
     if (actionLogFrequency) {
         actionLogFrequency->setText(tr("Log frequency"));  // cn:对数频率
         actionLogFrequency->setToolTip(tr("Use a logarithmic frequency axis"));  // cn:使用对数频率轴
@@ -5208,10 +5134,6 @@ void DASignalAnalysisUI::retranslateUi()
         actionColorBar->setText(tr("Color bar"));  // cn:色标
         actionColorBar->setToolTip(tr("Show or hide the time-frequency color bar"));
         // cn:显示或隐藏时频图色标
-    }
-    if (actionAddFigure) {
-        actionAddFigure->setText(tr("Add Figure Item"));  // cn:添加图元
-        actionAddFigure->setToolTip(tr("Add a plot item to the current chart"));  // cn:向当前图表添加图元
     }
     // 窗口底部工具栏
     if (mContextChannelCombo) {
