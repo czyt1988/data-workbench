@@ -200,6 +200,8 @@ private Q_SLOTS:
     void onColorBarToggled(bool on);
     // 当前帧标记开关（二维云图竖线 + 三维当前迹线高亮）
     void onTimeCursorToggled(bool on);
+    // 云图设置 dB 范围：写当前视图的二维色域下限（[floor, 0]）
+    void onHeatmapDbFloorChanged(double value);
     // 当前视图「跟随滑块」变化（回勾底部工具栏）
     void onViewFollowSliderToggled(bool on);
     // 当前视图请求跟随帧幅值谱（同步短调用：成功回填、失败静默，不弹消息）
@@ -350,8 +352,10 @@ private:
     QToolButton* mToolbarStopButton { nullptr };
     QSlider* mToolbarTimeSlider { nullptr };
     QLabel* mToolbarTimeLabel { nullptr };
-    QDoubleSpinBox* mToolbarDbFloorSpin { nullptr };
     QCheckBox* mToolbarAutoScrollCheck { nullptr };
+    // 云图设置 dB 范围（二维色域下限；从底部播放器控制条迁入，D5）
+    QDoubleSpinBox* mHeatmapDbFloorSpin { nullptr };
+    QLabel* mHeatmapDbFloorLabel { nullptr };
     // 峰值标记开关（视图无 getter：UI 记录状态并在新视图创建时应用）
     bool mPeakMarkersVisible { false };
     // 全局偏好：峰值标记文本模板（{index}/{fre}/{amp}，signal-analysis-config.json 的 peakMarkerText）

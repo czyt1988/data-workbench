@@ -1513,6 +1513,24 @@ void DASignalAnalysisUI::buildSignalContextCategory()
     actionColorBar->setChecked(mColorBarVisible);  // 初始勾选跟随已加载的偏好
     connect(actionColorBar, &QAction::toggled, this, &DASignalAnalysisUI::onColorBarToggled);
     mPanelHeatmap->addLargeAction(actionColorBar);
+    // dB 范围：二维色域下限 [floor, 0]（D5：从窗口底部播放器控制条迁入，显示设置归显示页）
+    mHeatmapDbFloorSpin = new QDoubleSpinBox(mPanelHeatmap);
+    mHeatmapDbFloorSpin->setObjectName(QStringLiteral("da-signal-heatmap-dbfloor"));
+    mHeatmapDbFloorSpin->setRange(-200.0, 0.0);
+    mHeatmapDbFloorSpin->setDecimals(0);
+    mHeatmapDbFloorSpin->setSingleStep(5.0);
+    mHeatmapDbFloorSpin->setValue(-80.0);
+    mHeatmapDbFloorSpin->setSuffix(QStringLiteral(" dB"));
+    mHeatmapDbFloorSpin->setMinimumWidth(96);
+    mHeatmapDbFloorSpin->setKeyboardTracking(false);  // 输入过程中不逐字符重绘
+    connect(mHeatmapDbFloorSpin,
+            QOverload< double >::of(&QDoubleSpinBox::valueChanged),
+            this,
+            &DASignalAnalysisUI::onHeatmapDbFloorChanged);
+    auto* heatmapGrid      = new DASignalRibbonParamGrid(mPanelHeatmap);
+    mHeatmapDbFloorLabel   = heatmapGrid->addRow(tr("dB"), mHeatmapDbFloorSpin);
+    heatmapGrid->finish();
+    mPanelHeatmap->addLargeWidget(heatmapGrid);
 
     // 初始不显示：由 provider 在信号分析页激活时显示
     ribbon->hideContextCategory(mContextCategory);
@@ -1587,7 +1605,8 @@ void DASignalAnalysisUI::buildPeakDock()
 /**
  * @brief 构建窗口底部播放器控制条
  *
- * 顺序（D5）：跟随播放 → ▶/⏸ → ■ → 时间滑块 → 时间文本 → dB 下限 → 自动滚动。
+ * 顺序：跟随播放 → ▶/⏸ → ■ → 时间滑块 → 时间文本 → 自动滚动。
+ * 只留播放相关控件：dB 范围已归「信号显示 → 云图设置」（D5），显示设置不再留在播放条上。
  * 只在信号分析页 dock 激活时显示（provider 调 setSignalToolbarVisible）；
  * 控件只是当前视图/播放器状态的视图层：控件变化写回视图，状态变化经 syncSignalToolbar() 回填。
  * ▶/⏸ 按钮绑 actionPlay（可勾选 = 正在播放），■ 绑 actionStop；时间文本是纯函数格式化结果。
@@ -1653,23 +1672,6 @@ void DASignalAnalysisUI::buildSignalToolbar()
     mToolbarTimeLabel->setObjectName(QStringLiteral("da-signal-toolbar-timetext"));
     mToolbarTimeLabel->setToolTip(tr("Playback position / total duration"));  // cn:播放位置 / 总时长
     mSignalToolbar->addWidget(mToolbarTimeLabel);
-    mSignalToolbar->addSeparator();
-
-    // dB 下限：热图色标下限（dB）
-    mToolbarDbFloorSpin = new QDoubleSpinBox(mSignalToolbar);
-    mToolbarDbFloorSpin->setObjectName(QStringLiteral("da-signal-toolbar-dbfloor"));
-    mToolbarDbFloorSpin->setRange(-200.0, 0.0);
-    mToolbarDbFloorSpin->setDecimals(0);
-    mToolbarDbFloorSpin->setSingleStep(5.0);
-    mToolbarDbFloorSpin->setValue(-80.0);
-    mToolbarDbFloorSpin->setPrefix(QStringLiteral("dB "));
-    mToolbarDbFloorSpin->setToolTip(tr("Heatmap color scale lower limit"));  // cn:热图色标下限
-    connect(mToolbarDbFloorSpin, QOverload< double >::of(&QDoubleSpinBox::valueChanged), this, [this](double value) {
-        if (DASignalAnalysisView* view = currentView()) {
-            view->setDbFloor(value);
-        }
-    });
-    mSignalToolbar->addWidget(mToolbarDbFloorSpin);
     mSignalToolbar->addSeparator();
 
     // 自动滚动：热图随播放推进水平滚动
@@ -1772,6 +1774,12 @@ void DASignalAnalysisUI::syncSignalContextControls()
         const QSignalBlocker blocker(actionColorBar);
         actionColorBar->setEnabled(heatmapActive);
         actionColorBar->setChecked(view ? view->isColorBarVisible() : mColorBarVisible);
+    }
+    // 云图 dB 范围（二维色域下限）：跟随当前视图；三维/隐藏时整组置灰
+    if (mHeatmapDbFloorSpin) {
+        const QSignalBlocker blocker(mHeatmapDbFloorSpin);
+        mHeatmapDbFloorSpin->setValue(view ? view->dbFloor() : -80.0);
+        mHeatmapDbFloorSpin->setEnabled(heatmapActive);
     }
     // 峰值标记（视图无 getter：以 UI 记录的开关状态为准；动作在「分析设置 → 峰值」panel）
     if (actionPeakMarker) {
@@ -1877,11 +1885,6 @@ void DASignalAnalysisUI::syncSignalToolbar()
         mToolbarTimeSlider->setValue(value);
         mToolbarTimeSlider->setEnabled(hasView && durationMs > 0);
     }
-    if (mToolbarDbFloorSpin) {
-        const QSignalBlocker blocker(mToolbarDbFloorSpin);
-        mToolbarDbFloorSpin->setValue(hasView ? view->dbFloor() : -80.0);
-        mToolbarDbFloorSpin->setEnabled(hasView);
-    }
     if (mToolbarAutoScrollCheck) {
         const QSignalBlocker blocker(mToolbarAutoScrollCheck);
         mToolbarAutoScrollCheck->setChecked(hasView && view->isHeatmapAutoScroll());
@@ -1947,6 +1950,19 @@ void DASignalAnalysisUI::onTimeCursorToggled(bool on)
 {
     if (DASignalAnalysisView* view = currentView()) {
         view->setTimeCursorVisible(on);
+    }
+}
+
+/**
+ * @brief 「云图设置 → dB」范围：写当前视图的二维色域下限（[floor, 0]）
+ *
+ * 三维瀑布有自己独立的 dB 范围（D12），这里只改二维热图与色标。
+ * @param value dB 下限（-200..0）
+ */
+void DASignalAnalysisUI::onHeatmapDbFloorChanged(double value)
+{
+    if (DASignalAnalysisView* view = currentView()) {
+        view->setDbFloor(value);
     }
 }
 
@@ -3466,7 +3482,6 @@ void DASignalAnalysisUI::finalize()
     mToolbarStopButton      = nullptr;
     mToolbarTimeSlider      = nullptr;
     mToolbarTimeLabel       = nullptr;
-    mToolbarDbFloorSpin     = nullptr;
     mToolbarAutoScrollCheck = nullptr;
     // 插件 Ribbon 上下文标签：先隐藏再销毁（SARibbonBar 拥有上下文标签的管理权）
     if (mContextCategory) {
@@ -3586,6 +3601,8 @@ void DASignalAnalysisUI::finalize()
     mPeakRelDbSpin          = nullptr;
     mPeakModeLabel          = nullptr;
     mPeakRelDbLabel         = nullptr;
+    mHeatmapDbFloorSpin     = nullptr;
+    mHeatmapDbFloorLabel    = nullptr;
     mPeakMarkersVisible     = false;
     mParamsPerSignal.clear();
     mParamsVersion.clear();
@@ -5201,6 +5218,13 @@ void DASignalAnalysisUI::retranslateUi()
         actionColorBar->setToolTip(tr("Show or hide the time-frequency color bar"));
         // cn:显示或隐藏时频图色标
     }
+    if (mHeatmapDbFloorLabel) {
+        mHeatmapDbFloorLabel->setText(tr("dB"));  // cn:dB
+    }
+    if (mHeatmapDbFloorSpin) {
+        mHeatmapDbFloorSpin->setToolTip(tr("Heatmap color scale lower limit (dB)"));
+        // cn:热图色标下限（dB）
+    }
     // 窗口底部工具栏
     if (mToolbarFollowCheck) {
         mToolbarFollowCheck->setText(tr("Follow playback"));  // cn:跟随播放
@@ -5209,9 +5233,6 @@ void DASignalAnalysisUI::retranslateUi()
     }
     if (mToolbarTimeSlider) {
         mToolbarTimeSlider->setToolTip(tr("Playback position"));  // cn:播放位置
-    }
-    if (mToolbarDbFloorSpin) {
-        mToolbarDbFloorSpin->setToolTip(tr("Heatmap color scale lower limit"));  // cn:热图色标下限
     }
     if (mToolbarAutoScrollCheck) {
         mToolbarAutoScrollCheck->setText(tr("Auto scroll"));  // cn:自动滚动
