@@ -41,7 +41,9 @@
 #include "Render/DAStftRasterData.h"
 #include "Render/DATimeScaleDraw.h"
 #include "Render/DAWaterfallBuilder.h"
+#include "Render/DAWaterfallColor.h"
 #include "qwt3d_waterfall.h"
+#include "qwt3d_colorlegend.h"
 
 namespace DA
 {
@@ -94,6 +96,11 @@ void clearPeakMarkers(QVector< QwtPlotMarker* >& markers, const DAChartWidget* c
 
 constexpr double cEps             = 1e-30;
 constexpr int cEnvelopeDebounceMs = 200;
+// 三维瀑布抽帧/抽频点上限（方案 §7.4：时间方向 200 条迹线、频率方向最多 512 频点）
+constexpr int cWaterfallMaxTraces = 200;
+constexpr int cWaterfallMaxBins   = 512;
+// 当前迹线高亮色：橙红（与云图游标、波形播放头同一语义色）
+const QColor cTimeCursorColor(206, 96, 67);
 
 // 峰值标记统一颜色：倒三角与上方文本同色，不再按名次区分（只保留一种颜色）
 const QColor cPeakMarkerColor(206, 96, 67);
@@ -402,7 +409,7 @@ void DASignalAnalysisView::ensureWaveDecorItems()
     if (!mPlayhead) {
         mPlayhead = new QwtPlotMarker();
         mPlayhead->setLineStyle(QwtPlotMarker::VLine);
-        mPlayhead->setLinePen(QPen(QColor(206, 96, 67), 1.5, Qt::DashLine));  // 橙红（危险/标记色）
+        mPlayhead->setLinePen(QPen(cTimeCursorColor, 1.5, Qt::DashLine));
         mPlayhead->setXValue(0.0);
         mPlayhead->attach(mWaveChart);
         mWaveChart->setItemTransient(mPlayhead);  // 交互装饰：不进存档
@@ -1199,34 +1206,347 @@ bool DASignalAnalysisView::eventFilter(QObject* watched, QEvent* e)
 }
 
 /**
- * @brief 重建三维瀑布（抽帧抽频点后逐帧 pushTrace）
+ * @brief 重建三维瀑布（dB 着色 + 复用图元 + 当前迹线高亮）
+ *
+ * 顺序（方案 §6.3）：复用图元 → dB 化 → 固定色域与基线 → 色带 → 图例 → 高亮。
+ * 复用图元（clear + pushTrace）而不是 delete + 重建：右侧 3D 设置面板选中的图元身份不变，
+ * 参数连续重算时面板不再反复跳回 Waterfall 页（Q7），用户改的样式也不会被重算覆盖。
  */
 void DASignalAnalysisView::rebuildWaterfall()
 {
     if (!mWaterfallChart) {
         return;
     }
-    QVector< QVector< double > > traces;
-    QVector< double > binValues;
-    // 时间方向 200 条迹线、频率方向最多 512 频点（方案 §7.4）
-    if (!DAWaterfallBuilder::build(mStft, 200, 512, traces, binValues)) {
+    if (!mStft.isValid()) {
+        mWaterfallTraceTimes.clear();
         return;
     }
-    if (mWaterfallItem) {
-        // 瀑布图元已纳入 DAChart3DWidget::data3DRttis()（评审 H4），外部 clearAllData3D()
-        // 可能已经销毁它：先按当前挂载列表校验，失效则只置空，避免二次 delete（评审 N-H4）
-        const bool stillAttached = mWaterfallChart->getWaterfalls().contains(mWaterfallItem);
-        Qwt3DWaterfall* stale   = mWaterfallItem;
+    QVector< QVector< double > > traces;
+    QVector< double > binValues;
+    QVector< double > traceTimes;
+    if (!DAWaterfallBuilder::build(mStft, cWaterfallMaxTraces, cWaterfallMaxBins, traces, binValues, &traceTimes)) {
+        return;
+    }
+    // dB 化：整份栅格峰值归一（与 rebuildHeatmap 同口径），clamp [floor, 0]
+    const double peak    = stftGridPeak();
+    const double floorDb = waterfallDbFloorLower();
+    for (QVector< double >& trace : traces) {
+        trace = daStftToDb(trace, peak, floorDb);
+    }
+    // 复用图元：外部 clearAllData3D() 可能已销毁它，先按挂载列表校验（BLK-03a）
+    const bool itemAlive = (mWaterfallItem != nullptr) && mWaterfallChart->getWaterfalls().contains(mWaterfallItem);
+    if (itemAlive) {
+        mWaterfallItem->setTraceCapacity(traces.size());
+        mWaterfallItem->clear();
+        for (const QVector< double >& trace : std::as_const(traces)) {
+            mWaterfallItem->pushTrace(trace);
+        }
+        mWaterfallItem->setBinValues(binValues);
+    } else {
+        // 失效指针只置空不 delete（可能已被 clearAllData3D 释放）；色带 functor 随图元一起销毁
         mWaterfallItem          = nullptr;
-        if (stillAttached) {
-            stale->detach();
-            delete stale;
+        mWaterfallColor         = nullptr;
+        mWaterfallHighlightSlot = -1;
+        mWaterfallItem = mWaterfallChart->addWaterfall(traces, binValues, tr("Waterfall"));  // cn:三维瀑布
+        if (!mWaterfallItem) {
+            return;
+        }
+        // 首建给默认样式；之后由右侧 3D 面板维护，rebuild* 不再写死样式
+        mWaterfallItem->setPlotStyle(Qwt3DWaterfall::RibbonMesh);
+        mWaterfallItem->setColorMode(Qwt3DWaterfall::ByAmplitude);
+        mWaterfallItem->setOpacity(1.0);
+        mWaterfallItem->setDepthOrder(Qwt3DWaterfall::NewestInFront);
+        // 轴标签：只在尚未设置时给默认值（工程恢复的 figures.xml 可能已写过自定义标签）
+        if (mWaterfallChart->get3DAxisLabel(X1).isEmpty()) {
+            mWaterfallChart->set3DAxisLabel(X1, tr("Frequency (Hz)"));  // cn:频率（赫兹）
+        }
+        if (mWaterfallChart->get3DAxisLabel(Y1).isEmpty()) {
+            mWaterfallChart->set3DAxisLabel(Y1, tr("Trace"));  // cn:迹线
+        }
+        if (mWaterfallChart->get3DAxisLabel(Z1).isEmpty()) {
+            mWaterfallChart->set3DAxisLabel(Z1, tr("dB"));  // cn:分贝
         }
     }
-    mWaterfallItem = mWaterfallChart->addWaterfall(traces, binValues, tr("Waterfall"));  // cn:三维瀑布
-    if (mWaterfallItem) {
-        mWaterfallItem->setColorMode(Qwt3DWaterfall::ByAmplitude);
-        mWaterfallItem->setPlotStyle(Qwt3DWaterfall::RibbonMesh);
+    mWaterfallTraceTimes = traceTimes;
+    // 工程恢复的待应用样式：图元创建后才能落地（首建前后都安全）
+    if (!mPendingWaterfallStyle.isEmpty()) {
+        applyWaterfallStyle(mPendingWaterfallStyle);
+    }
+    // 固定色域 + 基线：这是「着色成帘幕而不是几条线」的关键
+    mWaterfallItem->setColorRange(floorDb, 0.0);
+    mWaterfallItem->setBaseline(floorDb);
+    // 色带（子类 functor，含当前迹线高亮）
+    mWaterfallHighlightSlot = -1;  // 数据换了，槽位需按新迹线时间重算
+    applyWaterfallColorFunctor();
+    updateWaterfallLegend();
+    updateWaterfallHighlight();
+    mWaterfallChart->update();
+}
+
+/**
+ * @brief 整份 STFT 栅格的幅值峰值（云图与瀑布共用同一 dB 归一化口径）
+ */
+double DASignalAnalysisView::stftGridPeak() const
+{
+    double peak = 0.0;
+    for (double v : std::as_const(mStft.values)) {
+        if (std::isfinite(v)) {
+            peak = qMax(peak, std::fabs(v));
+        }
+    }
+    return peak;
+}
+
+/**
+ * @brief dB 色域下限的有效值（[floor, 0] 需要 floor < 0，否则按 -1 兜底）
+ */
+double DASignalAnalysisView::waterfallDbFloorLower() const
+{
+    return (mWaterfallDbFloor < 0.0) ? mWaterfallDbFloor : -1.0;
+}
+
+/**
+ * @brief 重建三维瀑布的色带 functor（DAWaterfallColor：色带 + 当前迹线高亮）
+ *
+ * setDataColor 接管所有权，旧 functor 由图元释放；这里同步更新非 owning 指针，
+ * 供高亮槽位变化时原地修改并 invalidateColors。
+ */
+void DASignalAnalysisView::applyWaterfallColorFunctor()
+{
+    if (!mWaterfallItem) {
+        mWaterfallColor = nullptr;
+        return;
+    }
+    auto* color = new DAWaterfallColor(mWaterfallColormapName);
+    color->setHighlightSlot(mWaterfallHighlightSlot, cTimeCursorColor);
+    mWaterfallItem->setDataColor(color);
+    mWaterfallColor = color;
+}
+
+/**
+ * @brief 三维瀑布图例刻度/标题对齐 dB 色域（qwt 图例不自动跟数据）
+ */
+void DASignalAnalysisView::updateWaterfallLegend()
+{
+    if (!mWaterfallChart) {
+        return;
+    }
+    if (Qwt3DColorLegend* legend = mWaterfallChart->legend()) {
+        legend->setLimits(waterfallDbFloorLower(), 0.0);
+        legend->setTitleString(tr("dB"));  // cn:分贝
+        legend->setMajors(5);
+        legend->setMinors(0);
+    }
+}
+
+/**
+ * @brief 三维瀑布当前迹线高亮：当前时间 → 最近迹线槽位，槽位变化才重建顶点色
+ *
+ * 只在三维瀑布可见、「当前帧标记」开启、高亮开关开启且着色方式不是单色时生效。
+ * 顶点色烘焙在 VBO 里：改 functor 后必须 invalidateColors()（约 10 万顶点，可接受）。
+ */
+void DASignalAnalysisView::updateWaterfallHighlight()
+{
+    if (!mWaterfallItem || !mWaterfallColor) {
+        return;
+    }
+    int slot = -1;
+    if (mWaterfallMode == 1 && mTimeCursorVisible && mWaterfallHighlight
+        && mWaterfallItem->colorMode() != Qwt3DWaterfall::Solid && !mWaterfallTraceTimes.isEmpty()) {
+        const double t = currentTime() + (mSignal ? mSignal->timeOrigin() : 0.0);
+        slot           = daNearestTraceIndex(mWaterfallTraceTimes, t);
+    }
+    if (slot == mWaterfallHighlightSlot) {
+        return;
+    }
+    mWaterfallHighlightSlot = slot;
+    mWaterfallColor->setHighlightSlot(slot, cTimeCursorColor);
+    mWaterfallItem->invalidateColors();
+    if (mWaterfallChart) {
+        mWaterfallChart->update();
+    }
+}
+
+/**
+ * @brief 三维瀑布样式恢复默认（RibbonMesh / ByAmplitude / 1.0 / NewestInFront）
+ *
+ * 只重置几何/着色/不透明度/深度方向；描边与单色颜色保留面板当前值（默认颜色由 qwt 给）。
+ */
+void DASignalAnalysisView::resetWaterfallStyle()
+{
+    QJsonObject style;
+    style[ QStringLiteral("style") ]      = int(Qwt3DWaterfall::RibbonMesh);
+    style[ QStringLiteral("colorMode") ]  = int(Qwt3DWaterfall::ByAmplitude);
+    style[ QStringLiteral("opacity") ]    = 1.0;
+    style[ QStringLiteral("depthOrder") ] = int(Qwt3DWaterfall::NewestInFront);
+    applyWaterfallStyle(style);
+}
+
+/**
+ * @brief 三维瀑布 dB 色域下限（与二维云图独立，D12）
+ */
+double DASignalAnalysisView::waterfallDbFloor() const
+{
+    return mWaterfallDbFloor;
+}
+
+/**
+ * @brief 设置三维瀑布 dB 色域下限：固定色域 [floor, 0]、基线 = floor、图例刻度同步
+ * @param dbFloor dB 下限
+ */
+void DASignalAnalysisView::setWaterfallDbFloor(double dbFloor)
+{
+    mWaterfallDbFloor = dbFloor;
+    if (!mWaterfallItem) {
+        return;
+    }
+    const double floorDb = waterfallDbFloorLower();
+    mWaterfallItem->setColorRange(floorDb, 0.0);
+    mWaterfallItem->setBaseline(floorDb);
+    updateWaterfallLegend();
+    if (mWaterfallChart) {
+        mWaterfallChart->update();
+    }
+}
+
+/**
+ * @brief 三维瀑布色带预设名
+ */
+QString DASignalAnalysisView::waterfallColormapName() const
+{
+    return mWaterfallColormapName;
+}
+
+/**
+ * @brief 设置三维瀑布色带预设（只影响瀑布，不影响二维云图与色标）
+ * @param name QwtColorMapPreset 预设名
+ */
+void DASignalAnalysisView::setWaterfallColormapName(const QString& name)
+{
+    if (name.isEmpty() || mWaterfallColormapName == name) {
+        return;
+    }
+    mWaterfallColormapName = name;
+    if (!mWaterfallItem) {
+        return;
+    }
+    applyWaterfallColorFunctor();
+    updateWaterfallHighlight();
+    if (mWaterfallChart) {
+        mWaterfallChart->update();
+    }
+}
+
+/**
+ * @brief 是否高亮三维瀑布的当前迹线
+ */
+bool DASignalAnalysisView::isWaterfallHighlighted() const
+{
+    return mWaterfallHighlight;
+}
+
+/**
+ * @brief 开关当前迹线高亮（单色着色时无效）
+ * @param on true 高亮
+ */
+void DASignalAnalysisView::setWaterfallHighlight(bool on)
+{
+    if (mWaterfallHighlight == on) {
+        return;
+    }
+    mWaterfallHighlight = on;
+    updateWaterfallHighlight();
+}
+
+/**
+ * @brief 三维瀑布当前着色方式（0=按深度 / 1=按幅值 / 2=单色；无图元返回 -1）
+ */
+int DASignalAnalysisView::waterfallColorMode() const
+{
+    if (!mWaterfallItem) {
+        return -1;
+    }
+    return int(mWaterfallItem->colorMode());
+}
+
+/**
+ * @brief 三维瀑布图元（右侧 3D 面板定位当前图元用）
+ */
+Qwt3DWaterfall* DASignalAnalysisView::waterfall3DItem() const
+{
+    return mWaterfallItem;
+}
+
+/**
+ * @brief 三维瀑布样式（保存时从图元读回；唯一真相是图元本身）
+ *
+ * 键：style / colorMode / opacity / depthOrder / outlineColor / outlineWidth / solidColor。
+ * 图元尚未创建（STFT 未算完）时返回待应用样式，保证存档不丢用户设置。
+ */
+QJsonObject DASignalAnalysisView::waterfallStyle() const
+{
+    if (!mWaterfallItem) {
+        return mPendingWaterfallStyle;
+    }
+    QJsonObject style;
+    style[ QStringLiteral("style") ]      = int(mWaterfallItem->plotStyle());
+    style[ QStringLiteral("colorMode") ]  = int(mWaterfallItem->colorMode());
+    style[ QStringLiteral("opacity") ]    = mWaterfallItem->opacity();
+    style[ QStringLiteral("depthOrder") ] = int(mWaterfallItem->depthOrder());
+    const RGBA outline                    = mWaterfallItem->outlineColor();
+    const QColor outlineColor             = GL2Qt(outline.r, outline.g, outline.b);
+    style[ QStringLiteral("outlineColor") ] = outlineColor.name(QColor::HexRgb);
+    style[ QStringLiteral("outlineWidth") ] = mWaterfallItem->outlineWidth();
+    const RGBA solid                        = mWaterfallItem->color();
+    const QColor solidColor                 = GL2Qt(solid.r, solid.g, solid.b);
+    style[ QStringLiteral("solidColor") ]   = solidColor.name(QColor::HexRgb);
+    return style;
+}
+
+/**
+ * @brief 应用三维瀑布样式（工程恢复用）
+ *
+ * STFT 是异步的，恢复时图元可能还不存在：样式先记为待应用，首建图元后由
+ * rebuildWaterfall 套用（方案 §6.3 第 8 条）。
+ * @param style waterfallStyle() 产出的同结构对象
+ */
+void DASignalAnalysisView::applyWaterfallStyle(const QJsonObject& style)
+{
+    mPendingWaterfallStyle = style;
+    if (!mWaterfallItem || style.isEmpty()) {
+        return;
+    }
+    if (style.contains(QStringLiteral("style"))) {
+        mWaterfallItem->setPlotStyle(static_cast< Qwt3DWaterfall::PlotStyle >(style.value(QStringLiteral("style")).toInt()));
+    }
+    if (style.contains(QStringLiteral("colorMode"))) {
+        mWaterfallItem->setColorMode(static_cast< Qwt3DWaterfall::ColorMode >(style.value(QStringLiteral("colorMode")).toInt()));
+    }
+    if (style.contains(QStringLiteral("opacity"))) {
+        mWaterfallItem->setOpacity(qBound(0.0, style.value(QStringLiteral("opacity")).toDouble(1.0), 1.0));
+    }
+    if (style.contains(QStringLiteral("depthOrder"))) {
+        mWaterfallItem->setDepthOrder(
+            static_cast< Qwt3DWaterfall::DepthOrder >(style.value(QStringLiteral("depthOrder")).toInt()));
+    }
+    if (style.contains(QStringLiteral("outlineColor"))) {
+        const QColor outline(style.value(QStringLiteral("outlineColor")).toString());
+        if (outline.isValid()) {
+            mWaterfallItem->setOutlineColor(Qt2GL(outline));
+        }
+    }
+    if (style.contains(QStringLiteral("outlineWidth"))) {
+        mWaterfallItem->setOutlineWidth(style.value(QStringLiteral("outlineWidth")).toDouble(1.0));
+    }
+    if (style.contains(QStringLiteral("solidColor"))) {
+        const QColor solid(style.value(QStringLiteral("solidColor")).toString());
+        if (solid.isValid()) {
+            mWaterfallItem->setColor(Qt2GL(solid));
+        }
+    }
+    updateWaterfallHighlight();
+    if (mWaterfallChart) {
+        mWaterfallChart->update();
     }
 }
 
@@ -1242,12 +1562,7 @@ void DASignalAnalysisView::rebuildHeatmap()
         mHeatmapChart->replot();
         return;
     }
-    double peak = 0.0;
-    for (double v : std::as_const(mStft.values)) {
-        if (std::isfinite(v)) {
-            peak = qMax(peak, std::fabs(v));
-        }
-    }
+    double peak = stftGridPeak();
     if (peak <= 0.0) {
         peak = 1.0;
     }
@@ -1851,6 +2166,10 @@ void DASignalAnalysisView::updatePlayhead()
     }
     // 二维云图当前帧标记（D6）：虚线竖线 + STFT 窗宽带（像素节流，见 updateHeatmapCursor）
     updateHeatmapCursor(t);
+    // 三维瀑布当前迹线高亮：槽位变化才重建顶点色
+    if (mWaterfallMode == 1) {
+        updateWaterfallHighlight();
+    }
     if (mWaveChart) {
         mWaveChart->replot();
     }
@@ -2102,6 +2421,8 @@ void DASignalAnalysisView::retranslateUi()
     }
     if (mWaterfallItem && mWaterfallChart && mWaterfallChart->getWaterfalls().contains(mWaterfallItem)) {
         mWaterfallItem->setTitle(tr("Waterfall"));  // cn:三维瀑布
+        // 图例标题（dB）与刻度随语言/色域重下发（qwt 图例不自动跟数据）
+        updateWaterfallLegend();
     } else {
         mWaterfallItem = nullptr;  // 已被外部（clearAllData3D 等）销毁：置空待重建
     }

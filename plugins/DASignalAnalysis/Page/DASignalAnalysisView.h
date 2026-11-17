@@ -4,6 +4,7 @@
 #include <QPointer>
 #include <QVector>
 #include <QStringList>
+#include <QJsonObject>
 #include "Signal/DASignal.h"
 #include "Analysis/DASignalAnalysisParams.h"
 #include "Analysis/DASpectrumResult.h"
@@ -29,6 +30,7 @@ class DAFigureWidget;
 class DAChartWidget;
 class DAChart3DWidget;
 class DAStftRasterData;
+class DAWaterfallColor;
 
 /**
  * @brief 单个信号的分析视图（方案 §8.2 / D25 / T7）
@@ -99,6 +101,23 @@ public:
     // 时间轴标签格式：0=秒 / 1=毫秒 / 2=mm:ss.s（作用到波形 x 与云图 x）
     int timeFormat() const;
     void setTimeFormat(int format);
+    // 三维瀑布专属显示状态：dB 色域下限 / 色带预设 / 当前迹线高亮（与二维云图相互独立，D12）
+    double waterfallDbFloor() const;
+    void setWaterfallDbFloor(double dbFloor);
+    QString waterfallColormapName() const;
+    void setWaterfallColormapName(const QString& name);
+    bool isWaterfallHighlighted() const;
+    void setWaterfallHighlight(bool on);
+    // 三维瀑布当前着色方式（0=按深度 / 1=按幅值 / 2=单色；无图元返回 -1）
+    int waterfallColorMode() const;
+    // 三维瀑布图元（瀑布设置快捷入口定位当前图元用）
+    Qwt3DWaterfall* waterfall3DItem() const;
+    // 三维瀑布样式（保存时从图元读回：style/colorMode/opacity/depthOrder/outlineColor/outlineWidth/solidColor）
+    QJsonObject waterfallStyle() const;
+    // 应用三维瀑布样式（图元未建时先记为待应用，首建后套用）
+    void applyWaterfallStyle(const QJsonObject& style);
+    // 三维瀑布样式恢复默认（RibbonMesh / ByAmplitude / 1.0 / NewestInFront）
+    void resetWaterfallStyle();
     // 时频图色标（colorbar）显隐：隐藏时不占横向空间（默认显示）
     void setColorBarVisible(bool on);
     bool isColorBarVisible() const;
@@ -227,6 +246,16 @@ private:
     void ensureHeatmapDecorItems();
     // 当前帧标记：把云图竖线与 STFT 窗宽带移到给定时间（含像素节流）
     void updateHeatmapCursor(double absoluteTime);
+    // 整份 STFT 栅格的幅值峰值（云图与瀑布共用同一 dB 归一化口径）
+    double stftGridPeak() const;
+    // 重建三维瀑布的色带 functor（子类，含当前迹线高亮）
+    void applyWaterfallColorFunctor();
+    // 三维瀑布图例刻度/标题对齐 dB 色域（qwt 不自动跟数据）
+    void updateWaterfallLegend();
+    // 三维瀑布当前迹线高亮：把当前时间映射到最近槽位，槽位变化才重建顶点色
+    void updateWaterfallHighlight();
+    // dB 色域下限的有效值（[floor, 0] 需要 floor < 0）
+    double waterfallDbFloorLower() const;
     // 当前时间对应的 STFT 列索引（跟随滑块用）
     int currentStftColumn() const;
     // 时间轴标签格式应用到波形 x 与云图 x（换新 ScaleDraw 实例，plot 接管所有权）
@@ -336,6 +365,17 @@ private:
     double mDragPressTime { 0.0 };
     // 三维瀑布
     Qwt3DWaterfall* mWaterfallItem { nullptr };
+    // 色带 functor 由图元持有（setDataColor 接管所有权）：这里是非 owning 指针，图元重建时置空
+    DAWaterfallColor* mWaterfallColor { nullptr };
+    // 迹线时间（与瀑布迹线一一对应）与当前高亮槽位
+    QVector< double > mWaterfallTraceTimes;
+    int mWaterfallHighlightSlot { -1 };
+    // 三维瀑布专属显示状态（与二维云图独立，D12）
+    double mWaterfallDbFloor { -80.0 };
+    QString mWaterfallColormapName { QStringLiteral("viridis") };
+    bool mWaterfallHighlight { true };
+    // 待应用的瀑布样式（工程恢复时 STFT 异步，图元尚不存在，首建后套用）
+    QJsonObject mPendingWaterfallStyle;
 };
 }  // namespace DA
 

@@ -202,6 +202,10 @@ private Q_SLOTS:
     void onTimeCursorToggled(bool on);
     // 云图设置 dB 范围：写当前视图的二维色域下限（[floor, 0]）
     void onHeatmapDbFloorChanged(double value);
+    // 瀑布图设置：色带预设 / dB 色域下限 / 当前迹线高亮
+    void onWaterfallColormapTriggered(QAction* action);
+    void onWaterfallDbFloorChanged(double value);
+    void onWaterfallHighlightToggled(bool on);
     // 「视图 ▾」时间格式子菜单：写当前视图的时间轴标签格式
     void onTimeFormatTriggered(QAction* action);
     // 「视图 ▾」布局比例子菜单：套用 2×2 网格比例预设
@@ -362,6 +366,9 @@ private:
     // 云图设置 dB 范围（二维色域下限；从底部播放器控制条迁入，D5）
     QDoubleSpinBox* mHeatmapDbFloorSpin { nullptr };
     QLabel* mHeatmapDbFloorLabel { nullptr };
+    // 瀑布图设置：dB 色域下限与当前迹线高亮
+    QDoubleSpinBox* mWaterfallDbFloorSpin { nullptr };
+    QLabel* mWaterfallDbFloorLabel { nullptr };
     // 「视图 ▾」菜单（时间格式 / 布局比例 / 重置显示）
     QMenu* mViewOptionsMenu { nullptr };
     QMenu* mTimeFormatMenu { nullptr };
@@ -484,6 +491,8 @@ public:
     QAction* actionDisplayReset { nullptr };      ///< 视图 ▾：重置显示
     QAction* actionColormap { nullptr };          ///< 云图设置：色带（带菜单，只影响二维谱图与色标）
     QAction* actionColorBar { nullptr };          ///< 云图设置：色标显隐（勾选）
+    QAction* actionWaterfallColormap { nullptr }; ///< 瀑布图设置：色带（带菜单，只影响三维瀑布）
+    QAction* actionWaterfallHighlight { nullptr }; ///< 瀑布图设置：当前迹线高亮（勾选）
 
     //===================================================
     // 导出（Export）

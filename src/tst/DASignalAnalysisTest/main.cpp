@@ -30,6 +30,7 @@
 #include <QUndoGroup>
 #include <QUndoStack>
 #include <cmath>
+#include <limits>
 #include <memory>
 #include "Analysis/DASignalAmplitude.h"
 #include "Analysis/DASignalAnalysisParams.h"
@@ -51,6 +52,7 @@
 #include "Page/DASignalTimeText.h"
 #include "Render/DAStftRasterData.h"
 #include "Render/DATimeScaleDraw.h"
+#include "Render/DAWaterfallBuilder.h"
 #include "DAChart3DWidget.h"
 #include "DAChartWidget.h"
 #include "DAFigureWidget.h"
@@ -296,6 +298,8 @@ private Q_SLOTS:
     void signalViewTransientItems();
     // T7：瀑布模式切换热图/三维瀑布显隐与当前子图判定
     void signalViewWaterfallMode();
+    // S6：重复 setStft 复用瀑布图元（指针不变），外部 clearAllData3D 后重建不崩
+    void signalViewWaterfallItemReuse();
     // T8：点击 2D 子图画布即切换当前子图（设置面板 target 跟随）
     void signalViewClickSwitchesCurrentChart();
     // T9：figure XML 保存（角色/峰值/网格比例/非 transient 图元集合）
@@ -322,6 +326,8 @@ private Q_SLOTS:
     void playbackTimeTextFormatting();
     // 时间轴标签格式（纯函数）：秒/毫秒/mm:ss.s（含时间原点）
     void timeAxisFormatLabels();
+    // 三维瀑布：迹线时间映射、当前迹线槽位与 dB 迹线换算（纯逻辑）
+    void waterfallTraceTimesAndDbConversion();
     // dB 参考由幅值口径派生（D7）：dbRef1 → one，其余 → fullScale，旧档矛盾组合按幅值口径解释
     void dbReferenceDerivedFromAmplitudeMode();
 };
@@ -1357,6 +1363,43 @@ void DASignalAnalysisTest::signalViewWaterfallMode()
 }
 
 /**
+ * @brief S6：重复 setStft 复用瀑布图元（指针不变），外部 clearAllData3D 后重建不崩
+ *
+ * 复用图元是「3D 设置面板不反复跳页」与「样式不被重算覆盖」的前提；
+ * 外部 clearAllData3D（图元树/清空数据路径）销毁图元后必须能安全重建。
+ */
+void DASignalAnalysisTest::signalViewWaterfallItemReuse()
+{
+    if (!openGLAvailable()) {
+        QSKIP("OpenGL is not available: skip the waterfall reuse test");
+    }
+    DA::DASignalAnalysisView view(makeTestSignal());
+    DA::DAStftResult stft;
+    stft.rows          = 2;
+    stft.columns       = 3;
+    stft.times         = { 0.0, 0.5, 1.0 };
+    stft.freqs         = { 0.0, 10.0 };
+    stft.values        = { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 };
+    stft.windowSeconds = 0.1;
+    view.setStft(stft);
+    view.setWaterfallMode(1);
+    Qwt3DWaterfall* first = view.waterfall3DItem();
+    QVERIFY2(first != nullptr, "switching to 3D should create the waterfall item");
+    // 重复回填同一栅格：图元身份不变（复用），不会触发设置面板跳页
+    view.setStft(stft);
+    QCOMPARE(view.waterfall3DItem(), first);
+    QVERIFY(view.waterfall3DChart()->getWaterfalls().contains(first));
+    // 换一份栅格（同尺寸不同值）：仍然复用同一图元
+    stft.values = { 6.0, 5.0, 4.0, 3.0, 2.0, 1.0 };
+    view.setStft(stft);
+    QCOMPARE(view.waterfall3DItem(), first);
+    // 外部清空 3D 数据（图元被销毁）：setStft 不崩并重建新图元
+    view.waterfall3DChart()->clearAllData3D();
+    view.setStft(stft);
+    QVERIFY2(view.waterfall3DItem() != nullptr, "the waterfall item should be rebuilt after clearAllData3D()");
+}
+
+/**
  * @brief T8：点击 2D 子图画布即切换当前子图（设置面板 target 跟随）
  *
  * qwt 只在事件传播到 QwtPlot 时才切换当前坐标轴；波形画布上的 QwtPicker 会消费点击，
@@ -2277,6 +2320,82 @@ void DASignalAnalysisTest::timeAxisFormatLabels()
     QCOMPARE(daFormatTimeAxisLabel(3661.0, 2, 0.0), QStringLiteral("61:01.0"));
     // 未知格式按秒处理
     QCOMPARE(daFormatTimeAxisLabel(2.5, 99, 0.0), QLocale().toString(2.5));
+}
+
+/**
+ * @brief 三维瀑布：迹线时间映射、当前迹线槽位与 dB 迹线换算（纯逻辑）
+ */
+void DASignalAnalysisTest::waterfallTraceTimesAndDbConversion()
+{
+    using DA::DAStftResult;
+    using DA::DAWaterfallBuilder;
+    // 3 行 × 4 列：行 0 为最低频率，列 0 为最早时间
+    DAStftResult stft;
+    stft.rows    = 3;
+    stft.columns = 4;
+    stft.times   = { 0.0, 0.1, 0.2, 0.3 };
+    stft.freqs   = { 0.0, 10.0, 20.0 };
+    for (int c = 0; c < stft.columns; ++c) {
+        for (int r = 0; r < stft.rows; ++r) {
+            stft.values.append(0.1 * (r + 1) * (c + 1));
+        }
+    }
+    QVERIFY(stft.isValid());
+
+    // 迹线时间与 build 的输出一一对应（同一抽帧规则）
+    QVector< QVector< double > > traces;
+    QVector< double > binValues;
+    QVector< double > traceTimes;
+    QVERIFY(DAWaterfallBuilder::build(stft, 2, 2, traces, binValues, &traceTimes));
+    QCOMPARE(traces.size(), 2);
+    QCOMPARE(traceTimes.size(), traces.size());
+    QCOMPARE(traceTimes, DA::daWaterfallTraceTimes(stft, 2, 0.0));
+    // 抽帧取区间代表列：4 列抽 2 条 → 列 0 与列 2
+    QCOMPARE(traceTimes.at(0), stft.times.at(0));
+    QCOMPARE(traceTimes.at(1), stft.times.at(2));
+    // 时间原点只在对外时间上加偏移，不影响列选择
+    const QVector< double > shifted = DA::daWaterfallTraceTimes(stft, 2, 5.0);
+    QCOMPARE(shifted.size(), 2);
+    QCOMPARE(shifted.at(0), traceTimes.at(0) + 5.0);
+    QCOMPARE(shifted.at(1), traceTimes.at(1) + 5.0);
+    // 可选参数不破坏旧调用（不传 traceTimes）
+    QVector< QVector< double > > tracesNoTimes;
+    QVector< double > binValuesNoTimes;
+    QVERIFY(DAWaterfallBuilder::build(stft, 2, 2, tracesNoTimes, binValuesNoTimes));
+    QCOMPARE(tracesNoTimes.size(), traces.size());
+    QCOMPARE(binValuesNoTimes, binValues);
+    // 栅格无效：空输出
+    QVERIFY(!DAWaterfallBuilder::build(DAStftResult(), 2, 2, tracesNoTimes, binValuesNoTimes));
+
+    // 当前迹线槽位：空列表 / 越界钳制 / 中点取最近
+    QCOMPARE(DA::daNearestTraceIndex(QVector< double >(), 1.0), -1);
+    QCOMPARE(DA::daNearestTraceIndex(traceTimes, -100.0), 0);
+    QCOMPARE(DA::daNearestTraceIndex(traceTimes, 100.0), traceTimes.size() - 1);
+    QCOMPARE(DA::daNearestTraceIndex(traceTimes, traceTimes.at(0)), 0);
+    QCOMPARE(DA::daNearestTraceIndex(traceTimes, traceTimes.at(1)), 1);
+    const double mid = 0.5 * (traceTimes.at(0) + traceTimes.at(1));
+    QCOMPARE(DA::daNearestTraceIndex(traceTimes, mid - 0.001), 0);
+    QCOMPARE(DA::daNearestTraceIndex(traceTimes, mid + 0.001), 1);
+
+    // dB 迹线换算：0 → 0 dB；peak/10 → -20 dB；0/NaN → floor；clamp 到 [floor, 0]
+    const double nan = std::numeric_limits< double >::quiet_NaN();
+    const QVector< double > db = DA::daStftToDb({ 1.0, 0.1, 0.0, nan, 2.0 }, 1.0, -80.0);
+    QCOMPARE(db.size(), 5);
+    QCOMPARE(db.at(0), 0.0);
+    QVERIFY(qAbs(db.at(1) + 20.0) < 1e-9);
+    QCOMPARE(db.at(2), -80.0);
+    QCOMPARE(db.at(3), -80.0);
+    QCOMPARE(db.at(4), 0.0);  // 超过归一峰值：clamp 到 0
+    // 低于下限：clamp 到 floor
+    const QVector< double > lowDb = DA::daStftToDb({ 1e-6 }, 1.0, -80.0);
+    QCOMPARE(lowDb.at(0), -80.0);
+    // peak 无效（0 或 NaN）时按 1.0 兜底，不产出 inf
+    const QVector< double > peakZero = DA::daStftToDb({ 0.5 }, 0.0, -80.0);
+    QVERIFY(std::isfinite(peakZero.at(0)));
+    QVERIFY(qAbs(peakZero.at(0) + 6.0205999132796) < 1e-6);
+    // floor >= 0 时按 -1 兜底（退化区间保护）
+    const QVector< double > degenerate = DA::daStftToDb({ 0.0 }, 1.0, 0.0);
+    QCOMPARE(degenerate.at(0), -1.0);
 }
 
 QTEST_MAIN(DASignalAnalysisTest)

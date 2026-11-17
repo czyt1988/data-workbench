@@ -36,6 +36,7 @@ da_add_test(
             ${_signal_plugin_dir}/Render/DAStftRasterData.cpp
             ${_signal_plugin_dir}/Render/DATimeScaleDraw.cpp
             ${_signal_plugin_dir}/Render/DAWaterfallBuilder.cpp
+            ${_signal_plugin_dir}/Render/DAWaterfallColor.cpp
             ${_signal_plugin_dir}/Form/DASignalFormSpecBuilder.cpp
     QT_COMPONENTS Test Widgets Core Gui OpenGL Xml
     LINK_PRIVATE

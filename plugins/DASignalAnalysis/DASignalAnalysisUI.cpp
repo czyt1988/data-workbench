@@ -1594,6 +1594,43 @@ void DASignalAnalysisUI::buildSignalContextCategory()
     heatmapGrid->finish();
     mPanelHeatmap->addLargeWidget(heatmapGrid);
 
+    // ---------- 瀑布图设置：色带 / dB / 当前迹线高亮（只影响三维瀑布） ----------
+    // 三维瀑布有自己独立的色带与 dB 色域（D12），与二维云图互不影响
+    mPanelWaterfall = mContextDisplayPage->addPanel(tr("Waterfall"));  // cn:瀑布图设置
+    mPanelWaterfall->setObjectName(QString::fromUtf8(cPanelContextWaterfallName));
+    actionWaterfallColormap =
+        createIconAction("actionSignalWaterfallColormap", pluginIcon("colorMap.svg"), false);
+    mWaterfallColormapMenu  = makeColormapMenu(&mWaterfallColormapGroup);
+    connect(mWaterfallColormapGroup,
+            &QActionGroup::triggered,
+            this,
+            &DASignalAnalysisUI::onWaterfallColormapTriggered);
+    actionWaterfallColormap->setMenu(mWaterfallColormapMenu);
+    mPanelWaterfall->addLargeAction(actionWaterfallColormap);
+    // dB 范围：三维固定色域 [floor, 0]（与二维云图的 dB 相互独立）
+    mWaterfallDbFloorSpin = new QDoubleSpinBox(mPanelWaterfall);
+    mWaterfallDbFloorSpin->setObjectName(QStringLiteral("da-signal-waterfall-dbfloor"));
+    mWaterfallDbFloorSpin->setRange(-200.0, 0.0);
+    mWaterfallDbFloorSpin->setDecimals(0);
+    mWaterfallDbFloorSpin->setSingleStep(5.0);
+    mWaterfallDbFloorSpin->setValue(-80.0);
+    mWaterfallDbFloorSpin->setSuffix(QStringLiteral(" dB"));
+    mWaterfallDbFloorSpin->setMinimumWidth(96);
+    mWaterfallDbFloorSpin->setKeyboardTracking(false);
+    connect(mWaterfallDbFloorSpin,
+            QOverload< double >::of(&QDoubleSpinBox::valueChanged),
+            this,
+            &DASignalAnalysisUI::onWaterfallDbFloorChanged);
+    auto* waterfallGrid        = new DASignalRibbonParamGrid(mPanelWaterfall);
+    mWaterfallDbFloorLabel     = waterfallGrid->addRow(tr("dB"), mWaterfallDbFloorSpin);
+    waterfallGrid->finish();
+    mPanelWaterfall->addLargeWidget(waterfallGrid);
+    // 当前迹线高亮：三维瀑布里把当前帧对应的迹线着色（单色着色时无效并置灰）
+    actionWaterfallHighlight =
+        createIconAction("actionSignalWaterfallHighlight", pluginIcon("waterfallHighlight.svg"), true);
+    connect(actionWaterfallHighlight, &QAction::toggled, this, &DASignalAnalysisUI::onWaterfallHighlightToggled);
+    mPanelWaterfall->addLargeAction(actionWaterfallHighlight);
+
     // 初始不显示：由 provider 在信号分析页激活时显示
     ribbon->hideContextCategory(mContextCategory);
 }
@@ -1864,6 +1901,35 @@ void DASignalAnalysisUI::syncSignalContextControls()
         mHeatmapDbFloorSpin->setValue(view ? view->dbFloor() : -80.0);
         mHeatmapDbFloorSpin->setEnabled(heatmapActive);
     }
+    // 瀑布图设置整组：只在三维瀑布可见时可用
+    const bool waterfallActive = hasView && waterfallMode == 1;
+    if (actionWaterfallColormap) {
+        actionWaterfallColormap->setEnabled(waterfallActive);
+    }
+    if (mWaterfallColormapMenu) {
+        const QString waterfallColormap     = (view ? view->waterfallColormapName() : QString());
+        const QList< QAction* > presets     = mWaterfallColormapMenu->actions();
+        for (QAction* presetAction : presets) {
+            if (nullptr == presetAction || !presetAction->isCheckable()) {
+                continue;
+            }
+            const QSignalBlocker blocker(presetAction);
+            presetAction->setChecked(!waterfallColormap.isEmpty() && presetAction->data().toString() == waterfallColormap);
+        }
+    }
+    if (mWaterfallDbFloorSpin) {
+        const QSignalBlocker blocker(mWaterfallDbFloorSpin);
+        mWaterfallDbFloorSpin->setValue(view ? view->waterfallDbFloor() : -80.0);
+        mWaterfallDbFloorSpin->setEnabled(waterfallActive);
+    }
+    // 当前迹线高亮：单色着色下无效（tooltip 说明原因，见 retranslateUi）
+    if (actionWaterfallHighlight) {
+        const QSignalBlocker blocker(actionWaterfallHighlight);
+        const int colorMode    = (view ? view->waterfallColorMode() : -1);
+        const bool solidMode   = (colorMode == 2);  // Qwt3DWaterfall::Solid
+        actionWaterfallHighlight->setEnabled(waterfallActive && !solidMode);
+        actionWaterfallHighlight->setChecked(view ? view->isWaterfallHighlighted() : true);
+    }
     // 峰值标记（视图无 getter：以 UI 记录的开关状态为准；动作在「分析设置 → 峰值」panel）
     if (actionPeakMarker) {
         const QSignalBlocker blocker(actionPeakMarker);
@@ -2050,6 +2116,46 @@ void DASignalAnalysisUI::onHeatmapDbFloorChanged(double value)
 }
 
 /**
+ * @brief 「瀑布图设置 → 色带」：切三维瀑布的色带预设（只影响瀑布，不影响云图与色标）
+ * @param action 菜单项，data 为 QwtColorMapPreset 预设名
+ */
+void DASignalAnalysisUI::onWaterfallColormapTriggered(QAction* action)
+{
+    if (nullptr == action) {
+        return;
+    }
+    const QString name = action->data().toString();
+    if (name.isEmpty()) {
+        return;
+    }
+    if (DASignalAnalysisView* view = currentView()) {
+        view->setWaterfallColormapName(name);
+    }
+}
+
+/**
+ * @brief 「瀑布图设置 → dB」：写三维瀑布的固定色域下限（[floor, 0]），与二维云图独立
+ * @param value dB 下限（-200..0）
+ */
+void DASignalAnalysisUI::onWaterfallDbFloorChanged(double value)
+{
+    if (DASignalAnalysisView* view = currentView()) {
+        view->setWaterfallDbFloor(value);
+    }
+}
+
+/**
+ * @brief 「瀑布图设置 → 当前迹线高亮」开关
+ * @param on true 高亮当前帧对应迹线
+ */
+void DASignalAnalysisUI::onWaterfallHighlightToggled(bool on)
+{
+    if (DASignalAnalysisView* view = currentView()) {
+        view->setWaterfallHighlight(on);
+    }
+}
+
+/**
  * @brief 「视图 → 时间格式」：写当前视图的时间轴标签格式（只重绘）
  * @param action 菜单项，data 为格式编号（0=秒 / 1=毫秒 / 2=mm:ss.s）
  */
@@ -2102,6 +2208,11 @@ void DASignalAnalysisUI::resetDisplaySettings()
     view->setDbFloor(-80.0);
     view->setColorBarVisible(true);
     view->setHeatmapAutoScroll(false);
+    // 三维瀑布：色带 / dB / 当前迹线高亮 / 图元样式回到默认
+    view->setWaterfallColormapName(QStringLiteral("viridis"));
+    view->setWaterfallDbFloor(-80.0);
+    view->setWaterfallHighlight(true);
+    view->resetWaterfallStyle();
     // 色标显隐是插件级偏好：重置后同步回偏好，避免下一个信号又回到旧值
     mColorBarVisible = true;
     QJsonObject cfg                          = DASignalImporter::loadPluginConfig();
@@ -2567,16 +2678,24 @@ void DASignalAnalysisUI::relinkCurrentSignalSource()
     const double calibration            = sig->calibration();
     const QString unit                  = sig->unit();
     const QString signalName            = sig->name();
-    // 旧视图的显示状态也尽量沿用（瀑布模式/色带/色标下限/跟随滚动）
+    // 旧视图的显示状态也尽量沿用（瀑布模式/色带/色标下限/跟随滚动/三维瀑布显示状态）
     int oldWaterfallMode = 0;
     QString oldColormap;
     double oldDbFloor  = -80.0;
     bool oldAutoScroll = false;
+    QString oldWaterfallColormap;
+    double oldWaterfallDbFloor = -80.0;
+    bool oldWaterfallHighlight = true;
+    QJsonObject oldWaterfallStyle;
     if (DASignalAnalysisView* oldView = mPage->viewForSignal(sig.get())) {
-        oldWaterfallMode = oldView->waterfallMode();
-        oldColormap      = oldView->colormapName();
-        oldDbFloor       = oldView->dbFloor();
-        oldAutoScroll    = oldView->isHeatmapAutoScroll();
+        oldWaterfallMode     = oldView->waterfallMode();
+        oldColormap          = oldView->colormapName();
+        oldDbFloor           = oldView->dbFloor();
+        oldAutoScroll        = oldView->isHeatmapAutoScroll();
+        oldWaterfallColormap = oldView->waterfallColormapName();
+        oldWaterfallDbFloor  = oldView->waterfallDbFloor();
+        oldWaterfallHighlight = oldView->isWaterfallHighlighted();
+        oldWaterfallStyle     = oldView->waterfallStyle();
     }
     QString error;
     DASignalPtr newSig = DASignalImporter::importDataFrame(frames.at(idx),
@@ -2611,6 +2730,12 @@ void DASignalAnalysisUI::relinkCurrentSignalSource()
         if (!oldColormap.isEmpty()) {
             newView->setColormapName(oldColormap);
         }
+        if (!oldWaterfallColormap.isEmpty()) {
+            newView->setWaterfallColormapName(oldWaterfallColormap);
+        }
+        newView->setWaterfallDbFloor(oldWaterfallDbFloor);
+        newView->setWaterfallHighlight(oldWaterfallHighlight);
+        newView->applyWaterfallStyle(oldWaterfallStyle);
     }
     setSignalDependentActionsEnabled(true);
     syncPlayerSource();
@@ -3182,6 +3307,11 @@ QByteArray DASignalAnalysisUI::serializeState() const
                 view[ QStringLiteral("peakHold") ]       = v->isPeakHoldEnabled();
                 view[ QStringLiteral("timeFormat") ]     = v->timeFormat();
                 view[ QStringLiteral("colorBarVisible") ] = v->isColorBarVisible();
+                // 三维瀑布：色带 / dB 色域 / 当前迹线高亮 / 图元样式（样式从图元读回）
+                view[ QStringLiteral("waterfallColormap") ]  = v->waterfallColormapName();
+                view[ QStringLiteral("waterfallDbFloor") ]   = v->waterfallDbFloor();
+                view[ QStringLiteral("waterfallHighlight") ] = v->isWaterfallHighlighted();
+                view[ QStringLiteral("waterfall") ]          = v->waterfallStyle();
                 // 峰值标记开关（视图无 getter：以 UI 记录的开关状态存，恢复后新视图据此应用）
                 view[ QStringLiteral("peakMarkersVisible") ] = mPeakMarkersVisible;
                 // T7 起布局是保留式网格：存归一化行/列比例（旧 splitter 像素比例在加载时归一化兼容）
@@ -3373,6 +3503,17 @@ void DASignalAnalysisUI::restoreState(const QByteArray& json,
             v->setDualCursorEnabled(view.value(QStringLiteral("dualCursor")).toBool(false));
             v->setPeakHoldEnabled(view.value(QStringLiteral("peakHold")).toBool(false));
             v->setTimeFormat(view.value(QStringLiteral("timeFormat")).toInt(0));
+            // 三维瀑布显示状态（D12）：色带 / dB 色域 / 当前迹线高亮 / 图元样式
+            const QString waterfallColormap = view.value(QStringLiteral("waterfallColormap")).toString();
+            if (!waterfallColormap.isEmpty()) {
+                v->setWaterfallColormapName(waterfallColormap);
+            }
+            if (view.contains(QStringLiteral("waterfallDbFloor"))) {
+                v->setWaterfallDbFloor(view.value(QStringLiteral("waterfallDbFloor")).toDouble(v->waterfallDbFloor()));
+            }
+            v->setWaterfallHighlight(view.value(QStringLiteral("waterfallHighlight")).toBool(true));
+            // 瀑布样式：STFT 异步，图元未建时视图先记为待应用，首建后套用
+            v->applyWaterfallStyle(view.value(QStringLiteral("waterfall")).toObject());
             if (view.contains(QStringLiteral("colorBarVisible"))) {
                 const bool colorBar = view.value(QStringLiteral("colorBarVisible")).toBool(mColorBarVisible);
                 v->setColorBarVisible(colorBar);
@@ -3599,6 +3740,15 @@ void DASignalAnalysisUI::finalize()
         mColormapMenu = nullptr;
     }
     mColormapGroup = nullptr;
+    // 瀑布色带菜单（瀑布图设置）
+    if (actionWaterfallColormap) {
+        actionWaterfallColormap->setMenu(nullptr);
+    }
+    if (mWaterfallColormapMenu) {
+        delete mWaterfallColormapMenu;
+        mWaterfallColormapMenu = nullptr;
+    }
+    mWaterfallColormapGroup = nullptr;
     // 「视图 ▾」菜单：子菜单/菜单项随父菜单销毁，这里只释放父菜单并清空指针
     if (actionViewOptions) {
         actionViewOptions->setMenu(nullptr);
@@ -3737,7 +3887,7 @@ void DASignalAnalysisUI::finalize()
             actionWaterfallHide,  actionExportPeaks,
             actionExportImage,    actionRelinkSource,
             actionTimeCursor,     actionViewOptions,     actionColormap,
-            actionColorBar
+            actionColorBar,       actionWaterfallColormap, actionWaterfallHighlight
         };
         for (QAction* act : allActions) {
             if (act) {
@@ -3773,6 +3923,8 @@ void DASignalAnalysisUI::finalize()
     actionRelinkSource      = nullptr;
     actionColormap          = nullptr;
     actionColorBar          = nullptr;
+    actionWaterfallColormap = nullptr;
+    actionWaterfallHighlight = nullptr;
     mPanelImportExport      = nullptr;
     mPanelPreprocess        = nullptr;
     mPanelSpectrum          = nullptr;
@@ -3786,6 +3938,8 @@ void DASignalAnalysisUI::finalize()
     mPeakRelDbLabel         = nullptr;
     mHeatmapDbFloorSpin     = nullptr;
     mHeatmapDbFloorLabel    = nullptr;
+    mWaterfallDbFloorSpin   = nullptr;
+    mWaterfallDbFloorLabel  = nullptr;
     mPeakMarkersVisible     = false;
     mParamsPerSignal.clear();
     mParamsVersion.clear();
@@ -5140,7 +5294,7 @@ void DASignalAnalysisUI::setSignalDependentActionsEnabled(bool on)
         actionAnalysisSetting, actionPeakMarker, actionPeakTopN,
         actionPeakMarkerDisplay, actionPeakWindow, actionWaterfall2D, actionWaterfall3D,
         actionWaterfallHide, actionExportPeaks, actionTimeCursor, actionViewOptions,
-        actionDisplayReset,
+        actionDisplayReset, actionWaterfallColormap, actionWaterfallHighlight,
         actionExportImage,  actionRelinkSource,
         actionColormap,     actionColorBar
     };
@@ -5437,6 +5591,24 @@ void DASignalAnalysisUI::retranslateUi()
     if (mHeatmapDbFloorSpin) {
         mHeatmapDbFloorSpin->setToolTip(tr("Heatmap color scale lower limit (dB)"));
         // cn:热图色标下限（dB）
+    }
+    // 瀑布图设置（只影响三维瀑布）
+    if (actionWaterfallColormap) {
+        actionWaterfallColormap->setText(tr("Color Map"));  // cn:色带
+        actionWaterfallColormap->setToolTip(tr("Color map of the 3D waterfall"));  // cn:三维瀑布的色带
+    }
+    if (mWaterfallDbFloorLabel) {
+        mWaterfallDbFloorLabel->setText(tr("dB"));  // cn:dB
+    }
+    if (mWaterfallDbFloorSpin) {
+        mWaterfallDbFloorSpin->setToolTip(tr("3D waterfall color range lower limit (dB)"));
+        // cn:三维瀑布色域下限（dB）
+    }
+    if (actionWaterfallHighlight) {
+        actionWaterfallHighlight->setText(tr("Current Trace"));  // cn:当前迹线高亮
+        actionWaterfallHighlight->setToolTip(
+            tr("Highlight the trace of the current frame (unavailable in solid color mode)"));
+        // cn:高亮当前帧对应的迹线（单色着色方式下不可用）
     }
     // 窗口底部工具栏
     if (mToolbarFollowCheck) {

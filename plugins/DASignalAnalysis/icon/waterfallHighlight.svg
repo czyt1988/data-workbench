@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- data-workbench 官方色板：#5280C1/#497CAD/#BDCDE8/#727272/#B2B2B2/#5D6D7E/#669E8B/#CE6043/#E6C27C/#80559F/#3CAED5/#FFFFFF -->
+  <!-- 当前迹线高亮：三条深度方向后移的瀑布迹线（中灰 → 深蓝），最前一条橙红加粗 = 当前帧迹线 -->
+  <path d="M26 150 L44 92 L62 128 L80 74 L98 116 L116 84" fill="none" stroke="#B2B2B2" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M50 138 L68 84 L86 116 L104 68 L122 104 L140 76" fill="none" stroke="#497CAD" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M74 126 L92 76 L110 106 L128 62 L146 94 L164 68" fill="none" stroke="#CE6043" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
