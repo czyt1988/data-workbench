@@ -5,6 +5,7 @@
 #include <QHash>
 #include <QList>
 #include <QPointer>
+#include <functional>
 #include <memory>
 #include "Signal/DASignal.h"
 #include "Analysis/DASignalAnalysisParams.h"
@@ -121,12 +122,18 @@ public Q_SLOTS:
     void onGlobalSettingsApplied();
     // 取消全部后台计算（评审 N-C7：界面可见的取消入口）
     void cancelAllComputations();
-    // 幅值显示模式切换（只重绘，不重算）
-    void onAmplitudeModeChanged();
-    // 重新计算当前信号（参数变化后调用）：频谱、热图、峰值表与曲线统一提交
+    // 重新计算当前信号（全量：对话框确定后调用）：频谱、热图、峰值表与曲线统一提交
     void recomputeCurrentSignal();
 
 private Q_SLOTS:
+    // 分析设置页参数控件（改后按 §5 的粒度分级重算，不走全量）
+    void onPreprocessDcToggled(bool on);
+    void onDetrendChanged(int index);
+    void onWindowChanged(int index);
+    void onAmplitudeModeComboChanged(int index);
+    void onResolutionChanged(double value);
+    void onStftWindowChanged(double value);
+    void onStftOverlapChanged(double value);
     void onWorkerProgress(double percent, const QString& stage, int runningTaskCount);
     void onWorkerSpectrumReady(const DA::DASignalTaskContext& ctx, const DA::DASpectrumResult& result);
     void onWorkerEnvelopeReady(const DA::DASignalTaskContext& ctx,
@@ -221,12 +228,28 @@ private:
     // 刷新底部工具栏时间文本（mm:ss.s / mm:ss.s；无源显示占位）
     void updateToolbarTimeText();
     void buildPeakTopNMenu();
-    void buildAmplitudeModeMenu();
     void buildPeakDock();
     // 经宿主动作管理器创建带图标的动作（丝带面板共用）
     QAction* createRibbonIconAction(const char* objectName, const QString& iconPath, bool checkable = false);
-    // 峰值 panel 控件 → 当前信号参数回填（模式/相对门限；QSignalBlocker 防回环）
-    void syncPeakRibbonControls();
+    // 丝带参数控件 → 当前信号参数回填（预处理/频谱/时频/峰值；QSignalBlocker 防回环，无信号置灰）
+    void syncParamsRibbonControls();
+    // 参数重算范围：由「哪个 panel 改了参数」决定，避免所有改动都走全量重算（方案 §5）
+    enum class ParamScope
+    {
+        Preprocess,   ///< 去直流/去趋势：频谱 + 热图 + 峰值
+        Spectrum,     ///< 窗函数/频率分辨率：频谱 + 热图 + 峰值（resolutionHz 联动 STFT 窗长）
+        TimeFreq,     ///< STFT 窗长/跳步：热图 + 峰值曲线（窗长联动分辨率时含频谱）
+        Peaks,        ///< 模式/相对门限/标记数量：只重算峰值表与曲线
+        DisplayOnly   ///< 幅值口径：只重绘，不重算
+    };
+    // 参数统一写回入口：拷贝参数 → 改字段 → 存表 → 版本 +1 → 按 scope 分级重算
+    void applyParamsPatch(const DA::DASignalPtr& sig,
+                          const std::function< void(DA::DASignalAnalysisParams&) >& patch,
+                          ParamScope scope);
+    // 按参数重算范围提交后台任务（不改变参数版本，版本由 applyParamsPatch 递增）
+    void recomputeScoped(ParamScope scope);
+    // 刷新时频 panel 的 Δf 只读提示（按当前采样率与实际段长反算）
+    void updateDeltaFLabel(const DA::DASignalAnalysisParams& params);
     // 把全局标记文本模板应用到已创建的全部信号视图
     void applyPeakMarkerTextToViews();
     // 惰性创建页面（首次打开/导入/工程恢复时调用），已创建返回 true
@@ -330,6 +353,22 @@ private:
     QDoubleSpinBox* mPeakRelDbSpin { nullptr };
     QLabel* mPeakModeLabel { nullptr };
     QLabel* mPeakRelDbLabel { nullptr };
+    // 分析设置页「预处理 / 频谱 / 时频」参数控件（small 行；标签随语言切换重译）
+    QCheckBox* mPreprocessDcCheck { nullptr };
+    QComboBox* mDetrendCombo { nullptr };
+    QLabel* mDetrendLabel { nullptr };
+    QComboBox* mWindowCombo { nullptr };
+    QLabel* mWindowLabel { nullptr };
+    QComboBox* mAmplitudeModeCombo { nullptr };
+    QLabel* mAmplitudeModeLabel { nullptr };
+    QDoubleSpinBox* mResolutionSpin { nullptr };
+    QLabel* mResolutionLabel { nullptr };
+    QDoubleSpinBox* mStftWindowSpin { nullptr };
+    QLabel* mStftWindowLabel { nullptr };
+    QDoubleSpinBox* mStftOverlapSpin { nullptr };
+    QLabel* mStftOverlapLabel { nullptr };
+    // 时频 panel 第三行：Δf 只读提示（与频率分辨率联动，不参与输入）
+    QLabel* mDeltaFLabel { nullptr };
     // 设置上下文提供者（注册到宿主停靠区，finalize 前注销并销毁）
     DASignalAnalysisSettingContext* mSettingContext { nullptr };
     // 当前绑定 chartPropertiesChanged 的 2D 子图：用户经内置「绘图操作」标签切换
@@ -350,7 +389,6 @@ private:
     QAction* mActionExportCurrentSubChart { nullptr };
     QAction* mActionCopyWholePage { nullptr };
     QAction* mActionCopyCurrentSubChart { nullptr };
-    QMenu* mAmplitudeModeMenu { nullptr };
     // 导出菜单项（retranslateUi 需要逐条刷新文本，评审 §七-5）
     QAction* mActionExportPeaksCsv { nullptr };
     QAction* mActionExportSpectrumCsv { nullptr };
@@ -358,15 +396,17 @@ private:
     QAction* mActionExportHeatmapCsv { nullptr };
     QActionGroup* mWaterfallModeGroup { nullptr };
     QActionGroup* mPeakTopNGroup { nullptr };
-    QActionGroup* mAmplitudeModeGroup { nullptr };
 
 public:
     //===================================================
     // 丝带面板（全部位于插件自建的上下文标签页）
     //===================================================
     SARibbonPanel* mPanelImportExport { nullptr };  ///< 分析设置页：导入导出（导入▾/导出数据▾/导出图片▾）
-    SARibbonPanel* mPanelAnalysis { nullptr };  ///< 分析（步骤5 起为「更多」：高级设置…）
-    SARibbonPanel* mPanelPeaks { nullptr };     ///< 峰值
+    SARibbonPanel* mPanelPreprocess { nullptr };    ///< 分析设置页：预处理（去直流/去趋势）
+    SARibbonPanel* mPanelSpectrum { nullptr };      ///< 分析设置页：频谱（窗函数/幅值口径/频率分辨率）
+    SARibbonPanel* mPanelTimeFreq { nullptr };      ///< 分析设置页：时频（窗长/跳步重叠/Δf）
+    SARibbonPanel* mPanelPeaks { nullptr };         ///< 分析设置页：峰值
+    SARibbonPanel* mPanelMore { nullptr };          ///< 分析设置页：更多（高级设置…）
 
     //===================================================
     // 窗口（Window）
@@ -412,15 +452,9 @@ public:
     QAction* actionWaterfall2D { nullptr };    ///< 二维时频热图
     QAction* actionWaterfall3D { nullptr };    ///< 三维曲面瀑布
     QAction* actionWaterfallHide { nullptr };  ///< 隐藏瀑布
-    QAction* actionAmplitudeMode { nullptr };  ///< 幅值模式（带菜单）
     QAction* actionLogFrequency { nullptr };   ///< 对数频率轴
     QAction* actionColormap { nullptr };       ///< 色带（带菜单）
     QAction* actionColorBar { nullptr };       ///< 时频图色标显隐（显示面板开关）
-    // 幅值模式菜单项
-    QAction* actionAmpPeak { nullptr };     ///< 峰值幅度
-    QAction* actionAmpRms { nullptr };      ///< 均方根
-    QAction* actionAmpDbFs { nullptr };     ///< dB（相对满量程）
-    QAction* actionAmpDbRef1 { nullptr };   ///< dB（相对 1.0）
 
     //===================================================
     // 工具（Tools，位于 Ribbon 上下文标签）

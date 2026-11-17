@@ -1,4 +1,4 @@
-﻿#include "DASignalAnalysisUI.h"
+#include "DASignalAnalysisUI.h"
 // Qt
 #include <QMenu>
 #include <QActionGroup>
@@ -94,8 +94,11 @@ namespace
 /// 丝带标签页 / 面板 / 动作的 object name（唯一名，供样式与查找使用）
 // 插件不再占用顶级丝带标签页：主页「创建」panel 一个入口 + 上下文标签两页。
 const char* const cPanelImportExportName   = "da-panel-signal.importExport";
-const char* const cPanelAnalysisName       = "da-panel-signal.analysis";
+const char* const cPanelPreprocessName     = "da-panel-signal.preprocess";
+const char* const cPanelSpectrumName       = "da-panel-signal.spectrum";
+const char* const cPanelTimeFreqName       = "da-panel-signal.timefreq";
 const char* const cPanelPeaksName          = "da-panel-signal.peaks";
+const char* const cPanelMoreName           = "da-panel-signal.more";
 const char* const cPageDockObjectName      = "da-dock-signal-analysis-page";
 // 插件自建的 Ribbon 上下文标签（SARibbon 按 objectName 查找，任务卡固定值）
 const char* const cContextCategoryObjectName     = "ContextCategorySignalAnalysis";
@@ -1176,13 +1179,113 @@ void DASignalAnalysisUI::buildAnalysisSettingsPage(SARibbonContextCategory* cont
         "actionSignalStop",
         (QString::fromUtf8(cIconPrefix) + QStringLiteral("stop.svg")).toUtf8().constData());
 
-    // ---------- Analysis：统一参数对话框 ----------
-    mPanelAnalysis = mContextAnalysisPage->addPanel(tr("Analysis"));  // cn:分析
-    mPanelAnalysis->setObjectName(QString::fromUtf8(cPanelAnalysisName));
-    actionAnalysisSetting = mActions->createAction(
-        "actionSignalAnalysisSetting",
-        (QString::fromUtf8(cIconPrefix) + QStringLiteral("analysisSetting.svg")).toUtf8().constData());
-    mPanelAnalysis->addLargeAction(actionAnalysisSetting);
+    // ---------- 预处理：去直流 / 去趋势（S） ----------
+    // 影响频谱、热图、峰值与 dBFS 参考峰值（§5），改后按 ParamScope::Preprocess 分级重算
+    mPanelPreprocess = mContextAnalysisPage->addPanel(tr("Preprocess"));  // cn:预处理
+    mPanelPreprocess->setObjectName(QString::fromUtf8(cPanelPreprocessName));
+    mPreprocessDcCheck = new QCheckBox(tr("Remove DC"), mPanelPreprocess);  // cn:去直流
+    mPreprocessDcCheck->setObjectName(QStringLiteral("da-signal-preprocess-removedc"));
+    connect(mPreprocessDcCheck, &QCheckBox::toggled, this, &DASignalAnalysisUI::onPreprocessDcToggled);
+    mPanelPreprocess->addSmallWidget(mPreprocessDcCheck);
+    mDetrendCombo = new QComboBox(mPanelPreprocess);
+    mDetrendCombo->setObjectName(QStringLiteral("da-signal-preprocess-detrend"));
+    mDetrendCombo->setMinimumWidth(96);
+    mDetrendCombo->addItem(tr("None"), QStringLiteral("none"));          // cn:无
+    mDetrendCombo->addItem(tr("Constant"), QStringLiteral("constant"));  // cn:常数
+    mDetrendCombo->addItem(tr("Linear"), QStringLiteral("linear"));      // cn:线性
+    connect(mDetrendCombo,
+            QOverload< int >::of(&QComboBox::currentIndexChanged),
+            this,
+            &DASignalAnalysisUI::onDetrendChanged);
+    mPanelPreprocess->addSmallWidget(
+        makeRibbonSmallRow(tr("Detrend"), mDetrendCombo, mPanelPreprocess, &mDetrendLabel));  // cn:去趋势
+
+    // ---------- 频谱：窗函数 / 幅值口径 / 频率分辨率（S） ----------
+    // 幅值口径从「信号显示」页迁入本页（D7：dB 参考由幅值口径派生，不再单独入口）；
+    // 频率分辨率与「时频」页的窗长联动（Δf = 1/窗长）。
+    mPanelSpectrum = mContextAnalysisPage->addPanel(tr("Spectrum"));  // cn:频谱
+    mPanelSpectrum->setObjectName(QString::fromUtf8(cPanelSpectrumName));
+    mWindowCombo = new QComboBox(mPanelSpectrum);
+    mWindowCombo->setObjectName(QStringLiteral("da-signal-spectrum-window"));
+    mWindowCombo->setMinimumWidth(96);
+    mWindowCombo->addItem(tr("Rectangular"), QStringLiteral("rectangular"));  // cn:矩形
+    mWindowCombo->addItem(tr("Hann"), QStringLiteral("hann"));                // cn:汉宁
+    mWindowCombo->addItem(tr("Hamming"), QStringLiteral("hamming"));          // cn:汉明
+    mWindowCombo->addItem(tr("Blackman"), QStringLiteral("blackman"));        // cn:布莱克曼
+    mWindowCombo->addItem(tr("Flat top"), QStringLiteral("flattop"));         // cn:平顶
+    connect(mWindowCombo,
+            QOverload< int >::of(&QComboBox::currentIndexChanged),
+            this,
+            &DASignalAnalysisUI::onWindowChanged);
+    mPanelSpectrum->addSmallWidget(
+        makeRibbonSmallRow(tr("Window"), mWindowCombo, mPanelSpectrum, &mWindowLabel));  // cn:窗函数
+    mAmplitudeModeCombo = new QComboBox(mPanelSpectrum);
+    mAmplitudeModeCombo->setObjectName(QStringLiteral("da-signal-spectrum-amplitude"));
+    mAmplitudeModeCombo->setMinimumWidth(118);
+    mAmplitudeModeCombo->addItem(tr("Peak amplitude"), QStringLiteral("peak"));   // cn:峰值幅度
+    mAmplitudeModeCombo->addItem(tr("RMS"), QStringLiteral("rms"));               // cn:均方根
+    mAmplitudeModeCombo->addItem(tr("dB (FS)"), QStringLiteral("dbFS"));          // cn:dB（满量程）
+    mAmplitudeModeCombo->addItem(tr("dB (re 1.0)"), QStringLiteral("dbRef1"));    // cn:dB（相对 1.0）
+    connect(mAmplitudeModeCombo,
+            QOverload< int >::of(&QComboBox::currentIndexChanged),
+            this,
+            &DASignalAnalysisUI::onAmplitudeModeComboChanged);
+    mPanelSpectrum->addSmallWidget(
+        makeRibbonSmallRow(tr("Amplitude"), mAmplitudeModeCombo, mPanelSpectrum, &mAmplitudeModeLabel));
+    // cn:幅值口径
+    mResolutionSpin = new QDoubleSpinBox(mPanelSpectrum);
+    mResolutionSpin->setObjectName(QStringLiteral("da-signal-spectrum-resolution"));
+    mResolutionSpin->setRange(0.01, 100000.0);
+    mResolutionSpin->setDecimals(2);
+    mResolutionSpin->setSingleStep(1.0);
+    mResolutionSpin->setSuffix(QStringLiteral(" Hz"));
+    mResolutionSpin->setMinimumWidth(112);
+    mResolutionSpin->setKeyboardTracking(false);  // 输入过程中不逐字符触发重算
+    connect(mResolutionSpin,
+            QOverload< double >::of(&QDoubleSpinBox::valueChanged),
+            this,
+            &DASignalAnalysisUI::onResolutionChanged);
+    mPanelSpectrum->addSmallWidget(
+        makeRibbonSmallRow(tr("Resolution"), mResolutionSpin, mPanelSpectrum, &mResolutionLabel));  // cn:频率分辨率
+
+    // ---------- 时频：窗长 / 跳步重叠 / Δf（S） ----------
+    // 窗长与频谱页的频率分辨率联动（改一个同步另一个）；Δf 是只读提示，不参与输入。
+    mPanelTimeFreq = mContextAnalysisPage->addPanel(tr("Time-Frequency"));  // cn:时频
+    mPanelTimeFreq->setObjectName(QString::fromUtf8(cPanelTimeFreqName));
+    mStftWindowSpin = new QDoubleSpinBox(mPanelTimeFreq);
+    mStftWindowSpin->setObjectName(QStringLiteral("da-signal-stft-window"));
+    mStftWindowSpin->setRange(1.0, 10000.0);
+    mStftWindowSpin->setDecimals(1);
+    mStftWindowSpin->setSingleStep(10.0);
+    mStftWindowSpin->setSuffix(QStringLiteral(" ms"));
+    mStftWindowSpin->setMinimumWidth(108);
+    mStftWindowSpin->setKeyboardTracking(false);
+    connect(mStftWindowSpin,
+            QOverload< double >::of(&QDoubleSpinBox::valueChanged),
+            this,
+            &DASignalAnalysisUI::onStftWindowChanged);
+    mPanelTimeFreq->addSmallWidget(
+        makeRibbonSmallRow(tr("Window length"), mStftWindowSpin, mPanelTimeFreq, &mStftWindowLabel));
+    // cn:窗长
+    mStftOverlapSpin = new QDoubleSpinBox(mPanelTimeFreq);
+    mStftOverlapSpin->setObjectName(QStringLiteral("da-signal-stft-overlap"));
+    mStftOverlapSpin->setRange(0.0, 95.0);
+    mStftOverlapSpin->setDecimals(0);
+    mStftOverlapSpin->setSingleStep(5.0);
+    mStftOverlapSpin->setSuffix(QStringLiteral(" %"));
+    mStftOverlapSpin->setMinimumWidth(96);
+    mStftOverlapSpin->setKeyboardTracking(false);
+    connect(mStftOverlapSpin,
+            QOverload< double >::of(&QDoubleSpinBox::valueChanged),
+            this,
+            &DASignalAnalysisUI::onStftOverlapChanged);
+    mPanelTimeFreq->addSmallWidget(
+        makeRibbonSmallRow(tr("Hop overlap"), mStftOverlapSpin, mPanelTimeFreq, &mStftOverlapLabel));
+    // cn:跳步重叠
+    mDeltaFLabel = new QLabel(mPanelTimeFreq);
+    mDeltaFLabel->setObjectName(QStringLiteral("da-signal-stft-deltaf"));
+    mDeltaFLabel->setText(QStringLiteral("Δf —"));
+    mPanelTimeFreq->addSmallWidget(mDeltaFLabel);
 
     // ---------- Peaks：标记数量 + 模式 + 相对门限（峰值标注类动作在「信号显示」页） ----------
     // 步骤 2 起一分为二：常见搜索参数留本页；峰值标记/标记显示/峰值窗口迁到「信号显示」页
@@ -1219,6 +1322,15 @@ void DASignalAnalysisUI::buildAnalysisSettingsPage(SARibbonContextCategory* cont
     mPanelPeaks->addSmallWidget(
         makeRibbonSmallRow(tr("Threshold"), mPeakRelDbSpin, mPanelPeaks, &mPeakRelDbLabel));  // cn:相对门限
     buildPeakTopNMenu();
+
+    // ---------- 更多：高级设置…（对话框唯一入口） ----------
+    // 常用参数已全部上丝带，本 panel 只留「高级设置…」打开对话框（零填充/功率谱/峰值高级/标定）。
+    mPanelMore = mContextAnalysisPage->addPanel(tr("More"));  // cn:更多
+    mPanelMore->setObjectName(QString::fromUtf8(cPanelMoreName));
+    actionAnalysisSetting = mActions->createAction(
+        "actionSignalAnalysisSetting",
+        (QString::fromUtf8(cIconPrefix) + QStringLiteral("analysisSetting.svg")).toUtf8().constData());
+    mPanelMore->addLargeAction(actionAnalysisSetting);
 }
 
 /**
@@ -1321,11 +1433,8 @@ void DASignalAnalysisUI::buildSignalContextCategory()
     mContextDisplayPanel->addMediumAction(actionWaterfall2D);
     mContextDisplayPanel->addMediumAction(actionWaterfall3D);
     mContextDisplayPanel->addMediumAction(actionWaterfallHide);
-    mContextDisplayPanel->addSeparator();
-    // 幅值模式（带菜单）
-    actionAmplitudeMode = createIconAction("actionSignalAmplitudeMode", pluginIcon("amplitude.svg"), false);
-    mContextDisplayPanel->addLargeAction(actionAmplitudeMode);
-    buildAmplitudeModeMenu();
+    // 幅值口径已迁到「分析设置」页的「频谱」panel（D7：dB 参考由幅值口径派生），
+    // 本页不再有重复的幅值模式菜单入口。
 
     // ---------- Peaks：峰值标注（峰值标记 / 标记显示 / 峰值窗口） ----------
     // 步骤 2 从「分析设置」页的「峰值」panel 拆出：搜索参数留分析页，标注类归显示页。
@@ -1604,22 +1713,8 @@ void DASignalAnalysisUI::syncSignalContextControls()
         actionPeakMarker->setEnabled(view != nullptr);
         actionPeakMarker->setChecked(view && mPeakMarkersVisible);
     }
-    // 峰值 panel 的模式/相对门限跟随当前信号参数
-    syncPeakRibbonControls();
-    // 幅值模式（全局状态，与 syncAmplitudeUiFromParams 同一口径）
-    QAction* amplitudeAction = actionAmpPeak;
-    if (mAmplitudeMode == QLatin1String("rms")) {
-        amplitudeAction = actionAmpRms;
-    } else if (mAmplitudeMode == QLatin1String("dbFS")) {
-        amplitudeAction = actionAmpDbFs;
-    } else if (mAmplitudeMode == QLatin1String("dbRef1")) {
-        amplitudeAction = actionAmpDbRef1;
-    }
-    if (amplitudeAction) {
-        const QSignalBlocker blocker(amplitudeAction);
-        amplitudeAction->setEnabled(view != nullptr);
-        amplitudeAction->setChecked(true);
-    }
+    // 分析设置页参数控件（预处理/频谱/时频/峰值）跟随当前信号参数
+    syncParamsRibbonControls();
     // 「添加图元」可用性：需要当前视图 figure 与当前 2D 子图
     DAChartWidget* chart = (view ? view->currentChart() : nullptr);
     const bool chartAvailable = (chart != nullptr);
@@ -2363,33 +2458,6 @@ void DASignalAnalysisUI::buildPeakTopNMenu()
     }
     actionPeakTop10->setChecked(true);
     actionPeakTopN->setMenu(mPeakTopNMenu);
-}
-
-/**
- * @brief 构建「幅值模式」下拉菜单（峰值幅度/均方根/dBFS/dB re 1.0，互斥）
- */
-void DASignalAnalysisUI::buildAmplitudeModeMenu()
-{
-    if (nullptr == actionAmplitudeMode) {
-        return;
-    }
-    mAmplitudeModeMenu  = new QMenu();
-    mAmplitudeModeGroup = new QActionGroup(this);
-    mAmplitudeModeGroup->setExclusive(true);
-    actionAmpPeak  = mAmplitudeModeMenu->addAction(tr("Peak amplitude"));  // cn:峰值幅度
-    actionAmpRms   = mAmplitudeModeMenu->addAction(tr("RMS"));             // cn:均方根
-    actionAmpDbFs  = mAmplitudeModeMenu->addAction(tr("dB (FS)"));         // cn:dB（满量程）
-    actionAmpDbRef1 = mAmplitudeModeMenu->addAction(tr("dB (re 1.0)"));    // cn:dB（相对 1.0）
-    for (QAction* act : { actionAmpPeak, actionAmpRms, actionAmpDbFs, actionAmpDbRef1 }) {
-        act->setCheckable(true);
-        act->setActionGroup(mAmplitudeModeGroup);
-    }
-    actionAmpPeak->setChecked(true);  // 默认峰值幅度（D14）
-    actionAmplitudeMode->setMenu(mAmplitudeModeMenu);
-    connect(actionAmpPeak, &QAction::triggered, this, &DASignalAnalysisUI::onAmplitudeModeChanged);
-    connect(actionAmpRms, &QAction::triggered, this, &DASignalAnalysisUI::onAmplitudeModeChanged);
-    connect(actionAmpDbFs, &QAction::triggered, this, &DASignalAnalysisUI::onAmplitudeModeChanged);
-    connect(actionAmpDbRef1, &QAction::triggered, this, &DASignalAnalysisUI::onAmplitudeModeChanged);
 }
 
 // ---------------------------------------------------------------- 导出与工程保存
@@ -3319,16 +3387,9 @@ void DASignalAnalysisUI::finalize()
         delete mImportMenu;
         mImportMenu = nullptr;
     }
-    if (actionAmplitudeMode) {
-        actionAmplitudeMode->setMenu(nullptr);
-    }
     if (mPeakTopNMenu) {
         delete mPeakTopNMenu;
         mPeakTopNMenu = nullptr;
-    }
-    if (mAmplitudeModeMenu) {
-        delete mAmplitudeModeMenu;
-        mAmplitudeModeMenu = nullptr;
     }
     // 色带菜单（上下文标签 Display 组）
     if (actionColormap) {
@@ -3453,7 +3514,7 @@ void DASignalAnalysisUI::finalize()
             actionImportVideo,    actionPlay,            actionStop,
             actionAnalysisSetting, actionCancelAnalysis, actionPeakMarker,     actionPeakTopN,
             actionPeakMarkerDisplay, actionPeakWindow,   actionWaterfall2D,     actionWaterfall3D,
-            actionWaterfallHide,  actionAmplitudeMode,   actionExportPeaks,
+            actionWaterfallHide,  actionExportPeaks,
             actionExportImage,    actionRelinkSource,
             actionLogFrequency,   actionColormap,        actionAddFigure,       actionColorBar
         };
@@ -3483,11 +3544,6 @@ void DASignalAnalysisUI::finalize()
     actionWaterfall2D       = nullptr;
     actionWaterfall3D       = nullptr;
     actionWaterfallHide    = nullptr;
-    actionAmplitudeMode     = nullptr;
-    actionAmpPeak           = nullptr;
-    actionAmpRms            = nullptr;
-    actionAmpDbFs           = nullptr;
-    actionAmpDbRef1         = nullptr;
     actionExportPeaks       = nullptr;
     actionExportImage       = nullptr;
     actionRelinkSource      = nullptr;
@@ -3496,8 +3552,11 @@ void DASignalAnalysisUI::finalize()
     actionColorBar          = nullptr;
     actionAddFigure         = nullptr;
     mPanelImportExport      = nullptr;
-    mPanelAnalysis          = nullptr;
+    mPanelPreprocess        = nullptr;
+    mPanelSpectrum          = nullptr;
+    mPanelTimeFreq          = nullptr;
     mPanelPeaks             = nullptr;
+    mPanelMore              = nullptr;
     // 峰值 panel 控件随所属面板/category 一并销毁，这里只置空指针
     mPeakModeCombo          = nullptr;
     mPeakRelDbSpin          = nullptr;
@@ -3566,20 +3625,20 @@ void DASignalAnalysisUI::openAnalysisSettings()
     sig->setCalibration(params.calibration);
     sig->setUnit(params.unit);
     bumpParamsVersion(sig);
-    // 对话框里可能改了幅值口径：同步丝带勾选与全局状态，避免峰值表/导出/存档口径分叉（评审 N-U3）
-    syncAmplitudeUiFromParams(params);
+    // 对话框里可能改了任意参数（含幅值口径）：全量回填丝带控件与全局状态，避免口径分叉（评审 N-U3）
+    syncParamsRibbonControls();
     // 参数变了：大信号内存预算重新询问一次（用户可能是有意用更大段长重试，评审 N-C1c）
     mMemoryBudgetVerdict.remove(sig.get());
     recomputeCurrentSignal();
 }
 
 /**
- * @brief 参数对话框改幅值口径后同步丝带勾选与全局状态（评审 N-U3）
+ * @brief 幅值口径同步：全局状态 + 频谱 panel 的幅值 combo + 视图/峰值表重绘
  *
- * 幅值口径有两份状态：全局 mAmplitudeMode/mDbReference（丝带、峰值表、工程存档用）
- * 与 params.amplitudeMode/dbReference（对话框、计算、视图用）。对话框只改后者时，
- * 存档与峰值表仍按旧口径显示 → 这里按参数反查 actionAmp* 并静默同步勾选，
- * 再用同一口径刷新峰值表与视图（不重算，只重绘）。
+ * 幅值口径有两份状态：全局 mAmplitudeMode/mDbReference（峰值表、工程存档用）与
+ * params.amplitudeMode/dbReference（计算、视图用）。丝带 combo 与对话框都只改后者，
+ * 这里统一把前者同步成同一口径，并只重绘（不重算）。
+ * dB 参考由幅值口径派生（D7）：dbRef1 → 相对 1.0，其余 → 相对满量程。
  */
 void DASignalAnalysisUI::syncAmplitudeUiFromParams(const DASignalAnalysisParams& params)
 {
@@ -3589,18 +3648,12 @@ void DASignalAnalysisUI::syncAmplitudeUiFromParams(const DASignalAnalysisParams&
     if (!params.dbReference.isEmpty()) {
         mDbReference = params.dbReference;
     }
-    QAction* target = actionAmpPeak;
-    if (mAmplitudeMode == QLatin1String("rms")) {
-        target = actionAmpRms;
-    } else if (mAmplitudeMode == QLatin1String("dbFS")) {
-        target = actionAmpDbFs;
-    } else if (mAmplitudeMode == QLatin1String("dbRef1")) {
-        target = actionAmpDbRef1;
-    }
-    if (target) {
-        // 用 QSignalBlocker 避免勾选变化再触发 onAmplitudeModeChanged 造成反向覆盖
-        const QSignalBlocker blocker(target);
-        target->setChecked(true);
+    if (mAmplitudeModeCombo) {
+        const QSignalBlocker blocker(mAmplitudeModeCombo);
+        const int comboIndex = mAmplitudeModeCombo->findData(mAmplitudeMode);
+        if (comboIndex >= 0) {
+            mAmplitudeModeCombo->setCurrentIndex(comboIndex);
+        }
     }
     if (!mPage) {
         return;
@@ -3614,6 +3667,120 @@ void DASignalAnalysisUI::syncAmplitudeUiFromParams(const DASignalAnalysisParams&
         mPeakPanel->setPeaks(mCurrentPeaks);
         mPeakPanel->setPeakCurves(mCurrentCurves);
     }
+}
+
+/**
+ * @brief 参数统一写回入口（方案 §5）：改字段 → 存表 → 版本 +1 → 按 scope 分级重算
+ *
+ * 不要所有改动都走全量重算：大信号改 STFT 跳步时重算整段频谱会明显变慢。
+ * DisplayOnly（幅值口径）只更新显示状态与峰值表重绘，不递增参数版本、不提交计算。
+ */
+void DASignalAnalysisUI::applyParamsPatch(const DASignalPtr& sig,
+                                          const std::function< void(DASignalAnalysisParams&) >& patch,
+                                          ParamScope scope)
+{
+    if (!sig) {
+        return;
+    }
+    DASignalAnalysisParams next = paramsForSignal(sig);
+    if (patch) {
+        patch(next);
+    }
+    mParamsPerSignal[ sig.get() ] = next;
+    if (scope == ParamScope::DisplayOnly) {
+        syncAmplitudeUiFromParams(next);
+        updateDeltaFLabel(next);
+        return;
+    }
+    // 参数变化：版本 +1（迟到结果丢弃），预算判定与旧峰值结果作废
+    bumpParamsVersion(sig);
+    mPeakCurvesRequested = false;  // 帧口径/名次可能变化，峰值曲线需要重扫
+    mMemoryBudgetVerdict.remove(sig.get());
+    if (DASignalAnalysisView* view = (mPage ? mPage->viewForSignal(sig.get()) : nullptr)) {
+        view->setParams(next);
+    }
+    clearPeakState();
+    recomputeScoped(scope);
+    updateDeltaFLabel(next);
+}
+
+/**
+ * @brief 按参数重算范围提交后台任务（方案 §5 的分级重算）
+ *
+ * - Preprocess：预处理影响频谱/热图/峰值与 dBFS 参考峰值
+ * - Spectrum：窗函数/频率分辨率影响频谱、热图与峰值 → 三者都重算
+ * - TimeFreq：只改 STFT 跳步重叠 → 热图 + 峰值曲线（不改频谱）
+ * - Peaks：只重算峰值表与曲线
+ * 包络只依赖原始波形，任何参数变化都不重算。
+ */
+void DASignalAnalysisUI::recomputeScoped(ParamScope scope)
+{
+    if (nullptr == mPage || nullptr == mWorker) {
+        return;
+    }
+    DASignalPtr sig = mPage->currentSignal();
+    if (!sig || !sig->isValid()) {
+        return;
+    }
+    DASignalAnalysisView* view          = mPage->viewForSignal(sig.get());
+    const int channel                   = view ? view->currentChannel() : 0;
+    const DASignalAnalysisParams params = paramsForSignal(sig);
+    const bool peakCurves               = (mPeakDock && !mPeakDock->isClosed());
+    switch (scope) {
+    case ParamScope::Preprocess:
+    case ParamScope::Spectrum: {
+        mWorker->computeSpectrum(makeTaskContext(sig, channel), params);
+        if (view) {
+            view->requestHeatmapRefresh();
+        }
+        requestPeaks(peakCurves);
+        break;
+    }
+    case ParamScope::TimeFreq: {
+        // 跳步只影响时频栅格与峰值曲线；频谱段长没变，不重算整段频谱
+        if (view) {
+            view->requestHeatmapRefresh();
+        }
+        requestPeaks(peakCurves);
+        break;
+    }
+    case ParamScope::Peaks: {
+        requestPeaks(true);
+        break;
+    }
+    case ParamScope::DisplayOnly:
+        break;
+    }
+    updateCancelActionState();
+}
+
+/**
+ * @brief 刷新时频 panel 的 Δf 只读提示（按采样率与实际段长反算，与 Python 同口径）
+ */
+void DASignalAnalysisUI::updateDeltaFLabel(const DASignalAnalysisParams& params)
+{
+    if (nullptr == mDeltaFLabel) {
+        return;
+    }
+    double sampleRate = 0.0;
+    if (mPage) {
+        if (DASignalPtr sig = mPage->currentSignal()) {
+            sampleRate = sig->sampleRate();
+        }
+    }
+    const double resolution = (sampleRate > 0.0) ? signalResolutionFromStftWindowMs(params.stftWindowMs) : 0.0;
+    if (resolution <= 0.0) {
+        mDeltaFLabel->setText(QStringLiteral("Δf —"));
+        mDeltaFLabel->setToolTip(tr("Frequency resolution of the time-frequency view"));  // cn:时频视图的频率分辨率
+        return;
+    }
+    // 实际分辨率按整数段长回算（与 spectral.py 的段长取整口径一致）
+    const int segLen     = qMax(2, int(qRound(qMax(params.stftWindowMs, 1.0) * sampleRate / 1000.0)));
+    const double realRes = sampleRate / double(segLen);
+    Q_UNUSED(resolution)
+    mDeltaFLabel->setText(tr("Δf ≈ %1 Hz").arg(realRes, 0, 'f', 2));  // cn:Δf ≈ %1 赫兹
+    mDeltaFLabel->setToolTip(tr("Frequency resolution derived from the window length"));
+    // cn:由窗长派生的频率分辨率
 }
 
 /**
@@ -4394,7 +4561,7 @@ void DASignalAnalysisUI::onPeakMarkerToggled(bool on)
 }
 
 /**
- * @brief 前 N 改变（10/20/50）：更新参数并重算峰值表与曲线
+ * @brief 标记数量改变（10/20/50）：更新参数并重算峰值表与曲线
  */
 void DASignalAnalysisUI::onPeakTopNChanged()
 {
@@ -4404,19 +4571,12 @@ void DASignalAnalysisUI::onPeakTopNChanged()
     } else if (actionPeakTop50 && actionPeakTop50->isChecked()) {
         topN = 50;
     }
-    if (mPage) {
-        DASignalPtr sig = mPage->currentSignal();
-        if (!sig) {
-            return;
-        }
-        DASignalAnalysisParams params = paramsForSignal(sig);
-        params.peakTopN               = topN;
-        mParamsPerSignal[ sig.get() ] = params;
-        bumpParamsVersion(sig);
+    DASignalPtr sig = (mPage ? mPage->currentSignal() : DASignalPtr());
+    if (!sig) {
+        return;
     }
-    mPeakCurvesRequested = false;  // 名次数改变后需要重扫曲线
-    clearPeakState();
-    requestPeaks(true);
+    applyParamsPatch(
+        sig, [topN](DASignalAnalysisParams& params) { params.peakTopN = topN; }, ParamScope::Peaks);
 }
 
 /**
@@ -4428,28 +4588,20 @@ void DASignalAnalysisUI::onPeakTopNChanged()
 void DASignalAnalysisUI::onPeakModeChanged(int index)
 {
     Q_UNUSED(index)
-    if (nullptr == mPeakModeCombo || nullptr == mPage) {
+    if (nullptr == mPeakModeCombo) {
         return;
     }
-    DASignalPtr sig = mPage->currentSignal();
+    DASignalPtr sig = (mPage ? mPage->currentSignal() : DASignalPtr());
     if (!sig) {
         return;
     }
     const QString mode = mPeakModeCombo->currentData().toString();
-    if (mode.isEmpty()) {
-        return;
-    }
-    DASignalAnalysisParams params = paramsForSignal(sig);
-    if (params.peakMode == mode) {
+    if (mode.isEmpty() || paramsForSignal(sig).peakMode == mode) {
         return;  // 程序化回填触发的信号：参数没变不重算
     }
-    params.peakMode               = mode;
-    mParamsPerSignal[ sig.get() ] = params;
-    bumpParamsVersion(sig);
-    mPeakCurvesRequested = false;  // 查找口径变了，名次对应关系可能变化
-    clearPeakState();
-    requestPeaks(true);
-    syncPeakRibbonControls();
+    applyParamsPatch(
+        sig, [mode](DASignalAnalysisParams& params) { params.peakMode = mode; }, ParamScope::Peaks);
+    syncParamsRibbonControls();
 }
 
 /**
@@ -4457,24 +4609,166 @@ void DASignalAnalysisUI::onPeakModeChanged(int index)
  */
 void DASignalAnalysisUI::onPeakRelDbChanged(double value)
 {
-    if (nullptr == mPage) {
-        return;
-    }
-    DASignalPtr sig = mPage->currentSignal();
+    DASignalPtr sig = (mPage ? mPage->currentSignal() : DASignalPtr());
     if (!sig) {
         return;
     }
-    DASignalAnalysisParams params = paramsForSignal(sig);
-    if (qFuzzyCompare(params.peakRelDb + 1.0, value + 1.0)) {
+    if (qFuzzyCompare(paramsForSignal(sig).peakRelDb + 1.0, value + 1.0)) {
         return;  // 程序化回填触发的信号：参数没变不重算
     }
-    params.peakRelDb              = value;
-    mParamsPerSignal[ sig.get() ] = params;
-    bumpParamsVersion(sig);
-    mPeakCurvesRequested = false;
-    clearPeakState();
-    requestPeaks(true);
-    syncPeakRibbonControls();
+    applyParamsPatch(
+        sig, [value](DASignalAnalysisParams& params) { params.peakRelDb = value; }, ParamScope::Peaks);
+    syncParamsRibbonControls();
+}
+
+/**
+ * @brief 预处理「去直流」开关：写参数并重算频谱/热图/峰值
+ */
+void DASignalAnalysisUI::onPreprocessDcToggled(bool on)
+{
+    DASignalPtr sig = (mPage ? mPage->currentSignal() : DASignalPtr());
+    if (!sig || paramsForSignal(sig).removeDc == on) {
+        return;  // 程序化回填不重算
+    }
+    applyParamsPatch(
+        sig, [on](DASignalAnalysisParams& params) { params.removeDc = on; }, ParamScope::Preprocess);
+}
+
+/**
+ * @brief 预处理「去趋势」改变：写参数并重算频谱/热图/峰值
+ */
+void DASignalAnalysisUI::onDetrendChanged(int index)
+{
+    Q_UNUSED(index)
+    if (nullptr == mDetrendCombo) {
+        return;
+    }
+    DASignalPtr sig = (mPage ? mPage->currentSignal() : DASignalPtr());
+    if (!sig) {
+        return;
+    }
+    const QString detrend = mDetrendCombo->currentData().toString();
+    if (detrend.isEmpty() || paramsForSignal(sig).detrend == detrend) {
+        return;
+    }
+    applyParamsPatch(
+        sig, [detrend](DASignalAnalysisParams& params) { params.detrend = detrend; }, ParamScope::Preprocess);
+}
+
+/**
+ * @brief 频谱「窗函数」改变：写参数并重算频谱/热图/峰值（窗函数与 STFT 共用）
+ */
+void DASignalAnalysisUI::onWindowChanged(int index)
+{
+    Q_UNUSED(index)
+    if (nullptr == mWindowCombo) {
+        return;
+    }
+    DASignalPtr sig = (mPage ? mPage->currentSignal() : DASignalPtr());
+    if (!sig) {
+        return;
+    }
+    const QString window = mWindowCombo->currentData().toString();
+    if (window.isEmpty() || paramsForSignal(sig).window == window) {
+        return;
+    }
+    applyParamsPatch(
+        sig, [window](DASignalAnalysisParams& params) { params.window = window; }, ParamScope::Spectrum);
+}
+
+/**
+ * @brief 频谱「幅值口径」改变：只改显示口径（dB 参考由它派生），只重绘不重算
+ */
+void DASignalAnalysisUI::onAmplitudeModeComboChanged(int index)
+{
+    Q_UNUSED(index)
+    if (nullptr == mAmplitudeModeCombo) {
+        return;
+    }
+    DASignalPtr sig = (mPage ? mPage->currentSignal() : DASignalPtr());
+    if (!sig) {
+        return;
+    }
+    const QString mode = mAmplitudeModeCombo->currentData().toString();
+    if (mode.isEmpty() || paramsForSignal(sig).amplitudeMode == mode) {
+        return;
+    }
+    applyParamsPatch(
+        sig,
+        [mode](DASignalAnalysisParams& params) {
+            params.amplitudeMode = mode;
+            // D7：不再有独立「dB 参考」入口，参考口径由幅值口径派生（字段保留兼容旧档）
+            params.dbReference = (mode == QLatin1String("dbRef1")) ? QStringLiteral("one")
+                                                                  : QStringLiteral("fullScale");
+        },
+        ParamScope::DisplayOnly);
+}
+
+/**
+ * @brief 频谱「频率分辨率」改变：写参数并联动 STFT 窗长，重算频谱/热图/峰值
+ */
+void DASignalAnalysisUI::onResolutionChanged(double value)
+{
+    DASignalPtr sig = (mPage ? mPage->currentSignal() : DASignalPtr());
+    if (!sig || !(value > 0.0)) {
+        return;
+    }
+    if (qFuzzyCompare(paramsForSignal(sig).resolutionHz + 1.0, value + 1.0)) {
+        return;  // 程序化回填（含 STFT 窗长联动）不重算
+    }
+    const double windowMs = signalStftWindowMsFromResolution(value);
+    applyParamsPatch(
+        sig,
+        [value, windowMs](DASignalAnalysisParams& params) {
+            params.resolutionHz = value;
+            // 分辨率 ↔ STFT 窗长联动（Δf = 1/窗长），同一组布局参数只有一份真相
+            if (windowMs >= 1.0 && windowMs <= 10000.0) {
+                params.stftWindowMs = windowMs;
+            }
+        },
+        ParamScope::Spectrum);
+    syncParamsRibbonControls();  // 联动回填窗长/Δf 控件（阻断信号）
+}
+
+/**
+ * @brief 时频「窗长」改变：写参数并联动频率分辨率，重算频谱/热图/峰值
+ */
+void DASignalAnalysisUI::onStftWindowChanged(double value)
+{
+    DASignalPtr sig = (mPage ? mPage->currentSignal() : DASignalPtr());
+    if (!sig || !(value > 0.0)) {
+        return;
+    }
+    if (qFuzzyCompare(paramsForSignal(sig).stftWindowMs + 1.0, value + 1.0)) {
+        return;
+    }
+    const double resolution = signalResolutionFromStftWindowMs(value);
+    applyParamsPatch(
+        sig,
+        [value, resolution](DASignalAnalysisParams& params) {
+            params.stftWindowMs = value;
+            if (resolution >= 0.001 && resolution <= 1.0e6) {
+                params.resolutionHz = resolution;  // 与频谱分辨率联动
+            }
+        },
+        ParamScope::Spectrum);
+    syncParamsRibbonControls();
+}
+
+/**
+ * @brief 时频「跳步重叠」改变：只重算热图与峰值曲线（频谱段长没变）
+ */
+void DASignalAnalysisUI::onStftOverlapChanged(double value)
+{
+    DASignalPtr sig = (mPage ? mPage->currentSignal() : DASignalPtr());
+    if (!sig) {
+        return;
+    }
+    if (qFuzzyCompare(paramsForSignal(sig).stftOverlap + 1.0, value + 1.0)) {
+        return;
+    }
+    applyParamsPatch(
+        sig, [value](DASignalAnalysisParams& params) { params.stftOverlap = value; }, ParamScope::TimeFreq);
 }
 
 /**
@@ -4506,22 +4800,61 @@ void DASignalAnalysisUI::openPeakMarkerDisplaySettings()
 }
 
 /**
- * @brief 峰值 panel「模式 / 相对门限」控件回填当前信号参数
+ * @brief 分析设置页参数控件回填当前信号参数（预处理/频谱/时频/峰值）
  *
  * 切信号、参数变化、页面未创建都要能安全调用：控件写值一律用 QSignalBlocker，
- * 避免回填触发 onPeakModeChanged/onPeakRelDbChanged 造成反向参数覆盖。
+ * 避免回填触发各 on*Changed 造成反向参数覆盖；无当前信号时全部置灰。
  */
-void DASignalAnalysisUI::syncPeakRibbonControls()
+void DASignalAnalysisUI::syncParamsRibbonControls()
 {
     const DASignalPtr sig = (mPage ? mPage->currentSignal() : DASignalPtr());
     const bool hasSignal  = static_cast< bool >(sig);
     const DASignalAnalysisParams params = hasSignal ? paramsForSignal(sig) : DASignalAnalysisParams::defaults();
+    // ---- 预处理 ----
+    if (mPreprocessDcCheck) {
+        const QSignalBlocker blocker(mPreprocessDcCheck);
+        mPreprocessDcCheck->setChecked(params.removeDc);
+        mPreprocessDcCheck->setEnabled(hasSignal);
+    }
+    if (mDetrendCombo) {
+        const QSignalBlocker blocker(mDetrendCombo);
+        const int idx = qMax(0, mDetrendCombo->findData(params.detrend));
+        mDetrendCombo->setCurrentIndex(idx);
+        mDetrendCombo->setEnabled(hasSignal);
+    }
+    // ---- 频谱 ----
+    if (mWindowCombo) {
+        const QSignalBlocker blocker(mWindowCombo);
+        const int idx = qMax(0, mWindowCombo->findData(params.window));
+        mWindowCombo->setCurrentIndex(idx);
+        mWindowCombo->setEnabled(hasSignal);
+    }
+    if (mAmplitudeModeCombo) {
+        const QSignalBlocker blocker(mAmplitudeModeCombo);
+        const int idx = qMax(0, mAmplitudeModeCombo->findData(params.amplitudeMode));
+        mAmplitudeModeCombo->setCurrentIndex(idx);
+        mAmplitudeModeCombo->setEnabled(hasSignal);
+    }
+    if (mResolutionSpin) {
+        const QSignalBlocker blocker(mResolutionSpin);
+        mResolutionSpin->setValue(params.resolutionHz);
+        mResolutionSpin->setEnabled(hasSignal);
+    }
+    // ---- 时频 ----
+    if (mStftWindowSpin) {
+        const QSignalBlocker blocker(mStftWindowSpin);
+        mStftWindowSpin->setValue(params.stftWindowMs);
+        mStftWindowSpin->setEnabled(hasSignal);
+    }
+    if (mStftOverlapSpin) {
+        const QSignalBlocker blocker(mStftOverlapSpin);
+        mStftOverlapSpin->setValue(params.stftOverlap);
+        mStftOverlapSpin->setEnabled(hasSignal);
+    }
+    // ---- 峰值 ----
     if (mPeakModeCombo) {
         const QSignalBlocker blocker(mPeakModeCombo);
-        int comboIndex = mPeakModeCombo->findData(params.peakMode);
-        if (comboIndex < 0) {
-            comboIndex = 0;
-        }
+        const int comboIndex = qMax(0, mPeakModeCombo->findData(params.peakMode));
         mPeakModeCombo->setCurrentIndex(comboIndex);
         mPeakModeCombo->setEnabled(hasSignal);
     }
@@ -4530,6 +4863,8 @@ void DASignalAnalysisUI::syncPeakRibbonControls()
         mPeakRelDbSpin->setValue(params.peakRelDb);
         mPeakRelDbSpin->setEnabled(hasSignal);
     }
+    // Δf 只读提示跟随窗长（与上面的回填同一口径）
+    updateDeltaFLabel(params);
 }
 
 /**
@@ -4571,48 +4906,6 @@ void DASignalAnalysisUI::onWorkerEnvelopeReady(const DASignalTaskContext& ctx,
 }
 
 /**
- * @brief 幅值显示模式切换：更新当前信号参数并只重绘（D14）
- */
-void DASignalAnalysisUI::onAmplitudeModeChanged()
-{
-    if (actionAmpPeak && actionAmpPeak->isChecked()) {
-        mAmplitudeMode = QStringLiteral("peak");
-        mDbReference   = QStringLiteral("fullScale");
-    } else if (actionAmpRms && actionAmpRms->isChecked()) {
-        mAmplitudeMode = QStringLiteral("rms");
-    } else if (actionAmpDbFs && actionAmpDbFs->isChecked()) {
-        mAmplitudeMode = QStringLiteral("dbFS");
-        mDbReference   = QStringLiteral("fullScale");
-    } else if (actionAmpDbRef1 && actionAmpDbRef1->isChecked()) {
-        mAmplitudeMode = QStringLiteral("dbRef1");
-        mDbReference   = QStringLiteral("one");
-    }
-    if (!mPage) {
-        return;
-    }
-    DASignalPtr sig = mPage->currentSignal();
-    if (!sig) {
-        return;
-    }
-    DASignalAnalysisParams params = paramsForSignal(sig);
-    params.amplitudeMode          = mAmplitudeMode;
-    params.dbReference            = mDbReference;
-    mParamsPerSignal[ sig.get() ] = params;
-    if (DASignalAnalysisView* view = mPage->viewForSignal(sig.get())) {
-        view->setAmplitudeDisplay(mAmplitudeMode, mDbReference);
-    }
-    // 峰值表/曲线的显示口径也要跟着切换（只重绘，不重算；评审 §七-3）
-    if (mPeakPanel) {
-        if (DASignalAnalysisView* view = mPage->viewForSignal(sig.get())) {
-            mPeakPanel->setSignalPeak(view->signalPeak() * params.calibration);
-        }
-        mPeakPanel->setAmplitudeDisplay(mAmplitudeMode, mDbReference, params.calibration, params.unit);
-        mPeakPanel->setPeaks(mCurrentPeaks);
-        mPeakPanel->setPeakCurves(mCurrentCurves);
-    }
-}
-
-/**
  * @brief 设置依赖信号的动作是否可用（无信号时播放/分析/峰值/显示/工具/导出全部置灰）
  * @param on 是否可用
  */
@@ -4622,7 +4915,7 @@ void DASignalAnalysisUI::setSignalDependentActionsEnabled(bool on)
         actionPlay,         actionStop,
         actionAnalysisSetting, actionPeakMarker, actionPeakTopN,
         actionPeakMarkerDisplay, actionPeakWindow, actionWaterfall2D, actionWaterfall3D,
-        actionWaterfallHide, actionAmplitudeMode, actionExportPeaks,
+        actionWaterfallHide, actionExportPeaks,
         actionExportImage,  actionRelinkSource,
         actionLogFrequency, actionColormap,      actionAddFigure,
         actionColorBar
@@ -4636,9 +4929,6 @@ void DASignalAnalysisUI::setSignalDependentActionsEnabled(bool on)
     updateRelinkActionState();
     if (actionPeakTopN) {
         actionPeakTopN->setEnabled(on);
-    }
-    if (actionAmplitudeMode) {
-        actionAmplitudeMode->setEnabled(on);
     }
     // 工具类动作还取决于当前 2D 子图是否存在：按当前视图状态再精化一次
     syncSignalContextControls();
@@ -4661,11 +4951,20 @@ void DASignalAnalysisUI::retranslateUi()
     if (mPanelImportExport) {
         mPanelImportExport->setPanelName(tr("Import / Export"));  // cn:导入导出
     }
-    if (mPanelAnalysis) {
-        mPanelAnalysis->setPanelName(tr("Analysis"));  // cn:分析
+    if (mPanelPreprocess) {
+        mPanelPreprocess->setPanelName(tr("Preprocess"));  // cn:预处理
+    }
+    if (mPanelSpectrum) {
+        mPanelSpectrum->setPanelName(tr("Spectrum"));  // cn:频谱
+    }
+    if (mPanelTimeFreq) {
+        mPanelTimeFreq->setPanelName(tr("Time-Frequency"));  // cn:时频
     }
     if (mPanelPeaks) {
         mPanelPeaks->setPanelName(tr("Peaks"));  // cn:峰值
+    }
+    if (mPanelMore) {
+        mPanelMore->setPanelName(tr("More"));  // cn:更多
     }
     // 插件上下文标签：标题 / 两页 / 显示页的两组面板
     if (mContextCategory) {
@@ -4730,11 +5029,11 @@ void DASignalAnalysisUI::retranslateUi()
         mToolbarTimeLabel->setToolTip(tr("Playback position / total duration"));
         // cn:播放位置 / 总时长
     }
-    // 分析
+    // 分析（对话框：常用参数已上丝带，这里只留高级项）
     if (actionAnalysisSetting) {
-        actionAnalysisSetting->setText(tr("Analysis Settings"));  // cn:分析设置
-        actionAnalysisSetting->setToolTip(tr("Configure the analysis parameters of the current signal"));
-        // cn:配置当前信号的分析参数
+        actionAnalysisSetting->setText(tr("Advanced Settings..."));  // cn:高级设置...
+        actionAnalysisSetting->setToolTip(tr("Configure zero padding, power spectrum, advanced peak and calibration options"));
+        // cn:配置零填充、功率谱、峰值高级项与标定
     }
     if (actionCancelAnalysis) {
         actionCancelAnalysis->setText(tr("Stop Calculation"));  // cn:停止计算
@@ -4787,20 +5086,74 @@ void DASignalAnalysisUI::retranslateUi()
         actionWaterfallHide->setText(tr("Hide"));  // cn:隐藏
         actionWaterfallHide->setToolTip(tr("Hide the waterfall view"));  // cn:隐藏瀑布视图
     }
-    if (actionAmplitudeMode) {
-        actionAmplitudeMode->setText(tr("Amplitude"));  // cn:幅值模式
+    // 分析设置页参数控件（标签 / combo 项文本；动作文本另见下方「分析」）
+    if (mDetrendLabel) {
+        mDetrendLabel->setText(tr("Detrend"));  // cn:去趋势
     }
-    if (actionAmpPeak) {
-        actionAmpPeak->setText(tr("Peak amplitude"));  // cn:峰值幅度
+    if (mDetrendCombo) {
+        const QSignalBlocker blocker(mDetrendCombo);
+        mDetrendCombo->setItemText(0, tr("None"));      // cn:无
+        mDetrendCombo->setItemText(1, tr("Constant"));  // cn:常数
+        mDetrendCombo->setItemText(2, tr("Linear"));    // cn:线性
+        mDetrendCombo->setToolTip(tr("Remove the DC offset or a linear trend before analysis"));
+        // cn:分析前去掉直流分量或线性趋势
     }
-    if (actionAmpRms) {
-        actionAmpRms->setText(tr("RMS"));  // cn:均方根
+    if (mPreprocessDcCheck) {
+        mPreprocessDcCheck->setText(tr("Remove DC"));  // cn:去直流
+        mPreprocessDcCheck->setToolTip(tr("Remove the DC offset before analysis"));
+        // cn:分析前去掉直流分量
     }
-    if (actionAmpDbFs) {
-        actionAmpDbFs->setText(tr("dB (FS)"));  // cn:dB（满量程）
+    if (mWindowLabel) {
+        mWindowLabel->setText(tr("Window"));  // cn:窗函数
     }
-    if (actionAmpDbRef1) {
-        actionAmpDbRef1->setText(tr("dB (re 1.0)"));  // cn:dB（相对 1.0）
+    if (mWindowCombo) {
+        const QSignalBlocker blocker(mWindowCombo);
+        mWindowCombo->setItemText(0, tr("Rectangular"));  // cn:矩形
+        mWindowCombo->setItemText(1, tr("Hann"));         // cn:汉宁
+        mWindowCombo->setItemText(2, tr("Hamming"));      // cn:汉明
+        mWindowCombo->setItemText(3, tr("Blackman"));     // cn:布莱克曼
+        mWindowCombo->setItemText(4, tr("Flat top"));     // cn:平顶
+        mWindowCombo->setToolTip(tr("Window function shared by the spectrum and the time-frequency view"));
+        // cn:频谱与时频视图共用的窗函数
+    }
+    if (mAmplitudeModeLabel) {
+        mAmplitudeModeLabel->setText(tr("Amplitude"));  // cn:幅值口径
+    }
+    if (mAmplitudeModeCombo) {
+        const QSignalBlocker blocker(mAmplitudeModeCombo);
+        mAmplitudeModeCombo->setItemText(0, tr("Peak amplitude"));  // cn:峰值幅度
+        mAmplitudeModeCombo->setItemText(1, tr("RMS"));             // cn:均方根
+        mAmplitudeModeCombo->setItemText(2, tr("dB (FS)"));         // cn:dB（满量程）
+        mAmplitudeModeCombo->setItemText(3, tr("dB (re 1.0)"));     // cn:dB（相对 1.0）
+        mAmplitudeModeCombo->setToolTip(tr("Amplitude scale used by the plots, the peak table and exports"));
+        // cn:频谱图、峰值表与导出使用的幅值口径
+    }
+    if (mResolutionLabel) {
+        mResolutionLabel->setText(tr("Resolution"));  // cn:频率分辨率
+    }
+    if (mResolutionSpin) {
+        mResolutionSpin->setToolTip(tr("Frequency resolution of the spectrum (linked to the STFT window length)"));
+        // cn:频谱频率分辨率（与 STFT 窗长联动）
+    }
+    if (mStftWindowLabel) {
+        mStftWindowLabel->setText(tr("Window length"));  // cn:窗长
+    }
+    if (mStftWindowSpin) {
+        mStftWindowSpin->setToolTip(tr("Window length of the time-frequency view (linked to the frequency resolution)"));
+        // cn:时频视图的窗长（与频率分辨率联动）
+    }
+    if (mStftOverlapLabel) {
+        mStftOverlapLabel->setText(tr("Hop overlap"));  // cn:跳步重叠
+    }
+    if (mStftOverlapSpin) {
+        mStftOverlapSpin->setToolTip(tr("Overlap between consecutive time-frequency frames"));
+        // cn:相邻时频帧之间的重叠率
+    }
+    if (mDeltaFLabel) {
+        // 文案随窗长变化，重译时按当前参数重算一次
+        const DASignalAnalysisParams params =
+            (mPage && mPage->currentSignal()) ? paramsForSignal(mPage->currentSignal()) : DASignalAnalysisParams::defaults();
+        updateDeltaFLabel(params);
     }
     // 上下文标签新增动作（对数频率 / 色带 / 添加图元）
     if (actionLogFrequency) {
