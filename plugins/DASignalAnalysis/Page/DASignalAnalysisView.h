@@ -223,6 +223,10 @@ private:
     void applyHeatmapColors();
     // 校验并按需重建波形画布的装饰图元（播放头/STFT 窗口矩形；被外部删除后按原样重建，BLK-03a）
     void ensureWaveDecorItems();
+    // 校验并按需重建云图画布的装饰图元（当前帧竖线/窗宽带；瞬时图元，不进存档）
+    void ensureHeatmapDecorItems();
+    // 当前帧标记：把云图竖线与 STFT 窗宽带移到给定时间（含像素节流）
+    void updateHeatmapCursor(double absoluteTime);
     // 当前时间对应的 STFT 列索引（跟随滑块用）
     int currentStftColumn() const;
     // 时间轴标签格式应用到波形 x 与云图 x（换新 ScaleDraw 实例，plot 接管所有权）
@@ -299,6 +303,12 @@ private:
     QwtPlotShapeItem* mStftWindow { nullptr };
     QwtPlotCurve* mSpectrumCurve { nullptr };
     QwtPlotSpectrogram* mSpectrogramItem { nullptr };
+    // 云图当前帧标记：半透明虚线竖线 + STFT 窗宽带（都 transient，不写入工程）
+    QwtPlotMarker* mHeatmapCursor { nullptr };
+    QwtPlotShapeItem* mHeatmapWindowBand { nullptr };
+    // 节流：上次绘制时的像素列与被显式作废标志（数据/几何变化后置 false）
+    double mHeatmapCursorPixel { 0.0 };
+    bool mHeatmapCursorApplied { false };
     DAStftRasterData* mStftRaster { nullptr };
     QVector< QwtPlotMarker* > mPeakMarkers;
     // 峰值标记文本模板（{index}/{fre}/{amp}），由丝带「标记显示」对话框写入

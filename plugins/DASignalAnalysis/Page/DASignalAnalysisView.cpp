@@ -717,6 +717,8 @@ void DASignalAnalysisView::setWaterfallMode(int mode)
     }
     mHeatmapChart->setVisible(mWaterfallMode == 0);
     mWaterfallChart->setVisible(mWaterfallMode == 1);
+    // 二维/三维切换会改变热图的可见与轴范围：当前帧标记的像素节流缓存作废
+    mHeatmapCursorApplied = false;
     if (mWaterfallMode == 1) {
         // 切到三维：当前子图 = 三维（T8 设置面板切 3D 页）
         mCurrentIs3D = true;
@@ -765,6 +767,101 @@ void DASignalAnalysisView::setColormapName(const QString& name)
 double DASignalAnalysisView::dbFloor() const
 {
     return mDbFloor;
+}
+
+/**
+ * @brief 校验并按需重建云图画布的装饰图元（当前帧竖线/窗宽带，BLK-03a）
+ *
+ * 两者都是 transient 交互装饰，可被共享图元树删除；失效时置空缓存并按原样式重建，
+ * 下一次 updateHeatmapCursor 自动恢复显示。z 值抬到栅格之上，保证画在热图上层。
+ */
+void DASignalAnalysisView::ensureHeatmapDecorItems()
+{
+    if (!mHeatmapChart) {
+        return;
+    }
+    if (mHeatmapCursor && !mHeatmapChart->itemList().contains(mHeatmapCursor)) {
+        mHeatmapCursor = nullptr;
+    }
+    if (!mHeatmapCursor) {
+        mHeatmapCursor = new QwtPlotMarker();
+        mHeatmapCursor->setLineStyle(QwtPlotMarker::VLine);
+        // 橙红 = 项目既有标记语义色（与波形播放头一致），半透明保证不遮住热图颜色
+        mHeatmapCursor->setLinePen(QPen(QColor(206, 96, 67, 170), 1.5, Qt::DashLine));
+        mHeatmapCursor->setZ(101.0);
+        mHeatmapCursor->setVisible(false);
+        mHeatmapCursor->attach(mHeatmapChart);
+        mHeatmapChart->setItemTransient(mHeatmapCursor);  // 交互装饰：不进存档
+    }
+    if (mHeatmapWindowBand && !mHeatmapChart->itemList().contains(mHeatmapWindowBand)) {
+        mHeatmapWindowBand = nullptr;
+    }
+    if (!mHeatmapWindowBand) {
+        mHeatmapWindowBand = new QwtPlotShapeItem();
+        mHeatmapWindowBand->setPen(QPen(Qt::NoPen));
+        mHeatmapWindowBand->setBrush(QColor(206, 96, 67, 30));  // 同色极淡填充：表示分析窗口覆盖范围
+        mHeatmapWindowBand->setZ(100.0);
+        mHeatmapWindowBand->setVisible(false);
+        mHeatmapWindowBand->attach(mHeatmapChart);
+        mHeatmapChart->setItemTransient(mHeatmapWindowBand);  // 交互装饰：不进存档
+    }
+}
+
+/**
+ * @brief 当前帧标记：把云图竖线与 STFT 窗宽带移到给定时间（含像素节流）
+ *
+ * 只有「当前帧标记」开启且 STFT 栅格有效时才显示。节流按像素列：换算到屏幕列后
+ * 与上次绘制列相差不足 1 像素就跳过（拖动滑块/播放时大量位置落在同一列上，不重复重绘）。
+ * @param absoluteTime 绝对时间（秒，已含时间原点）
+ */
+void DASignalAnalysisView::updateHeatmapCursor(double absoluteTime)
+{
+    if (!mHeatmapChart) {
+        return;
+    }
+    ensureHeatmapDecorItems();
+    if (!mHeatmapCursor) {
+        return;
+    }
+    const bool visible = mTimeCursorVisible && mStft.isValid();
+    if (!visible) {
+        bool needReplot = false;
+        if (mHeatmapCursor->isVisible()) {
+            mHeatmapCursor->setVisible(false);
+            needReplot = true;
+        }
+        if (mHeatmapWindowBand && mHeatmapWindowBand->isVisible()) {
+            mHeatmapWindowBand->setVisible(false);
+            needReplot = true;
+        }
+        mHeatmapCursorApplied = false;  // 重新打开后按当前位置重画
+        if (needReplot) {
+            mHeatmapChart->replot();
+        }
+        return;
+    }
+    const double pixel = mHeatmapChart->transform(QwtPlot::xBottom, absoluteTime);
+    if (mHeatmapCursorApplied && std::fabs(pixel - mHeatmapCursorPixel) < 1.0) {
+        return;  // 同一像素列：位置变化不可见，不重绘
+    }
+    mHeatmapCursor->setXValue(absoluteTime);
+    mHeatmapCursor->setVisible(true);
+    // STFT 窗宽带：宽 = 窗长，纵向覆盖当前频率轴范围（轴范围尚未确定时先不画带）
+    const QwtInterval yRange = mHeatmapChart->axisScaleDiv(QwtPlot::yLeft).interval();
+    const double windowSec   = mStft.windowSeconds;
+    bool bandDrawn           = false;
+    if (mHeatmapWindowBand && windowSec > 0.0 && yRange.isValid() && yRange.width() > 0.0) {
+        mHeatmapWindowBand->setRect(
+            QRectF(absoluteTime - windowSec / 2.0, yRange.minValue(), windowSec, yRange.width()));
+        mHeatmapWindowBand->setVisible(true);
+        bandDrawn = true;
+    } else if (mHeatmapWindowBand) {
+        mHeatmapWindowBand->setVisible(false);
+    }
+    // 窗宽带没画成（轴范围未就绪）时不让节流生效，下一次继续尝试
+    mHeatmapCursorApplied = bandDrawn;
+    mHeatmapCursorPixel   = pixel;
+    mHeatmapChart->replot();
 }
 
 /**
@@ -1197,6 +1294,11 @@ void DASignalAnalysisView::rebuildHeatmap()
     mHeatmapChart->setAxisTitle(QwtPlot::yLeft, tr("Frequency (Hz)"));  // cn:频率（赫兹）
     applyHeatmapColors();
     mHeatmapChart->replot();
+    // 栅格/轴范围都变了：当前帧标记重新按新变换对齐
+    mHeatmapCursorApplied = false;
+    if (mSignal) {
+        updateHeatmapCursor(currentTime() + mSignal->timeOrigin());
+    }
 }
 
 /**
@@ -1585,6 +1687,8 @@ void DASignalAnalysisView::setCurrentChannel(int channel)
     mEnvMins.clear();
     mEnvMaxs.clear();
     mStft = DAStftResult();
+    // 当前帧标记依赖 STFT 栅格：通道切换后缓存作废，等新栅格回来后重画
+    mHeatmapCursorApplied = false;
     // 跟随帧谱快照属于上一个通道：作废，等新 STFT 算出后按新栅格重取
     clearFollowFrameSpectrum();
     // 曲线可能已被共享图元树删除：失效时置空，不写已释放对象（BLK-03a）
@@ -1741,8 +1845,12 @@ void DASignalAnalysisView::updatePlayhead()
         const double maxLeft = origin + duration - span;
         left                 = qBound(minLeft, left, qMax(minLeft, maxLeft));
         mHeatmapChart->setAxisScale(QwtPlot::xBottom, left, left + span);
+        // 轴范围变了：上次的像素列不再有效，当前帧标记需要按新变换重画
+        mHeatmapCursorApplied = false;
         mHeatmapChart->replot();
     }
+    // 二维云图当前帧标记（D6）：虚线竖线 + STFT 窗宽带（像素节流，见 updateHeatmapCursor）
+    updateHeatmapCursor(t);
     if (mWaveChart) {
         mWaveChart->replot();
     }
@@ -1955,6 +2063,8 @@ QPixmap DASignalAnalysisView::grabForExport()
 void DASignalAnalysisView::resizeEvent(QResizeEvent* e)
 {
     QWidget::resizeEvent(e);
+    // 画布尺寸变化会改变 x 轴像素映射：当前帧标记的节流缓存作废
+    mHeatmapCursorApplied = false;
     if (mSignal && mSignal->isValid() && mResizeDebounce) {
         mResizeDebounce->start();  // 防抖：尺寸稳定后再重算包络
     }
