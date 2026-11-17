@@ -7,6 +7,7 @@
 #include <QTimer>
 #include <QHBoxLayout>
 #include <QPropertyAnimation>
+class QAction;
 namespace DA
 {
 
@@ -37,6 +38,11 @@ public:
 	void setProgressText(const QString& text);
 	void clearProgressText();
 	QString progressText() const;
+	// 进度条取消按钮：绑定外部动作，按钮随进度条显示/隐藏，固定小尺寸（不改变状态栏高度）
+	void setProgressCancelAction(QAction* action);
+	QAction* progressCancelAction() const;
+	// 只在调用方自己的进度显示期间置 true，避免别的调用方显示进度时误显示本按钮
+	void setProgressCancelVisible(bool visible);
 	// 获取当前状态
 	bool isProgressBarVisible() const;
 	QString getCurrentMessage() const;

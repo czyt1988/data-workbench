@@ -1,4 +1,5 @@
 #include <QtTest>
+#include <QAction>
 #include <QApplication>
 #include <QCoreApplication>
 #include <QEvent>
@@ -17,6 +18,8 @@
 #include <QStringList>
 #include <QSurfaceFormat>
 #include <QTemporaryDir>
+#include <QStatusBar>
+#include <QToolButton>
 #include <QVariantMap>
 #include <QDomDocument>
 #include <QDomElement>
@@ -36,6 +39,7 @@
 #include "Archive/DASignalArchiveTask.h"
 #include "Archive/DASignalFigureArchive.h"
 #include "Chart/DAChartItemsManager.h"
+#include "Common/DAStatusBarWidget.h"
 #include "Dialogs/DAPeakMarkerDisplayDialog.h"
 #include "Form/DASignalFormSpecBuilder.h"
 #include "Page/DAPeakCurvePlotSamples.h"
@@ -281,6 +285,8 @@ private Q_SLOTS:
     void peakMarkerLabelText();
     // 峰值标记显示对话框：模板回显、实时预览（含 dB 口径）
     void peakMarkerDisplayDialog();
+    // 状态栏进度条取消按钮：绑定动作、随进度条显隐、固定尺寸不改变状态栏高度
+    void statusBarProgressCancelButton();
     // T7：视图 figure 为 2×2 网格，波形跨两列，热图与三维瀑布同格
     void signalViewFigureGrid();
     // T7：分析结果图元标 transient，峰值标记保持非 transient
@@ -1042,6 +1048,68 @@ void DASignalAnalysisTest::peakMarkerDisplayDialog()
     auto* dbPreview = dbDlg.findChild< QLabel* >(QStringLiteral("da-peak-marker-preview"));
     QVERIFY(dbPreview != nullptr);
     QVERIFY2(dbPreview->text().contains(QStringLiteral("1 -12.3 dB")), qPrintable(dbPreview->text()));
+}
+
+/**
+ * @brief 状态栏进度条取消按钮：绑定动作、随进度条显隐、固定小尺寸（不改变状态栏高度）
+ *
+ * 宿主状态栏的进度条是全局的：信号分析把「停止计算」动作绑到它右侧，按钮必须与
+ * 进度条同显隐、点击能触发动作，且按钮/进度条尺寸固定，不能让状态栏因显隐而变高。
+ */
+void DASignalAnalysisTest::statusBarProgressCancelButton()
+{
+    QAction stopAction(QStringLiteral("stop"));
+    stopAction.setObjectName(QStringLiteral("da-test-stop-action"));
+    // 放进真实的 QStatusBar：断言的是宿主状态栏整体高度不被进度控件改变
+    QStatusBar host;
+    host.resize(800, 24);
+    host.show();  // isProgressBarVisible() 用 isVisible()，父窗口必须处于显示状态
+    auto* bar = new DA::DAStatusBarWidget(&host);
+    host.addWidget(bar, 1);
+    QCoreApplication::processEvents();
+    bar->setProgressCancelAction(&stopAction);
+    QCOMPARE(bar->progressCancelAction(), &stopAction);
+
+    auto* button = bar->findChild< QToolButton* >(QStringLiteral("da-statusbar-progress-cancel"));
+    QVERIFY2(button != nullptr, "the cancel button must be created for the bound action");
+    QCOMPARE(button->size(), QSize(18, 18));
+    QVERIFY2(button->isHidden(), "the cancel button must stay hidden until the progress bar shows");
+
+    const int idleHeight = host.sizeHint().height();
+    // 别的调用方显示进度条：不得带出本插件绑定的停止按钮
+    bar->showProgressBar();
+    bar->setProgressText(QStringLiteral("Computing..."));
+    bar->setProgress(42);
+    QVERIFY2(button->isHidden(), "a foreign progress bar must not reveal this cancel button");
+    QVERIFY(bar->isProgressBarVisible());
+    QCOMPARE(host.sizeHint().height(), idleHeight);
+    bar->hideProgressBar();
+    QVERIFY(button->isHidden());
+
+    // 本插件请求显示进度：进度条 + 文本 + 停止按钮同时出现，状态栏高度不变
+    bar->setProgressCancelVisible(true);
+    bar->showProgressBar();
+    bar->setProgressText(QStringLiteral("Computing..."));
+    bar->setProgress(42);
+    QVERIFY(!button->isHidden());
+    QVERIFY(bar->isProgressBarVisible());
+    QCOMPARE(host.sizeHint().height(), idleHeight);
+
+    QSignalSpy triggered(&stopAction, &QAction::triggered);
+    button->click();
+    QCOMPARE(triggered.count(), 1);
+
+    bar->setProgressCancelVisible(false);
+    bar->hideProgressBar();
+    QVERIFY(button->isHidden());
+    QVERIFY(!bar->isProgressBarVisible());
+    QCOMPARE(host.sizeHint().height(), idleHeight);
+
+    // 解绑：动作归还调用方，按钮销毁（deleteLater 排进事件循环）
+    bar->setProgressCancelAction(nullptr);
+    QCOMPARE(bar->progressCancelAction(), nullptr);
+    QCoreApplication::sendPostedEvents(nullptr, QEvent::DeferredDelete);
+    QVERIFY(bar->findChild< QToolButton* >(QStringLiteral("da-statusbar-progress-cancel")) == nullptr);
 }
 
 /**

@@ -328,7 +328,7 @@ DAUIInterface --> DACommandInterface : getCommandInterface
 | `DAUIInterface` | 界面操作接口，提供日志输出、对话框显示等功能 | 需要与用户交互的插件 |
 | `DADataManagerInterface` | 数据管理接口，提供数据的增删改查功能 | 数据处理插件 |
 | `DAProjectInterface` | 项目管理接口，提供项目保存、加载、设置等功能 | 需要持久化数据的插件 |
-| `DAStatusBarInterface` | 状态栏接口，提供消息显示、进度条控制等功能 | 需要显示状态的插件 |
+| `DAStatusBarInterface` | 状态栏接口，提供消息显示、进度条与进度条旁的停止按钮等功能 | 需要显示状态的插件 |
 | `DACommandInterface` | 命令接口，提供撤销/重做功能 | 需要支持撤销的插件 |
 
 ### 2.2 接口创建顺序
@@ -1509,6 +1509,26 @@ def long_running_task():
 - 在循环中定期调用 `processEvents()` 保持界面响应
 - 进度更新不要太频繁，避免性能问题
 - 任务完成后隐藏进度条
+
+**进度条旁的停止按钮（C++）**
+
+长任务需要让用户中止时，把插件里的 `QAction` 绑定到状态栏，宿主会在进度条右侧放一个只显示图标的小按钮，
+随进度条一起显示/隐藏（按钮固定尺寸，不改变状态栏高度）：
+
+```cpp
+DA::DAStatusBarInterface* statusBar = ui->getStatusBar();
+statusBar->setProgressCancelAction(myCancelAction);     // myCancelAction 由插件创建并管理生命周期
+statusBar->setProgressCancelVisible(true);             // 只有本调用方显示进度时才带出按钮
+statusBar->showProgressBar();
+// ... 任务结束
+statusBar->setProgressCancelVisible(false);
+statusBar->hideProgressBar();
+statusBar->setProgressCancelAction(nullptr);           // 插件卸载/动作销毁前解绑
+```
+
+按钮的文本用作 tooltip、图标即按钮外观、enabled 跟随动作；`setProgressCancelVisible` 与 `showProgressBar`
+分开，别的插件显示自己的进度时不会误带出本插件绑定的停止按钮。停止按钮语义属于「当前进度」，不要为静态按钮
+调用这个接口；短任务建议在插件侧加延迟显示（防抖），避免状态栏闪烁。
 
 ---
 

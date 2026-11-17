@@ -31,6 +31,10 @@ public:
 	virtual void setBusy(bool busy) override;  // 繁忙状态
 	virtual bool isBusy() const override;
 	virtual void resetProgress() override;  // 重置进度条
+	// 进度条右侧取消按钮（绑定外部动作，随进度条显示/隐藏；不改变状态栏高度）
+	virtual void setProgressCancelAction(QAction* action) override;
+	virtual QAction* progressCancelAction() const override;
+	virtual void setProgressCancelVisible(bool visible) override;
 	// 获取当前状态
 	virtual bool isProgressBarVisible() const override;
 	// 设置是否显示switch button 组，switch button组用于快速切换绘图、数据、工作流三个部分，在一些场景需要隐藏

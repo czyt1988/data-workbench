@@ -5,6 +5,7 @@
 #include <QEvent>
 #include <QFrame>
 #include <QToolButton>
+#include <QAction>
 namespace DA
 {
 class DAStatusBarWidget::PrivateData
@@ -13,6 +14,8 @@ class DAStatusBarWidget::PrivateData
 public:
 	PrivateData(DAStatusBarWidget* p);
 	void setupUI(DAStatusBarWidget* par);
+	// 按「调用方请求 + 进度条显示 + 动作可见」重算取消按钮显隐
+	void updateProgressCancelVisibility();
 	// 消息窗口组件
 	QLabel* m_messageLabel;
 	QTimer* m_messageTimer;
@@ -23,6 +26,9 @@ public:
 	// 进度窗口组件
 	QProgressBar* m_progressBar;
 	QLabel* m_progressTextLabel;  ///< 进度文本组件
+	QToolButton* m_progressCancelButton { nullptr };  ///< 进度条右侧取消/停止按钮（宿主创建，随进度条显隐）
+	QAction* m_progressCancelAction { nullptr };      ///< 取消按钮绑定的外部动作（不拥有）
+	bool m_progressCancelRequested { false };         ///< 调用方是否请求显示取消按钮（防别的调用方误触）
 	// 布局
 	QHBoxLayout* m_layout;
 	// 额外永久部件（007 状态栏统计；本类不持有不删除）
@@ -84,6 +90,8 @@ void DAStatusBarWidget::PrivateData::setupUI(DAStatusBarWidget* par)
 	m_progressBar = new QProgressBar(par);
 	m_progressBar->setMinimumWidth(150);
 	m_progressBar->setMaximumWidth(200);
+	// 固定进度条高度：状态栏高度由既有常驻按钮决定，进度条显隐不得把状态栏撑高
+	m_progressBar->setFixedHeight(16);
 	m_progressBar->setTextVisible(true);
 	m_progressBar->setAlignment(Qt::AlignCenter);
 	m_progressBar->setRange(0, 100);
@@ -117,6 +125,22 @@ void DAStatusBarWidget::PrivateData::setupUI(DAStatusBarWidget* par)
 	// 设置widget
 	par->setLayout(m_layout);
 	par->setMaximumHeight(20);
+}
+
+/**
+ * @brief 取消按钮显隐 = 调用方请求显示 + 进度条显示 + 动作本身可见
+ *
+ * 用 isHidden() 而不是 isVisible()：进度条/按钮是状态栏的子控件，
+ * 主窗口隐藏时 isVisible() 会全为 false，但显隐状态不应因此丢失。
+ */
+void DAStatusBarWidget::PrivateData::updateProgressCancelVisibility()
+{
+	if (!m_progressCancelButton) {
+		return;
+	}
+	const bool barShown      = !m_progressBar->isHidden();
+	const bool actionVisible = m_progressCancelAction ? m_progressCancelAction->isVisible() : false;
+	m_progressCancelButton->setVisible(m_progressCancelRequested && barShown && actionVisible);
 }
 
 //----------------------------------------------------
@@ -241,6 +265,8 @@ void DAStatusBarWidget::showProgressBar()
 {
 	DA_D(d);
 	d->m_progressBar->show();
+	// 取消按钮只在调用方请求显示时出现；别的调用方显示进度条不会带出本按钮
+	d->updateProgressCancelVisibility();
 
 	// 如果有进度文本，则显示进度文本标签
 	if (!(d->m_progressTextLabel->text().isEmpty())) {
@@ -253,6 +279,7 @@ void DAStatusBarWidget::hideProgressBar()
 	DA_D(d);
 	d->m_progressBar->hide();
 	d->m_progressTextLabel->hide();  // 同时隐藏进度文本标签
+	d->updateProgressCancelVisibility();
 }
 
 /**
@@ -324,6 +351,83 @@ QString DAStatusBarWidget::progressText() const
 bool DAStatusBarWidget::isProgressBarVisible() const
 {
 	return d_ptr->m_progressBar->isVisible();
+}
+
+/**
+ * @brief 设置进度条右侧的取消/停止按钮（按钮随进度条显示/隐藏）
+ *
+ * 只接受调用方的 QAction（本类不拥有动作）：按钮外观/文本/可用性全部跟随动作，
+ * 插件卸载时传 nullptr 解绑即可。按钮固定 18×18、图标 14×14，避免改变状态栏高度。
+ * @param action 绑定的动作，nullptr 表示解绑并销毁按钮
+ */
+void DAStatusBarWidget::setProgressCancelAction(QAction* action)
+{
+	DA_D(d);
+	if (d->m_progressCancelAction == action) {
+		return;
+	}
+	// 先销毁旧按钮（先断开默认动作再删除，避免它继续引用下面的新动作/空动作）
+	if (d->m_progressCancelButton) {
+		QToolButton* oldButton = d->m_progressCancelButton;
+		d->m_progressCancelButton = nullptr;
+		d->m_layout->removeWidget(oldButton);
+		oldButton->setDefaultAction(nullptr);
+		oldButton->deleteLater();
+	}
+	d->m_progressCancelAction = action;
+	if (!action) {
+		d->m_progressCancelRequested = false;
+		return;
+	}
+	QToolButton* button = new QToolButton(this);
+	button->setObjectName(QStringLiteral("da-statusbar-progress-cancel"));
+	button->setAutoRaise(true);
+	button->setToolButtonStyle(Qt::ToolButtonIconOnly);
+	button->setIconSize(QSize(14, 14));
+	// 固定尺寸 + 固定垂直策略：按钮显隐不参与状态栏高度计算
+	button->setFixedSize(18, 18);
+	button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+	button->setDefaultAction(action);
+	button->setVisible(false);
+	// 插到进度文本之后、末尾 stretch 之前 = 紧贴进度条右侧
+	const int progressTextIndex = d->m_layout->indexOf(d->m_progressTextLabel);
+	d->m_layout->insertWidget(progressTextIndex + 1, button);
+	d->m_progressCancelButton = button;
+	// 动作可能先于状态栏销毁（插件卸载/动作管理器清理）：动作销毁时同步摘除按钮
+	connect(action, &QObject::destroyed, this, [ this, button ]() {
+		DA_D(d);
+		if (d->m_progressCancelButton == button) {
+			d->m_progressCancelButton    = nullptr;
+			d->m_progressCancelAction    = nullptr;
+			d->m_progressCancelRequested = false;
+		}
+		d->m_layout->removeWidget(button);
+		button->setDefaultAction(nullptr);
+		button->deleteLater();
+	});
+	// 进度条已在显示（例如宿主先开进度条、后绑定动作）时按请求状态补上按钮
+	d->updateProgressCancelVisibility();
+}
+
+/**
+ * @brief 显示/隐藏进度条旁的取消按钮
+ *
+ * 只有调用方自己显示进度时才置 true；别的插件调用 showProgressBar() 时不会带出本按钮。
+ * @param visible 是否请求显示取消按钮
+ */
+void DAStatusBarWidget::setProgressCancelVisible(bool visible)
+{
+	DA_D(d);
+	d->m_progressCancelRequested = visible;
+	d->updateProgressCancelVisibility();
+}
+
+/**
+ * @brief 当前绑定的进度条取消动作（未绑定返回 nullptr）
+ */
+QAction* DAStatusBarWidget::progressCancelAction() const
+{
+	return d_ptr->m_progressCancelAction;
 }
 
 QString DAStatusBarWidget::getCurrentMessage() const

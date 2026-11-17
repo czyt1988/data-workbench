@@ -76,6 +76,21 @@ void DAAppStatusBar::resetProgress()
 	mStatusBarWidget->resetProgress();
 }
 
+void DAAppStatusBar::setProgressCancelAction(QAction* action)
+{
+	mStatusBarWidget->setProgressCancelAction(action);
+}
+
+QAction* DAAppStatusBar::progressCancelAction() const
+{
+	return mStatusBarWidget->progressCancelAction();
+}
+
+void DAAppStatusBar::setProgressCancelVisible(bool visible)
+{
+	mStatusBarWidget->setProgressCancelVisible(visible);
+}
+
 bool DAAppStatusBar::isProgressBarVisible() const
 {
 	return mStatusBarWidget->isProgressBarVisible();
