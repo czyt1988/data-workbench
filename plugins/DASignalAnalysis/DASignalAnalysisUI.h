@@ -297,6 +297,7 @@ private:
     SARibbonCategory* mContextAnalysisPage { nullptr };
     SARibbonCategory* mContextDisplayPage { nullptr };
     SARibbonPanel* mContextDisplayPanel { nullptr };
+    SARibbonPanel* mContextPeakPanel { nullptr };
     SARibbonPanel* mContextToolsPanel { nullptr };
     // 上下文标签控件与色带菜单
     QComboBox* mContextChannelCombo { nullptr };

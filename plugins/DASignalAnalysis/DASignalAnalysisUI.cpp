@@ -102,6 +102,7 @@ const char* const cContextCategoryObjectName     = "ContextCategorySignalAnalysi
 const char* const cContextAnalysisPageObjectName = "da-category-signal-analysis";
 const char* const cContextDisplayPageObjectName  = "da-category-signal-context";
 const char* const cPanelContextDisplayName       = "da-panel-signal.display";
+const char* const cPanelContextPeaksName         = "da-panel-signal.display.peaks";
 const char* const cPanelContextToolsName         = "da-panel-signal.display.tools";
 // 窗口底部播放工具栏
 const char* const cToolbarObjectName = "da-signal-playback-toolbar";
@@ -1172,18 +1173,12 @@ void DASignalAnalysisUI::buildAnalysisSettingsPage(SARibbonContextCategory* cont
         (QString::fromUtf8(cIconPrefix) + QStringLiteral("analysisSetting.svg")).toUtf8().constData());
     mPanelAnalysis->addLargeAction(actionAnalysisSetting);
 
-    // ---------- Peaks：峰值标记 / 标记数量 / 模式 / 相对门限 / 标记显示 / 峰值窗口 ----------
-    // 步骤 2 起：标记数量 + 模式 + 相对门限留本页「峰值」panel；峰值标记/标记显示/峰值窗口
-    // 迁到「信号显示」页的「峰值标注」panel。
+    // ---------- Peaks：标记数量 + 模式 + 相对门限（峰值标注类动作在「信号显示」页） ----------
+    // 步骤 2 起一分为二：常见搜索参数留本页；峰值标记/标记显示/峰值窗口迁到「信号显示」页
+    // 的「峰值标注」panel（见 buildSignalContextCategory），避免两页各有一套同名入口。
     mPanelPeaks = mContextAnalysisPage->addPanel(tr("Peaks"));  // cn:峰值
     mPanelPeaks->setObjectName(QString::fromUtf8(cPanelPeaksName));
-    actionPeakMarker = createRibbonIconAction("actionSignalPeakMarker", signalPluginIcon("peaks.svg"), true);
-    actionPeakTopN   = createRibbonIconAction("actionSignalPeakTopN", signalPluginIcon("peakCount.svg"), false);
-    // 标记显示：标记上方的文字标签编辑（专用图标，不再复用「分析设置」的图标）
-    actionPeakMarkerDisplay =
-        createRibbonIconAction("actionSignalPeakMarkerDisplay", signalPluginIcon("peakLabel.svg"), false);
-    actionPeakWindow = createRibbonIconAction("actionSignalPeakWindow", signalPluginIcon("peaksWindow.svg"), true);
-    mPanelPeaks->addLargeAction(actionPeakMarker);
+    actionPeakTopN = createRibbonIconAction("actionSignalPeakTopN", signalPluginIcon("peakCount.svg"), false);
     mPanelPeaks->addLargeAction(actionPeakTopN);
     // 峰值查找：模式 / 相对门限（small 行，两行叠在同一列；标签随语言切换重译）
     mPeakModeCombo = new QComboBox(mPanelPeaks);
@@ -1212,9 +1207,6 @@ void DASignalAnalysisUI::buildAnalysisSettingsPage(SARibbonContextCategory* cont
             &DASignalAnalysisUI::onPeakRelDbChanged);
     mPanelPeaks->addSmallWidget(
         makeRibbonSmallRow(tr("Threshold"), mPeakRelDbSpin, mPanelPeaks, &mPeakRelDbLabel));  // cn:相对门限
-    mPanelPeaks->addLargeAction(actionPeakMarkerDisplay);
-    // 峰值窗口（峰值表 + 每帧前 N 曲线停靠窗口）：上下文标签的「峰值表」已删除，这里是唯一入口
-    mPanelPeaks->addLargeAction(actionPeakWindow);
     buildPeakTopNMenu();
 
     // ---------- Export：峰值表 / 图片（步骤 3 与导入合并为「导入导出」panel） ----------
@@ -1335,6 +1327,20 @@ void DASignalAnalysisUI::buildSignalContextCategory()
     actionAmplitudeMode = createIconAction("actionSignalAmplitudeMode", pluginIcon("amplitude.svg"), false);
     mContextDisplayPanel->addLargeAction(actionAmplitudeMode);
     buildAmplitudeModeMenu();
+
+    // ---------- Peaks：峰值标注（峰值标记 / 标记显示 / 峰值窗口） ----------
+    // 步骤 2 从「分析设置」页的「峰值」panel 拆出：搜索参数留分析页，标注类归显示页。
+    // 峰值窗口 = 峰值表 + 每帧前 N 曲线停靠窗口，是打开峰值表的唯一入口。
+    mContextPeakPanel = mContextDisplayPage->addPanel(tr("Peak Markers"));  // cn:峰值标注
+    mContextPeakPanel->setObjectName(QString::fromUtf8(cPanelContextPeaksName));
+    actionPeakMarker = createIconAction("actionSignalPeakMarker", pluginIcon("peaks.svg"), true);
+    // 标记显示：标记上方的文字标签编辑（专用图标，不复用「分析设置」图标）
+    actionPeakMarkerDisplay =
+        createIconAction("actionSignalPeakMarkerDisplay", pluginIcon("peakLabel.svg"), false);
+    actionPeakWindow = createIconAction("actionSignalPeakWindow", pluginIcon("peaksWindow.svg"), true);
+    mContextPeakPanel->addLargeAction(actionPeakMarker);
+    mContextPeakPanel->addMediumAction(actionPeakMarkerDisplay);
+    mContextPeakPanel->addMediumAction(actionPeakWindow);
 
     // ---------- Tools：添加图元 ----------
     // 缩放/平移/十字线/数据拾取等交互工具由内置「绘图操作」上下文标签提供，这里不再重复放置，
@@ -3335,6 +3341,7 @@ void DASignalAnalysisUI::finalize()
     mContextDisplayPage  = nullptr;
     mContextAnalysisPage = nullptr;
     mContextDisplayPanel = nullptr;
+    mContextPeakPanel    = nullptr;
     mContextToolsPanel   = nullptr;
     mContextChannelCombo = nullptr;
     // 峰值停靠窗口：创建点见 buildPeakDock，必须在这里显式移除并销毁，否则禁用插件后右侧残留
@@ -4555,6 +4562,9 @@ void DASignalAnalysisUI::retranslateUi()
     }
     if (mContextDisplayPanel) {
         mContextDisplayPanel->setPanelName(tr("Display"));  // cn:显示
+    }
+    if (mContextPeakPanel) {
+        mContextPeakPanel->setPanelName(tr("Peak Markers"));  // cn:峰值标注
     }
     if (mContextToolsPanel) {
         mContextToolsPanel->setPanelName(tr("Tools"));  // cn:工具
