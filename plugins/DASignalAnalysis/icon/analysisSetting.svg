@@ -1,16 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
   <!-- data-workbench 官方色板：#5280C1/#497CAD/#BDCDE8/#727272/#B2B2B2/#5D6D7E/#669E8B/#CE6043/#E6C27C/#80559F/#3CAED5/#FFFFFF -->
-  <g fill="#727272">
-    <circle cx="100" cy="100" r="42"/>
-    <rect x="92" y="30" width="16" height="24" rx="3"/>
-    <rect x="92" y="146" width="16" height="24" rx="3"/>
-    <rect x="30" y="92" width="24" height="16" rx="3"/>
-    <rect x="146" y="92" width="24" height="16" rx="3"/>
-    <rect x="92" y="30" width="16" height="24" rx="3" transform="rotate(45 100 100)"/>
-    <rect x="92" y="146" width="16" height="24" rx="3" transform="rotate(45 100 100)"/>
-    <rect x="30" y="92" width="24" height="16" rx="3" transform="rotate(45 100 100)"/>
-    <rect x="146" y="92" width="24" height="16" rx="3" transform="rotate(45 100 100)"/>
-  </g>
-  <circle cx="100" cy="100" r="24" fill="#FFFFFF"/>
-  <path d="M40 100 L54 100 L60 84 L68 116 L76 92 L84 108 L92 100 L160 100" fill="none" stroke="#5280C1" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- 分析设置：三条参数滑轨 + 蓝色滑块（表达「可调的分析参数」） -->
+  <path d="M28 58 L172 58 M28 100 L172 100 M28 142 L172 142" stroke="#727272" stroke-width="6" stroke-linecap="round"/>
+  <rect x="109" y="43" width="30" height="30" rx="9" fill="#5280C1"/>
+  <rect x="61" y="85" width="30" height="30" rx="9" fill="#5280C1"/>
+  <rect x="125" y="127" width="30" height="30" rx="9" fill="#5280C1"/>
 </svg>

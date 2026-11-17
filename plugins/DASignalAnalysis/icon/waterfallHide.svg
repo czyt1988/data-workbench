@@ -1,20 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
   <!-- data-workbench 官方色板：#5280C1/#497CAD/#BDCDE8/#727272/#B2B2B2/#5D6D7E/#669E8B/#CE6043/#E6C27C/#80559F/#3CAED5/#FFFFFF -->
-  <rect x="24" y="46" width="30" height="26" fill="#BDCDE8"/>
-  <rect x="55" y="46" width="30" height="26" fill="#497CAD"/>
-  <rect x="86" y="46" width="30" height="26" fill="#5280C1"/>
-  <rect x="117" y="46" width="30" height="26" fill="#BDCDE8"/>
-  <rect x="24" y="73" width="30" height="26" fill="#497CAD"/>
-  <rect x="55" y="73" width="30" height="26" fill="#5280C1"/>
-  <rect x="86" y="73" width="30" height="26" fill="#BDCDE8"/>
-  <rect x="117" y="73" width="30" height="26" fill="#497CAD"/>
-  <rect x="24" y="100" width="30" height="26" fill="#BDCDE8"/>
-  <rect x="55" y="100" width="30" height="26" fill="#497CAD"/>
-  <rect x="86" y="100" width="30" height="26" fill="#5280C1"/>
-  <rect x="117" y="100" width="30" height="26" fill="#497CAD"/>
-  <rect x="24" y="127" width="30" height="26" fill="#5280C1"/>
-  <rect x="55" y="127" width="30" height="26" fill="#BDCDE8"/>
-  <rect x="86" y="127" width="30" height="26" fill="#497CAD"/>
-  <rect x="117" y="127" width="30" height="26" fill="#BDCDE8"/>
-  <path d="M42 170 L162 30" stroke="#CE6043" stroke-width="13" stroke-linecap="round"/>
+  <!-- 隐藏瀑布：灰色空栅格 + 斜杠（形状「空掉」+ 中性灰双重编码隐藏态，不用危险红） -->
+  <path d="M26 40 L26 166 L176 166" fill="none" stroke="#B2B2B2" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="36" y="48" width="128" height="112" fill="none" stroke="#B2B2B2" stroke-width="5"/>
+  <path d="M36 76 L164 76 M36 104 L164 104 M36 132 L164 132" stroke="#B2B2B2" stroke-width="4"/>
+  <path d="M68 48 L68 160 M100 48 L100 160 M132 48 L132 160" stroke="#B2B2B2" stroke-width="4"/>
+  <path d="M44 162 L168 44" stroke="#727272" stroke-width="12" stroke-linecap="round"/>
 </svg>

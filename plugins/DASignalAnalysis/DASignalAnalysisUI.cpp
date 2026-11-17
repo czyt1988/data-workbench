@@ -1054,7 +1054,7 @@ void DASignalAnalysisUI::buildSignalCategory()
     // 重新指定数据帧来源（评审 U16）：当前信号的数据帧在工程里丢失时用它重新绑定
     actionRelinkSource = mActions->createAction(
         "actionSignalRelinkSource",
-        (QString::fromUtf8(cIconPrefix) + QStringLiteral("importDataframe.svg")).toUtf8().constData());
+        (QString::fromUtf8(cIconPrefix) + QStringLiteral("relinkSource.svg")).toUtf8().constData());
     mPanelSignal->addLargeAction(actionImportAudio);
     mPanelSignal->addLargeAction(actionImportDataFrame);
     mPanelSignal->addLargeAction(actionImportVideo);
@@ -1086,7 +1086,7 @@ void DASignalAnalysisUI::buildSignalCategory()
     // 取消全部后台计算（评审 N-C7）：长任务（PSD/峰值曲线/WAV 导出）用户可随时中止
     actionCancelAnalysis = mActions->createAction(
         "actionSignalCancelAnalysis",
-        (QString::fromUtf8(cIconPrefix) + QStringLiteral("stop.svg")).toUtf8().constData());
+        (QString::fromUtf8(cIconPrefix) + QStringLiteral("cancelAnalysis.svg")).toUtf8().constData());
     mPanelAnalysis->addLargeAction(actionAnalysisSetting);
     mPanelAnalysis->addMediumAction(actionCancelAnalysis);
     actionCancelAnalysis->setEnabled(false);  // 有任务在跑才可用
@@ -1097,10 +1097,10 @@ void DASignalAnalysisUI::buildSignalCategory()
     mPanelPeaks = mCategory->addPanel(tr("Peaks"));  // cn:峰值
     mPanelPeaks->setObjectName(QString::fromUtf8(cPanelPeaksName));
     actionPeakMarker = createRibbonIconAction("actionSignalPeakMarker", signalPluginIcon("peaks.svg"), true);
-    actionPeakTopN   = createRibbonIconAction("actionSignalPeakTopN", signalPluginIcon("peaks.svg"), false);
-    // 标记显示：没有专用图标资源，复用「分析设置」的齿轮图标（同为弹出设置对话框）
+    actionPeakTopN   = createRibbonIconAction("actionSignalPeakTopN", signalPluginIcon("peakCount.svg"), false);
+    // 标记显示：标记上方的文字标签编辑（专用图标，不再复用「分析设置」的图标）
     actionPeakMarkerDisplay =
-        createRibbonIconAction("actionSignalPeakMarkerDisplay", signalPluginIcon("analysisSetting.svg"), false);
+        createRibbonIconAction("actionSignalPeakMarkerDisplay", signalPluginIcon("peakLabel.svg"), false);
     actionPeakWindow = createRibbonIconAction("actionSignalPeakWindow", signalPluginIcon("peaksWindow.svg"), true);
     mPanelPeaks->addLargeAction(actionPeakMarker);
     mPanelPeaks->addLargeAction(actionPeakTopN);
@@ -1158,7 +1158,7 @@ void DASignalAnalysisUI::buildSignalCategory()
  *
  * 上下文标签只在信号分析页 dock 激活时显示（provider 调 setSignalContextCategoryVisible），
  * objectName 固定为 cContextCategoryObjectName，供宿主接口按名字 show/hide。
- * 图标全部复用现有资源（插件 icon 或 :/app/bright/Icon），禁止新增 SVG。
+ * 显示类动作用插件自带的语义图标（对数频率 / 色带 / 色标），跨模块同义动作（添加图元）才复用宿主图标。
  */
 void DASignalAnalysisUI::buildSignalContextCategory()
 {
@@ -1209,12 +1209,12 @@ void DASignalAnalysisUI::buildSignalContextCategory()
             &DASignalAnalysisUI::onContextChannelChanged);
     mContextDisplayPanel->addWidget(mContextChannelCombo, SARibbonPanelItem::Medium);
     mContextDisplayPanel->addSeparator();
-    // 频率轴：线性/对数（复用宿主 grid-x 图标表示频率轴）
-    actionLogFrequency = createIconAction("actionSignalLogFrequency", appIcon("chart-grid-x.svg"), true);
+    // 频率轴：线性/对数（专用图标：对数刻度轴）
+    actionLogFrequency = createIconAction("actionSignalLogFrequency", pluginIcon("logFrequency.svg"), true);
     connect(actionLogFrequency, &QAction::toggled, this, &DASignalAnalysisUI::onContextLogFrequencyToggled);
     mContextDisplayPanel->addLargeAction(actionLogFrequency);
     // 色带：QwtColorMapPreset::availablePresets() 动态填充菜单
-    actionColormap = createIconAction("actionSignalColormap", appIcon("theme.svg"), false);
+    actionColormap = createIconAction("actionSignalColormap", pluginIcon("colorMap.svg"), false);
     mColormapMenu  = new QMenu();
     mColormapGroup = new QActionGroup(this);
     mColormapGroup->setExclusive(true);
@@ -1232,8 +1232,8 @@ void DASignalAnalysisUI::buildSignalContextCategory()
     actionColormap->setMenu(mColormapMenu);
     mContextDisplayPanel->addLargeAction(actionColormap);
     // 色标（colorbar）显隐：时频热图右侧的色标轴，紧挨「色带」放置；只影响显示，不重算
-    // 图标复用宿主 y 轴网格图标（色标就是右侧纵轴刻度尺），禁止新增 SVG
-    actionColorBar = createIconAction("actionSignalColorBar", appIcon("chart-grid-y.svg"), true);
+    // 专用图标：绘图区 L 形轴 + 右侧纵向色标
+    actionColorBar = createIconAction("actionSignalColorBar", pluginIcon("colorBar.svg"), true);
     actionColorBar->setChecked(mColorBarVisible);  // 初始勾选跟随已加载的偏好
     connect(actionColorBar, &QAction::toggled, this, &DASignalAnalysisUI::onColorBarToggled);
     mContextDisplayPanel->addLargeAction(actionColorBar);

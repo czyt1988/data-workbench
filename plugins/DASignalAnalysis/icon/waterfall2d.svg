@@ -1,24 +1,23 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
   <!-- data-workbench 官方色板：#5280C1/#497CAD/#BDCDE8/#727272/#B2B2B2/#5D6D7E/#669E8B/#CE6043/#E6C27C/#80559F/#3CAED5/#FFFFFF -->
-  <rect x="24" y="46" width="30" height="26" fill="#BDCDE8"/>
-  <rect x="55" y="46" width="30" height="26" fill="#497CAD"/>
-  <rect x="86" y="46" width="30" height="26" fill="#5280C1"/>
-  <rect x="117" y="46" width="30" height="26" fill="#BDCDE8"/>
-  <rect x="24" y="73" width="30" height="26" fill="#497CAD"/>
-  <rect x="55" y="73" width="30" height="26" fill="#5280C1"/>
-  <rect x="86" y="73" width="30" height="26" fill="#BDCDE8"/>
-  <rect x="117" y="73" width="30" height="26" fill="#497CAD"/>
-  <rect x="24" y="100" width="30" height="26" fill="#BDCDE8"/>
-  <rect x="55" y="100" width="30" height="26" fill="#497CAD"/>
-  <rect x="86" y="100" width="30" height="26" fill="#5280C1"/>
-  <rect x="117" y="100" width="30" height="26" fill="#497CAD"/>
-  <rect x="24" y="127" width="30" height="26" fill="#5280C1"/>
-  <rect x="55" y="127" width="30" height="26" fill="#BDCDE8"/>
-  <rect x="86" y="127" width="30" height="26" fill="#497CAD"/>
-  <rect x="117" y="127" width="30" height="26" fill="#BDCDE8"/>
-  <!-- 色标：扁平三段色带（禁用渐变，DESIGN.md §1.1） -->
-  <rect x="156" y="46" width="20" height="36" fill="#497CAD"/>
-  <rect x="156" y="82" width="20" height="35" fill="#5280C1"/>
-  <rect x="156" y="117" width="20" height="36" fill="#BDCDE8"/>
-  <rect x="156" y="46" width="20" height="107" fill="none" stroke="#727272" stroke-width="3"/>
+  <!-- 二维时频图：坐标轴 + 热图栅格（斜向能量带，无渐变） -->
+  <path d="M26 40 L26 166 L176 166" fill="none" stroke="#727272" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <g>
+    <rect x="36" y="48" width="32" height="28" fill="#497CAD"/>
+    <rect x="68" y="48" width="32" height="28" fill="#5280C1"/>
+    <rect x="100" y="48" width="32" height="28" fill="#BDCDE8"/>
+    <rect x="132" y="48" width="32" height="28" fill="#BDCDE8"/>
+    <rect x="36" y="76" width="32" height="28" fill="#5280C1"/>
+    <rect x="68" y="76" width="32" height="28" fill="#497CAD"/>
+    <rect x="100" y="76" width="32" height="28" fill="#BDCDE8"/>
+    <rect x="132" y="76" width="32" height="28" fill="#BDCDE8"/>
+    <rect x="36" y="104" width="32" height="28" fill="#BDCDE8"/>
+    <rect x="68" y="104" width="32" height="28" fill="#5280C1"/>
+    <rect x="100" y="104" width="32" height="28" fill="#497CAD"/>
+    <rect x="132" y="104" width="32" height="28" fill="#BDCDE8"/>
+    <rect x="36" y="132" width="32" height="28" fill="#BDCDE8"/>
+    <rect x="68" y="132" width="32" height="28" fill="#BDCDE8"/>
+    <rect x="100" y="132" width="32" height="28" fill="#5280C1"/>
+    <rect x="132" y="132" width="32" height="28" fill="#497CAD"/>
+  </g>
 </svg>

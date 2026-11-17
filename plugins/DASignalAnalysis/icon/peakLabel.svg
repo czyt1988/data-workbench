@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- data-workbench 官方色板：#5280C1/#497CAD/#BDCDE8/#727272/#B2B2B2/#5D6D7E/#669E8B/#CE6043/#E6C27C/#80559F/#3CAED5/#FFFFFF -->
+  <!-- 标记显示：标记上方的文字标签（白底标签卡 + 文本行）指向峰顶倒三角 -->
+  <rect x="30" y="26" width="140" height="68" rx="10" fill="#FFFFFF" stroke="#727272" stroke-width="7"/>
+  <rect x="46" y="40" width="88" height="10" rx="5" fill="#5D6D7E"/>
+  <rect x="46" y="58" width="60" height="10" rx="5" fill="#5D6D7E"/>
+  <path d="M78 104 L122 104 L100 132 Z" fill="#CE6043"/>
+  <path d="M44 166 L78 166 L100 132 L122 166 L156 166" fill="none" stroke="#5280C1" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

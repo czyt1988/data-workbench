@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- data-workbench 官方色板：#5280C1/#497CAD/#BDCDE8/#727272/#B2B2B2/#5D6D7E/#669E8B/#CE6043/#E6C27C/#80559F/#3CAED5/#FFFFFF -->
+  <!-- 取消计算：橙红圆环 + 叉（取消语义，与播放停止的实心方块区分） -->
+  <circle cx="100" cy="100" r="58" fill="#FFFFFF" stroke="#CE6043" stroke-width="12"/>
+  <path d="M76 76 L124 124 M124 76 L76 124" fill="none" stroke="#CE6043" stroke-width="12" stroke-linecap="round"/>
+</svg>

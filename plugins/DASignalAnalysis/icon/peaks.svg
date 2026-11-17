@@ -1,6 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
   <!-- data-workbench 官方色板：#5280C1/#497CAD/#BDCDE8/#727272/#B2B2B2/#5D6D7E/#669E8B/#CE6043/#E6C27C/#80559F/#3CAED5/#FFFFFF -->
-  <path d="M26 132 L50 132 L62 98 L74 132 L96 132 L110 64 L124 132 L146 132 L158 106 L172 132" fill="none" stroke="#727272" stroke-width="8" stroke-linejoin="round"/>
-  <circle cx="110" cy="64" r="13" fill="#CE6043"/>
-  <circle cx="62" cy="98" r="10" fill="#5280C1"/>
+  <!-- 峰值标记：频谱曲线 + 峰顶橙色倒三角（与绘图区实际标记形状/颜色一致） -->
+  <path d="M26 42 L26 158 L174 158" fill="none" stroke="#727272" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M38 146 L54 146 L64 106 L74 146 L88 146 L102 72 L116 146 L130 146 L140 112 L150 146 L166 146" fill="none" stroke="#5280C1" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M54 90 L74 90 L64 106 Z" fill="#CE6043"/>
+  <path d="M92 56 L112 56 L102 72 Z" fill="#CE6043"/>
 </svg>

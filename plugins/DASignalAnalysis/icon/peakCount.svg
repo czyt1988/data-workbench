@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- data-workbench 官方色板：#5280C1/#497CAD/#BDCDE8/#727272/#B2B2B2/#5D6D7E/#669E8B/#CE6043/#E6C27C/#80559F/#3CAED5/#FFFFFF -->
+  <!-- 标记数量： tally 计数符号（四竖 + 斜杠），直接表达「个数」，不依赖文字 -->
+  <path d="M36 48 L36 152 M70 48 L70 152 M104 48 L104 152 M138 48 L138 152" stroke="#497CAD" stroke-width="13" stroke-linecap="round"/>
+  <path d="M24 144 L150 56" stroke="#5280C1" stroke-width="13" stroke-linecap="round"/>
+</svg>

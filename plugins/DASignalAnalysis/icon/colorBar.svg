@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- data-workbench 官方色板：#5280C1/#497CAD/#BDCDE8/#727272/#B2B2B2/#5D6D7E/#669E8B/#CE6043/#E6C27C/#80559F/#3CAED5/#FFFFFF -->
+  <!-- 色标：纵向四段色阶 + 右侧刻度（时频图右侧的色标轴，与横向「色带」区分） -->
+  <rect x="56" y="28" width="56" height="36" fill="#497CAD"/>
+  <rect x="56" y="64" width="56" height="36" fill="#5280C1"/>
+  <rect x="56" y="100" width="56" height="36" fill="#3CAED5"/>
+  <rect x="56" y="136" width="56" height="36" fill="#BDCDE8"/>
+  <rect x="56" y="28" width="56" height="144" fill="none" stroke="#727272" stroke-width="5"/>
+  <path d="M120 28 L146 28 M120 64 L146 64 M120 100 L146 100 M120 136 L146 136 M120 172 L146 172" stroke="#727272" stroke-width="5" stroke-linecap="round"/>
+</svg>
