@@ -229,9 +229,12 @@ plugins/DASignalAnalysis/
   版本、不提交计算，只 `syncAmplitudeUiFromParams()` 同步全局 `mAmplitudeMode/mDbReference`、视图与
   峰值表重绘。
 - 对话框确定后必须 `syncParamsRibbonControls()` 全量回填丝带，否则峰值表、导出与存档口径会和视图分叉。
-- 丝带参数行统一用 `DASignalRibbonParamGrid`（`DASignalAnalysisUI.cpp` 内部类，以 Large 占比加入面板）：
-  一组参数放进同一个 `QGridLayout`，标签列与控件列共享列宽，标签由 `addRow()` 返回给调用方保存用于重译；
-  **不要**再用 `addSmallWidget` 逐行拼「标签 + 控件」——每行标签宽度按自身文本自适应，控件列会参差不齐。
+- 丝带参数行统一用 SARibbon 内置的 `SARibbonParamGrid`（以 Large 占比加入面板）：
+  一组参数放进同一个网格，标签列与控件列共享列宽；网格会跟随面板行模式（3/2/1 行）自动横向分列，
+  4 行参数在 3 行样式下摊成 2+2、在 1 行样式下摊成 4 列，不会被压扁或裁切。
+  标签经 `leadingLabel(id)` 取回用于重译，换语言后必须让网格重算列宽（`retranslateUi()` 末尾统一
+  对 6 个参数面板调 `recalcColumnWidths()`）；**不要**再用 `addSmallWidget` 逐行拼「标签 + 控件」，
+  也不要在插件里自建 QGridLayout 网格——那两行写法都会让控件列参差不齐且没有行预算。
 - spin 一律 `setKeyboardTracking(false)`；单位用 suffix（` Hz` / ` ms` / ` %`）。
 - 预算：频谱/热图/包络流式或按区段，峰值表/曲线含整段 float32 副本并按并发系数放大；
   详见 `DASignalMemoryEstimate.h` 的公式注释。
@@ -306,7 +309,7 @@ plugins/DASignalAnalysis/
   的显示坐标（与 `DASignalAmplitude` 同口径，dB 模式自动带单位），空模板表示不显示文本。
   标记非 transient、随工程存档；恢复时位置以存档为准，文本按当前模板重写（`applyPeakMarkerLabels()`）。
 - 丝带入口（**全项目唯一一处**，D13）：**分析设置 → 峰值**依次是 峰值标记（大按钮，勾选）/
-  标记数量（大按钮 + 10/20/50 菜单）/ 模式与相对门限（同一个 `DASignalRibbonParamGrid` 参数网格）/
+  标记数量（大按钮 + 10/20/50 菜单）/ 模式与相对门限（同一个 `SARibbonParamGrid` 参数网格）/
   标记显示（半高按钮，弹出模板编辑对话框）/ 峰值窗口（大按钮，打开峰值表停靠窗口的唯一入口）。
   「信号显示」页**没有**峰值面板，不要再把入口拆到两页。模式/相对门限/标记数量改后只重算
   峰值表与曲线（`ParamScope::Peaks`），不重算频谱；模板改动立即写配置并广播到全部已创建视图。

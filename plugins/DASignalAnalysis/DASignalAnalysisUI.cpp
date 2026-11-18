@@ -43,6 +43,7 @@
 #include "SARibbonContextCategory.h"
 #include "SARibbonPanel.h"
 #include "SARibbonPanelLayout.h"
+#include "SARibbonParamGrid.h"
 #include "SARibbonTabBar.h"
 // ADS
 #include "DockManager.h"
@@ -194,60 +195,6 @@ QIcon makeColormapPreviewIcon(const QString& preset)
     }
     return QIcon(QPixmap::fromImage(image));
 }
-
-/**
- * @brief 丝带参数网格：把一组「标签 + 控件」行放进共享列宽的 QGridLayout
- *
- * 丝带的 small 项逐行独立排布，每行标签宽度按自身文本自适应，同一组内的标签与
- * 控件左边界因此参差不齐。整组参数装进同一个网格控件、以 Large 占比加入面板后，
- * 标签列与控件列共享列宽：标签左对齐、控件列统一左边界，行距与丝带 small 行一致。
- * 末尾压一个弹性空白行，参数行保持自然高度、贴顶排列，不被面板高度均分拉伸。
- */
-class DASignalRibbonParamGrid : public QWidget
-{
-public:
-    explicit DASignalRibbonParamGrid(QWidget* parent) : QWidget(parent), mGrid(new QGridLayout(this))
-    {
-        mGrid->setContentsMargins(0, 0, 0, 0);
-        mGrid->setHorizontalSpacing(4);
-        mGrid->setVerticalSpacing(2);
-        mGrid->setColumnStretch(1, 1);
-    }
-
-    /// 追加一行「标签 + 控件」，返回标签指针供语言切换时重译
-    QLabel* addRow(const QString& text, QWidget* field)
-    {
-        auto* label = new QLabel(text, this);
-        label->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-        const int row = mGrid->rowCount();
-        mGrid->addWidget(label, row, 0);
-        mGrid->addWidget(field, row, 1);
-        return label;
-    }
-
-    /// 追加一行没有标签的控件（复选框），与上面的输入控件左边界对齐
-    void addFieldOnly(QWidget* field)
-    {
-        mGrid->addWidget(field, mGrid->rowCount(), 1);
-    }
-
-    /// 追加一行跨两列的只读提示（如 Δf），文本自带标签
-    void addHint(QWidget* hint)
-    {
-        mGrid->addWidget(hint, mGrid->rowCount(), 0, 1, 2);
-    }
-
-    /// 收尾：压弹性空白行，避免参数行被面板高度均分拉伸
-    void finish()
-    {
-        const int row = mGrid->rowCount();
-        mGrid->addItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding), row, 0, 1, 2);
-        mGrid->setRowStretch(row, 1);
-    }
-
-private:
-    QGridLayout* mGrid { nullptr };
-};
 
 /**
  * @brief 从宿主 ribbon 面板中摘除某个动作对应的按钮（不删宿主面板）
@@ -1317,11 +1264,10 @@ void DASignalAnalysisUI::buildAnalysisSettingsPage(SARibbonContextCategory* cont
             QOverload< int >::of(&QComboBox::currentIndexChanged),
             this,
             &DASignalAnalysisUI::onDetrendChanged);
-    // 去直流复选框与去趋势下拉框放进同一个参数网格：复选框左边界与下拉框对齐
-    auto* preprocessGrid = new DASignalRibbonParamGrid(mPanelPreprocess);
-    preprocessGrid->addFieldOnly(mPreprocessDcCheck);
-    mDetrendLabel = preprocessGrid->addRow(tr("Detrend"), mDetrendCombo);  // cn:去趋势
-    preprocessGrid->finish();
+    // 去直流复选框与去趋势下拉框放进同一个参数网格：复选框落在控件列，与下拉框左边界对齐
+    auto* preprocessGrid = new SARibbonParamGrid(mPanelPreprocess);
+    preprocessGrid->addRow(mPreprocessDcCheck);
+    mDetrendLabel = preprocessGrid->leadingLabel(preprocessGrid->addRow(tr("Detrend"), mDetrendCombo));  // cn:去趋势
     mPanelPreprocess->addLargeWidget(preprocessGrid);
 
     // ---------- 频谱：通道 / 窗函数 / 幅值口径 / 频率分辨率（S） ----------
@@ -1374,13 +1320,15 @@ void DASignalAnalysisUI::buildAnalysisSettingsPage(SARibbonContextCategory* cont
             QOverload< double >::of(&QDoubleSpinBox::valueChanged),
             this,
             &DASignalAnalysisUI::onResolutionChanged);
-    // 通道 / 窗函数 / 幅值口径 / 频率分辨率四行放进同一个参数网格：标签列与控件列共享列宽
-    auto* spectrumGrid  = new DASignalRibbonParamGrid(mPanelSpectrum);
-    mChannelLabel       = spectrumGrid->addRow(tr("Channel"), mChannelCombo);           // cn:通道
-    mWindowLabel        = spectrumGrid->addRow(tr("Window"), mWindowCombo);            // cn:窗函数
-    mAmplitudeModeLabel = spectrumGrid->addRow(tr("Amplitude"), mAmplitudeModeCombo);  // cn:幅值口径
-    mResolutionLabel    = spectrumGrid->addRow(tr("Resolution"), mResolutionSpin);     // cn:频率分辨率
-    spectrumGrid->finish();
+    // 通道 / 窗函数 / 幅值口径 / 频率分辨率四行放进同一个参数网格：标签列与控件列共享列宽；
+    // 三行样式下自动摊成 2+2 两列，两行/一行样式下按可用行数继续分列，不会被压扁
+    auto* spectrumGrid  = new SARibbonParamGrid(mPanelSpectrum);
+    mChannelLabel       = spectrumGrid->leadingLabel(spectrumGrid->addRow(tr("Channel"), mChannelCombo));  // cn:通道
+    mWindowLabel        = spectrumGrid->leadingLabel(spectrumGrid->addRow(tr("Window"), mWindowCombo));    // cn:窗函数
+    mAmplitudeModeLabel =
+        spectrumGrid->leadingLabel(spectrumGrid->addRow(tr("Amplitude"), mAmplitudeModeCombo));  // cn:幅值口径
+    mResolutionLabel =
+        spectrumGrid->leadingLabel(spectrumGrid->addRow(tr("Resolution"), mResolutionSpin));  // cn:频率分辨率
     mPanelSpectrum->addLargeWidget(spectrumGrid);
 
     // ---------- 时频：窗长 / 跳步重叠 / Δf（S） ----------
@@ -1414,12 +1362,13 @@ void DASignalAnalysisUI::buildAnalysisSettingsPage(SARibbonContextCategory* cont
     mDeltaFLabel = new QLabel(mPanelTimeFreq);
     mDeltaFLabel->setObjectName(QStringLiteral("da-signal-stft-deltaf"));
     mDeltaFLabel->setText(QStringLiteral("Δf —"));
-    // 窗长 / 跳步重叠 / Δf 提示放进同一个参数网格（Δf 是跨两列的只读提示）
-    auto* timeFreqGrid = new DASignalRibbonParamGrid(mPanelTimeFreq);
-    mStftWindowLabel   = timeFreqGrid->addRow(tr("Window length"), mStftWindowSpin);  // cn:窗长
-    mStftOverlapLabel  = timeFreqGrid->addRow(tr("Hop overlap"), mStftOverlapSpin);   // cn:跳步重叠
-    timeFreqGrid->addHint(mDeltaFLabel);
-    timeFreqGrid->finish();
+    // 窗长 / 跳步重叠 / Δf 提示放进同一个参数网格（Δf 是跨列的只读提示）
+    auto* timeFreqGrid = new SARibbonParamGrid(mPanelTimeFreq);
+    mStftWindowLabel =
+        timeFreqGrid->leadingLabel(timeFreqGrid->addRow(tr("Window length"), mStftWindowSpin));  // cn:窗长
+    mStftOverlapLabel =
+        timeFreqGrid->leadingLabel(timeFreqGrid->addRow(tr("Hop overlap"), mStftOverlapSpin));  // cn:跳步重叠
+    timeFreqGrid->addSpanRow(mDeltaFLabel);
     mPanelTimeFreq->addLargeWidget(timeFreqGrid);
 
     // ---------- Peaks：峰值（全项目唯一峰值入口，D13） ----------
@@ -1457,10 +1406,10 @@ void DASignalAnalysisUI::buildAnalysisSettingsPage(SARibbonContextCategory* cont
             this,
             &DASignalAnalysisUI::onPeakRelDbChanged);
     // 模式 / 相对门限两行放进同一个参数网格：标签列与控件列共享列宽
-    auto* peaksGrid = new DASignalRibbonParamGrid(mPanelPeaks);
-    mPeakModeLabel  = peaksGrid->addRow(tr("Mode"), mPeakModeCombo);       // cn:模式
-    mPeakRelDbLabel = peaksGrid->addRow(tr("Threshold"), mPeakRelDbSpin);  // cn:相对门限
-    peaksGrid->finish();
+    auto* peaksGrid = new SARibbonParamGrid(mPanelPeaks);
+    mPeakModeLabel  = peaksGrid->leadingLabel(peaksGrid->addRow(tr("Mode"), mPeakModeCombo));  // cn:模式
+    mPeakRelDbLabel =
+        peaksGrid->leadingLabel(peaksGrid->addRow(tr("Threshold"), mPeakRelDbSpin));  // cn:相对门限
     mPanelPeaks->addLargeWidget(peaksGrid);
     // 标记显示：半高按钮，弹出峰值标记文本模板编辑对话框（刻意保持 Small 尺寸，D13）
     actionPeakMarkerDisplay =
@@ -1649,9 +1598,8 @@ void DASignalAnalysisUI::buildSignalContextCategory()
             QOverload< double >::of(&QDoubleSpinBox::valueChanged),
             this,
             &DASignalAnalysisUI::onHeatmapDbFloorChanged);
-    auto* heatmapGrid      = new DASignalRibbonParamGrid(mPanelHeatmap);
-    mHeatmapDbFloorLabel   = heatmapGrid->addRow(tr("dB"), mHeatmapDbFloorSpin);
-    heatmapGrid->finish();
+    auto* heatmapGrid      = new SARibbonParamGrid(mPanelHeatmap);
+    mHeatmapDbFloorLabel   = heatmapGrid->leadingLabel(heatmapGrid->addRow(tr("dB"), mHeatmapDbFloorSpin));
     mPanelHeatmap->addLargeWidget(heatmapGrid);
     // 显示 ▾：图像/等高线/图像+等高线 与 最近邻/双线性（只影响二维云图的绘制方式）
     actionHeatmapDisplay =
@@ -1726,9 +1674,8 @@ void DASignalAnalysisUI::buildSignalContextCategory()
             QOverload< double >::of(&QDoubleSpinBox::valueChanged),
             this,
             &DASignalAnalysisUI::onWaterfallDbFloorChanged);
-    auto* waterfallGrid        = new DASignalRibbonParamGrid(mPanelWaterfall);
-    mWaterfallDbFloorLabel     = waterfallGrid->addRow(tr("dB"), mWaterfallDbFloorSpin);
-    waterfallGrid->finish();
+    auto* waterfallGrid        = new SARibbonParamGrid(mPanelWaterfall);
+    mWaterfallDbFloorLabel     = waterfallGrid->leadingLabel(waterfallGrid->addRow(tr("dB"), mWaterfallDbFloorSpin));
     mPanelWaterfall->addLargeWidget(waterfallGrid);
     // 当前迹线高亮：三维瀑布里把当前帧对应的迹线着色（单色着色时无效并置灰）
     actionWaterfallHighlight =
@@ -4239,6 +4186,15 @@ void DASignalAnalysisUI::finalize()
     mHeatmapDbFloorLabel    = nullptr;
     mWaterfallDbFloorSpin   = nullptr;
     mWaterfallDbFloorLabel  = nullptr;
+    // 参数网格的标签归 SARibbonParamGrid 所有，随面板销毁；指针统一置空，避免重译时命中悬空指针
+    mDetrendLabel           = nullptr;
+    mChannelLabel           = nullptr;
+    mWindowLabel            = nullptr;
+    mAmplitudeModeLabel     = nullptr;
+    mResolutionLabel        = nullptr;
+    mStftWindowLabel        = nullptr;
+    mStftOverlapLabel       = nullptr;
+    mDeltaFLabel            = nullptr;
     mPeakMarkersVisible     = false;
     mParamsPerSignal.clear();
     mParamsVersion.clear();
@@ -6015,6 +5971,20 @@ void DASignalAnalysisUI::retranslateUi()
     if (mActionCopyCurrentSubChart) {
         mActionCopyCurrentSubChart->setText(tr("Copy current sub-chart to clipboard"));
         // cn:复制当前子图到剪贴板
+    }
+    // 参数网格的标签列宽随文案重算：换语言后更长的标签会撑宽标签列，而不是把控件列挤歪
+    const QList< SARibbonPanel* > paramPanels = { mPanelPreprocess, mPanelSpectrum, mPanelTimeFreq,
+                                                  mPanelPeaks,     mPanelHeatmap,  mPanelWaterfall };
+    for (SARibbonPanel* panel : paramPanels) {
+        if (!panel) {
+            continue;
+        }
+        const QList< SARibbonParamGrid* > grids = panel->findChildren< SARibbonParamGrid* >();
+        for (SARibbonParamGrid* grid : grids) {
+            if (grid) {
+                grid->recalcColumnWidths();
+            }
+        }
     }
     // 页面
     if (mPage) {
