@@ -193,13 +193,37 @@ private Q_SLOTS:
     void relinkCurrentSignalSource();
     // 宿主清空工程（新建/加载前/快照回滚）：清理本插件信号、缓存与临时文件
     void onProjectCleaned();
-    // 上下文标签：通道切换 / 对数频率 / 色带菜单 / 色标显隐 / 添加图元
-    void onContextChannelChanged(int index);
-    void onContextLogFrequencyToggled(bool on);
+    // 上下文标签：通道切换 / 色带菜单 / 色标显隐 / 当前帧标记
+    void onChannelComboChanged(int index);
     void onContextColormapTriggered(QAction* action);
     // 时频图色标显隐开关：写当前视图并立即持久化偏好
     void onColorBarToggled(bool on);
-    void onContextAddFigure();
+    // 当前帧标记开关（二维云图竖线 + 三维当前迹线高亮）
+    void onTimeCursorToggled(bool on);
+    // 云图设置 dB 范围：写当前视图的二维色域下限（[floor, 0]）
+    void onHeatmapDbFloorChanged(double value);
+    // 云图设置「显示 ▾」：显示模式（图像/等高线/图像+等高线）与插值（最近邻/双线性）
+    void onHeatmapDisplayModeTriggered(QAction* action);
+    void onHeatmapResampleTriggered(QAction* action);
+    // 瀑布图设置：色带预设 / dB 色域下限 / 当前迹线高亮
+    void onWaterfallColormapTriggered(QAction* action);
+    void onWaterfallDbFloorChanged(double value);
+    void onWaterfallHighlightToggled(bool on);
+    // 瀑布图设置：切右侧 3D 设置面板到当前瀑布图元
+    void onWaterfallSettingsRequested();
+    // 「视图 ▾」时间格式子菜单：写当前视图的时间轴标签格式
+    void onTimeFormatTriggered(QAction* action);
+    // 「视图 ▾」布局比例子菜单：套用 2×2 网格比例预设
+    void onLayoutPresetTriggered(QAction* action);
+    // 「视图 ▾」重置显示：一键回到默认显示状态
+    void resetDisplaySettings();
+    // 「测量 ▾」联动缩放开关
+    void onLinkedZoomToggled(bool on);
+    // 「测量 ▾」双光标测量开关
+    void onDualCursorToggled(bool on);
+    // 「测量 ▾」峰值保持开关与重置
+    void onPeakHoldToggled(bool on);
+    void onResetPeakHold();
     // 当前视图「跟随滑块」变化（回勾底部工具栏）
     void onViewFollowSliderToggled(bool on);
     // 当前视图请求跟随帧幅值谱（同步短调用：成功回填、失败静默，不弹消息）
@@ -215,6 +239,8 @@ private:
     void buildAnalysisSettingsPage(SARibbonContextCategory* contextCategory);
     // 构建插件 Ribbon 上下文标签（分析设置 / 信号显示 两页）
     void buildSignalContextCategory();
+    // 给「信号显示」页重新下发面板标题开关（SARibbonBar 样式切换会统一改写，D9）
+    void applyDisplayPagePanelTitles();
     // 构建窗口底部播放工具栏（默认隐藏）
     void buildSignalToolbar();
     // 当前视图状态 → 上下文标签控件（QSignalBlocker 防回环）
@@ -328,13 +354,19 @@ private:
     SARibbonContextCategory* mContextCategory { nullptr };
     SARibbonCategory* mContextAnalysisPage { nullptr };
     SARibbonCategory* mContextDisplayPage { nullptr };
-    SARibbonPanel* mContextDisplayPanel { nullptr };
-    SARibbonPanel* mContextPeakPanel { nullptr };
-    SARibbonPanel* mContextToolsPanel { nullptr };
-    // 上下文标签控件与色带菜单
-    QComboBox* mContextChannelCombo { nullptr };
+    // 「信号显示」页按对象分组的面板：时频图设置 / 云图设置 / 瀑布图设置
+    SARibbonPanel* mPanelTimeFreqView { nullptr };
+    SARibbonPanel* mPanelHeatmap { nullptr };
+    SARibbonPanel* mPanelWaterfall { nullptr };
+    // 上下文标签控件与色带菜单（mColormapMenu 归二维云图，mWaterfallColormapMenu 归三维瀑布）
+    QComboBox* mChannelCombo { nullptr };
     QMenu* mColormapMenu { nullptr };
     QActionGroup* mColormapGroup { nullptr };
+    QMenu* mWaterfallColormapMenu { nullptr };
+    QActionGroup* mWaterfallColormapGroup { nullptr };
+    // Ribbon 样式切换 / 页切换的连接（面板标题只给本插件显示页开启，样式切换后要重新下发）
+    QMetaObject::Connection mRibbonStyleConnection;
+    QMetaObject::Connection mRibbonTabChangedConnection;
     // 窗口底部播放工具栏（默认隐藏，provider 激活时显示）
     QToolBar* mSignalToolbar { nullptr };
     QCheckBox* mToolbarFollowCheck { nullptr };
@@ -342,8 +374,31 @@ private:
     QToolButton* mToolbarStopButton { nullptr };
     QSlider* mToolbarTimeSlider { nullptr };
     QLabel* mToolbarTimeLabel { nullptr };
-    QDoubleSpinBox* mToolbarDbFloorSpin { nullptr };
     QCheckBox* mToolbarAutoScrollCheck { nullptr };
+    // 云图设置 dB 范围（二维色域下限；从底部播放器控制条迁入，D5）
+    QDoubleSpinBox* mHeatmapDbFloorSpin { nullptr };
+    QLabel* mHeatmapDbFloorLabel { nullptr };
+    // 瀑布图设置：dB 色域下限与当前迹线高亮
+    QDoubleSpinBox* mWaterfallDbFloorSpin { nullptr };
+    QLabel* mWaterfallDbFloorLabel { nullptr };
+    // 云图设置「显示 ▾」菜单：显示模式与插值
+    QMenu* mHeatmapDisplayMenu { nullptr };
+    QActionGroup* mHeatmapDisplayModeGroup { nullptr };
+    QActionGroup* mHeatmapResampleGroup { nullptr };
+    QAction* mHeatmapDisplayModeSection { nullptr };
+    QAction* mHeatmapResampleSection { nullptr };
+    QList< QAction* > mHeatmapDisplayModeActions;
+    QList< QAction* > mHeatmapResampleActions;
+    // 「视图 ▾」菜单（时间格式 / 布局比例 / 重置显示）
+    QMenu* mViewOptionsMenu { nullptr };
+    QMenu* mTimeFormatMenu { nullptr };
+    QMenu* mLayoutPresetMenu { nullptr };
+    QActionGroup* mTimeFormatGroup { nullptr };
+    // 「测量 ▾」菜单（联动缩放 / 双光标 / 峰值保持）
+    QMenu* mMeasureMenu { nullptr };
+    // 菜单项指针（重译需要逐条改写文本；data 里存格式/预设编号）
+    QList< QAction* > mTimeFormatActions;
+    QList< QAction* > mLayoutPresetActions;
     // 峰值标记开关（视图无 getter：UI 记录状态并在新视图创建时应用）
     bool mPeakMarkersVisible { false };
     // 全局偏好：峰值标记文本模板（{index}/{fre}/{amp}，signal-analysis-config.json 的 peakMarkerText）
@@ -357,6 +412,7 @@ private:
     QCheckBox* mPreprocessDcCheck { nullptr };
     QComboBox* mDetrendCombo { nullptr };
     QLabel* mDetrendLabel { nullptr };
+    QLabel* mChannelLabel { nullptr };
     QComboBox* mWindowCombo { nullptr };
     QLabel* mWindowLabel { nullptr };
     QComboBox* mAmplitudeModeCombo { nullptr };
@@ -403,9 +459,9 @@ public:
     //===================================================
     SARibbonPanel* mPanelImportExport { nullptr };  ///< 分析设置页：导入导出（导入▾/导出数据▾/导出图片▾）
     SARibbonPanel* mPanelPreprocess { nullptr };    ///< 分析设置页：预处理（去直流/去趋势）
-    SARibbonPanel* mPanelSpectrum { nullptr };      ///< 分析设置页：频谱（窗函数/幅值口径/频率分辨率）
+    SARibbonPanel* mPanelSpectrum { nullptr };      ///< 分析设置页：频谱（通道/窗函数/幅值口径/频率分辨率）
     SARibbonPanel* mPanelTimeFreq { nullptr };      ///< 分析设置页：时频（窗长/跳步重叠/Δf）
-    SARibbonPanel* mPanelPeaks { nullptr };         ///< 分析设置页：峰值
+    SARibbonPanel* mPanelPeaks { nullptr };         ///< 分析设置页：峰值（全项目唯一峰值入口）
     SARibbonPanel* mPanelMore { nullptr };          ///< 分析设置页：更多（高级设置…）
 
     //===================================================
@@ -447,20 +503,25 @@ public:
     QAction* actionPeakTop50 { nullptr };
 
     //===================================================
-    // 显示（Display，位于 Ribbon 上下文标签）
+    // 显示（Display，位于 Ribbon 上下文标签；按对象分组）
     //===================================================
-    QAction* actionWaterfall2D { nullptr };    ///< 二维时频热图
-    QAction* actionWaterfall3D { nullptr };    ///< 三维曲面瀑布
-    QAction* actionWaterfallHide { nullptr };  ///< 隐藏瀑布
-    QAction* actionLogFrequency { nullptr };   ///< 对数频率轴
-    QAction* actionColormap { nullptr };       ///< 色带（带菜单）
-    QAction* actionColorBar { nullptr };       ///< 时频图色标显隐（显示面板开关）
-
-    //===================================================
-    // 工具（Tools，位于 Ribbon 上下文标签）
-    //===================================================
-    // 缩放/平移/十字线/数据拾取等交互工具已由内置「绘图操作」上下文标签提供，本插件不再重复
-    QAction* actionAddFigure { nullptr };    ///< 添加图元
+    QAction* actionWaterfall2D { nullptr };       ///< 时频图设置：二维云图
+    QAction* actionWaterfall3D { nullptr };       ///< 时频图设置：三维瀑布
+    QAction* actionWaterfallHide { nullptr };     ///< 时频图设置：隐藏
+    QAction* actionTimeCursor { nullptr };        ///< 时频图设置：当前帧标记（勾选）
+    QAction* actionViewOptions { nullptr };       ///< 时频图设置：视图 ▾（时间格式/布局比例/重置显示）
+    QAction* actionDisplayReset { nullptr };      ///< 视图 ▾：重置显示
+    QAction* actionMeasure { nullptr };           ///< 时频图设置：测量 ▾（联动缩放/双光标/峰值保持）
+    QAction* actionLinkedZoom { nullptr };        ///< 测量 ▾：联动缩放（勾选）
+    QAction* actionDualCursor { nullptr };        ///< 测量 ▾：双光标测量（勾选）
+    QAction* actionPeakHold { nullptr };          ///< 测量 ▾：峰值保持（勾选，仅跟随播放时可用）
+    QAction* actionResetPeakHold { nullptr };     ///< 测量 ▾：重置峰值保持（仅峰值保持开启时可用）
+    QAction* actionColormap { nullptr };          ///< 云图设置：色带（带菜单，只影响二维谱图与色标）
+    QAction* actionColorBar { nullptr };          ///< 云图设置：色标显隐（勾选）
+    QAction* actionHeatmapDisplay { nullptr };    ///< 云图设置：显示 ▾（显示模式/插值）
+    QAction* actionWaterfallColormap { nullptr }; ///< 瀑布图设置：色带（带菜单，只影响三维瀑布）
+    QAction* actionWaterfallHighlight { nullptr }; ///< 瀑布图设置：当前迹线高亮（勾选）
+    QAction* actionWaterfallSettings { nullptr };  ///< 瀑布图设置：切右侧 3D 面板（图元详细样式）
 
     //===================================================
     // 导出（Export）

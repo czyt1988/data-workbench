@@ -23,6 +23,8 @@
 #include "qwt_plot_curve.h"
 #include "qwt_plot_intervalcurve.h"
 #include "qwt_plot_marker.h"
+#include "qwt_plot_panner.h"
+#include "qwt_plot_canvas_zoomer.h"
 #include "qwt_plot_picker.h"
 #include "qwt_plot_shapeitem.h"
 #include "qwt_plot_spectrogram.h"
@@ -31,6 +33,7 @@
 #include "qwt_scale_engine.h"
 #include "qwt_scale_widget.h"
 #include "qwt_symbol.h"
+#include "qwt_text.h"
 // DA
 #include "DAChart3DWidget.h"
 #include "DAChartWidget.h"
@@ -38,9 +41,14 @@
 #include "Analysis/DASignalAmplitude.h"
 #include "Page/DAPeakMarkerLabel.h"
 #include "Page/DAPeakMarkerSamples.h"
+#include "Page/DADualCursorReadout.h"
+#include "Render/DAColormapMatch.h"
 #include "Render/DAStftRasterData.h"
+#include "Render/DATimeScaleDraw.h"
 #include "Render/DAWaterfallBuilder.h"
+#include "Render/DAWaterfallColor.h"
 #include "qwt3d_waterfall.h"
+#include "qwt3d_colorlegend.h"
 
 namespace DA
 {
@@ -63,6 +71,17 @@ QwtColorMap* cloneLinearColorMap(const QwtLinearColorMap* src)
         dst->addColorStop(pos[ i ], cols[ i ]);
     }
     return dst;
+}
+
+/**
+ * @brief 拷贝任意色图（当前只有线性色图可拷；其它类型返回 nullptr，由调用方退回预设）
+ */
+QwtColorMap* cloneColorMap(const QwtColorMap* src)
+{
+    if (const auto* linear = dynamic_cast< const QwtLinearColorMap* >(src)) {
+        return cloneLinearColorMap(linear);
+    }
+    return nullptr;
 }
 
 /**
@@ -93,6 +112,11 @@ void clearPeakMarkers(QVector< QwtPlotMarker* >& markers, const DAChartWidget* c
 
 constexpr double cEps             = 1e-30;
 constexpr int cEnvelopeDebounceMs = 200;
+// 三维瀑布抽帧/抽频点上限（方案 §7.4：时间方向 200 条迹线、频率方向最多 512 频点）
+constexpr int cWaterfallMaxTraces = 200;
+constexpr int cWaterfallMaxBins   = 512;
+// 当前迹线高亮色：橙红（与云图游标、波形播放头同一语义色）
+const QColor cTimeCursorColor(206, 96, 67);
 
 // 峰值标记统一颜色：倒三角与上方文本同色，不再按名次区分（只保留一种颜色）
 const QColor cPeakMarkerColor(206, 96, 67);
@@ -171,6 +195,8 @@ DASignalAnalysisView::DASignalAnalysisView(const DASignalPtr& signal, QWidget* p
 
 DASignalAnalysisView::~DASignalAnalysisView()
 {
+    // 联动缩放的连接以本视图为接收者，析构时 Qt 会自动断开；这里显式清理避免析构顺序告警
+    disconnectLinkedZoom();
 }
 
 DASignalPtr DASignalAnalysisView::signal() const
@@ -187,6 +213,10 @@ void DASignalAnalysisView::setParams(const DASignalAnalysisParams& params)
     mPeakMarkersRestored = false;
     // 段长/跳步/窗/预处理口径都随参数变化：跟随帧谱快照作废（等新 STFT 算出后按新栅格重取）
     clearFollowFrameSpectrum();
+    // 参数变化后双光标读数（幅值/主峰频率）失效：清掉游标，等用户重新放置
+    clearDualCursor();
+    // 参数变化后峰值保持的频率网格/口径都变了：缓冲作废
+    resetPeakHold();
     rebuildSpectrumPlot();
     // 参数变化后热图（窗长/重叠/零填充）与矩形几何都跟着变（评审 U6 / D21）
     rebuildHeatmap();
@@ -354,6 +384,9 @@ void DASignalAnalysisView::buildFigure()
     mHeatmapChart->setVisible(true);
     mWaterfallChart->setVisible(false);
 
+    // 时间轴标签格式（默认秒）与轴标题：波形 x 与云图 x 用同一格式
+    applyTimeAxisFormat();
+
     connect(mFigure, &DAFigureWidget::currentChartChanged, this, &DASignalAnalysisView::onFigureCurrentChartChanged);
     connect(mFigure, &DAFigureWidget::current3DChartChanged, this, &DASignalAnalysisView::onFigureCurrent3DChartChanged);
 
@@ -398,7 +431,7 @@ void DASignalAnalysisView::ensureWaveDecorItems()
     if (!mPlayhead) {
         mPlayhead = new QwtPlotMarker();
         mPlayhead->setLineStyle(QwtPlotMarker::VLine);
-        mPlayhead->setLinePen(QPen(QColor(206, 96, 67), 1.5, Qt::DashLine));  // 橙红（危险/标记色）
+        mPlayhead->setLinePen(QPen(cTimeCursorColor, 1.5, Qt::DashLine));
         mPlayhead->setXValue(0.0);
         mPlayhead->attach(mWaveChart);
         mWaveChart->setItemTransient(mPlayhead);  // 交互装饰：不进存档
@@ -518,23 +551,18 @@ void DASignalAnalysisView::rebuildSpectrumPlot()
                                                         signalPeak() * mParams.calibration);
         }
     }
-    // 对数频率轴从第一个正频率点开始（0 赫兹在对数轴下无意义）
-    int startIdx = 0;
-    if (mLogFrequency) {
-        while (startIdx < srcFreqs.size() && srcFreqs[ startIdx ] <= 0.0) {
-            ++startIdx;
-        }
-    }
-    QVector< double > freqs(srcFreqs.size() - startIdx);
-    QVector< double > values(qMax(0, srcAmps.size() - startIdx));
-    for (int i = startIdx; i < srcFreqs.size(); ++i) {
-        freqs[ i - startIdx ]  = srcFreqs[ i ];
-        values[ i - startIdx ] = (i < srcAmps.size()) ? srcAmps[ i ] : 0.0;
+    // 曲线快照与曲线点：频率/幅值长度不一致时按频率截断/补零（QwtPlotCurve 要求等长）
+    QVector< double > freqs  = srcFreqs;
+    QVector< double > values = srcAmps;
+    if (values.size() != freqs.size()) {
+        values.resize(freqs.size());
     }
     // 记录当前真正绘制到频谱图的曲线快照：峰值标记按它吸附到曲线峰顶（跟随播放时是当前帧谱）
     mDisplayedFreqs  = freqs;
     mDisplayedValues = values;
     mSpectrumCurve->setSamples(freqs, values);
+    // 峰值保持曲线与频谱曲线同口径重绘（幅值模式变化时数值跟着换算）
+    updatePeakHoldCurve();
     rebuildPeakMarkers();
     updateAxisTitles();
     mSpectrumChart->setAxisAutoScale(QwtPlot::yLeft, true);
@@ -691,6 +719,7 @@ void DASignalAnalysisView::setStft(const DAStftResult& result)
     mStft                    = result;
     if (layoutChanged) {
         clearFollowFrameSpectrum();
+        resetPeakHold();  // 帧栅格变了：峰值保持缓冲作废
     }
     if (mFollowSlider) {
         // STFT 刚算出/换栅格后补请求当前帧（帧号换算依赖 mStft.nperseg/hop）；
@@ -720,6 +749,10 @@ void DASignalAnalysisView::setWaterfallMode(int mode)
     }
     mHeatmapChart->setVisible(mWaterfallMode == 0);
     mWaterfallChart->setVisible(mWaterfallMode == 1);
+    // 切 2D/3D/隐藏即换子图：双光标的当前子图可能已不可见，清掉重放
+    clearDualCursor();
+    // 二维/三维切换会改变热图的可见与轴范围：当前帧标记的像素节流缓存作废
+    mHeatmapCursorApplied = false;
     if (mWaterfallMode == 1) {
         // 切到三维：当前子图 = 三维（T8 设置面板切 3D 页）
         mCurrentIs3D = true;
@@ -743,30 +776,6 @@ int DASignalAnalysisView::waterfallMode() const
 }
 
 /**
- * @brief 是否对数频率轴
- */
-bool DASignalAnalysisView::isLogFrequency() const
-{
-    return mLogFrequency;
-}
-
-/**
- * @brief 设置频率轴线性/对数（同步临时工具栏下拉，触发重绘）
- */
-void DASignalAnalysisView::setLogFrequency(bool on)
-{
-    mLogFrequency = on;
-    if (mSpectrumChart) {
-        if (on) {
-            mSpectrumChart->setAxisScaleEngine(QwtPlot::xBottom, new QwtLogScaleEngine());
-        } else {
-            mSpectrumChart->setAxisScaleEngine(QwtPlot::xBottom, new QwtLinearScaleEngine());
-        }
-    }
-    rebuildSpectrumPlot();
-}
-
-/**
  * @brief 当前色带名
  */
 QString DASignalAnalysisView::colormapName() const
@@ -775,15 +784,45 @@ QString DASignalAnalysisView::colormapName() const
 }
 
 /**
- * @brief 设置色带（同步临时工具栏下拉）
+ * @brief 设置色带预设（丝带「云图设置 → 色带」或工程恢复）
+ *
+ * 预设名 -> 新建色图写到谱图图元（运行时唯一真相是 item 的 colorMap），
+ * 色标轴随后经 applyHeatmapColors 同步。未知预设名（如宿主面板改色后的 "custom"）忽略，
+ * 不覆盖图元当前色图。
+ * @param name QwtColorMapPreset 预设名
  */
 void DASignalAnalysisView::setColormapName(const QString& name)
 {
     if (name.isEmpty() || mColormapName == name) {
         return;
     }
+    const std::unique_ptr< QwtLinearColorMap > preset = QwtColorMapPreset::create(name);
+    if (!preset) {
+        qWarning() << "DASignalAnalysisView::setColormapName: unknown colormap preset" << name;
+        return;
+    }
     mColormapName = name;
+    ensureItemAttached(mSpectrogramItem, mHeatmapChart);
+    if (mSpectrogramItem) {
+        mSpectrogramItem->setColorMap(cloneLinearColorMap(preset.get()));
+    }
     applyHeatmapColors();
+}
+
+/**
+ * @brief 从谱图图元当前色带回读预设名（唯一真相 = item 的 colorMap）
+ *
+ * 宿主热图面板改过起止色后不再是任何预设，返回 "custom"（丝带菜单不勾选任何项）。
+ * 图元尚未重建时返回最近一次请求的预设名，避免恢复途中菜单闪空。
+ * @return 预设名；自定义色图返回 "custom"
+ */
+QString DASignalAnalysisView::colormapPreset() const
+{
+    if (!mSpectrogramItem) {
+        return mColormapName;
+    }
+    const QString preset = daMatchColormapPreset(mSpectrogramItem->colorMap());
+    return preset.isEmpty() ? QStringLiteral("custom") : preset;
 }
 
 /**
@@ -795,12 +834,762 @@ double DASignalAnalysisView::dbFloor() const
 }
 
 /**
+ * @brief 校验并按需重建云图画布的装饰图元（当前帧竖线/窗宽带，BLK-03a）
+ *
+ * 两者都是 transient 交互装饰，可被共享图元树删除；失效时置空缓存并按原样式重建，
+ * 下一次 updateHeatmapCursor 自动恢复显示。z 值抬到栅格之上，保证画在热图上层。
+ */
+void DASignalAnalysisView::ensureHeatmapDecorItems()
+{
+    if (!mHeatmapChart) {
+        return;
+    }
+    if (mHeatmapCursor && !mHeatmapChart->itemList().contains(mHeatmapCursor)) {
+        mHeatmapCursor = nullptr;
+    }
+    if (!mHeatmapCursor) {
+        mHeatmapCursor = new QwtPlotMarker();
+        mHeatmapCursor->setLineStyle(QwtPlotMarker::VLine);
+        // 橙红 = 项目既有标记语义色（与波形播放头一致），半透明保证不遮住热图颜色
+        mHeatmapCursor->setLinePen(QPen(QColor(206, 96, 67, 170), 1.5, Qt::DashLine));
+        mHeatmapCursor->setZ(101.0);
+        mHeatmapCursor->setVisible(false);
+        mHeatmapCursor->attach(mHeatmapChart);
+        mHeatmapChart->setItemTransient(mHeatmapCursor);  // 交互装饰：不进存档
+    }
+    if (mHeatmapWindowBand && !mHeatmapChart->itemList().contains(mHeatmapWindowBand)) {
+        mHeatmapWindowBand = nullptr;
+    }
+    if (!mHeatmapWindowBand) {
+        mHeatmapWindowBand = new QwtPlotShapeItem();
+        mHeatmapWindowBand->setPen(QPen(Qt::NoPen));
+        mHeatmapWindowBand->setBrush(QColor(206, 96, 67, 30));  // 同色极淡填充：表示分析窗口覆盖范围
+        mHeatmapWindowBand->setZ(100.0);
+        mHeatmapWindowBand->setVisible(false);
+        mHeatmapWindowBand->attach(mHeatmapChart);
+        mHeatmapChart->setItemTransient(mHeatmapWindowBand);  // 交互装饰：不进存档
+    }
+}
+
+/**
+ * @brief 当前帧标记：把云图竖线与 STFT 窗宽带移到给定时间（含像素节流）
+ *
+ * 只有「当前帧标记」开启且 STFT 栅格有效时才显示。节流按像素列：换算到屏幕列后
+ * 与上次绘制列相差不足 1 像素就跳过（拖动滑块/播放时大量位置落在同一列上，不重复重绘）。
+ * @param absoluteTime 绝对时间（秒，已含时间原点）
+ */
+void DASignalAnalysisView::updateHeatmapCursor(double absoluteTime)
+{
+    if (!mHeatmapChart) {
+        return;
+    }
+    ensureHeatmapDecorItems();
+    if (!mHeatmapCursor) {
+        return;
+    }
+    const bool visible = mTimeCursorVisible && mStft.isValid();
+    if (!visible) {
+        bool needReplot = false;
+        if (mHeatmapCursor->isVisible()) {
+            mHeatmapCursor->setVisible(false);
+            needReplot = true;
+        }
+        if (mHeatmapWindowBand && mHeatmapWindowBand->isVisible()) {
+            mHeatmapWindowBand->setVisible(false);
+            needReplot = true;
+        }
+        mHeatmapCursorApplied = false;  // 重新打开后按当前位置重画
+        if (needReplot) {
+            mHeatmapChart->replot();
+        }
+        return;
+    }
+    const double pixel = mHeatmapChart->transform(QwtPlot::xBottom, absoluteTime);
+    if (mHeatmapCursorApplied && std::fabs(pixel - mHeatmapCursorPixel) < 1.0) {
+        return;  // 同一像素列：位置变化不可见，不重绘
+    }
+    mHeatmapCursor->setXValue(absoluteTime);
+    mHeatmapCursor->setVisible(true);
+    // STFT 窗宽带：宽 = 窗长，纵向覆盖当前频率轴范围（轴范围尚未确定时先不画带）
+    const QwtInterval yRange = mHeatmapChart->axisScaleDiv(QwtPlot::yLeft).interval();
+    const double windowSec   = mStft.windowSeconds;
+    bool bandDrawn           = false;
+    if (mHeatmapWindowBand && windowSec > 0.0 && yRange.isValid() && yRange.width() > 0.0) {
+        mHeatmapWindowBand->setRect(
+            QRectF(absoluteTime - windowSec / 2.0, yRange.minValue(), windowSec, yRange.width()));
+        mHeatmapWindowBand->setVisible(true);
+        bandDrawn = true;
+    } else if (mHeatmapWindowBand) {
+        mHeatmapWindowBand->setVisible(false);
+    }
+    // 窗宽带没画成（轴范围未就绪）时不让节流生效，下一次继续尝试
+    mHeatmapCursorApplied = bandDrawn;
+    mHeatmapCursorPixel   = pixel;
+    mHeatmapChart->replot();
+}
+
+/**
  * @brief 设置热图色标下限（dB）
  */
 void DASignalAnalysisView::setDbFloor(double dbFloor)
 {
     mDbFloor = dbFloor;
     applyHeatmapColors();
+}
+
+/**
+ * @brief 云图显示模式（0=图像 / 1=等高线 / 2=图像+等高线）
+ *
+ * 状态真相是谱图图元（宿主热图面板也能改它）；图元尚未重建时返回待应用值。
+ */
+int DASignalAnalysisView::heatmapDisplayMode() const
+{
+    if (!mSpectrogramItem) {
+        return qBound(0, mPendingHeatmapDisplayMode < 0 ? 0 : mPendingHeatmapDisplayMode, 2);
+    }
+    const bool image   = mSpectrogramItem->testDisplayMode(QwtPlotSpectrogram::ImageMode);
+    const bool contour = mSpectrogramItem->testDisplayMode(QwtPlotSpectrogram::ContourMode);
+    if (image && contour) {
+        return 2;
+    }
+    if (contour) {
+        return 1;
+    }
+    return 0;
+}
+
+/**
+ * @brief 设置云图显示模式（图像 / 等高线 / 图像+等高线）
+ *
+ * 同时记为待应用值：谱图图元被外部删除后重建时按它恢复。
+ * @param mode 0=图像 / 1=等高线 / 2=图像+等高线
+ */
+void DASignalAnalysisView::setHeatmapDisplayMode(int mode)
+{
+    mPendingHeatmapDisplayMode = qBound(0, mode, 2);
+    applyHeatmapDisplayMode(mPendingHeatmapDisplayMode);
+}
+
+/**
+ * @brief 云图采样插值（0=最近邻 / 1=双线性）
+ *
+ * 状态真相是栅格数据（重建栅格后按待应用值恢复）。
+ */
+int DASignalAnalysisView::heatmapResampleMode() const
+{
+    if (!mStftRaster) {
+        return qBound(0, mPendingHeatmapResampleMode < 0 ? 0 : mPendingHeatmapResampleMode, 1);
+    }
+    return (mStftRaster->resampleMode() == QwtMatrixRasterData::BilinearInterpolation) ? 1 : 0;
+}
+
+/**
+ * @brief 设置云图采样插值（最近邻 / 双线性）
+ * @param mode 0=最近邻 / 1=双线性
+ */
+void DASignalAnalysisView::setHeatmapResampleMode(int mode)
+{
+    mPendingHeatmapResampleMode = qBound(0, mode, 1);
+    applyHeatmapResampleMode();
+}
+
+/**
+ * @brief 把给定显示模式写到谱图图元（图元不存在时是空操作）
+ *
+ * 图像/等高线两个 DisplayMode 同时开 = 图像+等高线；等高线笔沿用图元当前笔
+ * （宿主热图面板可改），这里只切模式。
+ * @param mode 0=图像 / 1=等高线 / 2=图像+等高线
+ */
+void DASignalAnalysisView::applyHeatmapDisplayMode(int mode)
+{
+    if (!mSpectrogramItem) {
+        return;
+    }
+    const int bounded  = qBound(0, mode, 2);
+    const bool image   = (bounded == 0 || bounded == 2);
+    const bool contour = (bounded >= 1);
+    mSpectrogramItem->setDisplayMode(QwtPlotSpectrogram::ImageMode, image);
+    mSpectrogramItem->setDisplayMode(QwtPlotSpectrogram::ContourMode, contour);
+    if (mHeatmapChart) {
+        mHeatmapChart->replot();
+    }
+}
+
+/**
+ * @brief 把待应用的插值模式写到栅格数据（栅格不存在时是空操作）
+ */
+void DASignalAnalysisView::applyHeatmapResampleMode()
+{
+    if (!mStftRaster) {
+        return;
+    }
+    mStftRaster->setResampleMode(heatmapResampleMode() == 1 ? QwtMatrixRasterData::BilinearInterpolation
+                                                            : QwtMatrixRasterData::NearestNeighbour);
+    if (mHeatmapChart) {
+        mHeatmapChart->replot();
+    }
+}
+
+/**
+ * @brief 当前帧标记是否显示
+ */
+bool DASignalAnalysisView::isTimeCursorVisible() const
+{
+    return mTimeCursorVisible;
+}
+
+/**
+ * @brief 显示/隐藏当前帧标记（二维云图竖线 / 三维当前迹线高亮的时间游标）
+ *
+ * 只记录开关；标记图元随播放头更新时按该开关显隐。
+ * @param on true 显示当前帧标记
+ */
+void DASignalAnalysisView::setTimeCursorVisible(bool on)
+{
+    if (mTimeCursorVisible == on) {
+        return;
+    }
+    mTimeCursorVisible = on;
+    updatePlayhead();
+}
+
+/**
+ * @brief 是否开启联动缩放（波形 x↔云图 x、频谱 x↔云图 y）
+ */
+bool DASignalAnalysisView::isLinkedZoom() const
+{
+    return mLinkedZoom;
+}
+
+/**
+ * @brief 开关联动缩放（波形 x ↔ 云图 x、频谱 x ↔ 云图 y）
+ *
+ * 开启时立即挂接已存在的 zoomer/panner；工具是懒创建的，之后由
+ * chartPropertiesChanged(ZoomStateChanged/PanStateChanged) 再尝试挂接。
+ * 关闭只断开连接，不自动恢复 autoscale（保留当前范围，写进用户指南）。
+ * @param on true 开启
+ */
+void DASignalAnalysisView::setLinkedZoom(bool on)
+{
+    if (mLinkedZoom == on) {
+        return;
+    }
+    mLinkedZoom = on;
+    if (mLinkedZoom) {
+        refreshLinkedZoomConnections();
+        // 开启时先把当前波形时间范围套到云图，避免两图范围不一致后第一次缩放跳变
+        syncLinkedAxesFrom(mWaveChart);
+    } else {
+        disconnectLinkedZoom();
+    }
+}
+
+/**
+ * @brief 联动缩放：为每个 2D 子图挂接 zoomer/panner 的缩放/平移信号（幂等）
+ *
+ * 只连接已存在的工具（不在开启联动时替用户创建/启用工具）；连接按对象去重，
+ * 重复调用不会重复触发。曲线图/热图画布已在 buildFigure 里装过事件过滤器。
+ */
+void DASignalAnalysisView::refreshLinkedZoomConnections()
+{
+    if (!mLinkedZoom) {
+        return;
+    }
+    const QList< DAChartWidget* > charts = { mWaveChart, mSpectrumChart, mHeatmapChart };
+    for (DAChartWidget* chart : charts) {
+        if (nullptr == chart) {
+            continue;
+        }
+        // 工具开关变化时重新尝试挂接（zoomer/panner 是懒创建的）
+        if (!mLinkedZoomCharts.contains(chart)) {
+            mLinkedZoomCharts.insert(chart);
+            mLinkedZoomConnections.append(connect(chart,
+                                                  &DAChartWidget::chartPropertiesChanged,
+                                                  this,
+                                                  &DASignalAnalysisView::onLinkedChartPropertiesChanged));
+        }
+        // zoomer/panner 是懒创建且会被复用的对象：用指针集合去重（lambda 不支持 UniqueConnection）
+        if (auto* zoomer = chart->getZoomer()) {
+            if (!mLinkedZoomTools.contains(zoomer)) {
+                mLinkedZoomTools.insert(zoomer);
+                mLinkedZoomConnections.append(connect(
+                    zoomer,
+                    &QwtPlotCanvasZoomer::zoomed,
+                    this,
+                    [this, chart](const QList< QwtPlotCanvasZoomState >&) { syncLinkedAxesFrom(chart); }));
+            }
+        }
+        if (auto* panner = chart->getPanner()) {
+            if (!mLinkedZoomTools.contains(panner)) {
+                mLinkedZoomTools.insert(panner);
+                mLinkedZoomConnections.append(
+                    connect(panner, &QwtPlotPanner::panned, this, [this, chart](int, int) { syncLinkedAxesFrom(chart); }));
+            }
+        }
+    }
+}
+
+/**
+ * @brief 开关双光标测量
+ *
+ * 开启时停用「点击波形即定位」（避免一次点击同时定位播放头与放游标），关闭时清理全部标记。
+ * 读数：时间轴给 A/B 时间、Δt、1/Δt，云图另给 A 所在列主峰频率；频谱给 A/B 频率、
+ * A/B 幅值（按已绘制曲线插值）、Δf 与 ΔA。
+ * @param on true 开启
+ */
+void DASignalAnalysisView::setDualCursorEnabled(bool on)
+{
+    if (mDualCursorEnabled == on) {
+        return;
+    }
+    mDualCursorEnabled = on;
+    if (!on) {
+        clearDualCursor();
+    }
+    setSeekEnabled(!on);
+}
+
+/**
+ * @brief 在当前 2D 子图上放置双光标（点击依次放 A / B / 再放 A）
+ *
+ * 换子图时先清掉上一对游标；三个图元都是 transient（不进存档）。
+ * 第三次点击重新放 A 时把 B 隐藏，读数只剩 A。
+ * @param chart 目标子图
+ * @param canvasPos 画布坐标
+ */
+void DASignalAnalysisView::placeDualCursor(DAChartWidget* chart, const QPoint& canvasPos)
+{
+    if (nullptr == chart) {
+        return;
+    }
+    if (mDualCursorChart != chart) {
+        clearDualCursor();
+        mDualCursorChart  = chart;
+        mDualCursorNextIsB = false;
+    }
+    // 图元可能被共享图元树删除：失效时置空并按原样式重建（BLK-03a）
+    auto ensureMarker = [this](QwtPlotMarker*& marker, const QColor& color, Qt::Alignment alignment) {
+        if (marker && !mDualCursorChart->itemList().contains(marker)) {
+            marker = nullptr;
+        }
+        if (!marker) {
+            marker = new QwtPlotMarker();
+            marker->setLineStyle(QwtPlotMarker::VLine);
+            marker->setLinePen(QPen(color, 1.2, Qt::SolidLine));
+            marker->setLabelAlignment(alignment);
+            marker->setVisible(false);
+            marker->attach(mDualCursorChart);
+            mDualCursorChart->setItemTransient(marker);  // 交互装饰：不进存档
+        }
+    };
+    ensureMarker(mDualCursorA, QColor(82, 128, 193), Qt::AlignBottom | Qt::AlignLeft);   // 主蓝
+    ensureMarker(mDualCursorB, QColor(206, 96, 67), Qt::AlignBottom | Qt::AlignRight);  // 橙红
+    ensureMarker(mDualCursorDelta, QColor(93, 109, 126), Qt::AlignTop | Qt::AlignHCenter);  // 深蓝灰
+
+    const double x = chart->invTransform(QwtPlot::xBottom, canvasPos.x());
+    if (mDualCursorNextIsB) {
+        mDualCursorB->setXValue(x);
+        mDualCursorB->setVisible(true);
+        mDualCursorNextIsB = false;
+    } else {
+        mDualCursorA->setXValue(x);
+        mDualCursorA->setVisible(true);
+        mDualCursorB->setVisible(false);  // 重新放 A：上一对的 B 作废
+        mDualCursorNextIsB = true;
+    }
+    updateDualCursorReadout();
+}
+
+/**
+ * @brief 刷新双光标读数文本并重绘
+ *
+ * 文本放在各自竖线旁的顶部：A 左对齐、B 右对齐、Δ 顶部居中；单位用符号（s/Hz），
+ * 时间格式跟随「视图 → 时间格式」。读数计算全部走纯函数 DADualCursorReadout。
+ */
+void DASignalAnalysisView::updateDualCursorReadout()
+{
+    if (nullptr == mDualCursorChart || nullptr == mDualCursorA || nullptr == mDualCursorDelta) {
+        return;
+    }
+    const QwtInterval xRange = mDualCursorChart->axisScaleDiv(QwtPlot::xBottom).interval();
+    const QwtInterval yRange = mDualCursorChart->axisScaleDiv(QwtPlot::yLeft).interval();
+    const double yTop        = yRange.isValid() ? yRange.maxValue() : 0.0;
+    mDualCursorA->setYValue(yTop);
+    if (mDualCursorB) {
+        mDualCursorB->setYValue(yTop);
+    }
+    // Δ 文本固定在可见区顶部居中：不随游标移动，避免与 A/B 文本挤在一起
+    const double xCenter = xRange.isValid() ? (xRange.minValue() + xRange.maxValue()) / 2.0 : 0.0;
+    mDualCursorDelta->setXValue(xCenter);
+    mDualCursorDelta->setYValue(yTop);
+
+    auto setLabel = [](QwtPlotMarker* marker, const QString& text, const QColor& color) {
+        QwtText label(text, QwtText::PlainText);
+        label.setColor(color);
+        marker->setLabel(label);
+    };
+    const QColor colorA(82, 128, 193);
+    const QColor colorB(206, 96, 67);
+    const QColor colorDelta(93, 109, 126);
+    // 时间轴标签的单位后缀（mm:ss 自带格式，不再加单位）
+    auto timeUnit = [this]() -> QString {
+        switch (mTimeFormat) {
+        case 1:
+            return QStringLiteral(" ms");
+        case 2:
+            return QString();
+        default:
+            return QStringLiteral(" s");
+        }
+    };
+    const bool timeAxis = (mDualCursorChart != mSpectrumChart);
+    if (timeAxis) {
+        const DADualCursorReadout readout =
+            daDualCursorReadoutTime(mDualCursorA->xValue(), mDualCursorB->xValue());
+        setLabel(mDualCursorA, daFormatTimeAxisLabel(readout.a, mTimeFormat, mTimeOrigin) + timeUnit(), colorA);
+        if (mDualCursorB) {
+            setLabel(mDualCursorB, daFormatTimeAxisLabel(readout.b, mTimeFormat, mTimeOrigin) + timeUnit(), colorB);
+        }
+        QString deltaText = QStringLiteral("Δt %1 · 1/Δt %2 Hz")
+                                .arg(QString::number(readout.delta, 'g', 6), QString::number(readout.equivalentHz, 'g', 6));
+        // 云图额外给 A 所在列的主峰频率（从当前 STFT 栅格取该列最大行）
+        if (mDualCursorChart == mHeatmapChart && mStft.isValid()) {
+            const double relative = readout.a - mTimeOrigin;
+            int column            = 0;
+            double bestDistance   = std::numeric_limits< double >::infinity();
+            for (int c = 0; c < mStft.times.size(); ++c) {
+                const double distance = std::fabs(mStft.times.at(c) - relative);
+                if (distance < bestDistance) {
+                    bestDistance = distance;
+                    column       = c;
+                }
+            }
+            bool peakOk = false;
+            const double peakFrequency = daStftColumnPeakFrequency(mStft, column, &peakOk);
+            if (peakOk) {
+                deltaText += tr(" · peak %1 Hz").arg(QString::number(peakFrequency, 'g', 6));
+                // cn: · 主峰 %1 赫兹
+            }
+        }
+        setLabel(mDualCursorDelta, deltaText, colorDelta);
+        // 两个游标都放好才显示 Δ 文本
+        mDualCursorDelta->setVisible(!mDualCursorNextIsB);
+    } else {
+        const DADualCursorReadout readout = daDualCursorReadoutSpectrum(mDualCursorA->xValue(),
+                                                                       mDualCursorB ? mDualCursorB->xValue()
+                                                                                    : mDualCursorA->xValue(),
+                                                                       mDisplayedFreqs,
+                                                                       mDisplayedValues);
+        setLabel(mDualCursorA, QStringLiteral("%1 Hz").arg(QString::number(readout.a, 'g', 6)), colorA);
+        if (mDualCursorB) {
+            setLabel(mDualCursorB, QStringLiteral("%1 Hz").arg(QString::number(readout.b, 'g', 6)), colorB);
+        }
+        QString deltaText = QStringLiteral("Δf %1 Hz").arg(QString::number(readout.delta, 'g', 6));
+        if (readout.hasValues) {
+            deltaText += QStringLiteral(" · ΔA %1").arg(QString::number(readout.deltaValue, 'g', 6));
+        }
+        setLabel(mDualCursorDelta, deltaText, colorDelta);
+        mDualCursorDelta->setVisible(!mDualCursorNextIsB);
+    }
+    mDualCursorChart->replot();
+}
+
+/**
+ * @brief 清理双光标图元与状态
+ */
+void DASignalAnalysisView::clearDualCursor()
+{
+    DAChartWidget* chart = mDualCursorChart.data();
+    auto clearMarker     = [chart](QwtPlotMarker*& marker) {
+        if (nullptr == marker) {
+            return;
+        }
+        if (chart && chart->itemList().contains(marker)) {
+            marker->detach();
+            delete marker;
+        }
+        marker = nullptr;
+    };
+    clearMarker(mDualCursorA);
+    clearMarker(mDualCursorB);
+    clearMarker(mDualCursorDelta);
+    mDualCursorChart   = nullptr;
+    mDualCursorNextIsB = false;
+    if (chart) {
+        chart->replot();
+    }
+}
+
+/**
+ * @brief 2D 子图属性变化：缩放/平移工具开关变化后重新尝试挂接联动
+ * @param chart 发生变化的子图（未使用）
+ * @param flag 变化的属性集合
+ */
+void DASignalAnalysisView::onLinkedChartPropertiesChanged(DAChartWidget* chart,
+                                                          DAChartWidget::ChartPropertyChangeFlags flag)
+{
+    Q_UNUSED(chart)
+    if (!mLinkedZoom) {
+        return;
+    }
+    if (flag.testFlag(DAChartWidget::ZoomStateChanged) || flag.testFlag(DAChartWidget::PanStateChanged)) {
+        refreshLinkedZoomConnections();
+    }
+}
+
+/**
+ * @brief 把某个子图的缩放/平移结果同步到相关坐标轴
+ *
+ * 映射关系：波形 x（时间）↔ 云图 x；频谱 x（频率）↔ 云图 y。云图作为源时反向同步两条。
+ * 同步期间 mSyncingAxes 防重入；目标轴用 setAxisScale（会关掉该轴 autoscale），
+ * 关闭联动后不主动恢复 autoscale。
+ * @param source 发生缩放/平移的子图
+ */
+void DASignalAnalysisView::syncLinkedAxesFrom(DAChartWidget* source)
+{
+    if (!mLinkedZoom || mSyncingAxes || nullptr == source) {
+        return;
+    }
+    // 只处理三种 2D 子图（3D 没有这些坐标轴）
+    if (source != mWaveChart && source != mSpectrumChart && source != mHeatmapChart) {
+        return;
+    }
+    const QwtInterval sourceX = source->axisScaleDiv(QwtPlot::xBottom).interval();
+    const QwtInterval sourceY = source->axisScaleDiv(QwtPlot::yLeft).interval();
+    mSyncingAxes              = true;
+    auto syncX = [this](DAChartWidget* target, const QwtInterval& interval) {
+        if (nullptr == target || !interval.isValid() || interval.width() <= 0.0) {
+            return;
+        }
+        target->setAxisScale(QwtPlot::xBottom, interval.minValue(), interval.maxValue());
+        target->replot();
+    };
+    auto syncY = [this](DAChartWidget* target, const QwtInterval& interval) {
+        if (nullptr == target || !interval.isValid() || interval.width() <= 0.0) {
+            return;
+        }
+        target->setAxisScale(QwtPlot::yLeft, interval.minValue(), interval.maxValue());
+        target->replot();
+    };
+    if (source == mWaveChart) {
+        syncX(mHeatmapChart, sourceX);
+    } else if (source == mSpectrumChart) {
+        syncY(mHeatmapChart, sourceX);  // 频谱的 x（频率）对应云图的 y（频率）
+    } else {                            // 云图
+        syncX(mWaveChart, sourceX);
+        syncY(mSpectrumChart, sourceY);
+    }
+    mSyncingAxes = false;
+}
+
+/**
+ * @brief 断开全部联动缩放连接（关闭联动 / 切图 / 视图销毁时调用）
+ */
+void DASignalAnalysisView::disconnectLinkedZoom()
+{
+    for (const QMetaObject::Connection& connection : std::as_const(mLinkedZoomConnections)) {
+        disconnect(connection);
+    }
+    mLinkedZoomConnections.clear();
+    mLinkedZoomCharts.clear();
+    mLinkedZoomTools.clear();
+    mSyncingAxes = false;
+}
+
+/**
+ * @brief 是否开启双光标测量
+ */
+bool DASignalAnalysisView::isDualCursorEnabled() const
+{
+    return mDualCursorEnabled;
+}
+
+/**
+ * @brief 是否开启峰值保持（Max Hold）
+ */
+bool DASignalAnalysisView::isPeakHoldEnabled() const
+{
+    return mPeakHoldEnabled;
+}
+
+/**
+ * @brief 开关峰值保持（Max Hold）
+ *
+ * 开启即清空缓冲并从当前帧重新累积（灰虚线曲线只作显示辅助，transient、不参与导出）。
+ * 关闭时清空缓冲并隐藏曲线。
+ * @param on true 开启
+ */
+void DASignalAnalysisView::setPeakHoldEnabled(bool on)
+{
+    if (mPeakHoldEnabled == on) {
+        return;
+    }
+    mPeakHoldEnabled = on;
+    resetPeakHold();
+    if (on) {
+        accumulatePeakHold();  // 已有当前帧谱时立即给出一条初值
+    }
+    updatePeakHoldCurve();
+    if (mSpectrumChart) {
+        mSpectrumChart->replot();
+    }
+}
+
+/**
+ * @brief 清空峰值保持缓冲（开启/切通道/改参数/关闭跟随/手动重置）
+ */
+void DASignalAnalysisView::resetPeakHold()
+{
+    mHoldFreqs.clear();
+    mHoldValues.clear();
+    updatePeakHoldCurve();
+    if (mSpectrumChart) {
+        mSpectrumChart->replot();
+    }
+}
+
+/**
+ * @brief 把当前跟随帧谱并入峰值保持缓冲（频率网格变化时重建缓冲）
+ *
+ * 只在「峰值保持开启 + 跟随播放 + 帧谱有效」时累积；存原始线性幅值的最大值
+ * （显示口径在绘制时换算，切换幅值模式不需要重算）。
+ */
+void DASignalAnalysisView::accumulatePeakHold()
+{
+    if (!mPeakHoldEnabled || !mFollowSlider || !mFollowFrameValid) {
+        return;
+    }
+    if (mFollowFreqs.isEmpty() || mFollowFreqs.size() != mFollowAmplitudes.size()) {
+        return;
+    }
+    const bool gridChanged = (mHoldFreqs.size() != mFollowFreqs.size())
+                             || (!mHoldFreqs.isEmpty()
+                                 && (mHoldFreqs.first() != mFollowFreqs.first()
+                                     || mHoldFreqs.last() != mFollowFreqs.last()));
+    if (gridChanged) {
+        // 网格变了（窗长/跳步/通道/参数变化）：旧缓冲没有意义，按新网格重建
+        mHoldFreqs  = mFollowFreqs;
+        mHoldValues = mFollowAmplitudes;
+    } else {
+        for (int i = 0; i < mFollowAmplitudes.size() && i < mHoldValues.size(); ++i) {
+            const double v = mFollowAmplitudes.at(i);
+            if (!std::isfinite(v)) {
+                continue;
+            }
+            mHoldValues[ i ] = qMax(mHoldValues.at(i), v);
+        }
+    }
+    updatePeakHoldCurve();
+}
+
+/**
+ * @brief 重建峰值保持曲线（灰色虚线，挂在频谱子图上）
+ *
+ * 曲线可能被共享图元树删除：失效时置空并按原样式重建（BLK-03a）。
+ * 幅值按当前显示口径换算（与频谱曲线同口径），因此切换峰值/均方根/dB 只重绘。
+ */
+void DASignalAnalysisView::updatePeakHoldCurve()
+{
+    if (!mSpectrumChart) {
+        return;
+    }
+    // 未开启时不创建曲线（不给图元树增加无用条目）；已存在则清空并隐藏
+    if (!mPeakHoldEnabled) {
+        if (mHoldCurve) {
+            ensureItemAttached(mHoldCurve, mSpectrumChart);
+            if (mHoldCurve) {
+                mHoldCurve->setSamples(QVector< double >(), QVector< double >());
+                mHoldCurve->setVisible(false);
+            }
+        }
+        return;
+    }
+    ensureItemAttached(mHoldCurve, mSpectrumChart);
+    if (!mHoldCurve) {
+        mHoldCurve = new QwtPlotCurve(tr("Max hold"));  // cn:峰值保持
+        QPen pen(QColor(114, 114, 114), 1.0, Qt::DashLine);  // 中性灰虚线（与数据曲线区分）
+        mHoldCurve->setPen(pen);
+        mHoldCurve->attach(mSpectrumChart);
+        mHoldCurve->setZ(21.0);  // 画在频谱曲线之上
+        mSpectrumChart->setItemTransient(mHoldCurve);  // 显示辅助：不进存档、不参与导出
+    }
+    const bool visible = !mHoldFreqs.isEmpty() && mHoldFreqs.size() == mHoldValues.size();
+    if (!visible) {
+        mHoldCurve->setSamples(QVector< double >(), QVector< double >());
+        mHoldCurve->setVisible(false);
+        return;
+    }
+    const double signalPeakCal = signalPeak() * mParams.calibration;
+    QVector< double > values(mHoldValues.size());
+    for (int i = 0; i < mHoldValues.size(); ++i) {
+        values[ i ] = DASignalAmplitude::toDisplay(mHoldValues.at(i),
+                                                   i == 0,
+                                                   mParams.amplitudeMode,
+                                                   mParams.dbReference,
+                                                   mParams.calibration,
+                                                   signalPeakCal);
+    }
+    mHoldCurve->setSamples(mHoldFreqs, values);
+    mHoldCurve->setVisible(true);
+}
+
+/**
+ * @brief 当前时间轴标签格式（0=秒 / 1=毫秒 / 2=mm:ss.s）
+ */
+int DASignalAnalysisView::timeFormat() const
+{
+    return mTimeFormat;
+}
+
+/**
+ * @brief 设置时间轴标签格式：换新 ScaleDraw 并同步轴标题
+ *
+ * 切换格式时不复用旧实例：QwtPlot 接管 scaleDraw 所有权，换新实例交给
+ * setAxisScaleDraw 后旧实例随 plot 释放。
+ * @param format 0=秒 / 1=毫秒 / 2=mm:ss.s
+ */
+void DASignalAnalysisView::setTimeFormat(int format)
+{
+    const int bounded = qBound(0, format, 2);
+    if (mTimeFormat == bounded) {
+        return;
+    }
+    mTimeFormat = bounded;
+    applyTimeAxisFormat();
+}
+
+/**
+ * @brief 时间轴标题（随格式变）
+ */
+QString DASignalAnalysisView::timeAxisTitle() const
+{
+    switch (mTimeFormat) {
+    case 1:
+        return tr("Time (ms)");  // cn:时间（毫秒）
+    case 2:
+        return tr("Time (mm:ss)");  // cn:时间（分:秒）
+    default:
+        return tr("Time (s)");  // cn:时间（秒）
+    }
+}
+
+/**
+ * @brief 把时间轴格式应用到波形 x 与云图 x
+ *
+ * 只换刻度标签，不改坐标轴范围；三维瀑布没有时间轴，不受影响。
+ */
+void DASignalAnalysisView::applyTimeAxisFormat()
+{
+    if (mWaveChart) {
+        mWaveChart->setAxisScaleDraw(QwtPlot::xBottom, new DATimeScaleDraw(mTimeFormat, mTimeOrigin));
+        mWaveChart->setAxisTitle(QwtPlot::xBottom, timeAxisTitle());
+        mWaveChart->replot();
+    }
+    if (mHeatmapChart) {
+        mHeatmapChart->setAxisScaleDraw(QwtPlot::xBottom, new DATimeScaleDraw(mTimeFormat, mTimeOrigin));
+        mHeatmapChart->setAxisTitle(QwtPlot::xBottom, timeAxisTitle());
+        mHeatmapChart->replot();
+    }
 }
 
 /**
@@ -833,6 +1622,8 @@ void DASignalAnalysisView::setTimeOrigin(double seconds)
     if (mStft.isValid()) {
         rebuildHeatmap();
     }
+    // mm:ss.s 以时间原点为 0 点：原点变化后时间轴标签要跟着重算
+    applyTimeAxisFormat();
     updatePlayhead();
 }
 
@@ -876,6 +1667,8 @@ void DASignalAnalysisView::setFollowSlider(bool on)
     }
     mFollowSlider = on;
     clearFollowFrameSpectrum();
+    // 跟随开关变化：峰值保持缓冲作废（关闭跟随不再有帧谱来源，重新开始时从头累积）
+    resetPeakHold();
     if (mFollowSlider) {
         requestFollowFrameSpectrum();  // 同步回填会自行重建频谱
     }
@@ -898,6 +1691,23 @@ bool DASignalAnalysisView::isFollowSlider() const
  */
 bool DASignalAnalysisView::eventFilter(QObject* watched, QEvent* e)
 {
+    // 双光标测量：左键释放时在当前 2D 子图上放置 A/B（点击被接管，不再触发定位/拖动的收尾）
+    if (mDualCursorEnabled && e && e->type() == QEvent::MouseButtonRelease && !mDraggingWindow) {
+        DAChartWidget* chart = nullptr;
+        if (mWaveChart && watched == mWaveChart->canvas()) {
+            chart = mWaveChart;
+        } else if (mSpectrumChart && watched == mSpectrumChart->canvas()) {
+            chart = mSpectrumChart;
+        } else if (mHeatmapChart && watched == mHeatmapChart->canvas()) {
+            chart = mHeatmapChart;
+        }
+        auto* me = static_cast< QMouseEvent* >(e);
+        if (chart && me->button() == Qt::LeftButton) {
+            mPressCandidate = false;  // 本次点击被双光标接管，不再残留拖动候选
+            placeDualCursor(chart, me->pos());
+            return true;
+        }
+    }
     // 点击任意 2D 子图即切换当前子图（T8 设置面板 target 跟随）。
     // 真实点击落在 QwtPlotCanvas 上：qwt figure 的激活事件过滤器原先装在 QwtPlot 上，
     // 收不到 canvas 事件（QwtPicker::eventFilter 恒 return false，并不消费点击）；
@@ -994,34 +1804,347 @@ bool DASignalAnalysisView::eventFilter(QObject* watched, QEvent* e)
 }
 
 /**
- * @brief 重建三维瀑布（抽帧抽频点后逐帧 pushTrace）
+ * @brief 重建三维瀑布（dB 着色 + 复用图元 + 当前迹线高亮）
+ *
+ * 顺序（方案 §6.3）：复用图元 → dB 化 → 固定色域与基线 → 色带 → 图例 → 高亮。
+ * 复用图元（clear + pushTrace）而不是 delete + 重建：右侧 3D 设置面板选中的图元身份不变，
+ * 参数连续重算时面板不再反复跳回 Waterfall 页（Q7），用户改的样式也不会被重算覆盖。
  */
 void DASignalAnalysisView::rebuildWaterfall()
 {
     if (!mWaterfallChart) {
         return;
     }
-    QVector< QVector< double > > traces;
-    QVector< double > binValues;
-    // 时间方向 200 条迹线、频率方向最多 512 频点（方案 §7.4）
-    if (!DAWaterfallBuilder::build(mStft, 200, 512, traces, binValues)) {
+    if (!mStft.isValid()) {
+        mWaterfallTraceTimes.clear();
         return;
     }
-    if (mWaterfallItem) {
-        // 瀑布图元已纳入 DAChart3DWidget::data3DRttis()（评审 H4），外部 clearAllData3D()
-        // 可能已经销毁它：先按当前挂载列表校验，失效则只置空，避免二次 delete（评审 N-H4）
-        const bool stillAttached = mWaterfallChart->getWaterfalls().contains(mWaterfallItem);
-        Qwt3DWaterfall* stale   = mWaterfallItem;
+    QVector< QVector< double > > traces;
+    QVector< double > binValues;
+    QVector< double > traceTimes;
+    if (!DAWaterfallBuilder::build(mStft, cWaterfallMaxTraces, cWaterfallMaxBins, traces, binValues, &traceTimes)) {
+        return;
+    }
+    // dB 化：整份栅格峰值归一（与 rebuildHeatmap 同口径），clamp [floor, 0]
+    const double peak    = stftGridPeak();
+    const double floorDb = waterfallDbFloorLower();
+    for (QVector< double >& trace : traces) {
+        trace = daStftToDb(trace, peak, floorDb);
+    }
+    // 复用图元：外部 clearAllData3D() 可能已销毁它，先按挂载列表校验（BLK-03a）
+    const bool itemAlive = (mWaterfallItem != nullptr) && mWaterfallChart->getWaterfalls().contains(mWaterfallItem);
+    if (itemAlive) {
+        mWaterfallItem->setTraceCapacity(traces.size());
+        mWaterfallItem->clear();
+        for (const QVector< double >& trace : std::as_const(traces)) {
+            mWaterfallItem->pushTrace(trace);
+        }
+        mWaterfallItem->setBinValues(binValues);
+    } else {
+        // 失效指针只置空不 delete（可能已被 clearAllData3D 释放）；色带 functor 随图元一起销毁
         mWaterfallItem          = nullptr;
-        if (stillAttached) {
-            stale->detach();
-            delete stale;
+        mWaterfallColor         = nullptr;
+        mWaterfallHighlightSlot = -1;
+        mWaterfallItem = mWaterfallChart->addWaterfall(traces, binValues, tr("Waterfall"));  // cn:三维瀑布
+        if (!mWaterfallItem) {
+            return;
+        }
+        // 首建给默认样式；之后由右侧 3D 面板维护，rebuild* 不再写死样式
+        mWaterfallItem->setPlotStyle(Qwt3DWaterfall::RibbonMesh);
+        mWaterfallItem->setColorMode(Qwt3DWaterfall::ByAmplitude);
+        mWaterfallItem->setOpacity(1.0);
+        mWaterfallItem->setDepthOrder(Qwt3DWaterfall::NewestInFront);
+        // 轴标签：只在尚未设置时给默认值（工程恢复的 figures.xml 可能已写过自定义标签）
+        if (mWaterfallChart->get3DAxisLabel(X1).isEmpty()) {
+            mWaterfallChart->set3DAxisLabel(X1, tr("Frequency (Hz)"));  // cn:频率（赫兹）
+        }
+        if (mWaterfallChart->get3DAxisLabel(Y1).isEmpty()) {
+            mWaterfallChart->set3DAxisLabel(Y1, tr("Trace"));  // cn:迹线
+        }
+        if (mWaterfallChart->get3DAxisLabel(Z1).isEmpty()) {
+            mWaterfallChart->set3DAxisLabel(Z1, tr("dB"));  // cn:分贝
         }
     }
-    mWaterfallItem = mWaterfallChart->addWaterfall(traces, binValues, tr("Waterfall"));  // cn:三维瀑布
-    if (mWaterfallItem) {
-        mWaterfallItem->setColorMode(Qwt3DWaterfall::ByAmplitude);
-        mWaterfallItem->setPlotStyle(Qwt3DWaterfall::RibbonMesh);
+    mWaterfallTraceTimes = traceTimes;
+    // 工程恢复的待应用样式：图元创建后才能落地（首建前后都安全）
+    if (!mPendingWaterfallStyle.isEmpty()) {
+        applyWaterfallStyle(mPendingWaterfallStyle);
+    }
+    // 固定色域 + 基线：这是「着色成帘幕而不是几条线」的关键
+    mWaterfallItem->setColorRange(floorDb, 0.0);
+    mWaterfallItem->setBaseline(floorDb);
+    // 色带（子类 functor，含当前迹线高亮）
+    mWaterfallHighlightSlot = -1;  // 数据换了，槽位需按新迹线时间重算
+    applyWaterfallColorFunctor();
+    updateWaterfallLegend();
+    updateWaterfallHighlight();
+    mWaterfallChart->update();
+}
+
+/**
+ * @brief 整份 STFT 栅格的幅值峰值（云图与瀑布共用同一 dB 归一化口径）
+ */
+double DASignalAnalysisView::stftGridPeak() const
+{
+    double peak = 0.0;
+    for (double v : std::as_const(mStft.values)) {
+        if (std::isfinite(v)) {
+            peak = qMax(peak, std::fabs(v));
+        }
+    }
+    return peak;
+}
+
+/**
+ * @brief dB 色域下限的有效值（[floor, 0] 需要 floor < 0，否则按 -1 兜底）
+ */
+double DASignalAnalysisView::waterfallDbFloorLower() const
+{
+    return (mWaterfallDbFloor < 0.0) ? mWaterfallDbFloor : -1.0;
+}
+
+/**
+ * @brief 重建三维瀑布的色带 functor（DAWaterfallColor：色带 + 当前迹线高亮）
+ *
+ * setDataColor 接管所有权，旧 functor 由图元释放；这里同步更新非 owning 指针，
+ * 供高亮槽位变化时原地修改并 invalidateColors。
+ */
+void DASignalAnalysisView::applyWaterfallColorFunctor()
+{
+    if (!mWaterfallItem) {
+        mWaterfallColor = nullptr;
+        return;
+    }
+    auto* color = new DAWaterfallColor(mWaterfallColormapName);
+    color->setHighlightSlot(mWaterfallHighlightSlot, cTimeCursorColor);
+    mWaterfallItem->setDataColor(color);
+    mWaterfallColor = color;
+}
+
+/**
+ * @brief 三维瀑布图例刻度/标题对齐 dB 色域（qwt 图例不自动跟数据）
+ */
+void DASignalAnalysisView::updateWaterfallLegend()
+{
+    if (!mWaterfallChart) {
+        return;
+    }
+    if (Qwt3DColorLegend* legend = mWaterfallChart->legend()) {
+        legend->setLimits(waterfallDbFloorLower(), 0.0);
+        legend->setTitleString(tr("dB"));  // cn:分贝
+        legend->setMajors(5);
+        legend->setMinors(0);
+    }
+}
+
+/**
+ * @brief 三维瀑布当前迹线高亮：当前时间 → 最近迹线槽位，槽位变化才重建顶点色
+ *
+ * 只在三维瀑布可见、「当前帧标记」开启、高亮开关开启且着色方式不是单色时生效。
+ * 顶点色烘焙在 VBO 里：改 functor 后必须 invalidateColors()（约 10 万顶点，可接受）。
+ */
+void DASignalAnalysisView::updateWaterfallHighlight()
+{
+    if (!mWaterfallItem || !mWaterfallColor) {
+        return;
+    }
+    int slot = -1;
+    if (mWaterfallMode == 1 && mTimeCursorVisible && mWaterfallHighlight
+        && mWaterfallItem->colorMode() != Qwt3DWaterfall::Solid && !mWaterfallTraceTimes.isEmpty()) {
+        const double t = currentTime() + (mSignal ? mSignal->timeOrigin() : 0.0);
+        slot           = daNearestTraceIndex(mWaterfallTraceTimes, t);
+    }
+    if (slot == mWaterfallHighlightSlot) {
+        return;
+    }
+    mWaterfallHighlightSlot = slot;
+    mWaterfallColor->setHighlightSlot(slot, cTimeCursorColor);
+    mWaterfallItem->invalidateColors();
+    if (mWaterfallChart) {
+        mWaterfallChart->update();
+    }
+}
+
+/**
+ * @brief 三维瀑布样式恢复默认（RibbonMesh / ByAmplitude / 1.0 / NewestInFront）
+ *
+ * 只重置几何/着色/不透明度/深度方向；描边与单色颜色保留面板当前值（默认颜色由 qwt 给）。
+ */
+void DASignalAnalysisView::resetWaterfallStyle()
+{
+    QJsonObject style;
+    style[ QStringLiteral("style") ]      = int(Qwt3DWaterfall::RibbonMesh);
+    style[ QStringLiteral("colorMode") ]  = int(Qwt3DWaterfall::ByAmplitude);
+    style[ QStringLiteral("opacity") ]    = 1.0;
+    style[ QStringLiteral("depthOrder") ] = int(Qwt3DWaterfall::NewestInFront);
+    applyWaterfallStyle(style);
+}
+
+/**
+ * @brief 三维瀑布 dB 色域下限（与二维云图独立，D12）
+ */
+double DASignalAnalysisView::waterfallDbFloor() const
+{
+    return mWaterfallDbFloor;
+}
+
+/**
+ * @brief 设置三维瀑布 dB 色域下限：固定色域 [floor, 0]、基线 = floor、图例刻度同步
+ * @param dbFloor dB 下限
+ */
+void DASignalAnalysisView::setWaterfallDbFloor(double dbFloor)
+{
+    mWaterfallDbFloor = dbFloor;
+    if (!mWaterfallItem) {
+        return;
+    }
+    const double floorDb = waterfallDbFloorLower();
+    mWaterfallItem->setColorRange(floorDb, 0.0);
+    mWaterfallItem->setBaseline(floorDb);
+    updateWaterfallLegend();
+    if (mWaterfallChart) {
+        mWaterfallChart->update();
+    }
+}
+
+/**
+ * @brief 三维瀑布色带预设名
+ */
+QString DASignalAnalysisView::waterfallColormapName() const
+{
+    return mWaterfallColormapName;
+}
+
+/**
+ * @brief 设置三维瀑布色带预设（只影响瀑布，不影响二维云图与色标）
+ * @param name QwtColorMapPreset 预设名
+ */
+void DASignalAnalysisView::setWaterfallColormapName(const QString& name)
+{
+    if (name.isEmpty() || mWaterfallColormapName == name) {
+        return;
+    }
+    mWaterfallColormapName = name;
+    if (!mWaterfallItem) {
+        return;
+    }
+    applyWaterfallColorFunctor();
+    updateWaterfallHighlight();
+    if (mWaterfallChart) {
+        mWaterfallChart->update();
+    }
+}
+
+/**
+ * @brief 是否高亮三维瀑布的当前迹线
+ */
+bool DASignalAnalysisView::isWaterfallHighlighted() const
+{
+    return mWaterfallHighlight;
+}
+
+/**
+ * @brief 开关当前迹线高亮（单色着色时无效）
+ * @param on true 高亮
+ */
+void DASignalAnalysisView::setWaterfallHighlight(bool on)
+{
+    if (mWaterfallHighlight == on) {
+        return;
+    }
+    mWaterfallHighlight = on;
+    updateWaterfallHighlight();
+}
+
+/**
+ * @brief 三维瀑布当前着色方式（0=按深度 / 1=按幅值 / 2=单色；无图元返回 -1）
+ */
+int DASignalAnalysisView::waterfallColorMode() const
+{
+    if (!mWaterfallItem) {
+        return -1;
+    }
+    return int(mWaterfallItem->colorMode());
+}
+
+/**
+ * @brief 三维瀑布图元（右侧 3D 面板定位当前图元用）
+ */
+Qwt3DWaterfall* DASignalAnalysisView::waterfall3DItem() const
+{
+    return mWaterfallItem;
+}
+
+/**
+ * @brief 三维瀑布样式（保存时从图元读回；唯一真相是图元本身）
+ *
+ * 键：style / colorMode / opacity / depthOrder / outlineColor / outlineWidth / solidColor。
+ * 图元尚未创建（STFT 未算完）时返回待应用样式，保证存档不丢用户设置。
+ */
+QJsonObject DASignalAnalysisView::waterfallStyle() const
+{
+    if (!mWaterfallItem) {
+        return mPendingWaterfallStyle;
+    }
+    QJsonObject style;
+    style[ QStringLiteral("style") ]      = int(mWaterfallItem->plotStyle());
+    style[ QStringLiteral("colorMode") ]  = int(mWaterfallItem->colorMode());
+    style[ QStringLiteral("opacity") ]    = mWaterfallItem->opacity();
+    style[ QStringLiteral("depthOrder") ] = int(mWaterfallItem->depthOrder());
+    const RGBA outline                    = mWaterfallItem->outlineColor();
+    const QColor outlineColor             = GL2Qt(outline.r, outline.g, outline.b);
+    style[ QStringLiteral("outlineColor") ] = outlineColor.name(QColor::HexRgb);
+    style[ QStringLiteral("outlineWidth") ] = mWaterfallItem->outlineWidth();
+    const RGBA solid                        = mWaterfallItem->color();
+    const QColor solidColor                 = GL2Qt(solid.r, solid.g, solid.b);
+    style[ QStringLiteral("solidColor") ]   = solidColor.name(QColor::HexRgb);
+    return style;
+}
+
+/**
+ * @brief 应用三维瀑布样式（工程恢复用）
+ *
+ * STFT 是异步的，恢复时图元可能还不存在：样式先记为待应用，首建图元后由
+ * rebuildWaterfall 套用（方案 §6.3 第 8 条）。
+ * @param style waterfallStyle() 产出的同结构对象
+ */
+void DASignalAnalysisView::applyWaterfallStyle(const QJsonObject& style)
+{
+    mPendingWaterfallStyle = style;
+    if (!mWaterfallItem || style.isEmpty()) {
+        return;
+    }
+    if (style.contains(QStringLiteral("style"))) {
+        mWaterfallItem->setPlotStyle(static_cast< Qwt3DWaterfall::PlotStyle >(style.value(QStringLiteral("style")).toInt()));
+    }
+    if (style.contains(QStringLiteral("colorMode"))) {
+        mWaterfallItem->setColorMode(static_cast< Qwt3DWaterfall::ColorMode >(style.value(QStringLiteral("colorMode")).toInt()));
+    }
+    if (style.contains(QStringLiteral("opacity"))) {
+        mWaterfallItem->setOpacity(qBound(0.0, style.value(QStringLiteral("opacity")).toDouble(1.0), 1.0));
+    }
+    if (style.contains(QStringLiteral("depthOrder"))) {
+        mWaterfallItem->setDepthOrder(
+            static_cast< Qwt3DWaterfall::DepthOrder >(style.value(QStringLiteral("depthOrder")).toInt()));
+    }
+    if (style.contains(QStringLiteral("outlineColor"))) {
+        const QColor outline(style.value(QStringLiteral("outlineColor")).toString());
+        if (outline.isValid()) {
+            mWaterfallItem->setOutlineColor(Qt2GL(outline));
+        }
+    }
+    if (style.contains(QStringLiteral("outlineWidth"))) {
+        mWaterfallItem->setOutlineWidth(style.value(QStringLiteral("outlineWidth")).toDouble(1.0));
+    }
+    if (style.contains(QStringLiteral("solidColor"))) {
+        const QColor solid(style.value(QStringLiteral("solidColor")).toString());
+        if (solid.isValid()) {
+            mWaterfallItem->setColor(Qt2GL(solid));
+        }
+    }
+    updateWaterfallHighlight();
+    if (mWaterfallChart) {
+        mWaterfallChart->update();
     }
 }
 
@@ -1037,12 +2160,7 @@ void DASignalAnalysisView::rebuildHeatmap()
         mHeatmapChart->replot();
         return;
     }
-    double peak = 0.0;
-    for (double v : std::as_const(mStft.values)) {
-        if (std::isfinite(v)) {
-            peak = qMax(peak, std::fabs(v));
-        }
-    }
+    double peak = stftGridPeak();
     if (peak <= 0.0) {
         peak = 1.0;
     }
@@ -1052,7 +2170,7 @@ void DASignalAnalysisView::rebuildHeatmap()
         dbValues[ i ]  = std::isfinite(v) ? 20.0 * std::log10(qMax(v / peak, 1e-30))
                                           : std::numeric_limits< double >::quiet_NaN();
     }
-    // 栅格所有权归 QwtPlotSpectrogram（setData 接管）；若图表被清空/图元树删除导致谱图
+    // 谱图图元与栅格所有权归 QwtPlotSpectrogram（setData 接管）；若图表被清空/图元树删除导致谱图
     // 图元已销毁，指针必须一起置空，避免继续写已释放的栅格（评审 H3/A5、BLK-03a）
     if (!ensureItemAttached(mSpectrogramItem, mHeatmapChart)) {
         mStftRaster = nullptr;  // 栅格随谱图图元一起被销毁
@@ -1060,6 +2178,8 @@ void DASignalAnalysisView::rebuildHeatmap()
     if (!mStftRaster) {
         mStftRaster = new DAStftRasterData();
     }
+    // 插值模式：栅格（重）建后按待应用值恢复（默认最近邻）
+    applyHeatmapResampleMode();
     mStftRaster->setGrid(dbValues,
                          mStft.rows,
                          mStft.columns,
@@ -1077,18 +2197,26 @@ void DASignalAnalysisView::rebuildHeatmap()
             mSpectrogramItem->setCachePolicy(QwtPlotRasterItem::PaintCache);
             // 分析结果图元：transient（序列化跳过，加载后重算重建）
             mHeatmapChart->setItemTransient(mSpectrogramItem);
+            // 图元是新建的：按待应用值恢复显示模式（工程恢复 / 外部删除后重建）
+            applyHeatmapDisplayMode(mPendingHeatmapDisplayMode < 0 ? 0 : mPendingHeatmapDisplayMode);
         }
     } else {
         mSpectrogramItem->setData(static_cast< QwtRasterData* >(mStftRaster));
         mSpectrogramItem->attach(mHeatmapChart);
+        // 图元常驻：保留宿主热图面板改过的显示模式，不在这里覆盖
     }
     // 色标（yRight 轴）的显隐、刻度区间 [mDbFloor, 0]、色带宽度与色图统一由
     // applyHeatmapColors 应用：不做这一步时 yRight 用 Qwt 默认 0..1000 刻度，与色标区间
     // [mDbFloor, 0] 不一致（用户报告的色标刻度对不上问题）
-    mHeatmapChart->setAxisTitle(QwtPlot::xBottom, tr("Time (s)"));      // cn:时间（秒）
+    mHeatmapChart->setAxisTitle(QwtPlot::xBottom, timeAxisTitle());       // cn:时间（秒/毫秒/分:秒）
     mHeatmapChart->setAxisTitle(QwtPlot::yLeft, tr("Frequency (Hz)"));  // cn:频率（赫兹）
     applyHeatmapColors();
     mHeatmapChart->replot();
+    // 栅格/轴范围都变了：当前帧标记重新按新变换对齐
+    mHeatmapCursorApplied = false;
+    if (mSignal) {
+        updateHeatmapCursor(currentTime() + mSignal->timeOrigin());
+    }
 }
 
 /**
@@ -1100,8 +2228,10 @@ void DASignalAnalysisView::rebuildHeatmap()
  * - 刻度：显示时必须 setAxisScale(yRight, mDbFloor, 0.0)，让刻度与色标区间 [mDbFloor, 0]
  *   一致（否则 Qwt 按默认 0..1000 画刻度，色标显示诡异）；dB 下限被调到 0 的退化区间
  *   按 -1..0 兜底，避免 Qwt 刻度区间宽度为 0；
- * - 色带：setColorBarEnabled(true) + setColorBarWidth(18) + setSpacing(4)（与绘图区间隔）
- *   + setTitle(tr("dB")) + setColorMap(QwtInterval(mDbFloor, 0), ...)；
+ * - 色带：**不再无条件重设谱图图元的 colorMap**。运行时唯一真相就是 item 的 colorMap
+ *   （宿主热图面板改的起止色、丝带选的预设都写在那里），每次 dB 变化/重建都覆盖会把
+ *   宿主面板的改动冲掉。只在「图元还没有色带」时用当前预设初始化；
+ * - 色标轴取 item 当前色带的拷贝（自定义起止色也能反映到色标），取不到才退回预设；
  * - 谱图图元可能被共享图元树删除：失效时置空（连同栅格）后只刷新色标并返回，
  *   下一次 rebuildHeatmap 重建（BLK-03a）。
  */
@@ -1113,10 +2243,21 @@ void DASignalAnalysisView::applyHeatmapColors()
     // 1. 色标状态与刻度：与谱图图元是否存在无关（工程恢复时谱图是 transient、尚未重算，
     //    也要把存档恢复出来的 yRight 轴同步到正确状态）
     mHeatmapChart->setAxisVisible(QwtPlot::yRight, mColorBarVisible);
-    auto cmap = QwtColorMapPreset::create(mColormapName);
-    // dB 下限被调到 0（无动态范围，工具栏允许 -200..0）时 [mDbFloor, 0] 是退化区间：
-    // Qwt 刻度要求下界 < 上界，这里留 1 dB 宽度兜底；正常的负下限不受影响
+    // dB 下限被调到 0（无动态范围）时 [mDbFloor, 0] 是退化区间：Qwt 刻度要求下界 < 上界，
+    // 这里留 1 dB 宽度兜底；正常的负下限不受影响
     const double colorBarLower = colorBarLowerDb(mDbFloor);
+    // 2. 谱图图元与栅格：图元被删除时置空缓存，只保留色标刷新（下次 rebuildHeatmap 重建）
+    const bool itemAlive = ensureItemAttached(mSpectrogramItem, mHeatmapChart);
+    if (!itemAlive) {
+        mStftRaster = nullptr;  // 栅格随谱图图元一起被销毁
+    }
+    // 3. 色带：只有图元还没有 colorMap 时才用当前预设初始化（不覆盖宿主面板的自定义色）
+    if (itemAlive && !mSpectrogramItem->colorMap()) {
+        if (const std::unique_ptr< QwtLinearColorMap > preset = QwtColorMapPreset::create(mColormapName)) {
+            mSpectrogramItem->setColorMap(cloneLinearColorMap(preset.get()));
+        }
+    }
+    // 4. 色标轴：item 当前色带的拷贝 + [floor, 0]；取不到时退回预设
     if (QwtScaleWidget* colorBar = mHeatmapChart->axisWidget(QwtPlot::yRight)) {
         if (mColorBarVisible) {
             // 关键：yRight 刻度必须与色标区间一致，否则 Qwt 用默认 0..1000 刻度画色标
@@ -1125,22 +2266,22 @@ void DASignalAnalysisView::applyHeatmapColors()
             colorBar->setColorBarWidth(18);
             colorBar->setSpacing(4);       // 色标与绘图区之间留间隔
             colorBar->setTitle(tr("dB"));  // cn:分贝
-            if (cmap) {
+            QwtColorMap* barMap = nullptr;
+            if (itemAlive) {
+                barMap = cloneColorMap(mSpectrogramItem->colorMap());
+            }
+            if (!barMap) {
+                if (const std::unique_ptr< QwtLinearColorMap > preset = QwtColorMapPreset::create(mColormapName)) {
+                    barMap = cloneLinearColorMap(preset.get());
+                }
+            }
+            if (barMap) {
                 // setColorMap 同时设定色标区间与色带（接管所有权）
-                colorBar->setColorMap(QwtInterval(colorBarLower, 0.0), cloneLinearColorMap(cmap.get()));
+                colorBar->setColorMap(QwtInterval(colorBarLower, 0.0), barMap);
             }
         } else {
             colorBar->setColorBarEnabled(false);
         }
-    }
-    // 2. 谱图图元与栅格：图元被删除时置空缓存，只保留色标刷新（下次 rebuildHeatmap 重建）
-    if (!ensureItemAttached(mSpectrogramItem, mHeatmapChart)) {
-        mStftRaster = nullptr;  // 栅格随谱图图元一起被销毁
-        mHeatmapChart->replot();
-        return;
-    }
-    if (cmap) {
-        mSpectrogramItem->setColorMap(cloneLinearColorMap(cmap.get()));
     }
     if (mStftRaster) {
         mStftRaster->setValueRange(colorBarLowerDb(mDbFloor), 0.0);
@@ -1324,7 +2465,7 @@ double DASignalAnalysisView::dbReferenceValue() const
 void DASignalAnalysisView::updateAxisTitles()
 {
     if (mWaveChart) {
-        mWaveChart->setAxisTitle(QwtPlot::xBottom, tr("Time (s)"));  // cn:时间（秒）
+        mWaveChart->setAxisTitle(QwtPlot::xBottom, timeAxisTitle());
         QString ampTitle = tr("Amplitude");                          // cn:幅值
         if (!mParams.unit.isEmpty()) {
             ampTitle += QStringLiteral(" [%1]").arg(mParams.unit);
@@ -1408,6 +2549,8 @@ void DASignalAnalysisView::setFollowFrameSpectrum(const QVector< double >& freqs
     mFollowFreqs      = freqs;
     mFollowAmplitudes = amplitudes;
     mFollowFrameValid = !mFollowFreqs.isEmpty() && mFollowFreqs.size() == mFollowAmplitudes.size();
+    // 峰值保持：把本帧并入最大值缓冲（网格变化时自动重建）
+    accumulatePeakHold();
     if (mFollowSlider) {
         rebuildSpectrumPlot();
     }
@@ -1477,8 +2620,14 @@ void DASignalAnalysisView::setCurrentChannel(int channel)
     mEnvMins.clear();
     mEnvMaxs.clear();
     mStft = DAStftResult();
+    // 当前帧标记依赖 STFT 栅格：通道切换后缓存作废，等新栅格回来后重画
+    mHeatmapCursorApplied = false;
     // 跟随帧谱快照属于上一个通道：作废，等新 STFT 算出后按新栅格重取
     clearFollowFrameSpectrum();
+    // 切通道后双光标读数失效
+    clearDualCursor();
+    // 切通道后峰值保持缓冲作废
+    resetPeakHold();
     // 曲线可能已被共享图元树删除：失效时置空，不写已释放对象（BLK-03a）
     ensureItemAttached(mEnvelopeCurve, mWaveChart);
     if (mEnvelopeCurve) {
@@ -1633,7 +2782,15 @@ void DASignalAnalysisView::updatePlayhead()
         const double maxLeft = origin + duration - span;
         left                 = qBound(minLeft, left, qMax(minLeft, maxLeft));
         mHeatmapChart->setAxisScale(QwtPlot::xBottom, left, left + span);
+        // 轴范围变了：上次的像素列不再有效，当前帧标记需要按新变换重画
+        mHeatmapCursorApplied = false;
         mHeatmapChart->replot();
+    }
+    // 二维云图当前帧标记（D6）：虚线竖线 + STFT 窗宽带（像素节流，见 updateHeatmapCursor）
+    updateHeatmapCursor(t);
+    // 三维瀑布当前迹线高亮：槽位变化才重建顶点色
+    if (mWaterfallMode == 1) {
+        updateWaterfallHighlight();
     }
     if (mWaveChart) {
         mWaveChart->replot();
@@ -1789,6 +2946,8 @@ void DASignalAnalysisView::refreshAfterFigureRestore()
     if (mHeatmapChart) {
         mHeatmapChart->replot();
     }
+    // 时间轴格式（秒/毫秒/mm:ss.s）在恢复后重新下发：存档里的轴状态会重设刻度绘制
+    applyTimeAxisFormat();
     if (mWaterfallChart) {
         // 3D 子图是 QOpenGLWidget（Qwt3DPlot），没有 replot，交给 Qt 重新绘制
         mWaterfallChart->update();
@@ -1804,6 +2963,8 @@ void DASignalAnalysisView::onFigureCurrentChartChanged(DA::DAChartWidget* chart)
     if (!chart) {
         return;
     }
+    // 切子图：双光标只在当前子图上工作，旧游标清理（用户在新子图上重新放置）
+    clearDualCursor();
     mCurrentIs3D = false;
     Q_EMIT currentSubChartChanged();
 }
@@ -1845,6 +3006,8 @@ QPixmap DASignalAnalysisView::grabForExport()
 void DASignalAnalysisView::resizeEvent(QResizeEvent* e)
 {
     QWidget::resizeEvent(e);
+    // 画布尺寸变化会改变 x 轴像素映射：当前帧标记的节流缓存作废
+    mHeatmapCursorApplied = false;
     if (mSignal && mSignal->isValid() && mResizeDebounce) {
         mResizeDebounce->start();  // 防抖：尺寸稳定后再重算包络
     }
@@ -1875,6 +3038,9 @@ void DASignalAnalysisView::retranslateUi()
     if (ensureItemAttached(mSpectrumCurve, mSpectrumChart)) {
         mSpectrumCurve->setTitle(tr("Amplitude spectrum"));  // cn:幅值谱
     }
+    if (ensureItemAttached(mHoldCurve, mSpectrumChart)) {
+        mHoldCurve->setTitle(tr("Max hold"));  // cn:峰值保持
+    }
     if (ensureItemAttached(mSpectrogramItem, mHeatmapChart)) {
         mSpectrogramItem->setTitle(tr("Spectrogram"));  // cn:时频图
     } else {
@@ -1882,9 +3048,13 @@ void DASignalAnalysisView::retranslateUi()
     }
     if (mWaterfallItem && mWaterfallChart && mWaterfallChart->getWaterfalls().contains(mWaterfallItem)) {
         mWaterfallItem->setTitle(tr("Waterfall"));  // cn:三维瀑布
+        // 图例标题（dB）与刻度随语言/色域重下发（qwt 图例不自动跟数据）
+        updateWaterfallLegend();
     } else {
         mWaterfallItem = nullptr;  // 已被外部（clearAllData3D 等）销毁：置空待重建
     }
     updateAxisTitles();
+    // 时间轴标题随格式与语言变化（Time (s)/(ms)/(mm:ss)）
+    applyTimeAxisFormat();
 }
 }  // namespace DA

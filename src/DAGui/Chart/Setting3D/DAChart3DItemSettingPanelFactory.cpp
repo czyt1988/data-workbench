@@ -2,6 +2,7 @@
 #include "Chart/Setting3D/DAChart3DSurfaceSettingPanel.h"
 #include "Chart/Setting3D/DAChart3DBarSettingPanel.h"
 #include "Chart/Setting3D/DAChart3DLineSettingPanel.h"
+#include "Chart/Setting3D/DAChart3DWaterfallSettingPanel.h"
 #include "Chart/Setting3D/DAChart3DGenericItemSettingPanel.h"
 #include "qwt3d_types.h"
 
@@ -64,8 +65,8 @@ QList< int > DAChart3DItemSettingPanelFactory::registeredRttiTypes() const
 /**
  * @brief 显式注册所有已知3D面板类型
  *
- * 注册内置的3D图表项面板类型，包括 Surface、Bar、Line；
- * Qwt3DWaterfall 暂无专属面板，显式注册到通用面板（未注册 rtti 也会回退通用面板）。
+ * 注册内置的3D图表项面板类型，包括 Surface、Bar、Line、Waterfall；
+ * 未注册的 rtti 仍回退通用面板。
  */
 void DAChart3DItemSettingPanelFactory::registerAllKnown3DPanels()
 {
@@ -84,9 +85,9 @@ void DAChart3DItemSettingPanelFactory::registerAllKnown3DPanels()
         return new DAChart3DLineSettingPanel();
     });
 
-    // Qwt3DWaterfall → 通用设置面板（信号分析瀑布视图在用，暂无专属面板）
+    // Qwt3DWaterfall → 瀑布专用面板（几何样式/着色/单色/不透明度/深度方向/描边）
     registerPanel(Rtti_Plot3DWaterfall, []() {
-        return new DAChart3DGenericItemSettingPanel();
+        return new DAChart3DWaterfallSettingPanel();
     });
 }
 

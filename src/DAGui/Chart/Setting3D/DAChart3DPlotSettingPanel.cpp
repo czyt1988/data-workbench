@@ -1,12 +1,51 @@
-﻿#include "Chart/Setting3D/DAChart3DPlotSettingPanel.h"
+#include "Chart/Setting3D/DAChart3DPlotSettingPanel.h"
 #include "Common/Settings/DAPropertyPanelContainerWidget.h"
 #include "DAChart3DWidget.h"
 #include <QSignalBlocker>
 #include <QVBoxLayout>
 #include <QPushButton>
+#include <cmath>
 
 namespace DA
 {
+namespace
+{
+/**
+ * @brief 视角预设的旋转角（度）：{xRot, yRot, zRot}
+ *
+ * 顺序与面板枚举一致：0=等轴测 / 1=前视 / 2=俯视 / 3=侧视。
+ * 模型视图先绕 X 转 (xRot - 90)，这里给的是 setRotation 的参数口径。
+ */
+struct ViewAnglePreset
+{
+    double xRot;
+    double yRot;
+    double zRot;
+};
+
+const ViewAnglePreset cViewAnglePresets[] = {
+    { 30.0, -45.0, 0.0 },  // 等轴测
+    { 0.0, 0.0, 0.0 },     // 前视
+    { 90.0, 0.0, 0.0 },    // 俯视
+    { 0.0, 90.0, 0.0 }     // 侧视
+};
+constexpr int cViewAngleCount = int(sizeof(cViewAnglePresets) / sizeof(cViewAnglePresets[0]));
+// 判定「当前角度与预设一致」的角度容差（度）：鼠标旋转后基本不会落回预设
+constexpr double cViewAngleTolerance = 1.0;
+
+/// 当前角度对应的预设下标；不匹配任何预设返回 -1
+int matchedViewAngleIndex(double xRot, double yRot, double zRot)
+{
+    for (int i = 0; i < cViewAngleCount; ++i) {
+        const ViewAnglePreset& preset = cViewAnglePresets[ i ];
+        if (std::abs(xRot - preset.xRot) <= cViewAngleTolerance && std::abs(yRot - preset.yRot) <= cViewAngleTolerance
+            && std::abs(zRot - preset.zRot) <= cViewAngleTolerance) {
+            return i;
+        }
+    }
+    return -1;
+}
+}  // namespace
 
 /**
  * @brief 构造函数
@@ -102,6 +141,15 @@ void DAChart3DPlotSettingPanel::buildPropertyPanel()
                             QList<int>() << static_cast<int>(AUTOFILL)
                                         << static_cast<int>(DATARATIO)
     );
+    // 视角预设：一次把视图转到常用观察角度（映射到 setRotation；鼠标旋转后不再匹配任何预设）
+    mPanel->addEnumProperty(PID_ViewAngle, tr("View Angle")  // cn:视角
+                            ,
+                            QStringList() << tr("Isometric")  // cn:等轴测
+                                          << tr("Front")  // cn:前视
+                                          << tr("Top")  // cn:俯视
+                                          << tr("Side")  // cn:侧视
+                            ,
+                            QList<int>() << 0 << 1 << 2 << 3);
     mPanel->endGroup();
 
     // ── Lighting ──
@@ -200,6 +248,12 @@ void DAChart3DPlotSettingPanel::updateUI()
     mPanel->setEnumValue(PID_Projection, plot->ortho() ? 1 : 0);
     mPanel->setEnumValue(PID_AspectRatio, static_cast<int>(plot->aspectRatioMode()));
 
+    // 视角：只有当前角度恰好等于某个预设时才勾选，否则保持用户用鼠标转出的角度（不误报）
+    const int viewAngle = matchedViewAngleIndex(plot->xRotation(), plot->yRotation(), plot->zRotation());
+    if (viewAngle >= 0) {
+        mPanel->setEnumValue(PID_ViewAngle, viewAngle);
+    }
+
     mPanel->setBoolValue(PID_EnableLighting, plot->lightingEnabled());
     mPanel->setEnumValue(PID_LightingPreset, static_cast<int>(t.lightingPreset()));
     mPanel->setDoubleValue(PID_Shininess, t.shininess());
@@ -286,6 +340,14 @@ void DAChart3DPlotSettingPanel::onPropertyValueChanged(int propertyId)
         plot->setZoom(1.0);
         plot->setViewportShift(0, 0);
         break;
+    case PID_ViewAngle: {
+        const int index = mPanel->getEnumValue(PID_ViewAngle);
+        if (index >= 0 && index < cViewAngleCount) {
+            const ViewAnglePreset& preset = cViewAnglePresets[ index ];
+            plot->setRotation(preset.xRot, preset.yRot, preset.zRot);
+        }
+        break;
+    }
     default:
         break;
     }

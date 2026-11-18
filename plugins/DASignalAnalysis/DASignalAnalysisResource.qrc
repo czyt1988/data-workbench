@@ -18,10 +18,12 @@
         <file>icon/waterfall2d.svg</file>
         <file>icon/waterfall3d.svg</file>
         <file>icon/waterfallHide.svg</file>
+        <file>icon/waterfallHighlight.svg</file>
         <file>icon/amplitude.svg</file>
-        <file>icon/logFrequency.svg</file>
         <file>icon/colorMap.svg</file>
         <file>icon/colorBar.svg</file>
+        <file>icon/viewOptions.svg</file>
+        <file>icon/measure.svg</file>
         <file>icon/exportTable.svg</file>
         <file>icon/exportImage.svg</file>
     </qresource>

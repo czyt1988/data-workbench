@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- data-workbench 官方色板：#5280C1/#497CAD/#BDCDE8/#727272/#B2B2B2/#5D6D7E/#669E8B/#CE6043/#E6C27C/#80559F/#3CAED5/#FFFFFF -->
+  <!-- 测量：两条游标（主蓝 = A / 橙红 = B）+ 中间双向箭头，表示双光标测量与读数 -->
+  <path d="M56 40 L56 160" stroke="#5280C1" stroke-width="8" stroke-linecap="round"/>
+  <path d="M144 40 L144 160" stroke="#CE6043" stroke-width="8" stroke-linecap="round"/>
+  <path d="M64 100 L136 100" stroke="#727272" stroke-width="6" stroke-linecap="round"/>
+  <path d="M64 100 L88 86 M64 100 L88 114" stroke="#727272" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M136 100 L112 86 M136 100 L112 114" stroke="#727272" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

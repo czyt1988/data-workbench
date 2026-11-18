@@ -12,6 +12,7 @@
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
+#include <QLocale>
 #include <QOpenGLContext>
 #include <QSignalSpy>
 #include <QMetaType>
@@ -29,6 +30,7 @@
 #include <QUndoGroup>
 #include <QUndoStack>
 #include <cmath>
+#include <limits>
 #include <memory>
 #include "Analysis/DASignalAmplitude.h"
 #include "Analysis/DASignalAnalysisParams.h"
@@ -43,16 +45,22 @@
 #include "Dialogs/DAPeakMarkerDisplayDialog.h"
 #include "Form/DASignalFormSpecBuilder.h"
 #include "Page/DAPeakCurvePlotSamples.h"
+#include "Page/DADualCursorReadout.h"
 #include "Page/DAPeakMarkerLabel.h"
 #include "Page/DAPeakMarkerSamples.h"
 #include "Page/DASignalAnalysisView.h"
 #include "Page/DASignalChartExport.h"
 #include "Page/DASignalTimeText.h"
 #include "Render/DAStftRasterData.h"
+#include "Render/DAColormapMatch.h"
+#include "Render/DATimeScaleDraw.h"
+#include "Render/DAWaterfallBuilder.h"
 #include "DAChart3DWidget.h"
 #include "DAChartWidget.h"
 #include "DAFigureWidget.h"
 #include "qwt_figure_grid.h"
+#include "qwt_colormap.h"
+#include "qwt_colormap_preset.h"
 #include "qwt_interval.h"
 #include "qwt_plot_curve.h"
 #include "qwt_plot_intervalcurve.h"
@@ -294,6 +302,10 @@ private Q_SLOTS:
     void signalViewTransientItems();
     // T7：瀑布模式切换热图/三维瀑布显隐与当前子图判定
     void signalViewWaterfallMode();
+    // S6：重复 setStft 复用瀑布图元（指针不变），外部 clearAllData3D 后重建不崩
+    void signalViewWaterfallItemReuse();
+    // S11：峰值保持按频率网格取最大值（单调不降）、重置清空、关闭后隐藏
+    void signalViewPeakHoldAccumulates();
     // T8：点击 2D 子图画布即切换当前子图（设置面板 target 跟随）
     void signalViewClickSwitchesCurrentChart();
     // T9：figure XML 保存（角色/峰值/网格比例/非 transient 图元集合）
@@ -318,6 +330,14 @@ private Q_SLOTS:
     void signalPeakMarkersRestoredUntilRecompute();
     // 播放器控制条时间文本：mm:ss.s 格式、占位与越界夹取（纯函数）
     void playbackTimeTextFormatting();
+    // 时间轴标签格式（纯函数）：秒/毫秒/mm:ss.s（含时间原点）
+    void timeAxisFormatLabels();
+    // 三维瀑布：迹线时间映射、当前迹线槽位与 dB 迹线换算（纯逻辑）
+    void waterfallTraceTimesAndDbConversion();
+    // 色带回读：22 个预设各自匹配；自定义/空色图返回空
+    void colormapPresetMatching();
+    // 双光标读数：波形 Δt/1Δt、频谱插值 Δf/ΔA、越界钳制与云图主峰频率
+    void dualCursorReadout();
     // dB 参考由幅值口径派生（D7）：dbRef1 → one，其余 → fullScale，旧档矛盾组合按幅值口径解释
     void dbReferenceDerivedFromAmplitudeMode();
 };
@@ -1353,6 +1373,88 @@ void DASignalAnalysisTest::signalViewWaterfallMode()
 }
 
 /**
+ * @brief S6：重复 setStft 复用瀑布图元（指针不变），外部 clearAllData3D 后重建不崩
+ *
+ * 复用图元是「3D 设置面板不反复跳页」与「样式不被重算覆盖」的前提；
+ * 外部 clearAllData3D（图元树/清空数据路径）销毁图元后必须能安全重建。
+ */
+void DASignalAnalysisTest::signalViewWaterfallItemReuse()
+{
+    if (!openGLAvailable()) {
+        QSKIP("OpenGL is not available: skip the waterfall reuse test");
+    }
+    DA::DASignalAnalysisView view(makeTestSignal());
+    DA::DAStftResult stft;
+    stft.rows          = 2;
+    stft.columns       = 3;
+    stft.times         = { 0.0, 0.5, 1.0 };
+    stft.freqs         = { 0.0, 10.0 };
+    stft.values        = { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 };
+    stft.windowSeconds = 0.1;
+    view.setStft(stft);
+    view.setWaterfallMode(1);
+    Qwt3DWaterfall* first = view.waterfall3DItem();
+    QVERIFY2(first != nullptr, "switching to 3D should create the waterfall item");
+    // 重复回填同一栅格：图元身份不变（复用），不会触发设置面板跳页
+    view.setStft(stft);
+    QCOMPARE(view.waterfall3DItem(), first);
+    QVERIFY(view.waterfall3DChart()->getWaterfalls().contains(first));
+    // 换一份栅格（同尺寸不同值）：仍然复用同一图元
+    stft.values = { 6.0, 5.0, 4.0, 3.0, 2.0, 1.0 };
+    view.setStft(stft);
+    QCOMPARE(view.waterfall3DItem(), first);
+    // 外部清空 3D 数据（图元被销毁）：setStft 不崩并重建新图元
+    view.waterfall3DChart()->clearAllData3D();
+    view.setStft(stft);
+    QVERIFY2(view.waterfall3DItem() != nullptr, "the waterfall item should be rebuilt after clearAllData3D()");
+}
+
+/**
+ * @brief S11：峰值保持按频率网格取最大值（单调不降）、重置清空、关闭后隐藏
+ */
+void DASignalAnalysisTest::signalViewPeakHoldAccumulates()
+{
+    if (!openGLAvailable()) {
+        QSKIP("OpenGL is not available: skip the peak hold test");
+    }
+    DA::DASignalAnalysisView view(makeTestSignal());
+    view.setFollowSlider(true);
+    view.setPeakHoldEnabled(true);
+    const QVector< double > freqs = { 0.0, 10.0, 20.0 };
+    view.setFollowFrameSpectrum(freqs, { 1.0, 5.0, 2.0 });
+    // 找到峰值保持曲线（灰虚线，标题 Max hold）
+    QwtPlotCurve* hold = nullptr;
+    const QList< QwtPlotItem* > items = view.spectrumChart()->itemList();
+    for (QwtPlotItem* item : items) {
+        auto* curve = dynamic_cast< QwtPlotCurve* >(item);
+        if (curve && curve->title().text() == QStringLiteral("Max hold")) {
+            hold = curve;
+            break;
+        }
+    }
+    QVERIFY2(hold != nullptr, "the max hold curve should be created when peak hold is enabled");
+    QVERIFY(hold->isVisible());
+    QVERIFY(view.spectrumChart()->isItemTransient(hold));
+    QCOMPARE(hold->dataSize(), 3);
+    QCOMPARE(hold->maxYValue(), 5.0);
+    QCOMPARE(hold->minYValue(), 1.0);
+    // 第二帧：逐频点取最大值（0 Hz 1→3、10 Hz 5→2 保持 5、20 Hz 2→9）
+    view.setFollowFrameSpectrum(freqs, { 3.0, 2.0, 9.0 });
+    QCOMPARE(hold->maxYValue(), 9.0);
+    QCOMPARE(hold->minYValue(), 3.0);
+    // 更小的一帧不会降低最大值（单调不降）
+    view.setFollowFrameSpectrum(freqs, { 0.5, 0.5, 0.5 });
+    QCOMPARE(hold->maxYValue(), 9.0);
+    QCOMPARE(hold->minYValue(), 3.0);
+    // 手动重置：缓冲清空（曲线仍在，但无数据）
+    view.resetPeakHold();
+    QCOMPARE(hold->dataSize(), 0);
+    // 关闭峰值保持：曲线隐藏
+    view.setPeakHoldEnabled(false);
+    QVERIFY(!hold->isVisible());
+}
+
+/**
  * @brief T8：点击 2D 子图画布即切换当前子图（设置面板 target 跟随）
  *
  * qwt 只在事件传播到 QwtPlot 时才切换当前坐标轴；波形画布上的 QwtPicker 会消费点击，
@@ -2245,6 +2347,228 @@ void DASignalAnalysisTest::playbackTimeTextFormatting()
     // 位置越界（后端偶发值）夹在 [0, 总长]
     QCOMPARE(daSignalFormatTimeRange(-500, 90500, true), QStringLiteral("00:00.0 / 01:30.5"));
     QCOMPARE(daSignalFormatTimeRange(99999999, 90500, true), QStringLiteral("01:30.5 / 01:30.5"));
+}
+
+/**
+ * @brief 时间轴标签格式（纯函数）：秒 / 毫秒 / mm:ss.s（含时间原点）
+ */
+void DASignalAnalysisTest::timeAxisFormatLabels()
+{
+    using DA::daFormatTimeAxisLabel;
+    // 秒：与 Qwt 默认标签同源（QLocale 数值格式）
+    QCOMPARE(daFormatTimeAxisLabel(1.5, 0, 0.0), QLocale().toString(1.5));
+    QCOMPARE(daFormatTimeAxisLabel(12.0, 0, 0.0), QLocale().toString(12.0));
+    // 毫秒：值 × 1000 取整
+    QCOMPARE(daFormatTimeAxisLabel(0.5, 1, 0.0), QStringLiteral("500"));
+    QCOMPARE(daFormatTimeAxisLabel(1.25, 1, 0.0), QStringLiteral("1250"));
+    QCOMPARE(daFormatTimeAxisLabel(0.0, 1, 0.0), QStringLiteral("0"));
+    // mm:ss.s：以时间原点为 0 点，秒补两位、十分位一位
+    QCOMPARE(daFormatTimeAxisLabel(0.0, 2, 0.0), QStringLiteral("0:00.0"));
+    QCOMPARE(daFormatTimeAxisLabel(12.3, 2, 0.0), QStringLiteral("0:12.3"));
+    QCOMPARE(daFormatTimeAxisLabel(90.5, 2, 0.0), QStringLiteral("1:30.5"));
+    // 时间原点非 0：绝对轴值减去原点后格式化
+    QCOMPARE(daFormatTimeAxisLabel(100.0, 2, 100.0), QStringLiteral("0:00.0"));
+    QCOMPARE(daFormatTimeAxisLabel(160.0, 2, 100.0), QStringLiteral("1:00.0"));
+    // 原点前（无效值）钳到 0，不出现负时间
+    QCOMPARE(daFormatTimeAxisLabel(50.0, 2, 100.0), QStringLiteral("0:00.0"));
+    // 超过 1 小时：分钟位自然增长
+    QCOMPARE(daFormatTimeAxisLabel(3661.0, 2, 0.0), QStringLiteral("61:01.0"));
+    // 未知格式按秒处理
+    QCOMPARE(daFormatTimeAxisLabel(2.5, 99, 0.0), QLocale().toString(2.5));
+}
+
+/**
+ * @brief 三维瀑布：迹线时间映射、当前迹线槽位与 dB 迹线换算（纯逻辑）
+ */
+void DASignalAnalysisTest::waterfallTraceTimesAndDbConversion()
+{
+    using DA::DAStftResult;
+    using DA::DAWaterfallBuilder;
+    // 3 行 × 4 列：行 0 为最低频率，列 0 为最早时间
+    DAStftResult stft;
+    stft.rows    = 3;
+    stft.columns = 4;
+    stft.times   = { 0.0, 0.1, 0.2, 0.3 };
+    stft.freqs   = { 0.0, 10.0, 20.0 };
+    for (int c = 0; c < stft.columns; ++c) {
+        for (int r = 0; r < stft.rows; ++r) {
+            stft.values.append(0.1 * (r + 1) * (c + 1));
+        }
+    }
+    QVERIFY(stft.isValid());
+
+    // 迹线时间与 build 的输出一一对应（同一抽帧规则）
+    QVector< QVector< double > > traces;
+    QVector< double > binValues;
+    QVector< double > traceTimes;
+    QVERIFY(DAWaterfallBuilder::build(stft, 2, 2, traces, binValues, &traceTimes));
+    QCOMPARE(traces.size(), 2);
+    QCOMPARE(traceTimes.size(), traces.size());
+    QCOMPARE(traceTimes, DA::daWaterfallTraceTimes(stft, 2, 0.0));
+    // 抽帧取区间代表列：4 列抽 2 条 → 列 0 与列 2
+    QCOMPARE(traceTimes.at(0), stft.times.at(0));
+    QCOMPARE(traceTimes.at(1), stft.times.at(2));
+    // 时间原点只在对外时间上加偏移，不影响列选择
+    const QVector< double > shifted = DA::daWaterfallTraceTimes(stft, 2, 5.0);
+    QCOMPARE(shifted.size(), 2);
+    QCOMPARE(shifted.at(0), traceTimes.at(0) + 5.0);
+    QCOMPARE(shifted.at(1), traceTimes.at(1) + 5.0);
+    // 可选参数不破坏旧调用（不传 traceTimes）
+    QVector< QVector< double > > tracesNoTimes;
+    QVector< double > binValuesNoTimes;
+    QVERIFY(DAWaterfallBuilder::build(stft, 2, 2, tracesNoTimes, binValuesNoTimes));
+    QCOMPARE(tracesNoTimes.size(), traces.size());
+    QCOMPARE(binValuesNoTimes, binValues);
+    // 栅格无效：空输出
+    QVERIFY(!DAWaterfallBuilder::build(DAStftResult(), 2, 2, tracesNoTimes, binValuesNoTimes));
+
+    // 当前迹线槽位：空列表 / 越界钳制 / 中点取最近
+    QCOMPARE(DA::daNearestTraceIndex(QVector< double >(), 1.0), -1);
+    QCOMPARE(DA::daNearestTraceIndex(traceTimes, -100.0), 0);
+    QCOMPARE(DA::daNearestTraceIndex(traceTimes, 100.0), traceTimes.size() - 1);
+    QCOMPARE(DA::daNearestTraceIndex(traceTimes, traceTimes.at(0)), 0);
+    QCOMPARE(DA::daNearestTraceIndex(traceTimes, traceTimes.at(1)), 1);
+    const double mid = 0.5 * (traceTimes.at(0) + traceTimes.at(1));
+    QCOMPARE(DA::daNearestTraceIndex(traceTimes, mid - 0.001), 0);
+    QCOMPARE(DA::daNearestTraceIndex(traceTimes, mid + 0.001), 1);
+
+    // dB 迹线换算：0 → 0 dB；peak/10 → -20 dB；0/NaN → floor；clamp 到 [floor, 0]
+    const double nan = std::numeric_limits< double >::quiet_NaN();
+    const QVector< double > db = DA::daStftToDb({ 1.0, 0.1, 0.0, nan, 2.0 }, 1.0, -80.0);
+    QCOMPARE(db.size(), 5);
+    QCOMPARE(db.at(0), 0.0);
+    QVERIFY(qAbs(db.at(1) + 20.0) < 1e-9);
+    QCOMPARE(db.at(2), -80.0);
+    QCOMPARE(db.at(3), -80.0);
+    QCOMPARE(db.at(4), 0.0);  // 超过归一峰值：clamp 到 0
+    // 低于下限：clamp 到 floor
+    const QVector< double > lowDb = DA::daStftToDb({ 1e-6 }, 1.0, -80.0);
+    QCOMPARE(lowDb.at(0), -80.0);
+    // peak 无效（0 或 NaN）时按 1.0 兜底，不产出 inf
+    const QVector< double > peakZero = DA::daStftToDb({ 0.5 }, 0.0, -80.0);
+    QVERIFY(std::isfinite(peakZero.at(0)));
+    QVERIFY(qAbs(peakZero.at(0) + 6.0205999132796) < 1e-6);
+    // floor >= 0 时按 -1 兜底（退化区间保护）
+    const QVector< double > degenerate = DA::daStftToDb({ 0.0 }, 1.0, 0.0);
+    QCOMPARE(degenerate.at(0), -1.0);
+}
+
+/**
+ * @brief 色带回读：22 个预设各自匹配；自定义/空色图返回空
+ */
+void DASignalAnalysisTest::colormapPresetMatching()
+{
+    using DA::daMatchColormapPreset;
+    // 空指针：返回空
+    QCOMPARE(daMatchColormapPreset(nullptr), QString());
+    // 每个预设用自己的色图都能反查回一个预设（个别预设色表完全相同，反查命中列表里
+    // 更靠前的那个；此时要求命中的预设色表与自己的完全一致）
+    const QStringList presets = QwtColorMapPreset::availablePresets();
+    QVERIFY2(presets.size() >= 20, "the preset registry should expose the documented colormaps");
+    int duplicateGroups = 0;
+    for (const QString& preset : presets) {
+        const std::unique_ptr< QwtLinearColorMap > map = QwtColorMapPreset::create(preset);
+        QVERIFY2(map, qPrintable(QStringLiteral("cannot create preset %1").arg(preset)));
+        const QString matched = daMatchColormapPreset(map.get());
+        QVERIFY2(!matched.isEmpty(), qPrintable(QStringLiteral("cannot match preset %1").arg(preset)));
+        if (matched != preset) {
+            const std::unique_ptr< QwtLinearColorMap > matchedMap = QwtColorMapPreset::create(matched);
+            QVERIFY(matchedMap);
+            QCOMPARE(matchedMap->colorTable(32), map->colorTable(32));
+            ++duplicateGroups;
+        }
+    }
+    // 只允许极少数历史别名预设色表重复；多了说明比较口径出了问题
+    QVERIFY2(duplicateGroups <= 2, qPrintable(QStringLiteral("unexpected duplicate presets: %1").arg(duplicateGroups)));
+    // 自定义起止色（宿主热图面板改色的同口径）：不对应任何预设，返回空
+    // 注意别用纯黑→纯白（那正好等于 gray 预设）
+    const QwtLinearColorMap custom(QColor(12, 34, 56), QColor(210, 170, 120));
+    QCOMPARE(daMatchColormapPreset(&custom), QString());
+    // 只有两个端点色、与预设不同：同样返回空
+    const QwtLinearColorMap twoStop(QColor(10, 20, 30), QColor(200, 150, 100));
+    QCOMPARE(daMatchColormapPreset(&twoStop), QString());
+}
+
+/**
+ * @brief 双光标读数：波形 Δt/1Δt、频谱插值 Δf/ΔA、越界钳制与云图主峰频率
+ */
+void DASignalAnalysisTest::dualCursorReadout()
+{
+    using DA::daDualCursorReadoutSpectrum;
+    using DA::daDualCursorReadoutTime;
+    using DA::daInterpolateCurve;
+    using DA::daStftColumnPeakFrequency;
+
+    // 时间轴：Δt 有符号、1/Δt 用 |Δt|
+    const DA::DADualCursorReadout time = daDualCursorReadoutTime(100.5, 100.75);
+    QVERIFY(time.valid);
+    QVERIFY(time.timeAxis);
+    QCOMPARE(time.a, 100.5);
+    QCOMPARE(time.b, 100.75);
+    QVERIFY(qAbs(time.delta - 0.25) < 1e-12);
+    QVERIFY(qAbs(time.equivalentHz - 4.0) < 1e-9);
+    // B 在 A 左边：Δt 为负，等效频率仍取 |Δt|
+    const DA::DADualCursorReadout reversed = daDualCursorReadoutTime(2.0, 1.5);
+    QVERIFY(qAbs(reversed.delta + 0.5) < 1e-12);
+    QVERIFY(qAbs(reversed.equivalentHz - 2.0) < 1e-9);
+    // Δ=0：等效频率 0（不做除零）
+    const DA::DADualCursorReadout samePoint = daDualCursorReadoutTime(3.0, 3.0);
+    QCOMPARE(samePoint.delta, 0.0);
+    QCOMPARE(samePoint.equivalentHz, 0.0);
+
+    // 线性插值：端点、区间中点、越界钳制、空曲线
+    const QVector< double > xs = { 0.0, 10.0, 20.0 };
+    const QVector< double > ys = { 0.0, 100.0, 0.0 };
+    bool ok                    = false;
+    QCOMPARE(daInterpolateCurve(xs, ys, -5.0, &ok), 0.0);
+    QVERIFY(ok);
+    QCOMPARE(daInterpolateCurve(xs, ys, 5.0, &ok), 50.0);
+    QVERIFY(ok);
+    QCOMPARE(daInterpolateCurve(xs, ys, 15.0, &ok), 50.0);
+    QVERIFY(ok);
+    QCOMPARE(daInterpolateCurve(xs, ys, 25.0, &ok), 0.0);
+    QVERIFY(ok);
+    QCOMPARE(daInterpolateCurve(QVector< double >(), QVector< double >(), 1.0, &ok), 0.0);
+    QVERIFY(!ok);
+
+    // 频谱轴：A/B 频率 + 曲线插值幅值 + Δf/ΔA
+    const DA::DADualCursorReadout spec = daDualCursorReadoutSpectrum(5.0, 15.0, xs, ys);
+    QVERIFY(spec.valid);
+    QVERIFY(!spec.timeAxis);
+    QVERIFY(spec.hasValues);
+    QVERIFY(qAbs(spec.aValue - 50.0) < 1e-12);
+    QVERIFY(qAbs(spec.bValue - 50.0) < 1e-12);
+    QVERIFY(qAbs(spec.delta - 10.0) < 1e-12);
+    QVERIFY(qAbs(spec.deltaValue) < 1e-12);
+    // 越界频率钳制到端点幅值
+    const DA::DADualCursorReadout clamped = daDualCursorReadoutSpectrum(-100.0, 100.0, xs, ys);
+    QVERIFY(clamped.hasValues);
+    QCOMPARE(clamped.aValue, 0.0);
+    QCOMPARE(clamped.bValue, 0.0);
+    // 没有曲线：valid 但无幅值
+    const DA::DADualCursorReadout noCurve =
+        daDualCursorReadoutSpectrum(1.0, 2.0, QVector< double >(), QVector< double >());
+    QVERIFY(noCurve.valid);
+    QVERIFY(!noCurve.hasValues);
+
+    // 云图主峰频率：该列最大幅值对应的频率行；列号越界钳制；无效栅格返回 false
+    DA::DAStftResult stft;
+    stft.rows    = 3;
+    stft.columns = 2;
+    stft.times   = { 0.0, 0.5 };
+    stft.freqs   = { 0.0, 10.0, 20.0 };
+    for (int c = 0; c < stft.columns; ++c) {
+        for (int r = 0; r < stft.rows; ++r) {
+            stft.values.append(0.1 * (r + 1) * (c + 1));
+        }
+    }
+    QVERIFY(stft.isValid());
+    QCOMPARE(daStftColumnPeakFrequency(stft, 0, &ok), 20.0);
+    QVERIFY(ok);
+    QCOMPARE(daStftColumnPeakFrequency(stft, 99, &ok), 20.0);  // 越界钳到最后一列
+    QVERIFY(ok);
+    QCOMPARE(daStftColumnPeakFrequency(DA::DAStftResult(), 0, &ok), 0.0);
+    QVERIFY(!ok);
 }
 
 QTEST_MAIN(DASignalAnalysisTest)

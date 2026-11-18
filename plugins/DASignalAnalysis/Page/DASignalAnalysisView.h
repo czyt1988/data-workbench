@@ -3,12 +3,16 @@
 #include <QWidget>
 #include <QPointer>
 #include <QVector>
+#include <QSet>
 #include <QStringList>
+#include <QJsonObject>
 #include "Signal/DASignal.h"
 #include "Analysis/DASignalAnalysisParams.h"
 #include "Analysis/DASpectrumResult.h"
 #include "Analysis/DAStftResult.h"
 #include "Analysis/DAPeakResult.h"
+// 联动缩放槽需要 DAChartWidget::ChartPropertyChangeFlags（嵌套类型不能用前向声明）
+#include "DAChartWidget.h"
 
 class QTimer;
 class QResizeEvent;
@@ -29,6 +33,7 @@ class DAFigureWidget;
 class DAChartWidget;
 class DAChart3DWidget;
 class DAStftRasterData;
+class DAWaterfallColor;
 
 /**
  * @brief 单个信号的分析视图（方案 §8.2 / D25 / T7）
@@ -79,14 +84,53 @@ public:
     // 瀑布模式：0=二维热图 / 1=三维曲面 / 2=隐藏（D12 / D25）
     void setWaterfallMode(int mode);
     int waterfallMode() const;
-    // 频率轴线性/对数（D16）
-    bool isLogFrequency() const;
-    void setLogFrequency(bool on);
     // 色带与 dB 动态范围下限（视图状态持久化用）
     QString colormapName() const;
     void setColormapName(const QString& name);
+    // 从谱图图元当前色带回读预设名（唯一真相 = item 的 colorMap；不匹配返回 "custom"）
+    QString colormapPreset() const;
     double dbFloor() const;
     void setDbFloor(double dbFloor);
+    // 云图显示模式：0=图像 / 1=等高线 / 2=图像+等高线（状态真相 = 谱图图元，供宿主面板双向使用）
+    int heatmapDisplayMode() const;
+    void setHeatmapDisplayMode(int mode);
+    // 云图采样插值：0=最近邻 / 1=双线性（状态真相 = 栅格数据）
+    int heatmapResampleMode() const;
+    void setHeatmapResampleMode(int mode);
+    // 当前帧标记开关（二维云图竖线 + 三维当前迹线高亮的时间游标；默认开）
+    bool isTimeCursorVisible() const;
+    void setTimeCursorVisible(bool on);
+    // 联动缩放（波形 x↔云图 x、频谱 x↔云图 y；默认关）
+    bool isLinkedZoom() const;
+    void setLinkedZoom(bool on);
+    // 双光标测量（默认关）
+    bool isDualCursorEnabled() const;
+    void setDualCursorEnabled(bool on);
+    // 峰值保持（Max Hold，默认关；只在跟随播放时有效）
+    bool isPeakHoldEnabled() const;
+    void setPeakHoldEnabled(bool on);
+    // 清空峰值保持缓冲（开启时/切通道/改参数/关闭跟随时由内部调用，丝带另有手动重置）
+    void resetPeakHold();
+    // 时间轴标签格式：0=秒 / 1=毫秒 / 2=mm:ss.s（作用到波形 x 与云图 x）
+    int timeFormat() const;
+    void setTimeFormat(int format);
+    // 三维瀑布专属显示状态：dB 色域下限 / 色带预设 / 当前迹线高亮（与二维云图相互独立，D12）
+    double waterfallDbFloor() const;
+    void setWaterfallDbFloor(double dbFloor);
+    QString waterfallColormapName() const;
+    void setWaterfallColormapName(const QString& name);
+    bool isWaterfallHighlighted() const;
+    void setWaterfallHighlight(bool on);
+    // 三维瀑布当前着色方式（0=按深度 / 1=按幅值 / 2=单色；无图元返回 -1）
+    int waterfallColorMode() const;
+    // 三维瀑布图元（瀑布设置快捷入口定位当前图元用）
+    Qwt3DWaterfall* waterfall3DItem() const;
+    // 三维瀑布样式（保存时从图元读回：style/colorMode/opacity/depthOrder/outlineColor/outlineWidth/solidColor）
+    QJsonObject waterfallStyle() const;
+    // 应用三维瀑布样式（图元未建时先记为待应用，首建后套用）
+    void applyWaterfallStyle(const QJsonObject& style);
+    // 三维瀑布样式恢复默认（RibbonMesh / ByAmplitude / 1.0 / NewestInFront）
+    void resetWaterfallStyle();
     // 时频图色标（colorbar）显隐：隐藏时不占横向空间（默认显示）
     void setColorBarVisible(bool on);
     bool isColorBarVisible() const;
@@ -211,8 +255,46 @@ private:
     void applyHeatmapColors();
     // 校验并按需重建波形画布的装饰图元（播放头/STFT 窗口矩形；被外部删除后按原样重建，BLK-03a）
     void ensureWaveDecorItems();
+    // 校验并按需重建云图画布的装饰图元（当前帧竖线/窗宽带；瞬时图元，不进存档）
+    void ensureHeatmapDecorItems();
+    // 当前帧标记：把云图竖线与 STFT 窗宽带移到给定时间（含像素节流）
+    void updateHeatmapCursor(double absoluteTime);
+    // 整份 STFT 栅格的幅值峰值（云图与瀑布共用同一 dB 归一化口径）
+    double stftGridPeak() const;
+    // 重建三维瀑布的色带 functor（子类，含当前迹线高亮）
+    void applyWaterfallColorFunctor();
+    // 三维瀑布图例刻度/标题对齐 dB 色域（qwt 不自动跟数据）
+    void updateWaterfallLegend();
+    // 三维瀑布当前迹线高亮：把当前时间映射到最近槽位，槽位变化才重建顶点色
+    void updateWaterfallHighlight();
+    // dB 色域下限的有效值（[floor, 0] 需要 floor < 0）
+    double waterfallDbFloorLower() const;
+    // 把待应用的云图显示模式 / 插值写到谱图图元与栅格（图元不存在时空操作）
+    void applyHeatmapDisplayMode(int mode);
+    void applyHeatmapResampleMode();
+    // 联动缩放：按需挂接各 2D 子图的 zoomer/panner（工具是懒创建的，不能替用户开工具）
+    void refreshLinkedZoomConnections();
+    // 2D 子图属性变化（缩放/平移工具开关）→ 重新尝试挂接联动
+    void onLinkedChartPropertiesChanged(DAChartWidget* chart, DAChartWidget::ChartPropertyChangeFlags flag);
+    // 某个子图的缩放/平移发生后，把相关坐标轴同步到其它子图
+    void syncLinkedAxesFrom(DAChartWidget* source);
+    // 断开全部联动缩放连接
+    void disconnectLinkedZoom();
+    // 按要求重建峰值保持曲线（灰虚线，transient；不参与导出）
+    void updatePeakHoldCurve();
+    // 把当前跟随帧谱并入峰值保持缓冲（网格变化时重建）
+    void accumulatePeakHold();
+    // 双光标测量：在当前 2D 子图上放置 A/B，刷新读数文本
+    void placeDualCursor(DAChartWidget* chart, const QPoint& canvasPos);
+    void updateDualCursorReadout();
+    // 清理双光标图元（关闭开关 / 切子图 / 切信号 / 参数变化）
+    void clearDualCursor();
     // 当前时间对应的 STFT 列索引（跟随滑块用）
     int currentStftColumn() const;
+    // 时间轴标签格式应用到波形 x 与云图 x（换新 ScaleDraw 实例，plot 接管所有权）
+    void applyTimeAxisFormat();
+    // 时间轴标题（随格式变：Time (s) / Time (ms) / Time (mm:ss)）
+    QString timeAxisTitle() const;
     // 按当前时间请求「当前帧幅值谱」（同一帧不重复请求）；跟随关闭/STFT 未就绪时不做
     void requestFollowFrameSpectrum();
     // 作废跟随帧快照（切通道/参数变化/STFT 栅格变化时调用）
@@ -264,8 +346,30 @@ private:
     int mWaterfallMode { 0 };  ///< 0=二维 / 1=三维 / 2=隐藏
     // 显示用时间原点（秒）：数据帧时间列首值非 0 时三图横向对齐
     double mTimeOrigin { 0.0 };
-    // 频率轴模式：false 线性 / true 对数
-    bool mLogFrequency { false };
+    // 当前帧标记开关（默认开）：二维云图竖线 / STFT 窗宽带 / 三维当前迹线高亮
+    bool mTimeCursorVisible { true };
+    // 联动缩放 / 双光标测量 / 峰值保持（默认关；由丝带「测量 ▾」与「时频图设置」驱动）
+    bool mLinkedZoom { false };
+    bool mDualCursorEnabled { false };
+    bool mPeakHoldEnabled { false };
+    // 联动缩放：同步期间的防重入标志与已建立的连接（关闭/切图时逐条断开）
+    bool mSyncingAxes { false };
+    QList< QMetaObject::Connection > mLinkedZoomConnections;
+    // 已挂接联动信号的子图与工具（zoomer/panner 懒创建且复用，按对象去重）
+    QSet< const QObject* > mLinkedZoomCharts;
+    QSet< const QObject* > mLinkedZoomTools;
+    // 双光标测量：当前子图、A/B 与 Δ 文本图元（全部 transient）、下一次点击放 B
+    QPointer< DAChartWidget > mDualCursorChart;
+    QwtPlotMarker* mDualCursorA { nullptr };
+    QwtPlotMarker* mDualCursorB { nullptr };
+    QwtPlotMarker* mDualCursorDelta { nullptr };
+    bool mDualCursorNextIsB { false };
+    // 峰值保持（Max Hold）：跟随帧谱按频率网格取最大值，一条灰虚线（transient，不参与导出）
+    QVector< double > mHoldFreqs;
+    QVector< double > mHoldValues;  ///< 原始线性幅值的最大值（显示口径在绘制时换算）
+    QwtPlotCurve* mHoldCurve { nullptr };
+    // 时间轴格式：0=秒 / 1=毫秒 / 2=mm:ss.s
+    int mTimeFormat { 0 };
 
     // T7 临时工具栏已删除（T8）：控件迁到 Ribbon 上下文标签与窗口底部工具栏
     QTimer* mResizeDebounce { nullptr };
@@ -277,6 +381,12 @@ private:
     QwtPlotShapeItem* mStftWindow { nullptr };
     QwtPlotCurve* mSpectrumCurve { nullptr };
     QwtPlotSpectrogram* mSpectrogramItem { nullptr };
+    // 云图当前帧标记：半透明虚线竖线 + STFT 窗宽带（都 transient，不写入工程）
+    QwtPlotMarker* mHeatmapCursor { nullptr };
+    QwtPlotShapeItem* mHeatmapWindowBand { nullptr };
+    // 节流：上次绘制时的像素列与被显式作废标志（数据/几何变化后置 false）
+    double mHeatmapCursorPixel { 0.0 };
+    bool mHeatmapCursorApplied { false };
     DAStftRasterData* mStftRaster { nullptr };
     QVector< QwtPlotMarker* > mPeakMarkers;
     // 峰值标记文本模板（{index}/{fre}/{amp}），由丝带「标记显示」对话框写入
@@ -304,6 +414,20 @@ private:
     double mDragPressTime { 0.0 };
     // 三维瀑布
     Qwt3DWaterfall* mWaterfallItem { nullptr };
+    // 色带 functor 由图元持有（setDataColor 接管所有权）：这里是非 owning 指针，图元重建时置空
+    DAWaterfallColor* mWaterfallColor { nullptr };
+    // 迹线时间（与瀑布迹线一一对应）与当前高亮槽位
+    QVector< double > mWaterfallTraceTimes;
+    int mWaterfallHighlightSlot { -1 };
+    // 三维瀑布专属显示状态（与二维云图独立，D12）
+    double mWaterfallDbFloor { -80.0 };
+    QString mWaterfallColormapName { QStringLiteral("viridis") };
+    bool mWaterfallHighlight { true };
+    // 待应用的瀑布样式（工程恢复时 STFT 异步，图元尚不存在，首建后套用）
+    QJsonObject mPendingWaterfallStyle;
+    // 待应用的云图显示状态（工程恢复时谱图图元尚未重建；-1 表示无待应用值）
+    int mPendingHeatmapDisplayMode { -1 };
+    int mPendingHeatmapResampleMode { -1 };
 };
 }  // namespace DA
 

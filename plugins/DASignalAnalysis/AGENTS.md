@@ -60,8 +60,12 @@ plugins/DASignalAnalysis/
 │   ├── DAPeakResult.h            # 峰值表 + 每帧前 N 曲线
 │   └── DAPeakTableModel.*        # 峰值表模型
 ├── Render/
-│   ├── DAStftRasterData.*        # QwtMatrixRasterData 子类（显式 Z 色标范围）
-│   └── DAWaterfallBuilder.*      # 三维瀑布抽帧抽频点
+│   ├── DAStftRasterData.*        # QwtMatrixRasterData 子类（显式 Z 色标范围；默认最近邻插值）
+│   ├── DAWaterfallBuilder.*      # 三维瀑布抽帧抽频点 + 迹线时间/dB 换算纯函数
+│   ├── DAWaterfallColor.*        # Qwt3DColorMapColor 子类：当前帧迹线高亮
+│   └── DAColormapMatch.*         # 从色图反查预设名（色带回读，纯函数）
+├── Page/…                        # 另含 DATimeScaleDraw.*（时间轴格式，在 Render/）与
+│                                 # DADualCursorReadout.*（双光标读数，在 Page/）
 ├── Playback/DASignalPlayer.*     # QMediaPlayer 封装（Qt5/Qt6 分支；数据帧来源先后台导出临时 WAV）
 ├── Dialogs/
 │   ├── DASignalImportDialog.*    # 导入对话框（音频 / 视频 / 数据帧；采样率必须用户确认）
@@ -128,8 +132,8 @@ plugins/DASignalAnalysis/
 
 10. **全局设置与按信号参数分开，常用参数在丝带、高级项在对话框。** 与数据无关的全局项（FFmpeg
     可执行文件路径、峰值标记文本模板）放插件级配置（FFmpeg 路径在 `createSettingPage()` →
-    `Dialogs/DASignalAnalysisSettingPage`，入口「设置 → 信号分析」；模板在「信号显示 → 峰值标注」的
-    「标记显示」对话框）。按信号生效的**常用参数**（预处理 / 窗函数 / 幅值口径 / 频率分辨率 /
+    `Dialogs/DASignalAnalysisSettingPage`，入口「设置 → 信号分析」；模板在「分析设置 → 峰值」的
+    「标记显示」对话框）。按信号生效的**常用参数**（通道 / 预处理 / 窗函数 / 幅值口径 / 频率分辨率 /
     STFT 窗长与跳步 / 峰值模式、标记数量、相对门限）只在「分析设置」上下文页出现；「更多 → 高级设置…」
     对话框只保留零填充、功率谱、峰值高级三项、标定，不要再把常用项加回对话框（两处入口会分叉，
     且 `params()` 必须从打开时基线回填，否则点确定会重置丝带选择）。dB 参考不再有独立入口，由幅值
@@ -153,9 +157,10 @@ plugins/DASignalAnalysis/
     `qWarning/qCritical` 英文写日志；界面失败提示统一走 `reportOperationFailure(提示, 细节)`。
 
 14. **不扩 v2 范围。** 滤波、重采样、包络解调、倒谱、倍频程、阶次分析、声压级换算、选区循环播放、
-    变速、深色主题、智能体工具、工作流节点都不做，只留结构口。对数频率轴只做到频谱图，不要扩到
-    热图。矢量导出是既有例外：2D 子图 PNG/SVG/PDF，3D 固定 PNG（`saveVector` 依赖 GL 上下文，
-    未验证不扩）。
+    变速、深色主题、智能体工具、工作流节点都不做，只留结构口。矢量导出是既有例外：2D 子图
+    PNG/SVG/PDF，3D 固定 PNG（`saveVector` 依赖 GL 上下文，未验证不扩）。
+    对数频率轴已**整体移除**（D2：动作/视图状态/存档键/图标全删，旧档 `logFrequency` 静默忽略），
+    不要重新引入。
 
 ## 四、关键机制
 
@@ -206,9 +211,10 @@ plugins/DASignalAnalysis/
 
 ### 4.4 参数、幅值与内存预算
 
-- 参数一个信号标签页记一份，不进全局撤销栈。常用项在「分析设置」上下文页（预处理：去直流/去趋势；
-  频谱：窗函数/幅值口径/频率分辨率；时频：窗长/跳步重叠；峰值：标记数量/模式/相对门限），高级项在
-  「更多 → 高级设置…」对话框（零填充/功率谱/峰值高级三项/标定）。
+- 参数一个信号标签页记一份，不进全局撤销栈。常用项在「分析设置」上下文页（通道；预处理：去直流/
+  去趋势；频谱：窗函数/幅值口径/频率分辨率；时频：窗长/跳步重叠；峰值：标记数量/模式/相对门限），
+  高级项在「更多 → 高级设置…」对话框（零填充/功率谱/峰值高级三项/标定）。通道下拉在「频谱」参数
+  网格首行（D8：通道是分析输入，显示页不放通道）。
 - **统一写重回填入口**：控件 → `applyParamsPatch(sig, patchFn, ParamScope)`（拷贝参数 → 改字段 →
   `mParamsPerSignal` → `bumpParamsVersion()` → 按 scope 分级重算）；参数 → 控件 `syncParamsRibbonControls()`
   由 `syncSignalContextControls()` 调用，全部 `QSignalBlocker` 防回环，无当前信号时置灰。
@@ -239,18 +245,47 @@ plugins/DASignalAnalysis/
   操作的状态源。
 - **窗口底部播放器控制条**（`buildSignalToolbar`，只在信号分析页激活时显示）：跟随播放 / ▶⏸ 单切换 /
   ■ / 时间滑块 / 时间文本（`Page/DASignalTimeText` 纯函数，`mm:ss.s` 与「当前 / 总长」占位）/
-  dB 下限 / 自动滚动。`actionPlay` 是可勾选动作（勾选 = 正在播放），`DASignalPlayer::stateChanged(bool)`
-  驱动图标与勾选；`actionPause` 已删除。失活停止播放挂在 provider 失活，不挂在
-  `setSignalToolbarVisible(false)`。
+  自动滚动。**只放播放相关控件**：dB 范围已归「信号显示 → 云图设置」（D5）。`actionPlay` 是可勾选动作
+  （勾选 = 正在播放），`DASignalPlayer::stateChanged(bool)` 驱动图标与勾选；`actionPause` 已删除。
+  失活停止播放挂在 provider 失活，不挂在 `setSignalToolbarVisible(false)`。
+- **「信号显示」页按对象分组**（D1）：时频图设置（2D/3D/隐藏、当前帧标记、测量 ▾、视图 ▾）/
+  云图设置（色带、色标、dB、显示 ▾）/ 瀑布图设置（瀑布设置…、色带、dB、当前迹线高亮）。
+  该页单独开启面板标题（D9）；`SARibbonBar::setRibbonStyle()` 会按样式统一改写面板标题，
+  必须监听 `ribbonStyleChanged` 重新下发（`applyDisplayPagePanelTitles()`），`finalize()` 断开。
+  另外监听 `currentRibbonTabChanged(int)`，切回本插件两页时刷新一次上下文控件（宿主设置面板改色/
+  改显示模式后需要刷新点）。
+- **当前帧标记**（默认开）：二维云图上一条半透明橙红虚线 + STFT 窗宽带，三维瀑布里对应迹线整条高亮；
+  都按像素列节流（同一屏幕列不重复 replot），轴范围/尺寸/通道变化后缓存作废。
+- **联动缩放**（测量 ▾，默认关）：波形 x ↔ 云图 x、频谱 x ↔ 云图 y。zoomer/panner 是懒创建的，
+  只能挂接已存在的工具（不替用户开工具），并在 `chartPropertiesChanged(Zoom/PanStateChanged)` 时重试；
+  同步用 `setAxisScale` + `mSyncingAxes` 防重入，关闭只断开连接、不恢复 autoscale。
+- **双光标测量**（测量 ▾，默认关）：在当前 2D 子图上点击依次放 A/B/再放 A；读数全走纯函数
+  `Page/DADualCursorReadout`；开启时停用「点击波形即定位」（UI 的 seek 门控把双光标也算进去），
+  切子图/切通道/改参数/关闭开关都清理游标。
+- **峰值保持**（测量 ▾，默认关）：仅在跟随播放时可用；按频率网格逐点取最大值画灰虚线（transient、
+  不参与导出），网格变化重建缓冲；关闭跟随时自动取消勾选并清空。
+- **时间格式 / 布局比例 / 重置显示**（视图 ▾）：时间格式作用到波形 x 与云图 x（`Render/DATimeScaleDraw`，
+  `mm:ss.s` 以信号时间原点为 0 点）；布局比例是「套用一次」的网格比例预设；重置显示把显示类状态
+  一键恢复默认（不动分析参数）。
 - **坐标轴**：`DAFigureWidget::createChart()` 会给新子图显式设 X 0..800 / Y 0..500 占位刻度（同时关掉
   autoscale）。`buildFigure()` 只在建图时对三张 2D 子图调用 `setAxisAutoScale(..., true)`；
   `rebuild*` 不无条件重开，否则用户缩放会被覆盖。工程恢复走存档轴状态。
 - **色标**：`applyHeatmapColors()` 统一设 yRight 轴范围 `[mDbFloor, 0]`、色标宽 18、间距 4；隐藏时
   `setAxisVisible(yRight, false)` 不占横向空间。`setDbFloor`/`rebuildHeatmap`/`refreshAfterFigureRestore`
-  都走这一入口，避免刻度与颜色对不上。显隐偏好存配置 `colorBarVisible`。
+  都走这一入口，避免刻度与颜色对不上。显隐状态按信号存 `view{}.colorBarVisible`（同时保留插件级偏好
+  `colorBarVisible` 作为新视图默认值）。
+- **色带单一真相 = 谱图图元的 colorMap**（D10）：`applyHeatmapColors()` **不再**无条件重设 item 的
+  色带（否则宿主热图面板改的起止色会被 dB 变化/重算冲掉）；丝带「色带」是「写预设 + 回读勾选」，
+  回读走 `daMatchColormapPreset()`（不匹配任何预设时菜单不勾选任何项）。色标轴取 item 当前色带的拷贝，
+  因此宿主面板改色后色标在下一次同步/重建时才更新（弱同步，已写进用户指南）。
+- **三维瀑布**（D11/D12）：dB 化用整份栅格峰值归一 + 固定色域 `[floor, 0]` + 基线 = floor；**复用图元**
+  （`setTraceCapacity`/`clear`/`pushTrace`/`setBinValues`）而不是 delete+重建，否则右侧 3D 面板会反复
+  跳页、用户改的样式被重算覆盖；当前迹线高亮用 `Render/DAWaterfallColor`（`Qwt3DColorMapColor` 子类，
+  零改动 qwt）。瀑布样式不在 `rebuild*` 里写死，由 3D 面板维护，保存时从图元读回。
 - **跟随播放**：频谱必须画「当前帧真实幅值谱」，不能拿热图显示栅格的当前列——栅格在频率方向做过
   max 池化（Δf_row 远大于峰值网格），两条曲线口径不同，峰值标记会落在下降沿。当前实现走
   `stft.frame_spectrum_sync()` + 帧号换算，与 `peaks.py` 单帧同口径、只读一帧（O(nperseg)）。
+  峰值保持也只在这一口径上累积。
 - 交互：STFT 矩形拖动必须「按下只记候选 → 超过 `QApplication::startDragDistance()` 才进入拖动 →
   未拖动的释放交回 QwtPicker 定位」，命中判定用包围盒（X/Y 都比）；缩放/平移/十字线启用时关闭
   「点击波形即定位」。
@@ -270,9 +305,10 @@ plugins/DASignalAnalysis/
   按模板渲染（`{index}` / `{fre}` / `{amp}`，默认 `{index}-{fre} Hz` → `1-32.5 Hz`），幅值取标记自身
   的显示坐标（与 `DASignalAmplitude` 同口径，dB 模式自动带单位），空模板表示不显示文本。
   标记非 transient、随工程存档；恢复时位置以存档为准，文本按当前模板重写（`applyPeakMarkerLabels()`）。
-- 丝带入口（按用途分两页，不再有重复入口）：**分析设置 → 峰值**放标记数量（大按钮 + 10/20/50 菜单）、
-  模式与相对门限（同一个 `DASignalRibbonParamGrid` 参数网格）；**信号显示 → 峰值标注**放峰值标记（勾选）、标记显示
-  （弹出模板编辑对话框）、峰值窗口（打开峰值表停靠窗口的唯一入口）。模式/相对门限/标记数量改后只重算
+- 丝带入口（**全项目唯一一处**，D13）：**分析设置 → 峰值**依次是 峰值标记（大按钮，勾选）/
+  标记数量（大按钮 + 10/20/50 菜单）/ 模式与相对门限（同一个 `DASignalRibbonParamGrid` 参数网格）/
+  标记显示（半高按钮，弹出模板编辑对话框）/ 峰值窗口（大按钮，打开峰值表停靠窗口的唯一入口）。
+  「信号显示」页**没有**峰值面板，不要再把入口拆到两页。模式/相对门限/标记数量改后只重算
   峰值表与曲线（`ParamScope::Peaks`），不重算频谱；模板改动立即写配置并广播到全部已创建视图。
 - 存档优先：加载后到第一次重算之间，`mPeakMarkersRestored` 保证不删除重建用户调整过的标记；
   `setPeaks()` 收到新计算结果时复位该窗口。
@@ -299,6 +335,14 @@ plugins/DASignalAnalysis/
 - 一个任务写三部分：`signal-analysis/signals.json`（来源引用 + 参数 + 视图状态）、
   `signal-analysis/figures.xml`（网格 + 子图样式 + 非 transient 图元 key）、
   `signal-analysis/chart-data`（图元二进制）。后两者只在有 figure 内容时写，旧工程可正常加载。
+- `signals.json` 的 `view{}` 键（缺键取默认，旧档兼容）：`waterfallMode` / `colormap` / `dbFloor` /
+  `colorBarVisible` / `autoScroll` / `peakMarkersVisible` / `timeCursor` / `linkedZoom` / `dualCursor` /
+  `peakHold` / `timeFormat` / `waterfallColormap` / `waterfallDbFloor` / `waterfallHighlight` /
+  `heatmapDisplayMode` / `heatmapResample` / `waterfall`（对象：style/colorMode/opacity/depthOrder/
+  outlineColor/outlineWidth/solidColor，从图元读回）/ `gridRows` / `gridColumns`。
+  二维与三维的 dB 色域相互独立（D12）。谱图/瀑布是 transient，恢复时先把显示设置记成「待应用值」，
+  图元重建后再套用；`logFrequency` 已删除，读取时静默忽略。
+  峰值保持只在跟随播放时可用（跟随开关不存档），恢复时一律关闭。
 - 保存流程在主线程收集 figure XML 与图元快照，后台线程只写文件；恢复在主线程 `loadedCallBack` 里
   重建界面并应用 XML。figure 元素同时写 `signal-id`（精确匹配）与 `signal-name`（旧档回退）；
   一个 figure 元素只能被一个视图消费、一个 chart-data key 只能 attach 到一个子图（重复命中跳过并
@@ -353,6 +397,11 @@ plugins/DASignalAnalysis/
 | 工程加载后仍显示上一个工程的信号 | 只靠 `restoreState()` 的防御分支 | 连 `projectIsCleaned` 做幂等清理（§4.8） |
 | 新加任务后 Python 侧静默失败（KeyError、参数丢失） | 忘了 include `DAPybind11QtCaster.hpp` | 每个做 Qt↔Python 转换的 `.cpp` 都要 include（§铁律 12） |
 | 遍历被修改的 Qt 容器时出现莫名深拷贝/性能抖动 | 非 const 容器范围迭代触发 COW | `const` 声明或 `std::as_const()` |
+| 宿主面板改了起止色，一次 dB 拖动就被冲回预设 | `applyHeatmapColors()` 无条件重设 item 的 colorMap | 色带单一真相 = item 的 colorMap，只在「还没有色带」时用预设初始化（§4.5） |
+| 改参数/切色带后右侧 3D 面板又跳回 Waterfall 页 | 每次 rebuild 都 delete+重建瀑布图元 | 复用图元（`setTraceCapacity`/`clear`/`pushTrace`），只有外部销毁后才重建（§4.5） |
+| 面板标题在切换 Ribbon 样式后消失 | `setRibbonStyle()` 会统一改写面板标题 | 监听 `ribbonStyleChanged` 重新下发（`applyDisplayPagePanelTitles()`） |
+| 开启双光标后点击波形不再定位 | 双光标接管左键释放 | 预期行为：seek 门控把双光标算作互斥工具（§4.5） |
+| 联动缩放关掉后两图轴范围仍相同 | 关闭只断开连接，不恢复 autoscale | 预期行为（写进用户指南），需要重置范围用「重置显示」 |
 
 ## 六、构建与测试
 
