@@ -2525,6 +2525,10 @@ void DAFigureWidget::onFigureChartEditorFinished(bool isCancel)
 
 /**
  * @brief 序列化DAFigureWidget到数据流
+ *
+ * @note **生产保存/加载走 XML 路径**（DAXmlHelper::makeElement/loadElement + DAChartItemArchive）。
+ *       本文件的 QDataStream 运算符是历史兼容路径（老工程字节流、Chart3DIntegrationTest），
+ *       保持可用但不新增字段；新增持久化字段请加到 XML 侧。
  * @param out 输出数据流
  * @param p DAFigureWidget指针
  * @return 输出数据流

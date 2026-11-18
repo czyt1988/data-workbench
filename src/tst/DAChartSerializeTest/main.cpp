@@ -296,6 +296,8 @@ private Q_SLOTS:
     void test3DChartIdAndVisibleRoundTrip();
     // 旧工程 <chart3d> 无 id/visible：按默认加载（可见 + 生成 c3d-<n> id）
     void testLegacy3DChartWithoutIdVisible();
+    // 历史 QDataStream figure 路径：主题须先应用，再覆盖背景/轴标签（生产走 XML）
+    void testFigure3DStreamThemeOrderRoundTrip();
     // DAChartItemArchive::load：存档未打开时返回 false（不再被当成旧工程静默成功）
     void testChartItemArchiveRejectsClosedArchive();
     // 网格 figure XML 往返：<grid> 行列/比例、成员 grid-* 坐标、x/y/w/h 兼容字段
@@ -1562,6 +1564,46 @@ void DAChartSerializeTest::testLegacy3DChartWithoutIdVisible()
     QVERIFY2(charts3d.at(0)->getChart3DId() != charts3d.at(1)->getChart3DId(),
              "the two 3D charts must not share an id");
     QVERIFY(!fig->isGridLayoutEnabled());
+}
+
+/**
+ * @brief 历史 QDataStream figure 路径的主题/背景/轴标签顺序
+ *
+ * 生产保存/加载走 XML，这条字节流路径只作旧档兼容。修复前：先设背景再 setTheme，
+ * Qwt3DTheme::apply 会把背景与坐标轴颜色覆盖回主题值；轴标签直接改 Qwt3DAxis，
+ * DAChart3DWidget 的标签缓存与真实状态不一致。修复后：先应用主题再覆盖运行期值。
+ */
+void DAChartSerializeTest::testFigure3DStreamThemeOrderRoundTrip()
+{
+    DA::DAChart3DWidget src;
+    Qwt3DPlot* srcPlot = &src;
+    const QColor background(200, 30, 40);  // 与主题默认背景不同，才验证得出覆盖顺序
+    src.set3DBackgroundColor(background);
+    src.setChart3DTitle(QStringLiteral("stream-title"));
+    src.set3DAxisLabel(X1, QStringLiteral("time"));
+    QCOMPARE(src.get3DAxisLabel(X1), QStringLiteral("time"));
+
+    QByteArray bytes;
+    {
+        QDataStream out(&bytes, QIODevice::WriteOnly);
+        out.setVersion(DA::gc_datastream_version);
+        out << static_cast< const Qwt3DPlot* >(srcPlot);
+    }
+    QVERIFY(!bytes.isEmpty());
+
+    DA::DAChart3DWidget dst;
+    {
+        QDataStream in(&bytes, QIODevice::ReadOnly);
+        in.setVersion(DA::gc_datastream_version);
+        in >> static_cast< Qwt3DPlot* >(&dst);
+    }
+    // 主题先应用再覆盖：背景色必须保持保存值
+    QCOMPARE(dst.get3DBackgroundColor(), background);
+    QCOMPARE(dst.getChart3DTitle(), QStringLiteral("stream-title"));
+    // 轴标签经 set3DAxisLabel 写回：缓存与真实轴都要一致
+    QCOMPARE(dst.get3DAxisLabel(X1), QStringLiteral("time"));
+    QVERIFY(dst.coordinates());
+    QCOMPARE(dst.coordinates()->axes[ X1 ].labelString(), QStringLiteral("time"));
 }
 
 void DAChartSerializeTest::testZipArchiveTaskChartItemRoundTrip()

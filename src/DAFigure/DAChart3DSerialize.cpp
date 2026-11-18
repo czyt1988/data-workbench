@@ -1,8 +1,13 @@
+// 图元/3D 子图的 QDataStream 运算符：**生产保存/加载走 XML 路径**
+// （DAXmlHelper::makeElement/loadElement + DAChartItemArchive）。本文件的 operator<</>> 是历史
+// 兼容路径（老工程字节流、测试），保持可用但不新增字段；新增持久化字段请加到 XML 侧。
 #include "DAChart3DSerialize.h"
 #include "DAChartSerialize.h"  // 复用 DABadSerializeExpection
+#include "DAChart3DWidget.h"
 #include <QBuffer>
 #include <QDebug>
 #include <cstring>
+#include <vector>
 #include <QVector>
 // qwt3d（qwt3d_serialize.h 由 DAChart3DSerialize.h 间接 include，提供值类型和 Theme 的 operator<</>>）
 #include "qwt3d_plotitem.h"
@@ -1049,6 +1054,11 @@ QDataStream& operator<<(QDataStream& out, const Qwt3DPlot* plot)
 
 /**
  * @brief 从数据流反序列化 Qwt3DPlot 视图状态
+ *
+ * 读取顺序由 @ref operator<<(QDataStream&, const Qwt3DPlot*) 固定（不能改，否则旧字节流失步），
+ * 但**应用顺序**必须按语义排：Qwt3DTheme::apply 会重写背景色、坐标轴颜色、标题色/字体与光照预设，
+ * 所以先应用主题、再用流里的运行期值覆盖回来；否则保存的背景与轴色被主题旧值吃掉。
+ * 轴标签经 DAChart3DWidget::set3DAxisLabel 写回，保证 get3DAxisLabel() 的缓存与真实轴一致。
  * @param in 输入数据流
  * @param plot 接收反序列化数据的 3D 绘图指针
  * @return 输入数据流引用
@@ -1062,96 +1072,129 @@ QDataStream& operator>>(QDataStream& in, Qwt3DPlot* plot)
     if (DA::gc_dachart3d_magic_mark2 != magic) {
         throw DA::DABadSerializeExpection("Qwt3DPlot: invalid magic mark");
     }
-    // 读取视图状态：旋转
-    double xRot, yRot, zRot;
+    //! 1.按流顺序把全部字段读进局部变量
+    // 视图状态
+    double xRot       = 0.0;
+    double yRot       = 0.0;
+    double zRot       = 0.0;
+    double xShift     = 0.0;
+    double yShift     = 0.0;
+    double zShift     = 0.0;
+    double xVpShift   = 0.0;
+    double yVpShift   = 0.0;
+    double xScale     = 1.0;
+    double yScale     = 1.0;
+    double zScale     = 1.0;
+    double zoom       = 1.0;
+    bool ortho        = false;
+    int aspectRatioMode = 0;
     in >> xRot >> yRot >> zRot;
-    plot->setRotation(xRot, yRot, zRot);
-    // 读取视图状态：平移
-    double xShift, yShift, zShift;
     in >> xShift >> yShift >> zShift;
-    plot->setShift(xShift, yShift, zShift);
-    // 读取视图状态：视口平移
-    double xVpShift, yVpShift;
     in >> xVpShift >> yVpShift;
-    plot->setViewportShift(xVpShift, yVpShift);
-    // 读取视图状态：缩放
-    double xScale, yScale, zScale;
     in >> xScale >> yScale >> zScale;
-    plot->setScale(xScale, yScale, zScale);
-    // 读取视图状态：zoom
-    double zoom;
     in >> zoom;
-    plot->setZoom(zoom);
-    // 读取视图状态：投影模式
-    bool ortho;
     in >> ortho;
-    plot->setOrtho(ortho);
-    // 读取视图状态：纵横比模式
-    int aspectRatioMode;
     in >> aspectRatioMode;
-    plot->setAspectRatioMode(static_cast<ASPECTRATIOMODE>(aspectRatioMode));
-    // 读取背景色
+    // 背景色 / 标题 / 主题
     RGBA bgColor;
-    in >> bgColor;
-    plot->setBackgroundColor(bgColor);
-    // 读取标题
     QString titleStr;
-    in >> titleStr;
-    plot->setTitle(titleStr);
-    // 读取主题
     Qwt3DTheme theme;
+    in >> bgColor;
+    in >> titleStr;
     in >> theme;
-    plot->setTheme(theme);
-    // 读取光照
-    bool lightingEnabled;
+    // 光照
+    bool lightingEnabled = false;
+    double xLightRot      = 0.0;
+    double yLightRot      = 0.0;
+    double zLightRot      = 0.0;
+    double xLightShift    = 0.0;
+    double yLightShift    = 0.0;
+    double zLightShift    = 0.0;
     in >> lightingEnabled;
-    plot->enableLighting(lightingEnabled);
-    double xLightRot, yLightRot, zLightRot;
-    double xLightShift, yLightShift, zLightShift;
     in >> xLightRot >> yLightRot >> zLightRot;
     in >> xLightShift >> yLightShift >> zLightShift;
+    // 颜色图例
+    bool hasLegend = false;
+    in >> hasLegend;
+    // 坐标系设置
+    int coordStyle      = 0;
+    double ticMajor     = 0.0;
+    double ticMinor     = 0.0;
+    bool autoScale      = false;
+    bool lineSmooth     = false;
+    bool autoDecoration = false;
+    int tickPosition    = 0;
+    in >> coordStyle;
+    in >> ticMajor >> ticMinor;
+    in >> autoScale;
+    in >> lineSmooth >> autoDecoration >> tickPosition;
+
+    Qwt3DCoordinateSystem* coordSys = plot->coordinates();
+    const size_t axisCount          = coordSys ? coordSys->axes.size() : 0;
+    struct AxisState
+    {
+        QString label;
+        int majors { 0 };
+        int minors { 0 };
+        QFont labelFont;
+        QFont numberFont;
+        bool scaling { false };
+        bool numbers { false };
+        bool autoScale { false };
+        double limStart { 0.0 };
+        double limStop { 0.0 };
+    };
+    std::vector< AxisState > axesState(axisCount);
+    for (size_t i = 0; i < axisCount; ++i) {
+        AxisState& st = axesState[ i ];
+        in >> st.label >> st.majors >> st.minors >> st.labelFont >> st.numberFont >> st.scaling >> st.numbers
+            >> st.autoScale >> st.limStart >> st.limStop;
+    }
+
+    //! 2.按正确顺序应用：主题 → 背景/标题 → 视图 → 光照 → 图例 → 坐标系 → 各轴
+    plot->setTheme(theme);
+    plot->setBackgroundColor(bgColor);
+    plot->setTitle(titleStr);
+    plot->setRotation(xRot, yRot, zRot);
+    plot->setShift(xShift, yShift, zShift);
+    plot->setViewportShift(xVpShift, yVpShift);
+    plot->setScale(xScale, yScale, zScale);
+    plot->setZoom(zoom);
+    plot->setOrtho(ortho);
+    plot->setAspectRatioMode(static_cast< ASPECTRATIOMODE >(aspectRatioMode));
+    // 光照必须在主题之后（主题内含光照预设与光分量）
+    plot->enableLighting(lightingEnabled);
     plot->setLightRotation(xLightRot, yLightRot, zLightRot);
     plot->setLightShift(xLightShift, yLightShift, zLightShift);
-    // 读取颜色图例显隐状态
-    bool hasLegend;
-    in >> hasLegend;
     plot->showColorLegend(hasLegend);
-    // 读取坐标系设置
-    int coordStyle;
-    in >> coordStyle;
-    Qwt3DCoordinateSystem* coordSys = plot->coordinates();
-    coordSys->setStyle(static_cast<COORDSTYLE>(coordStyle));
-    double ticMajor, ticMinor;
-    in >> ticMajor >> ticMinor;
+    if (!coordSys) {
+        return in;
+    }
+    coordSys->setStyle(static_cast< COORDSTYLE >(coordStyle));
     coordSys->setTicLength(ticMajor, ticMinor);
-    bool autoScale;
-    in >> autoScale;
     coordSys->setAutoScale(autoScale);
-    bool lineSmooth, autoDecoration;
-    int tickPosition;
-    in >> lineSmooth >> autoDecoration >> tickPosition;
     coordSys->setLineSmooth(lineSmooth);
     coordSys->setAutoDecoration(autoDecoration);
-    coordSys->setTickPosition(static_cast<TICKPOSITION>(tickPosition));
-    // 读取 12 根轴的关键设置
-    for (size_t i = 0; i < coordSys->axes.size(); ++i) {
-        Qwt3DAxis& axis = coordSys->axes[i];
-        QString labelStr;
-        int majors, minors;
-        QFont labelFont, numberFont;
-        bool scaling, numbers, autoScaleAxis;
-        double limStart, limStop;
-        in >> labelStr >> majors >> minors >> labelFont >> numberFont
-           >> scaling >> numbers >> autoScaleAxis >> limStart >> limStop;
-        axis.setLabelString(labelStr);
-        axis.setMajors(majors);
-        axis.setMinors(minors);
-        axis.setLabelFont(labelFont);
-        axis.setNumberFont(numberFont);
-        axis.setScaling(scaling);
-        axis.setNumbers(numbers);
-        axis.setAutoScale(autoScaleAxis);
-        axis.setLimits(limStart, limStop);
+    coordSys->setTickPosition(static_cast< TICKPOSITION >(tickPosition));
+    // 轴标签走 DAChart3DWidget::set3DAxisLabel 写回 PrivateData 的标签缓存：
+    // 直接改 Qwt3DAxis 会让 get3DAxisLabel() 与真实状态不一致（XML 路径已按此处理）。
+    DA::DAChart3DWidget* chart3d = qobject_cast< DA::DAChart3DWidget* >(plot);
+    for (size_t i = 0; i < axisCount; ++i) {
+        const AxisState& st = axesState[ i ];
+        Qwt3DAxis& axis     = coordSys->axes[ i ];
+        if (chart3d) {
+            chart3d->set3DAxisLabel(static_cast< AXIS >(i), st.label);
+        } else {
+            axis.setLabelString(st.label);
+        }
+        axis.setMajors(st.majors);
+        axis.setMinors(st.minors);
+        axis.setLabelFont(st.labelFont);
+        axis.setNumberFont(st.numberFont);
+        axis.setScaling(st.scaling);
+        axis.setNumbers(st.numbers);
+        axis.setAutoScale(st.autoScale);
+        axis.setLimits(st.limStart, st.limStop);
     }
     // 读取 item 列表
     quint32 itemCount = 0;
