@@ -398,8 +398,10 @@ QDomElement make3DChartElement(DAChart3DWidget* chart3d, QDomDocument* doc)
     if (!chart3dId.isEmpty()) {
         chart3dEle.setAttribute(QStringLiteral("id"), chart3dId);
     }
-    // 显隐：热图与三维瀑布同格按模式切换时，隐藏的 3D 子图也要在重开后保持隐藏
-    chart3dEle.setAttribute(QStringLiteral("visible"), chart3d->isVisible() ? 1 : 0);
+    // 显隐：热图与三维瀑布同格按模式切换时，隐藏的 3D 子图也要在重开后保持隐藏。
+    // 用 isHidden()（是否被显式隐藏）而不是 isVisible()：figure 所在停靠页/标签页不可见时
+    // isVisible() 为 false，会把用户认为可见的子图存成隐藏。
+    chart3dEle.setAttribute(QStringLiteral("visible"), chart3d->isHidden() ? 0 : 1);
     // --- view：旋转/平移/缩放/投影/背景/标题/光照/图例/坐标系 ---
     QDomElement viewEle = doc->createElement(QStringLiteral("view"));
     setNumberAttribute(viewEle, QStringLiteral("xrot"), plot->xRotation());
