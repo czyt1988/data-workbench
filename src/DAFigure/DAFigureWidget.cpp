@@ -960,6 +960,20 @@ DAFigureCurrentSubChart DAFigureWidget::currentSubChartKind() const
 //===================================================
 
 /**
+ * @brief 尺寸约束是否塌陷
+ *
+ * maximum<=0 会让子图宽度/高度被压成 0；minimum>maximum 是互相矛盾的约束（Qt 取 min 优先），
+ * 两种情况网格子图都无法铺满，需要在启用网格前复位。
+ * @param minimum 最小尺寸
+ * @param maximum 最大尺寸
+ * @return 塌陷返回true
+ */
+static bool isSizeConstraintCollapsed(int minimum, int maximum)
+{
+    return maximum <= 0 || minimum > maximum;
+}
+
+/**
  * @brief 启用保留式网格布局
  *
  * 网格启用后子图的位置与大小由行列轨道比例决定，可拖动分隔条调整比例；
@@ -967,8 +981,8 @@ DAFigureCurrentSubChart DAFigureWidget::currentSubChartKind() const
  * @param rows 行数，必须大于0
  * @param cols 列数，必须大于0
  * @return 行列数非法或figure不存在时返回false
- * @note 会重置QwtFigure的最小/最大尺寸：DAFigureWidgetSettingPanel会把qwtfig的
- *       min/max尺寸写入配置，遗留的0值会让网格子图无法铺满
+ * @note 只在 figure 尺寸约束确实塌陷（maximum<=0 或 minimum>maximum）时复位该轴的 min/max，
+ *       用户显式设置的有效约束保持不变；复位会发射 @ref figureSizeConstraintsChanged 让设置面板刷新。
  * @note 行列数不变时幂等（保留当前轨道比例与成员登记）；改变行列数会经qwt重建
  *       等分轨道并清空已有网格成员登记，旧成员退回自由布局，且此前的比例撤销命令
  *       因行列数不匹配而变成空操作
@@ -990,13 +1004,30 @@ bool DAFigureWidget::enableGridLayout(int rows, int cols)
         && fig->grid()->columnCount() == cols) {
         return true;
     }
-    // 重建网格前先复位figure尺寸约束：qwt enableGrid会activate布局，
-    // 若保留DAFigureWidgetSettingPanel写入的塌陷值(如max=0)会导致网格子图无法铺满
-    fig->setMinimumSize(0, 0);
-    fig->setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+    // 网格启用会activate布局：若保留DAFigureWidgetSettingPanel写入的塌陷值(max=0 / min>max)，
+    // 网格子图无法铺满。只在塌陷时复位，用户显式设置的有效约束不能被覆盖。
+    bool constraintsReset = false;
+    if (isSizeConstraintCollapsed(fig->minimumWidth(), fig->maximumWidth())) {
+        fig->setMinimumWidth(0);
+        fig->setMaximumWidth(QWIDGETSIZE_MAX);
+        constraintsReset = true;
+    }
+    if (isSizeConstraintCollapsed(fig->minimumHeight(), fig->maximumHeight())) {
+        fig->setMinimumHeight(0);
+        fig->setMaximumHeight(QWIDGETSIZE_MAX);
+        constraintsReset = true;
+    }
+    const bool wasGridLayoutEnabled = d->mGridLayoutEnabled;
     d->mGridLayoutEnabled = false;
     d->mGridChangeActive = false;
+    if (constraintsReset) {
+        // 面板可能正显示塌陷值，复位后必须让它重新读取
+        Q_EMIT figureSizeConstraintsChanged();
+    }
     if (!fig->enableGrid(rows, cols)) {
+        if (wasGridLayoutEnabled != d->mGridLayoutEnabled) {
+            Q_EMIT gridLayoutEnabledChanged(d->mGridLayoutEnabled);
+        }
         return false;
     }
     // 网格接管分隔带拖拽
@@ -1009,6 +1040,9 @@ bool DAFigureWidget::enableGridLayout(int rows, int cols)
     if (QwtFigureGrid* g = fig->grid()) {
         d->mGridCommittedRows = g->rowSizes();
         d->mGridCommittedCols = g->columnSizes();
+    }
+    if (!wasGridLayoutEnabled) {
+        Q_EMIT gridLayoutEnabledChanged(true);
     }
     return true;
 }

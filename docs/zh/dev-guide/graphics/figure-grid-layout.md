@@ -107,7 +107,7 @@ height= Σ rowSizes[row .. row+rowSpan-1] + (rowSpan − 1) × hspace
 
 | 方法 | 说明 |
 |------|------|
-| `enableGridLayout(rows, cols)` | 启用网格布局。行列数不变时幂等；会退出自由缩放的子图编辑器、复位 figure 的最小/最大尺寸约束；重建网格会清空旧登记 |
+| `enableGridLayout(rows, cols)` | 启用网格布局。行列数不变时幂等；会退出自由缩放的子图编辑器、只在 figure 的最小/最大尺寸约束确实塌陷时复位（`maximum<=0` 或 `minimum>maximum`，复位后发 `figureSizeConstraintsChanged` 让设置面板刷新）；重建网格会清空旧登记 |
 | `isGridLayoutEnabled()` | 是否处于网格布局 |
 | `grid()` | 底层 `QwtFigureGrid*`，未启用时为 nullptr |
 | `setGridCell(widget, row, col, rowSpan, colSpan)` | 登记或移动成员。2D 子图、三维子图、普通控件都支持；越界返回 false 且保留原登记 |

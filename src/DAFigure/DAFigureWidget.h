@@ -375,6 +375,24 @@ Q_SIGNALS:
      */
     void dataProbeCreated(DA::DADataProbeMarker* firstProbe, double xValue);
 
+    /**
+     * @brief figure 的尺寸约束（min/max）被程序化复位
+     *
+     * enableGridLayout 只在尺寸确实塌陷（maximum<=0 或 minimum>maximum）时复位该轴的
+     * min/max，复位后发射本信号：设置面板等上层 UI 需要据此重新读取实际值，
+     * 否则会继续显示复位前的塌陷值。
+     */
+    void figureSizeConstraintsChanged();
+
+    /**
+     * @brief 网格布局启用状态发生变化
+     *
+     * 仅在状态确实变化时发射（幂等启用、非法参数调用均不发射），供上层（Ribbon 动作可用性等）
+     * 跟随网格状态刷新。槽内不要回调 enableGridLayout，避免重入。
+     * @param enabled 当前是否处于网格布局
+     */
+    void gridLayoutEnabledChanged(bool enabled);
+
 protected:
     bool eventFilter(QObject* obj, QEvent* event) override;
     void keyPressEvent(QKeyEvent* e) override;

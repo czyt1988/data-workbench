@@ -1,7 +1,7 @@
 # DAFigureGridTest 的 CMakeLists.txt
 # 保留式网格布局（QwtFigureGrid + DAFigureWidget 转发 API）单元测试：
 # 1. enableGridLayout/isGridLayoutEnabled/grid 的启用语义与等分轨道
-# 2. 启用时把 qwt figure 的 min/max 尺寸复位为默认值
+# 2. 启用时只在尺寸约束塌陷时复位 qwt figure 的 min/max（有效约束保留），并发 figureSizeConstraintsChanged
 # 3. setGridCell 的单元格几何（含跨行/跨列）、窗口缩放后比例保持、自由布局与网格成员混用
 # 4. 一次拖动会话（多次 sizesChanged + 一次 finishChange）只压入一条撤销命令
 # 5. setGridSizes 程序化设置不压入撤销栈

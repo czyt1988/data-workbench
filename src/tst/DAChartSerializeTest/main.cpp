@@ -33,6 +33,8 @@
 #include "Archive/DAZipArchive.h"
 #include "Archive/DAZipArchiveTask_ChartItem.h"
 #include "Archive/DAZipArchiveTask_Xml.h"
+#include "Chart/Setting/DAFigureWidgetSettingPanel.h"
+#include "Common/Settings/DAPropertyPanelContainerWidget.h"
 #include "Chart/DAChartItemsManager.h"
 #include "DAChart3DSerialize.h"
 #include "DAChart3DWidget.h"
@@ -288,6 +290,8 @@ private Q_SLOTS:
     void testInvalid3DEnumAttributesKeepDefaults();
     // <grid> 比例个数不匹配/含非法值 → 等分轨道、不崩、撤销栈计数不变
     void testGridBadRatiosFallBackToEqualTracks();
+    // enableGridLayout 复位塌陷尺寸约束后，设置面板经 figureSizeConstraintsChanged 自动刷新
+    void testFigureSizeConstraintsSignalRefreshesSettingPanel();
     // DAChartItemArchive::load：存档未打开时返回 false（不再被当成旧工程静默成功）
     void testChartItemArchiveRejectsClosedArchive();
     // 网格 figure XML 往返：<grid> 行列/比例、成员 grid-* 坐标、x/y/w/h 兼容字段
@@ -1411,6 +1415,47 @@ void DAChartSerializeTest::testChartItemArchiveRejectsClosedArchive()
              qPrintable(reopenedError));
     QCOMPARE(closedMgr.items().size(), 1);
     qDeleteAll(closedMgr.items());
+}
+
+/**
+ * @brief enableGridLayout 复位塌陷尺寸后，设置面板经信号自动刷新
+ *
+ * 面板要把 qwt figure 的 min/max 尺寸展示给用户；enableGridLayout 只在塌陷时复位这些值，
+ * 复位后必须让面板重新读取，否则面板仍显示「最大宽度 0」这种过期值。
+ * 面板类属于 DAGui，本用例放在链接 DAGui 的测试里（DAFigureGridTest 不链接 DAGui）。
+ */
+void DAChartSerializeTest::testFigureSizeConstraintsSignalRefreshesSettingPanel()
+{
+    std::unique_ptr< DA::DAFigureWidget > fig(new DA::DAFigureWidget());
+    fig->resize(800, 600);
+    fig->show();
+    QTest::qWaitForWindowExposed(fig.get());
+    QwtFigure* qwtFig = fig->figure();
+    QVERIFY(qwtFig);
+
+    DA::DAFigureWidgetSettingPanel panel;
+    panel.setTarget(fig.get());
+    // 模拟设置面板写入塌陷值：最大宽度 0
+    qwtFig->setMaximumWidth(0);
+    panel.updateUI();
+    QCOMPARE(panel.propertyPanel()->getIntValue(DA::DAFigureWidgetSettingPanel::PID_MaxWidth), 0);
+
+    // 启用网格：复位塌陷值，面板经 figureSizeConstraintsChanged 自动刷新（不手工调 updateUI）
+    QVERIFY(fig->enableGridLayout(2, 2));
+    QCOMPARE(qwtFig->maximumWidth(), QWIDGETSIZE_MAX);
+    QCOMPARE(panel.propertyPanel()->getIntValue(DA::DAFigureWidgetSettingPanel::PID_MaxWidth), QWIDGETSIZE_MAX);
+
+    // 切换目标后旧 figure 的复位不再影响面板
+    std::unique_ptr< DA::DAFigureWidget > other(new DA::DAFigureWidget());
+    other->resize(640, 480);
+    other->show();
+    QTest::qWaitForWindowExposed(other.get());
+    panel.setTarget(other.get());
+    const int otherMaxWidth = other->figure()->maximumWidth();
+    qwtFig->setMaximumWidth(0);
+    QVERIFY(fig->enableGridLayout(2, 3));  // 会再次复位塌陷值并发信号
+    QCOMPARE(qwtFig->maximumWidth(), QWIDGETSIZE_MAX);
+    QCOMPARE(panel.propertyPanel()->getIntValue(DA::DAFigureWidgetSettingPanel::PID_MaxWidth), otherMaxWidth);
 }
 
 void DAChartSerializeTest::testZipArchiveTaskChartItemRoundTrip()

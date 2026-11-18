@@ -3,6 +3,7 @@
 // T4：DAFigureWidget 保留式网格布局（QwtFigureGrid）API 单元测试。
 // 覆盖点：
 // 1. enableGridLayout(rows, cols) 的返回值、isGridLayoutEnabled()、grid() 非空、行列数与等分轨道；
+//    只在 figure 尺寸约束确实塌陷时复位 min/max（有效约束保留），并发出 gridLayoutEnabledChanged。
 //    启用时把 qwt figure 的人为 min/max 尺寸复位为默认值。
 // 2. createChart() + setGridCell(chart, row, col, rowSpan, colSpan) 的单元格几何
 //    （与 grid()->normRectFor() 经 figure 尺寸换算一致，含跨列）；窗口缩放后比例保持；
@@ -47,8 +48,12 @@ class TSTDAFigureGridTest : public QObject
 private Q_SLOTS:
     // 启用语义：返回值/行列数/等分轨道/非法行列
     void testEnableGridLayout();
-    // 启用时把 figure 的 min/max 尺寸复位为默认（规避设置面板写入的塌陷值）
-    void testEnableGridLayoutResetsFigureSizeLimits();
+    // 启用时保留用户显式设置的有效尺寸约束（非塌陷值不得被覆盖）
+    void testEnableGridLayoutKeepsExplicitSizeLimits();
+    // 启用时把塌陷的尺寸约束（max<=0）复位为默认，并通知设置面板刷新
+    void testEnableGridLayoutResetsCollapsedSizeLimits();
+    // gridLayoutEnabledChanged 只在状态确实变化时发射
+    void testGridLayoutEnabledSignal();
     // 单元格几何（跨列/跨行）及窗口 resize 后的几何与比例
     void testGridCellGeometry();
     // setGridSizes 后窗口缩放，轨道比例保持
@@ -272,29 +277,60 @@ void TSTDAFigureGridTest::testEnableGridLayout()
 }
 
 /**
- * @brief 启用网格时把 qwt figure 的 min/max 尺寸复位为默认
+ * @brief 启用网格时保留用户显式设置的有效尺寸约束
  *
- * DAFigureWidgetSettingPanel 会把 qwtfig 的 min/max 尺寸写入配置，遗留的塌陷值会让
- * 网格子图无法铺满；enableGridLayout() 必须把它复位为默认（minimum 0、maximum QWIDGETSIZE_MAX）。
+ * DAFigureWidgetSettingPanel 允许用户给 qwt figure 设置 min/max 尺寸。旧实现无条件把它们复位，
+ * 用户的显式设置被静默丢弃；现在只在尺寸确实塌陷时才复位。
  */
-void TSTDAFigureGridTest::testEnableGridLayoutResetsFigureSizeLimits()
+void TSTDAFigureGridTest::testEnableGridLayoutKeepsExplicitSizeLimits()
 {
     QScopedPointer< DAFigureWidget > fig(new DAFigureWidget());
     QVERIFY(initFigure(fig.data()));
     QwtFigure* qfig = fig->figure();
     QVERIFY(qfig);
 
-    // 人为写入异常值（模拟设置面板遗留的塌陷尺寸）
+    // 用户显式设置的有效约束（min<=max 且 max>0）
     qfig->setMinimumSize(600, 400);
-    qfig->setMaximumSize(600, 400);
+    qfig->setMaximumSize(900, 700);
     settle(fig.data());
     QCOMPARE(qfig->minimumSize(), QSize(600, 400));
-    QCOMPARE(qfig->maximumSize(), QSize(600, 400));
+    QCOMPARE(qfig->maximumSize(), QSize(900, 700));
 
-    // 启用网格后复位为默认值
+    QSignalSpy sizeSpy(fig.data(), &DAFigureWidget::figureSizeConstraintsChanged);
+    QVERIFY(sizeSpy.isValid());
+    QVERIFY(fig->enableGridLayout(2, 2));
+    QCOMPARE(qfig->minimumSize(), QSize(600, 400));
+    QCOMPARE(qfig->maximumSize(), QSize(900, 700));
+    QVERIFY2(sizeSpy.isEmpty(), "no size-constraint change means the panel must not be asked to refresh");
+}
+
+/**
+ * @brief 启用网格时复位塌陷的尺寸约束并通知设置面板
+ *
+ * 塌陷值来自设置面板（最大宽度被设为 0 时子图会被压成 0 宽），必须复位为默认；
+ * 复位后发射 figureSizeConstraintsChanged，设置面板据此重新读取实际值。
+ */
+void TSTDAFigureGridTest::testEnableGridLayoutResetsCollapsedSizeLimits()
+{
+    QScopedPointer< DAFigureWidget > fig(new DAFigureWidget());
+    QVERIFY(initFigure(fig.data()));
+    QwtFigure* qfig = fig->figure();
+    QVERIFY(qfig);
+
+    // 人为写入塌陷值（模拟设置面板遗留的最大宽度 0）
+    qfig->setMaximumWidth(0);
+    qfig->setMinimumHeight(300);
+    qfig->setMaximumHeight(0);
+    settle(fig.data());
+    QCOMPARE(qfig->maximumWidth(), 0);
+    QCOMPARE(qfig->maximumHeight(), 0);
+
+    QSignalSpy sizeSpy(fig.data(), &DAFigureWidget::figureSizeConstraintsChanged);
+    QVERIFY(sizeSpy.isValid());
     QVERIFY(fig->enableGridLayout(2, 2));
     QCOMPARE(qfig->minimumSize(), QSize(0, 0));
     QCOMPARE(qfig->maximumSize(), QSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX));
+    QCOMPARE(sizeSpy.count(), 1);
 
     // 复位后 figure 能重新铺满滚动区视口（允许滚动区边框带来的像素误差）
     settle(fig.data());
@@ -306,6 +342,39 @@ void TSTDAFigureGridTest::testEnableGridLayoutResetsFigureSizeLimits()
              qPrintable(QStringLiteral("figure height %1 should fill viewport height %2")
                             .arg(qfig->height())
                             .arg(fig->viewport()->height())));
+}
+
+/**
+ * @brief gridLayoutEnabledChanged 只在状态确实变化时发射
+ *
+ * 供 Ribbon 等上层跟随网格状态刷新：幂等启用、非法参数、仅改变行列数都不应重复发射。
+ */
+void TSTDAFigureGridTest::testGridLayoutEnabledSignal()
+{
+    QScopedPointer< DAFigureWidget > fig(new DAFigureWidget());
+    QVERIFY(initFigure(fig.data()));
+    QSignalSpy spy(fig.data(), &DAFigureWidget::gridLayoutEnabledChanged);
+    QVERIFY(spy.isValid());
+    QCOMPARE(spy.count(), 0);
+
+    // 首次启用：状态 false→true，发一次 true
+    QVERIFY(fig->enableGridLayout(2, 2));
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(spy.takeFirst().at(0).toBool(), true);
+
+    // 幂等启用：状态未变，不发射
+    QVERIFY(fig->enableGridLayout(2, 2));
+    QCOMPARE(spy.count(), 0);
+
+    // 非法参数：状态未变，不发射
+    QVERIFY(!fig->enableGridLayout(0, 2));
+    QCOMPARE(spy.count(), 0);
+    QVERIFY(fig->isGridLayoutEnabled());
+
+    // 改变行列数：仍是启用状态，不重复发射 true
+    QVERIFY(fig->enableGridLayout(3, 3));
+    QCOMPARE(spy.count(), 0);
+    QCOMPARE(fig->grid()->rowCount(), 3);
 }
 
 /**

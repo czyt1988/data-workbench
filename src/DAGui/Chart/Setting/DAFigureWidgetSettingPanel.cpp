@@ -53,7 +53,21 @@ void DAFigureWidgetSettingPanel::setTarget(DAFigureWidget* fig)
     if (mFigure == fig) {
         return;
     }
+    // 目标切换：断开旧 figure 的尺寸约束复位通知，避免面板显示上一个 figure 的值
+    if (DAFigureWidget* oldFigure = mFigure.data()) {
+        disconnect(oldFigure,
+                   &DAFigureWidget::figureSizeConstraintsChanged,
+                   this,
+                   &DAFigureWidgetSettingPanel::updateUI);
+    }
     mFigure = fig;
+    if (DAFigureWidget* newFigure = mFigure.data()) {
+        // enableGridLayout 只在尺寸塌陷时复位 min/max；复位后由信号驱动刷新，否则面板仍显示旧值
+        connect(newFigure,
+                &DAFigureWidget::figureSizeConstraintsChanged,
+                this,
+                &DAFigureWidgetSettingPanel::updateUI);
+    }
     updateUI();
 }
 
