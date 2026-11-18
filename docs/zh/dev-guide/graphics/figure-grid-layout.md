@@ -37,7 +37,7 @@ qwt 层只依赖 Qt（`QObject` / `QWidget`），不引用 `QwtFigure` / `QwtFig
 | `isEnabled()` / `rowCount()` / `columnCount()` | 状态与轨道数 |
 | `rowSizes()` / `columnSizes()` | 归一化轨道比例，和约为 1 |
 | `setRowSizes(sizes)` / `setColumnSizes(sizes)` | 设置比例，内部归一化 |
-| `setSpacing(wspace, hspace)` | 轨道间距，归一化单位 |
+| `setSpacing(wspace, hspace)` / `wspace()` / `hspace()` | 轨道间距（归一化单位）的写/读；间距需满足 `(轨道数 − 1) × 间距 < 1`，否则整条请求被拒绝并告警 |
 | `setMinimumTrackPixels(px)` / `minimumTrackPixels()` | 拖动时单条轨道的最小像素，默认 40 |
 | `addItem(w, row, col, rowSpan, colSpan)` | 登记成员，位置或跨度越界返回 false |
 | `removeItem(w)` / `items()` / `gridPosition(w, ...)` | 注销、枚举、查询成员 |
@@ -144,7 +144,8 @@ figure->setGridCell(waterfall, 1, 1);   // 与热图同格，按瀑布模式切�
 
 ```xml
 <figure id="sig-示例信号">
-  <grid rows="2" cols="2" rowSizes="0.56,0.44" colSizes="0.5,0.5"/>
+  <grid rows="2" cols="2" rowSizes="0.56,0.44" colSizes="0.5,0.5"
+        wspace="0" hspace="0"/>
   <charts>
     <chart id="..." grid-row="0" grid-col="0" grid-rowspan="1" grid-colspan="2"
            x="0" y="0" w="1" h="0.56">...</chart>
@@ -164,9 +165,9 @@ figure->setGridCell(waterfall, 1, 1);   // 与热图同格，按瀑布模式切�
 
 写侧仍会写 `x` / `y` / `w` / `h`，供旧版本或降级路径使用；读侧优先网格坐标。
 
-> **📝 间距属性的当前限制**
+> **📝 间距（wspace/hspace）的持久化**
 >
-> `QwtFigureGrid` 目前没有 `spacing()` 读取接口，所以保存端不写 `wspace` / `hspace`，读端保留了对这两个属性的兼容读取。需要持久化非零间距时，先给网格模型补 getter，再在 `saveGridElement()` 里写出。
+> 网格间距由 `QwtFigureGrid::wspace()` / `hspace()` 读出，保存端始终写出这两个属性（12 位有效数字）；旧工程没有这两个属性时按 0 处理，等分轨道不受影响。`setSpacing()` 会按 `(轨道数 − 1) × 间距 < 1` 校验上界，恢复时若间距非法整条请求被拒（只发告警、保持原值），不会让最后一个单元格塌陷。
 
 ## 撤销与重做
 
