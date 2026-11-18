@@ -17,6 +17,7 @@
 #include <QtTest/QtTest>
 #include <QApplication>
 #include <QGuiApplication>
+#include <QMouseEvent>
 #include <QOpenGLContext>
 #include <QScopedPointer>
 #include <QSignalSpy>
@@ -70,8 +71,12 @@ private Q_SLOTS:
     void testSetGridCellInvalidKeepsRegistration();
     // 3D 子图登记进网格（OpenGL 不可用时跳过）
     void testChart3DGridCell();
+    // 3D 与 2D 相邻时，分隔条由 2D 一侧负责命中并可拖动（OpenGL 不可用时跳过）
+    void testChart3DAdjacent2DDragDivider();
 
 private:
+    // 当前环境能否安全创建 OpenGL 子图（离屏平台、无 GL 2.x 格式或不能建上下文时为 false）
+    static bool canUseOpenGL();
     // 创建并显示指定尺寸的 figure，等待窗口暴露与布局完成
     static bool initFigure(DAFigureWidget* fig, int width = 1000, int height = 800);
     // 处理事件并短暂等待，让 QScrollArea 的尺寸同步与 qwt layout 重排完成
@@ -117,24 +122,37 @@ void TSTDAFigureGridTest::settle(DAFigureWidget* fig, int ms)
     QApplication::processEvents();
 }
 
+bool TSTDAFigureGridTest::canUseOpenGL()
+{
+    // 离屏平台不创建 OpenGL 控件
+    if (QGuiApplication::platformName().contains(QStringLiteral("offscreen"), Qt::CaseInsensitive)) {
+        return false;
+    }
+    if (QSurfaceFormat::defaultFormat().majorVersion() < 2) {
+        return false;
+    }
+    QOpenGLContext glContext;
+    return glContext.create();
+}
+
 QRect TSTDAFigureGridTest::expectedNormGeometry(DAFigureWidget* fig, const QRectF& normRect)
 {
     QwtFigure* qfig = fig ? fig->figure() : nullptr;
     if (!qfig) {
         return QRect();
     }
-    // 与 QwtFigureLayout::calcActualRect 相同的换算：按 figure 当前像素矩形取整并裁剪
-    const QRect parent          = qfig->rect();
-    const qreal availableWidth  = parent.width();
-    const qreal availableHeight = parent.height();
-    const qreal actualLeft      = qRound(normRect.left() * availableWidth);
-    const qreal actualTop       = qRound(normRect.top() * availableHeight);
-    const qreal actualWidth     = qRound(normRect.width() * availableWidth);
-    const qreal actualHeight    = qRound(normRect.height() * availableHeight);
-    return QRect(qMax(0.0, actualLeft),
-                 qMax(0.0, actualTop),
-                 qMin(actualWidth, availableWidth - actualLeft),
-                 qMin(actualHeight, availableHeight - actualTop));
+    // 与 QwtFigureLayout::calcActualRect 相同的换算：两条边分别按累计归一化位置取整，
+    // 像素宽高由两条边求差（相邻单元边缘落在同一像素），最后裁剪到 figure 矩形内
+    const QRect parent        = qfig->rect();
+    const int availableWidth  = parent.width();
+    const int availableHeight = parent.height();
+    const int left   = qRound(normRect.left() * availableWidth);
+    const int top    = qRound(normRect.top() * availableHeight);
+    const int right  = qRound((normRect.left() + normRect.width()) * availableWidth);
+    const int bottom = qRound((normRect.top() + normRect.height()) * availableHeight);
+    const int x      = qMax(0, left);
+    const int y      = qMax(0, top);
+    return QRect(x, y, qMax(0, qMin(right, availableWidth) - x), qMax(0, qMin(bottom, availableHeight) - y));
 }
 
 QRect TSTDAFigureGridTest::expectedCellGeometry(DAFigureWidget* fig, int row, int col, int rowSpan, int colSpan)
@@ -753,17 +771,8 @@ void TSTDAFigureGridTest::testSetGridCellInvalidKeepsRegistration()
  */
 void TSTDAFigureGridTest::testChart3DGridCell()
 {
-    // 离屏平台不创建 OpenGL 控件
-    if (QGuiApplication::platformName().contains(QStringLiteral("offscreen"), Qt::CaseInsensitive)) {
-        QSKIP("offscreen platform: skip the 3D grid test");
-    }
-    const QSurfaceFormat format = QSurfaceFormat::defaultFormat();
-    if (format.majorVersion() < 2) {
+    if (!canUseOpenGL()) {
         QSKIP("OpenGL is not available: skip the 3D grid test");
-    }
-    QOpenGLContext glContext;
-    if (!glContext.create()) {
-        QSKIP("cannot create an OpenGL context: skip the 3D grid test");
     }
 
     QScopedPointer< DAFigureWidget > fig(new DAFigureWidget());
@@ -792,6 +801,106 @@ void TSTDAFigureGridTest::testChart3DGridCell()
     QVERIFY2(fuzzyRect(chart3d->geometry(), expected),
              qPrintable(QStringLiteral("3D chart actual=%1 expected=%2")
                             .arg(rectText(chart3d->geometry()), rectText(expected))));
+}
+
+/**
+ * @brief 3D 与 2D 相邻时，分隔条由 2D 一侧负责命中并可真实拖动
+ *
+ * 分隔条从不拦截 3D（QOpenGLWidget）成员的事件：边界处的鼠标事件落在相邻的 2D 子图上
+ * 时照常命中。用例把 3D 放左上格、2D 放右上格，从 2D 子图向 3D 一侧拖动列分隔条，
+ * 断言两条轨道比例变化、3D 与 2D 子图几何同步跟随（3D 侧不需要也不应收到该事件）。
+ */
+void TSTDAFigureGridTest::testChart3DAdjacent2DDragDivider()
+{
+    if (!canUseOpenGL()) {
+        QSKIP("OpenGL is not available: skip the 3D grid test");
+    }
+
+    QScopedPointer< DAFigureWidget > fig(new DAFigureWidget());
+    QVERIFY(initFigure(fig.data()));
+    QVERIFY(fig->enableGridLayout(2, 2));
+
+    // 左上：3D 子图；右上：2D 子图——两个单元格之间就是列分隔条
+    (void)fig->create3DChart();
+    settle(fig.data(), 60);
+    QWidget* chart3d = nullptr;
+    const QList< QWidget* > children = fig->figure()->findChildren< QWidget* >(QString(), Qt::FindDirectChildrenOnly);
+    for (QWidget* w : std::as_const(children)) {
+        if (w->inherits("Qwt3DPlot")) {
+            chart3d = w;
+            break;
+        }
+    }
+    if (!chart3d) {
+        QSKIP("DAChart3DWidget is not available in this environment: skip the 3D grid test");
+    }
+    QVERIFY2(fig->setGridCell(chart3d, 0, 0), "the 3D chart should be registrable in the grid");
+
+    DAChartWidget* chart2d = fig->createChart();
+    QVERIFY(chart2d);
+    QVERIFY(fig->setGridCell(chart2d, 0, 1));
+    settle(fig.data(), 60);
+
+    QwtFigure* qfig = fig->figure();
+    QVERIFY(qfig);
+    const int figureWidth = qfig->width();
+    QVERIFY(figureWidth > 200);
+    QCOMPARE(fig->gridColumnSizes().size(), 2);
+    QVERIFY(fuzzyEqual(fig->gridColumnSizes().at(0), 0.5));
+
+    const QRect cell3dBefore = chart3d->geometry();
+    const QRect cell2dBefore = chart2d->geometry();
+
+    // 列分隔条在 0.5 处（等分轨道）：在 2D 一侧的命中带内按下（+2px，落在 2D 单元格里）
+    const int dividerX = qRound(0.5 * figureWidth);
+    const int pressY   = qfig->height() / 4;
+    const QPoint pressFigurePos(dividerX + 2, pressY);
+    QVERIFY2(chart2d->rect().contains(chart2d->mapFrom(qfig, pressFigurePos)),
+             "the press point must be inside the 2D cell");
+
+    const auto sendTo2D = [&](QEvent::Type type, const QPoint& figurePos, Qt::MouseButton button, Qt::MouseButtons buttons) {
+        const QPoint localPos = chart2d->mapFrom(qfig, figurePos);
+        QMouseEvent event(type,
+                          QPointF(localPos),
+                          QPointF(chart2d->mapToGlobal(localPos)),
+                          button,
+                          buttons,
+                          Qt::NoModifier);
+        QApplication::sendEvent(chart2d, &event);
+        return event.isAccepted();
+    };
+
+    QVERIFY2(sendTo2D(QEvent::MouseButtonPress, pressFigurePos, Qt::LeftButton, Qt::LeftButton),
+             "the divider written on the 2D side must consume the press");
+
+    // 向 3D 一侧拖动：两列比例随之变化，且 3D / 2D 子图几何同步跟随
+    const int dragDelta = 30;
+    const QPoint dragFigurePos(pressFigurePos.x() - dragDelta, pressY);
+    QVERIFY(sendTo2D(QEvent::MouseMove, dragFigurePos, Qt::NoButton, Qt::LeftButton));
+
+    const qreal expectedFirst = 0.5 - static_cast< qreal >(dragDelta) / figureWidth;
+    QVERIFY2(fuzzyEqual(fig->gridColumnSizes().at(0), expectedFirst),
+             qPrintable(QStringLiteral("first column should be %1, got %2")
+                            .arg(expectedFirst)
+                            .arg(fig->gridColumnSizes().at(0))));
+    QVERIFY(fuzzyEqual(fig->gridColumnSizes().at(1), 1.0 - expectedFirst));
+
+    const QRect expected3d = expectedCellGeometry(fig.data(), 0, 0);
+    const QRect expected2d = expectedCellGeometry(fig.data(), 0, 1);
+    QVERIFY2(fuzzyRect(chart3d->geometry(), expected3d),
+             qPrintable(QStringLiteral("3D chart actual=%1 expected=%2")
+                            .arg(rectText(chart3d->geometry()), rectText(expected3d))));
+    QVERIFY2(fuzzyRect(chart2d->geometry(), expected2d),
+             qPrintable(QStringLiteral("2D chart actual=%1 expected=%2")
+                            .arg(rectText(chart2d->geometry()), rectText(expected2d))));
+    // 3D 单元格确实变窄了（跟随拖动，而不是留在原位）
+    QVERIFY2(chart3d->geometry().width() < cell3dBefore.width(),
+             qPrintable(QStringLiteral("3D chart width %1 should shrink from %2")
+                            .arg(chart3d->geometry().width())
+                            .arg(cell3dBefore.width())));
+    QVERIFY(cell2dBefore.width() != chart2d->geometry().width());
+
+    QVERIFY(sendTo2D(QEvent::MouseButtonRelease, dragFigurePos, Qt::LeftButton, Qt::NoButton));
 }
 
 }  // namespace DA
