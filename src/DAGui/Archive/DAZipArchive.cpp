@@ -272,6 +272,18 @@ bool DAZipArchive::isOpened() const
 	return d->mZip && d->mZip->isOpen();
 }
 
+/**
+ * @brief 存档是否处于可用状态
+ *
+ * 覆写 DAAbstractArchive::isOpen()：zip 存档必须真正打开（读模式/写模式）才能 contains/read，
+ * 未打开时 getAllFiles 为空、read 返回空，读取方若只看内容会把「未打开」误判成「旧工程」。
+ * @return 已打开返回true
+ */
+bool DAZipArchive::isOpen() const
+{
+	return isOpened();
+}
+
 bool DAZipArchive::close()
 {
 	DA_D(d);

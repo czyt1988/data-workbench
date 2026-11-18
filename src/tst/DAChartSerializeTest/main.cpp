@@ -21,6 +21,7 @@
 #include <QSet>
 #include <QSignalSpy>
 #include <QTemporaryDir>
+#include <QUndoStack>
 #include <QVariantMap>
 #include <cstring>
 #include <limits>
@@ -34,6 +35,7 @@
 #include "Archive/DAZipArchiveTask_Xml.h"
 #include "Chart/DAChartItemsManager.h"
 #include "DAChart3DSerialize.h"
+#include "DAChart3DWidget.h"
 #include "DAChartAxisRangeBinder.h"
 #include "DAChartPlotRenderer.h"
 #include "DAChartSerialize.h"
@@ -131,6 +133,16 @@ QList< qreal > parseRealList(const QString& text)
     return result;
 }
 
+/// 比例列表的失败信息文本（形如 "0.5,0.5"）
+QString sizesText(const QList< qreal >& sizes)
+{
+    QStringList parts;
+    for (qreal v : sizes) {
+        parts.append(QString::number(v, 'g', 6));
+    }
+    return parts.join(QLatin1Char(','));
+}
+
 /// 成员节点是否带完整的网格坐标属性
 bool hasGridCellAttributes(const QDomElement& ele)
 {
@@ -223,9 +235,16 @@ public:
         return m_files.contains(relatePath);
     }
 
+    // 模拟存档打开状态：opened=false 表示未 open/create 的存档（基类默认恒为 true）
+    bool isOpen() const override
+    {
+        return opened;
+    }
+
     QHash< QString, QByteArray > m_files;
     QSet< QString > failWritePaths;
     QSet< QString > throwWritePaths;
+    bool opened { true };
 };
 }  // namespace
 
@@ -263,6 +282,14 @@ private Q_SLOTS:
     void testTransientItemSkippedInChartData();
     // 析构时仍挂着 transient 图元不得崩溃（itemAttached 析构期悬空回调回归）
     void testTransientChartDestruction();
+    // transient 登记要求图元已挂在本图上：未 attach 拒绝、attach 后成功、删除后不留悬空登记
+    void testTransientItemRequiresAttachment();
+    // 3D 枚举属性（aspectmode/coordstyle/tickposition）越界时保留原值，不再直接 static_cast
+    void testInvalid3DEnumAttributesKeepDefaults();
+    // <grid> 比例个数不匹配/含非法值 → 等分轨道、不崩、撤销栈计数不变
+    void testGridBadRatiosFallBackToEqualTracks();
+    // DAChartItemArchive::load：存档未打开时返回 false（不再被当成旧工程静默成功）
+    void testChartItemArchiveRejectsClosedArchive();
     // 网格 figure XML 往返：<grid> 行列/比例、成员 grid-* 坐标、x/y/w/h 兼容字段
     void testFigureGridXmlRoundTrip();
     // 网格间距（wspace/hspace）写读往返；旧工程无该属性时按 0 处理
@@ -716,6 +743,93 @@ void DAChartSerializeTest::testTransientChartDestruction()
     QVERIFY(chart.isItemTransient(curve));
 }
 
+/**
+ * @brief transient 登记要求图元已挂在本图上
+ *
+ * 登记集合只有 detach/析构回调负责注销；未 attach 的图元不会触发它，删除后会在集合里留下
+ * 悬空地址，地址被复用后新图元被误判为 transient 而静默漏存。要求 setItemTransient 前置校验。
+ */
+void DAChartSerializeTest::testTransientItemRequiresAttachment()
+{
+    DA::DAChartWidget chart;
+
+    // ① 未 attach：登记被拒绝，集合保持为空
+    QwtPlotCurve* orphan = new QwtPlotCurve(QStringLiteral("orphan"));
+    chart.setItemTransient(orphan);
+    QVERIFY2(!chart.isItemTransient(orphan), "an unattached item must not be registered as transient");
+    QVERIFY(chart.transientItems().isEmpty());
+
+    // ② attach 后再登记成功
+    orphan->attach(&chart);
+    QVERIFY(chart.itemList().contains(orphan));
+    chart.setItemTransient(orphan);
+    QVERIFY(chart.isItemTransient(orphan));
+    QCOMPARE(chart.transientItems().size(), 1);
+
+    // ③ 删除已登记图元：detach 回调注销登记，集合里不留悬空地址
+    delete orphan;
+    QVERIFY2(!chart.isItemTransient(orphan), "deleting an attached item must unregister the transient registration");
+    QVERIFY(chart.transientItems().isEmpty());
+
+    // ④ 别的绘图上的图元不能登记到本绘图（同样的悬空风险）
+    DA::DAChartWidget other;
+    QwtPlotCurve* onOther = other.addCurve(QVector< double >{ 0.0, 1.0 }, QVector< double >{ 3.0, 4.0 },
+                                          QStringLiteral("on-other"));
+    QVERIFY(onOther);
+    other.setItemTransient(onOther);
+    QVERIFY(other.isItemTransient(onOther));
+    chart.setItemTransient(onOther);
+    QVERIFY2(!chart.isItemTransient(onOther), "an item attached to another chart must not be registered here");
+}
+
+/**
+ * @brief 3D 枚举属性越界时保留原值
+ *
+ * aspectmode/coordstyle/tickposition 由 XML 直接读成 int 后 static_cast 进枚举；手改 XML 写入越界值
+ * 会让 Qwt3D 按未知枚举分支。要求读取端按有效值区间校验，越界只 qWarning 并保留当前值。
+ */
+void DAChartSerializeTest::testInvalid3DEnumAttributesKeepDefaults()
+{
+    std::unique_ptr< DA::DAChart3DWidget > chart3d(new DA::DAChart3DWidget());
+    Qwt3DPlot* plot = chart3d.get();
+    QVERIFY(plot);
+    Qwt3DCoordinateSystem* coordSys = plot->coordinates();
+    QVERIFY(coordSys);
+
+    QDomDocument doc;
+    QDomElement root = doc.createElement(QStringLiteral("chart3d"));
+    doc.appendChild(root);
+    QDomElement viewEle = doc.createElement(QStringLiteral("view"));
+    root.appendChild(viewEle);
+
+    // 基线：先写入合法值，后续越界读取不得改动它们
+    viewEle.setAttribute(QStringLiteral("aspectmode"), static_cast< int >(DATARATIO));
+    viewEle.setAttribute(QStringLiteral("coordstyle"), static_cast< int >(FRAME));
+    viewEle.setAttribute(QStringLiteral("tickposition"), static_cast< int >(TICK_TOP));
+    QVERIFY(DA::DAXmlHelper::loadElement(chart3d.get(), &root));
+    QCOMPARE(static_cast< int >(plot->aspectRatioMode()), static_cast< int >(DATARATIO));
+    QCOMPARE(static_cast< int >(coordSys->style()), static_cast< int >(FRAME));
+    QCOMPARE(static_cast< int >(coordSys->tickPosition()), static_cast< int >(TICK_TOP));
+
+    // 越界值：保留上一组合法值（修复前会被 static_cast 成未知枚举）
+    viewEle.setAttribute(QStringLiteral("aspectmode"), 99);
+    viewEle.setAttribute(QStringLiteral("coordstyle"), 42);
+    viewEle.setAttribute(QStringLiteral("tickposition"), 7);
+    QVERIFY(DA::DAXmlHelper::loadElement(chart3d.get(), &root));
+    QCOMPARE(static_cast< int >(plot->aspectRatioMode()), static_cast< int >(DATARATIO));
+    QCOMPARE(static_cast< int >(coordSys->style()), static_cast< int >(FRAME));
+    QCOMPARE(static_cast< int >(coordSys->tickPosition()), static_cast< int >(TICK_TOP));
+
+    // 负值同样被拒（区间下界也要校验）
+    viewEle.setAttribute(QStringLiteral("aspectmode"), -1);
+    viewEle.setAttribute(QStringLiteral("coordstyle"), -3);
+    viewEle.setAttribute(QStringLiteral("tickposition"), -2);
+    QVERIFY(DA::DAXmlHelper::loadElement(chart3d.get(), &root));
+    QCOMPARE(static_cast< int >(plot->aspectRatioMode()), static_cast< int >(DATARATIO));
+    QCOMPARE(static_cast< int >(coordSys->style()), static_cast< int >(FRAME));
+    QCOMPARE(static_cast< int >(coordSys->tickPosition()), static_cast< int >(TICK_TOP));
+}
+
 void DAChartSerializeTest::testFigureGridXmlRoundTrip()
 {
     std::unique_ptr< DA::DAFigureWidget > src(new DA::DAFigureWidget());
@@ -1067,6 +1181,62 @@ void DAChartSerializeTest::testInvalidGridMemberFallsBackToFreeLayout()
     QVERIFY(nearlyEqual(defaultRect.height(), 0.9));
 }
 
+/**
+ * @brief <grid> 比例非法时退回等分轨道
+ *
+ * loadGridElement 只在 rowSizes/colSizes 个数与行列数一致时应用比例；个数不符或数值非法时保留
+ * 等分轨道。此用例锁定三条边界：个数不符、含不可解析值（解析时被丢掉）、个数正确但数值非正/越界。
+ * 三种情况都必须：加载成功、网格启用且为等分轨道、不压撤销命令、不崩。
+ */
+void DAChartSerializeTest::testGridBadRatiosFallBackToEqualTracks()
+{
+    struct Case
+    {
+        const char* name;
+        QString rowSizes;
+        QString colSizes;
+    };
+    const QList< Case > cases = {
+        { "rowSizes count mismatch", QStringLiteral("0.6"), QStringLiteral("0.3,0.7") },
+        { "colSizes contains unparsable value", QStringLiteral("0.6,0.4"), QStringLiteral("0.6,abc") },
+        { "counts ok but ratios non-positive and > 1", QStringLiteral("1.6,-0.6"), QStringLiteral("0.5,0.5") }
+    };
+
+    for (const Case& c : cases) {
+        QDomDocument doc;
+        QDomElement figEle = doc.createElement(QStringLiteral("figure"));
+        figEle.setAttribute(QStringLiteral("id"), QStringLiteral("bad-ratios-figure"));
+        doc.appendChild(figEle);
+        QDomElement gridEle = doc.createElement(QStringLiteral("grid"));
+        gridEle.setAttribute(QStringLiteral("rows"), 2);
+        gridEle.setAttribute(QStringLiteral("cols"), 2);
+        gridEle.setAttribute(QStringLiteral("rowSizes"), c.rowSizes);
+        gridEle.setAttribute(QStringLiteral("colSizes"), c.colSizes);
+        figEle.appendChild(gridEle);
+        figEle.appendChild(doc.createElement(QStringLiteral("charts")));
+
+        std::unique_ptr< DA::DAFigureWidget > fig(new DA::DAFigureWidget());
+        fig->resize(640, 480);
+        fig->show();
+        QTest::qWaitForWindowExposed(fig.get());
+        QUndoStack* stack = fig->getUndoStack();
+        QVERIFY(stack);
+        QCOMPARE(stack->count(), 0);
+
+        DA::DAChartItemsManager mgr;
+        QVERIFY2(DA::DAXmlHelper::loadElement(fig.get(), &figEle, &mgr), c.name);
+        QVERIFY2(fig->isGridLayoutEnabled(), c.name);
+        QVERIFY2(realListNearlyEqual(fig->gridRowSizes(), QList< qreal >{ 0.5, 0.5 }),
+                 qPrintable(QStringLiteral("%1: rows must fall back to equal tracks, got %2")
+                                .arg(QString::fromUtf8(c.name), sizesText(fig->gridRowSizes()))));
+        QVERIFY2(realListNearlyEqual(fig->gridColumnSizes(), QList< qreal >{ 0.5, 0.5 }),
+                 qPrintable(QStringLiteral("%1: columns must fall back to equal tracks, got %2")
+                                .arg(QString::fromUtf8(c.name), sizesText(fig->gridColumnSizes()))));
+        // 读端不得压入撤销命令（比例恢复是程序化设置）
+        QCOMPARE(stack->count(), 0);
+    }
+}
+
 void DAChartSerializeTest::testChartItemArchiveMemoryRoundTrip()
 {
     // 源绘图：两条不同长度/数据/标题的曲线
@@ -1189,6 +1359,58 @@ void DAChartSerializeTest::testChartItemArchiveMemoryRoundTrip()
     qDeleteAll(damagedItemMgr.items());
 
     qDeleteAll(dstMgr.items());
+}
+
+/**
+ * @brief 未打开的存档调用 load 必须失败
+ *
+ * 修复前：未打开（未 open/create）的 zip 里 getAllFiles 为空、read 返回空，DAChartItemArchive::load
+ * 会把「读不到」当成「旧工程没有索引」而静默返回 true —— 受影响的存档看起来加载成功但图元全丢。
+ * 现在 DAAbstractArchive::isOpen() 前置拦截，DAZipArchive 返回真实打开状态。
+ */
+void DAChartSerializeTest::testChartItemArchiveRejectsClosedArchive()
+{
+    // ① 真实 zip：新建后未 open/create，load 必须返回 false
+    QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+    DA::DAZipArchive closedZip(tempDir.filePath(QStringLiteral("closed.dapro")));
+    QVERIFY2(!closedZip.isOpen(), "a freshly constructed zip archive must not report itself as open");
+    DA::DAChartItemsManager zipMgr;
+    QString zipError;
+    QVERIFY2(!DA::DAChartItemArchive::load(&closedZip, &zipMgr, QStringLiteral("chart-data"), &zipError),
+             "loading chart-data from a closed zip archive must fail instead of pretending the project is old");
+    QVERIFY(!zipError.isEmpty());
+    QVERIFY(zipMgr.items().isEmpty());
+
+    // ② 即使存档内容完整，未打开也不能静默成功
+    DA::DAChartWidget chart;
+    QVERIFY(chart.addCurve(QVector< double >{ 0.0, 1.0 }, QVector< double >{ 2.0, 3.0 }, QStringLiteral("closed-A")));
+    DA::DAChartItemsManager srcMgr;
+    QDomDocument doc;
+    DA::DAXmlHelper::makeElement(&chart, QStringLiteral("chart"), &doc, &srcMgr);
+    QCOMPARE(srcMgr.items().size(), 1);
+    MemoryArchive srcMem;
+    QString saveError;
+    QVERIFY2(DA::DAChartItemArchive::save(&srcMem, &srcMgr, QStringLiteral("chart-data"), &saveError),
+             qPrintable(saveError));
+
+    MemoryArchive closedMem;
+    closedMem.m_files = srcMem.m_files;
+    closedMem.opened  = false;
+    DA::DAChartItemsManager closedMgr;
+    QString closedError;
+    QVERIFY2(!DA::DAChartItemArchive::load(&closedMem, &closedMgr, QStringLiteral("chart-data"), &closedError),
+             "a non-empty but closed archive must still be rejected");
+    QVERIFY(!closedError.isEmpty());
+    QVERIFY(closedMgr.items().isEmpty());
+
+    // ③ 打开同一份内容后可正常读回（打开状态是唯一区别）
+    closedMem.opened = true;
+    QString reopenedError;
+    QVERIFY2(DA::DAChartItemArchive::load(&closedMem, &closedMgr, QStringLiteral("chart-data"), &reopenedError),
+             qPrintable(reopenedError));
+    QCOMPARE(closedMgr.items().size(), 1);
+    qDeleteAll(closedMgr.items());
 }
 
 void DAChartSerializeTest::testZipArchiveTaskChartItemRoundTrip()

@@ -74,6 +74,19 @@ bool DAAbstractArchive::contains(const QString& relatePath) const
 	return false;
 }
 
+/**
+ * @brief 存档是否处于可用状态（已打开/已创建）
+ *
+ * 基类不知道子类的打开语义（有的存档对象本身就是目录/内存，无需打开），默认返回 true；
+ * 需要区分「未打开」与「打开但没有该文件」的存档（zip 等）应覆盖本函数。
+ * 读取方在调用 contains/read 前应先判断本函数，否则未打开的存档会被当成「旧工程/空存档」静默放过。
+ * @return 可用返回true，默认返回true
+ */
+bool DAAbstractArchive::isOpen() const
+{
+	return true;
+}
+
 void DAAbstractArchive::appendTask(const std::shared_ptr< DA::DAAbstractArchiveTask >& task)
 {
 	d_ptr->mTaskQueue.emplace_back(task);

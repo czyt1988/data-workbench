@@ -596,6 +596,8 @@ void DAChartWidget::removePlotItem(QwtPlotItem* item)
  * @note 图元 detach（含 removeCurve/removePlotItem/clearAllData 及占用方自行 detach）时会
  *       自动注销 transient 登记；因此 detach 后重新 attach（例如 undo/redo 重建图元）必须
  *       重新调用 setItemTransient，否则该图元会被当作普通图元持久化。
+ * @note 只接受已挂在本绘图上的图元：未 attach 的图元不会经 @ref onPlotItemAttached 注销，
+ *       被删除后会在登记集合里留下悬空地址，地址复用后新图元被误判为 transient 而静默漏存。
  * @param item 图元，为空时忽略
  * @param on true 标记为 transient，false 取消标记
  */
@@ -605,11 +607,15 @@ void DAChartWidget::setItemTransient(QwtPlotItem* item, bool on)
     if (!item) {
         return;
     }
-    if (on) {
-        d->transientItems.insert(item);
-    } else {
+    if (!on) {
         d->transientItems.remove(item);
+        return;
     }
+    if (item->plot() != this) {
+        qWarning() << "DAChartWidget::setItemTransient: item is not attached to this chart, ignored";
+        return;
+    }
+    d->transientItems.insert(item);
 }
 
 /**

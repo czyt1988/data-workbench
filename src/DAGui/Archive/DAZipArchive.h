@@ -26,6 +26,8 @@ public:
 	bool create();
 	// 是否打开
 	bool isOpened() const;
+	// 存档是否处于可用状态（覆写 DAAbstractArchive，等同 isOpened()）
+	bool isOpen() const override;
 	// 关闭
 	bool close();
 	// 写数据

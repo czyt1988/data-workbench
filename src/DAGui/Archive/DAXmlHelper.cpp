@@ -184,6 +184,36 @@ bool readIntAttr(const QDomElement& ele, const QString& name, int* out)
     return ok;
 }
 
+/**
+ * @brief 读取枚举属性并按有效值区间校验
+ *
+ * XML 可被手工编辑，直接 static_cast 会把越界值塞进枚举（Qwt3D 侧按枚举值分支，越界即未定义行为）。
+ * 属性缺失时保持调用方的默认值（返回 false 且不 qWarning）；属性存在但越界时 qWarning 后仍返回 false，
+ * 调用方据此保留默认值。
+ * @param ele 元素
+ * @param name 属性名
+ * @param minValue 有效值下界（含）
+ * @param maxValue 有效值上界（含）
+ * @param out 输出：通过校验的枚举值
+ * @return 属性存在且取值为 [minValue, maxValue] 内返回true
+ */
+bool readEnumChecked(const QDomElement& ele, const QString& name, int minValue, int maxValue, int* out)
+{
+    int v = 0;
+    if (!readIntAttr(ele, name, &v)) {
+        return false;
+    }
+    if (v < minValue || v > maxValue) {
+        qWarning() << "DAXmlHelper::loadElement(chart3d): attribute" << name << "value" << v << "out of range ["
+                   << minValue << "," << maxValue << "], keep default";
+        return false;
+    }
+    if (out) {
+        *out = v;
+    }
+    return true;
+}
+
 bool readBoolAttr(const QDomElement& ele, const QString& name, bool* out)
 {
     if (!ele.hasAttribute(name)) {
@@ -471,7 +501,11 @@ void load3DViewElement(Qwt3DPlot* plot, const QDomElement& viewEle)
         plot->setOrtho(b);
     }
     int iv = 0;
-    if (readIntAttr(viewEle, QStringLiteral("aspectmode"), &iv)) {
+    if (readEnumChecked(viewEle,
+                        QStringLiteral("aspectmode"),
+                        static_cast< int >(AUTOFILL),
+                        static_cast< int >(DATARATIO),
+                        &iv)) {
         plot->setAspectRatioMode(static_cast< ASPECTRATIOMODE >(iv));
     }
     if (viewEle.hasAttribute(QStringLiteral("background"))) {
@@ -490,7 +524,11 @@ void load3DViewElement(Qwt3DPlot* plot, const QDomElement& viewEle)
     if (!coordSys) {
         return;
     }
-    if (readIntAttr(viewEle, QStringLiteral("coordstyle"), &iv)) {
+    if (readEnumChecked(viewEle,
+                        QStringLiteral("coordstyle"),
+                        static_cast< int >(NOCOORD),
+                        static_cast< int >(FRAME),
+                        &iv)) {
         coordSys->setStyle(static_cast< COORDSTYLE >(iv));
     }
     if (readDoubleAttr(viewEle, QStringLiteral("ticmajor"), &v0)
@@ -506,7 +544,11 @@ void load3DViewElement(Qwt3DPlot* plot, const QDomElement& viewEle)
     if (readBoolAttr(viewEle, QStringLiteral("autodecoration"), &b)) {
         coordSys->setAutoDecoration(b);
     }
-    if (readIntAttr(viewEle, QStringLiteral("tickposition"), &iv)) {
+    if (readEnumChecked(viewEle,
+                        QStringLiteral("tickposition"),
+                        static_cast< int >(TICK_BOTTOM),
+                        static_cast< int >(TICK_TOP),
+                        &iv)) {
         coordSys->setTickPosition(static_cast< TICKPOSITION >(iv));
     }
     // 运行期颜色：必须在应用主题之后恢复，否则会被主题里的旧颜色覆盖

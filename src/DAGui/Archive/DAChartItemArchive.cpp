@@ -216,6 +216,7 @@ bool DAChartItemArchive::save(DAAbstractArchive* archive,
  *
  * 先读 chart-items.xml 索引，再逐个读 <prefix>/<key> 反序列化并登记到 itemsMgr。
  * 索引缺失（旧工程/空绘图）视为成功且不加载任何图元；索引存在但读不到内容或 XML 损坏返回 false。
+ * 存档未打开（@ref DAAbstractArchive::isOpen 返回 false）直接返回 false，避免把「读不到」误判成旧工程。
  * 单个图元数据缺失或反序列化失败时跳过该图元（与既有行为一致，不中断整体加载），并写入 errorMessage。
  * @note 无法区分「缺失」与「存在但为空」的存档（未覆盖 contains 的存档）仍按「读不到即缺失」处理。
  * @param archive 存档对象
@@ -232,6 +233,15 @@ bool DAChartItemArchive::load(DAAbstractArchive* archive,
     if (!archive || !itemsMgr) {
         if (errorMessage) {
             *errorMessage = QStringLiteral("null archive or items manager");
+        }
+        return false;
+    }
+    // 未打开的存档（zip 未 open/create）读不到任何内容，会被下面的「读不到即缺失」
+    // 语义误判成旧工程/空绘图而静默返回 true；这里必须前置拒绝。
+    if (!archive->isOpen()) {
+        qWarning() << "DAChartItemArchive::load: archive is not open, prefix" << prefix;
+        if (errorMessage) {
+            *errorMessage = QStringLiteral("archive is not open");
         }
         return false;
     }

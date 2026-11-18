@@ -61,6 +61,9 @@ public:
 	// 检查存档内是否存在指定路径（默认返回false；能区分“存在但为空”的存档如zip应覆盖）
 	virtual bool contains(const QString& relatePath) const;
 
+	// 存档是否处于可用状态（已打开/已创建）；默认返回true，能区分打开状态的存档应覆盖
+	virtual bool isOpen() const;
+
 	// 转换为临时路径
 	static QString toTemporaryPath(const QString& path);
 	// 替换文件
