@@ -215,6 +215,8 @@ void DASignalAnalysisView::setParams(const DASignalAnalysisParams& params)
     clearFollowFrameSpectrum();
     // 参数变化后双光标读数（幅值/主峰频率）失效：清掉游标，等用户重新放置
     clearDualCursor();
+    // 参数变化后峰值保持的频率网格/口径都变了：缓冲作废
+    resetPeakHold();
     rebuildSpectrumPlot();
     // 参数变化后热图（窗长/重叠/零填充）与矩形几何都跟着变（评审 U6 / D21）
     rebuildHeatmap();
@@ -559,6 +561,8 @@ void DASignalAnalysisView::rebuildSpectrumPlot()
     mDisplayedFreqs  = freqs;
     mDisplayedValues = values;
     mSpectrumCurve->setSamples(freqs, values);
+    // 峰值保持曲线与频谱曲线同口径重绘（幅值模式变化时数值跟着换算）
+    updatePeakHoldCurve();
     rebuildPeakMarkers();
     updateAxisTitles();
     mSpectrumChart->setAxisAutoScale(QwtPlot::yLeft, true);
@@ -715,6 +719,7 @@ void DASignalAnalysisView::setStft(const DAStftResult& result)
     mStft                    = result;
     if (layoutChanged) {
         clearFollowFrameSpectrum();
+        resetPeakHold();  // 帧栅格变了：峰值保持缓冲作废
     }
     if (mFollowSlider) {
         // STFT 刚算出/换栅格后补请求当前帧（帧号换算依赖 mStft.nperseg/hop）；
@@ -1408,12 +1413,124 @@ bool DASignalAnalysisView::isPeakHoldEnabled() const
 }
 
 /**
- * @brief 开关峰值保持（缓冲与曲线在峰值保持实现里维护）
+ * @brief 开关峰值保持（Max Hold）
+ *
+ * 开启即清空缓冲并从当前帧重新累积（灰虚线曲线只作显示辅助，transient、不参与导出）。
+ * 关闭时清空缓冲并隐藏曲线。
  * @param on true 开启
  */
 void DASignalAnalysisView::setPeakHoldEnabled(bool on)
 {
+    if (mPeakHoldEnabled == on) {
+        return;
+    }
     mPeakHoldEnabled = on;
+    resetPeakHold();
+    if (on) {
+        accumulatePeakHold();  // 已有当前帧谱时立即给出一条初值
+    }
+    updatePeakHoldCurve();
+    if (mSpectrumChart) {
+        mSpectrumChart->replot();
+    }
+}
+
+/**
+ * @brief 清空峰值保持缓冲（开启/切通道/改参数/关闭跟随/手动重置）
+ */
+void DASignalAnalysisView::resetPeakHold()
+{
+    mHoldFreqs.clear();
+    mHoldValues.clear();
+    updatePeakHoldCurve();
+    if (mSpectrumChart) {
+        mSpectrumChart->replot();
+    }
+}
+
+/**
+ * @brief 把当前跟随帧谱并入峰值保持缓冲（频率网格变化时重建缓冲）
+ *
+ * 只在「峰值保持开启 + 跟随播放 + 帧谱有效」时累积；存原始线性幅值的最大值
+ * （显示口径在绘制时换算，切换幅值模式不需要重算）。
+ */
+void DASignalAnalysisView::accumulatePeakHold()
+{
+    if (!mPeakHoldEnabled || !mFollowSlider || !mFollowFrameValid) {
+        return;
+    }
+    if (mFollowFreqs.isEmpty() || mFollowFreqs.size() != mFollowAmplitudes.size()) {
+        return;
+    }
+    const bool gridChanged = (mHoldFreqs.size() != mFollowFreqs.size())
+                             || (!mHoldFreqs.isEmpty()
+                                 && (mHoldFreqs.first() != mFollowFreqs.first()
+                                     || mHoldFreqs.last() != mFollowFreqs.last()));
+    if (gridChanged) {
+        // 网格变了（窗长/跳步/通道/参数变化）：旧缓冲没有意义，按新网格重建
+        mHoldFreqs  = mFollowFreqs;
+        mHoldValues = mFollowAmplitudes;
+    } else {
+        for (int i = 0; i < mFollowAmplitudes.size() && i < mHoldValues.size(); ++i) {
+            const double v = mFollowAmplitudes.at(i);
+            if (!std::isfinite(v)) {
+                continue;
+            }
+            mHoldValues[ i ] = qMax(mHoldValues.at(i), v);
+        }
+    }
+    updatePeakHoldCurve();
+}
+
+/**
+ * @brief 重建峰值保持曲线（灰色虚线，挂在频谱子图上）
+ *
+ * 曲线可能被共享图元树删除：失效时置空并按原样式重建（BLK-03a）。
+ * 幅值按当前显示口径换算（与频谱曲线同口径），因此切换峰值/均方根/dB 只重绘。
+ */
+void DASignalAnalysisView::updatePeakHoldCurve()
+{
+    if (!mSpectrumChart) {
+        return;
+    }
+    // 未开启时不创建曲线（不给图元树增加无用条目）；已存在则清空并隐藏
+    if (!mPeakHoldEnabled) {
+        if (mHoldCurve) {
+            ensureItemAttached(mHoldCurve, mSpectrumChart);
+            if (mHoldCurve) {
+                mHoldCurve->setSamples(QVector< double >(), QVector< double >());
+                mHoldCurve->setVisible(false);
+            }
+        }
+        return;
+    }
+    ensureItemAttached(mHoldCurve, mSpectrumChart);
+    if (!mHoldCurve) {
+        mHoldCurve = new QwtPlotCurve(tr("Max hold"));  // cn:峰值保持
+        QPen pen(QColor(114, 114, 114), 1.0, Qt::DashLine);  // 中性灰虚线（与数据曲线区分）
+        mHoldCurve->setPen(pen);
+        mHoldCurve->attach(mSpectrumChart);
+        mHoldCurve->setZ(21.0);  // 画在频谱曲线之上
+        mSpectrumChart->setItemTransient(mHoldCurve);  // 显示辅助：不进存档、不参与导出
+    }
+    const bool visible = !mHoldFreqs.isEmpty() && mHoldFreqs.size() == mHoldValues.size();
+    if (!visible) {
+        mHoldCurve->setSamples(QVector< double >(), QVector< double >());
+        mHoldCurve->setVisible(false);
+        return;
+    }
+    const double signalPeakCal = signalPeak() * mParams.calibration;
+    QVector< double > values(mHoldValues.size());
+    for (int i = 0; i < mHoldValues.size(); ++i) {
+        values[ i ] = DASignalAmplitude::toDisplay(mHoldValues.at(i),
+                                                   i == 0,
+                                                   mParams.amplitudeMode,
+                                                   mParams.dbReference,
+                                                   mParams.calibration,
+                                                   signalPeakCal);
+    }
+    mHoldCurve->setSamples(mHoldFreqs, values);
+    mHoldCurve->setVisible(true);
 }
 
 /**
@@ -1550,6 +1667,8 @@ void DASignalAnalysisView::setFollowSlider(bool on)
     }
     mFollowSlider = on;
     clearFollowFrameSpectrum();
+    // 跟随开关变化：峰值保持缓冲作废（关闭跟随不再有帧谱来源，重新开始时从头累积）
+    resetPeakHold();
     if (mFollowSlider) {
         requestFollowFrameSpectrum();  // 同步回填会自行重建频谱
     }
@@ -2430,6 +2549,8 @@ void DASignalAnalysisView::setFollowFrameSpectrum(const QVector< double >& freqs
     mFollowFreqs      = freqs;
     mFollowAmplitudes = amplitudes;
     mFollowFrameValid = !mFollowFreqs.isEmpty() && mFollowFreqs.size() == mFollowAmplitudes.size();
+    // 峰值保持：把本帧并入最大值缓冲（网格变化时自动重建）
+    accumulatePeakHold();
     if (mFollowSlider) {
         rebuildSpectrumPlot();
     }
@@ -2505,6 +2626,8 @@ void DASignalAnalysisView::setCurrentChannel(int channel)
     clearFollowFrameSpectrum();
     // 切通道后双光标读数失效
     clearDualCursor();
+    // 切通道后峰值保持缓冲作废
+    resetPeakHold();
     // 曲线可能已被共享图元树删除：失效时置空，不写已释放对象（BLK-03a）
     ensureItemAttached(mEnvelopeCurve, mWaveChart);
     if (mEnvelopeCurve) {
@@ -2914,6 +3037,9 @@ void DASignalAnalysisView::retranslateUi()
     }
     if (ensureItemAttached(mSpectrumCurve, mSpectrumChart)) {
         mSpectrumCurve->setTitle(tr("Amplitude spectrum"));  // cn:幅值谱
+    }
+    if (ensureItemAttached(mHoldCurve, mSpectrumChart)) {
+        mHoldCurve->setTitle(tr("Max hold"));  // cn:峰值保持
     }
     if (ensureItemAttached(mSpectrogramItem, mHeatmapChart)) {
         mSpectrogramItem->setTitle(tr("Spectrogram"));  // cn:时频图

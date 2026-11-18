@@ -907,7 +907,13 @@ void DASignalAnalysisUI::onViewFollowSliderToggled(bool on)
     }
     if (on) {
         updatePeaksForCurrentFrame();
+        // 跟随开启：峰值保持变为可用，刷新「测量 ▾」的门控
+        syncSignalContextControls();
         return;
+    }
+    // 关闭跟随：峰值保持失去逐帧谱来源，直接关掉（缓冲由视图清空），避免留下勾选却不可用的开关
+    if (actionPeakHold && actionPeakHold->isChecked()) {
+        actionPeakHold->setChecked(false);  // 触发 onPeakHoldToggled(false) → 视图停用并清缓冲
     }
     const DASignalPtr current = (mPage) ? mPage->currentSignal() : DASignalPtr();
     DASignalAnalysisView* currentSigView = (mPage && current) ? mPage->viewForSignal(current.get()) : nullptr;
@@ -1572,6 +1578,14 @@ void DASignalAnalysisUI::buildSignalContextCategory()
     actionDualCursor->setObjectName(QStringLiteral("actionSignalDualCursor"));
     actionDualCursor->setCheckable(true);
     connect(actionDualCursor, &QAction::toggled, this, &DASignalAnalysisUI::onDualCursorToggled);
+    // 峰值保持：只在「跟随播放」开启时可用（否则没有逐帧谱来源）
+    actionPeakHold = mMeasureMenu->addAction(tr("Peak hold"));  // cn:峰值保持
+    actionPeakHold->setObjectName(QStringLiteral("actionSignalPeakHold"));
+    actionPeakHold->setCheckable(true);
+    connect(actionPeakHold, &QAction::toggled, this, &DASignalAnalysisUI::onPeakHoldToggled);
+    actionResetPeakHold = mMeasureMenu->addAction(tr("Reset peak hold"));  // cn:重置峰值保持
+    actionResetPeakHold->setObjectName(QStringLiteral("actionSignalResetPeakHold"));
+    connect(actionResetPeakHold, &QAction::triggered, this, &DASignalAnalysisUI::onResetPeakHold);
     actionMeasure->setMenu(mMeasureMenu);
     mPanelTimeFreqView->addLargeAction(actionMeasure);
     // 视图 ▾：时间格式 / 布局比例 / 重置显示（都只影响显示，不重算分析）
@@ -1978,6 +1992,16 @@ void DASignalAnalysisUI::syncSignalContextControls()
         actionDualCursor->setEnabled(hasView);
         actionDualCursor->setChecked(view && view->isDualCursorEnabled());
     }
+    // 峰值保持：只在跟随播放时可用；重置只在峰值保持开启时可用
+    if (actionPeakHold) {
+        const QSignalBlocker blocker(actionPeakHold);
+        const bool follow = (view && view->isFollowSlider());
+        actionPeakHold->setEnabled(hasView && follow);
+        actionPeakHold->setChecked(view && view->isPeakHoldEnabled());
+    }
+    if (actionResetPeakHold) {
+        actionResetPeakHold->setEnabled(hasView && view && view->isPeakHoldEnabled());
+    }
     // 云图设置整组：只在二维热图可见时可用（三维/隐藏时置灰，色标也只有二维有意义）
     const bool heatmapActive = hasView && waterfallMode == 0;
     if (actionColormap) {
@@ -2362,6 +2386,28 @@ void DASignalAnalysisUI::onDualCursorToggled(bool on)
     }
     // 开启双光标会停用「点击定位」：同步一次避免其余门控状态滞后
     syncSignalContextControls();
+}
+
+/**
+ * @brief 「测量 → 峰值保持」开关：跟随播放时按频率网格累积最大值
+ * @param on true 开启
+ */
+void DASignalAnalysisUI::onPeakHoldToggled(bool on)
+{
+    if (DASignalAnalysisView* view = currentView()) {
+        view->setPeakHoldEnabled(on);
+    }
+    syncSignalContextControls();
+}
+
+/**
+ * @brief 「测量 → 重置峰值保持」：清空最大值缓冲（曲线保留为空，等下一帧重新累积）
+ */
+void DASignalAnalysisUI::onResetPeakHold()
+{
+    if (DASignalAnalysisView* view = currentView()) {
+        view->resetPeakHold();
+    }
 }
 
 /**
@@ -3715,7 +3761,11 @@ void DASignalAnalysisUI::restoreState(const QByteArray& json,
             v->setTimeCursorVisible(view.value(QStringLiteral("timeCursor")).toBool(true));
             v->setLinkedZoom(view.value(QStringLiteral("linkedZoom")).toBool(false));
             v->setDualCursorEnabled(view.value(QStringLiteral("dualCursor")).toBool(false));
-            v->setPeakHoldEnabled(view.value(QStringLiteral("peakHold")).toBool(false));
+            // 峰值保持只在「跟随播放」开启时可用，而跟随开关不随工程保存：恢复时一律关闭
+            //（保留 peakHold 键仅作前向兼容），避免出现「勾选了但不可用」的开关
+            if (view.value(QStringLiteral("peakHold")).toBool(false) && v->isFollowSlider()) {
+                v->setPeakHoldEnabled(true);
+            }
             v->setTimeFormat(view.value(QStringLiteral("timeFormat")).toInt(0));
             // 三维瀑布显示状态（D12）：色带 / dB 色域 / 当前迹线高亮 / 图元样式
             const QString waterfallColormap = view.value(QStringLiteral("waterfallColormap")).toString();
@@ -4004,6 +4054,8 @@ void DASignalAnalysisUI::finalize()
     }
     actionLinkedZoom = nullptr;
     actionDualCursor = nullptr;
+    actionPeakHold   = nullptr;
+    actionResetPeakHold = nullptr;
     if (actionExportPeaks) {
         actionExportPeaks->setMenu(nullptr);
     }
@@ -5543,7 +5595,7 @@ void DASignalAnalysisUI::setSignalDependentActionsEnabled(bool on)
         actionWaterfallHide, actionExportPeaks, actionTimeCursor, actionViewOptions,
         actionDisplayReset, actionWaterfallColormap, actionWaterfallHighlight, actionWaterfallSettings,
         actionExportImage,  actionRelinkSource,    actionHeatmapDisplay,  actionMeasure,
-        actionLinkedZoom,   actionDualCursor,
+        actionLinkedZoom,   actionDualCursor,    actionPeakHold,        actionResetPeakHold,
         actionColormap,     actionColorBar
     };
     for (QAction* act : acts) {
@@ -5763,6 +5815,17 @@ void DASignalAnalysisUI::retranslateUi()
         actionDualCursor->setToolTip(
             tr("Click a sub-chart to place cursor A, then B: readouts show delta time/frequency and amplitudes"));
         // cn:点一下子图放 A、再点放 B：读数给出 Δt/Δf 与对应幅值
+    }
+    if (actionPeakHold) {
+        actionPeakHold->setText(tr("Peak hold"));  // cn:峰值保持
+        actionPeakHold->setToolTip(
+            tr("Keep the maximum spectrum while following playback (requires Follow playback)"));
+        // cn:跟随播放时保留历史最大值谱（需先开启跟随播放）
+    }
+    if (actionResetPeakHold) {
+        actionResetPeakHold->setText(tr("Reset peak hold"));  // cn:重置峰值保持
+        actionResetPeakHold->setToolTip(tr("Clear the accumulated maximum spectrum"));
+        // cn:清空已累积的最大值谱
     }
     // 分析设置页参数控件（标签 / combo 项文本；动作文本另见下方「分析」）
     if (mChannelLabel) {

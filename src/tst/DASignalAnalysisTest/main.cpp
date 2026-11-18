@@ -304,6 +304,8 @@ private Q_SLOTS:
     void signalViewWaterfallMode();
     // S6：重复 setStft 复用瀑布图元（指针不变），外部 clearAllData3D 后重建不崩
     void signalViewWaterfallItemReuse();
+    // S11：峰值保持按频率网格取最大值（单调不降）、重置清空、关闭后隐藏
+    void signalViewPeakHoldAccumulates();
     // T8：点击 2D 子图画布即切换当前子图（设置面板 target 跟随）
     void signalViewClickSwitchesCurrentChart();
     // T9：figure XML 保存（角色/峰值/网格比例/非 transient 图元集合）
@@ -1405,6 +1407,51 @@ void DASignalAnalysisTest::signalViewWaterfallItemReuse()
     view.waterfall3DChart()->clearAllData3D();
     view.setStft(stft);
     QVERIFY2(view.waterfall3DItem() != nullptr, "the waterfall item should be rebuilt after clearAllData3D()");
+}
+
+/**
+ * @brief S11：峰值保持按频率网格取最大值（单调不降）、重置清空、关闭后隐藏
+ */
+void DASignalAnalysisTest::signalViewPeakHoldAccumulates()
+{
+    if (!openGLAvailable()) {
+        QSKIP("OpenGL is not available: skip the peak hold test");
+    }
+    DA::DASignalAnalysisView view(makeTestSignal());
+    view.setFollowSlider(true);
+    view.setPeakHoldEnabled(true);
+    const QVector< double > freqs = { 0.0, 10.0, 20.0 };
+    view.setFollowFrameSpectrum(freqs, { 1.0, 5.0, 2.0 });
+    // 找到峰值保持曲线（灰虚线，标题 Max hold）
+    QwtPlotCurve* hold = nullptr;
+    const QList< QwtPlotItem* > items = view.spectrumChart()->itemList();
+    for (QwtPlotItem* item : items) {
+        auto* curve = dynamic_cast< QwtPlotCurve* >(item);
+        if (curve && curve->title().text() == QStringLiteral("Max hold")) {
+            hold = curve;
+            break;
+        }
+    }
+    QVERIFY2(hold != nullptr, "the max hold curve should be created when peak hold is enabled");
+    QVERIFY(hold->isVisible());
+    QVERIFY(view.spectrumChart()->isItemTransient(hold));
+    QCOMPARE(hold->dataSize(), 3);
+    QCOMPARE(hold->maxYValue(), 5.0);
+    QCOMPARE(hold->minYValue(), 1.0);
+    // 第二帧：逐频点取最大值（0 Hz 1→3、10 Hz 5→2 保持 5、20 Hz 2→9）
+    view.setFollowFrameSpectrum(freqs, { 3.0, 2.0, 9.0 });
+    QCOMPARE(hold->maxYValue(), 9.0);
+    QCOMPARE(hold->minYValue(), 3.0);
+    // 更小的一帧不会降低最大值（单调不降）
+    view.setFollowFrameSpectrum(freqs, { 0.5, 0.5, 0.5 });
+    QCOMPARE(hold->maxYValue(), 9.0);
+    QCOMPARE(hold->minYValue(), 3.0);
+    // 手动重置：缓冲清空（曲线仍在，但无数据）
+    view.resetPeakHold();
+    QCOMPARE(hold->dataSize(), 0);
+    // 关闭峰值保持：曲线隐藏
+    view.setPeakHoldEnabled(false);
+    QVERIFY(!hold->isVisible());
 }
 
 /**

@@ -109,6 +109,8 @@ public:
     // 峰值保持（Max Hold，默认关；只在跟随播放时有效）
     bool isPeakHoldEnabled() const;
     void setPeakHoldEnabled(bool on);
+    // 清空峰值保持缓冲（开启时/切通道/改参数/关闭跟随时由内部调用，丝带另有手动重置）
+    void resetPeakHold();
     // 时间轴标签格式：0=秒 / 1=毫秒 / 2=mm:ss.s（作用到波形 x 与云图 x）
     int timeFormat() const;
     void setTimeFormat(int format);
@@ -278,6 +280,10 @@ private:
     void syncLinkedAxesFrom(DAChartWidget* source);
     // 断开全部联动缩放连接
     void disconnectLinkedZoom();
+    // 按要求重建峰值保持曲线（灰虚线，transient；不参与导出）
+    void updatePeakHoldCurve();
+    // 把当前跟随帧谱并入峰值保持缓冲（网格变化时重建）
+    void accumulatePeakHold();
     // 双光标测量：在当前 2D 子图上放置 A/B，刷新读数文本
     void placeDualCursor(DAChartWidget* chart, const QPoint& canvasPos);
     void updateDualCursorReadout();
@@ -358,6 +364,10 @@ private:
     QwtPlotMarker* mDualCursorB { nullptr };
     QwtPlotMarker* mDualCursorDelta { nullptr };
     bool mDualCursorNextIsB { false };
+    // 峰值保持（Max Hold）：跟随帧谱按频率网格取最大值，一条灰虚线（transient，不参与导出）
+    QVector< double > mHoldFreqs;
+    QVector< double > mHoldValues;  ///< 原始线性幅值的最大值（显示口径在绘制时换算）
+    QwtPlotCurve* mHoldCurve { nullptr };
     // 时间轴格式：0=秒 / 1=毫秒 / 2=mm:ss.s
     int mTimeFormat { 0 };
 
