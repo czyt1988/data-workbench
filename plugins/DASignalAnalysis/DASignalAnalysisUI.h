@@ -206,6 +206,8 @@ private Q_SLOTS:
     void onWaterfallColormapTriggered(QAction* action);
     void onWaterfallDbFloorChanged(double value);
     void onWaterfallHighlightToggled(bool on);
+    // 瀑布图设置：切右侧 3D 设置面板到当前瀑布图元
+    void onWaterfallSettingsRequested();
     // 「视图 ▾」时间格式子菜单：写当前视图的时间轴标签格式
     void onTimeFormatTriggered(QAction* action);
     // 「视图 ▾」布局比例子菜单：套用 2×2 网格比例预设
@@ -493,6 +495,7 @@ public:
     QAction* actionColorBar { nullptr };          ///< 云图设置：色标显隐（勾选）
     QAction* actionWaterfallColormap { nullptr }; ///< 瀑布图设置：色带（带菜单，只影响三维瀑布）
     QAction* actionWaterfallHighlight { nullptr }; ///< 瀑布图设置：当前迹线高亮（勾选）
+    QAction* actionWaterfallSettings { nullptr };  ///< 瀑布图设置：切右侧 3D 面板（图元详细样式）
 
     //===================================================
     // 导出（Export）

@@ -36,6 +36,8 @@ public:
 
     // 激活状态下刷新设置面板 target 与图元树当前 figure（切信号/子图时调用）
     void refreshTarget();
+    // 把右侧 3D 设置面板切到当前三维瀑布图元（丝带「瀑布设置…」快捷入口）
+    void showWaterfallItemSetting();
     // 是否处于激活状态
     bool isActive() const;
 

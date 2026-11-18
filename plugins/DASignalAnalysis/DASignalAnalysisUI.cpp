@@ -1598,6 +1598,14 @@ void DASignalAnalysisUI::buildSignalContextCategory()
     // 三维瀑布有自己独立的色带与 dB 色域（D12），与二维云图互不影响
     mPanelWaterfall = mContextDisplayPage->addPanel(tr("Waterfall"));  // cn:瀑布图设置
     mPanelWaterfall->setObjectName(QString::fromUtf8(cPanelContextWaterfallName));
+    // 瀑布设置…：切右侧 3D 设置面板并定位到瀑布图元（详细样式在那里改）
+    actionWaterfallSettings =
+        createIconAction("actionSignalWaterfallSettings", pluginIcon("analysisSetting.svg"), false);
+    connect(actionWaterfallSettings,
+            &QAction::triggered,
+            this,
+            &DASignalAnalysisUI::onWaterfallSettingsRequested);
+    mPanelWaterfall->addLargeAction(actionWaterfallSettings);
     actionWaterfallColormap =
         createIconAction("actionSignalWaterfallColormap", pluginIcon("colorMap.svg"), false);
     mWaterfallColormapMenu  = makeColormapMenu(&mWaterfallColormapGroup);
@@ -1903,6 +1911,9 @@ void DASignalAnalysisUI::syncSignalContextControls()
     }
     // 瀑布图设置整组：只在三维瀑布可见时可用
     const bool waterfallActive = hasView && waterfallMode == 1;
+    if (actionWaterfallSettings) {
+        actionWaterfallSettings->setEnabled(waterfallActive);
+    }
     if (actionWaterfallColormap) {
         actionWaterfallColormap->setEnabled(waterfallActive);
     }
@@ -2152,6 +2163,31 @@ void DASignalAnalysisUI::onWaterfallHighlightToggled(bool on)
 {
     if (DASignalAnalysisView* view = currentView()) {
         view->setWaterfallHighlight(on);
+    }
+}
+
+/**
+ * @brief 「瀑布图设置 → 瀑布设置…」：切右侧 3D 设置面板并定位到当前瀑布图元
+ *
+ * 丝带只留常用项（色带/dB/高亮），几何样式/着色/不透明度/深度方向/描边都在 3D 面板里改。
+ * 时频分析还没算完（图元未生成）时给出可理解提示，不静默失败。
+ */
+void DASignalAnalysisUI::onWaterfallSettingsRequested()
+{
+    DASignalAnalysisView* view = currentView();
+    if (nullptr == view) {
+        return;
+    }
+    if (nullptr == view->waterfall3DItem()) {
+        if (mUI) {
+            mUI->addInfoLogMessage(
+                tr("The 3D waterfall is not ready yet; its item appears after the time-frequency analysis finishes."));
+            // cn:三维瀑布尚未生成；时频分析完成后才会出现对应图元。
+        }
+        return;
+    }
+    if (mSettingContext) {
+        mSettingContext->showWaterfallItemSetting();
     }
 }
 
@@ -3887,7 +3923,8 @@ void DASignalAnalysisUI::finalize()
             actionWaterfallHide,  actionExportPeaks,
             actionExportImage,    actionRelinkSource,
             actionTimeCursor,     actionViewOptions,     actionColormap,
-            actionColorBar,       actionWaterfallColormap, actionWaterfallHighlight
+            actionColorBar,       actionWaterfallColormap, actionWaterfallHighlight,
+            actionWaterfallSettings
         };
         for (QAction* act : allActions) {
             if (act) {
@@ -3925,6 +3962,7 @@ void DASignalAnalysisUI::finalize()
     actionColorBar          = nullptr;
     actionWaterfallColormap = nullptr;
     actionWaterfallHighlight = nullptr;
+    actionWaterfallSettings = nullptr;
     mPanelImportExport      = nullptr;
     mPanelPreprocess        = nullptr;
     mPanelSpectrum          = nullptr;
@@ -5294,7 +5332,7 @@ void DASignalAnalysisUI::setSignalDependentActionsEnabled(bool on)
         actionAnalysisSetting, actionPeakMarker, actionPeakTopN,
         actionPeakMarkerDisplay, actionPeakWindow, actionWaterfall2D, actionWaterfall3D,
         actionWaterfallHide, actionExportPeaks, actionTimeCursor, actionViewOptions,
-        actionDisplayReset, actionWaterfallColormap, actionWaterfallHighlight,
+        actionDisplayReset, actionWaterfallColormap, actionWaterfallHighlight, actionWaterfallSettings,
         actionExportImage,  actionRelinkSource,
         actionColormap,     actionColorBar
     };
@@ -5593,6 +5631,12 @@ void DASignalAnalysisUI::retranslateUi()
         // cn:热图色标下限（dB）
     }
     // 瀑布图设置（只影响三维瀑布）
+    if (actionWaterfallSettings) {
+        actionWaterfallSettings->setText(tr("Waterfall Settings..."));  // cn:瀑布设置...
+        actionWaterfallSettings->setToolTip(
+            tr("Open the 3D settings panel for the waterfall item (style, color mode, opacity, outline)"));
+        // cn:在右侧 3D 设置面板里编辑瀑布图元（几何样式/着色方式/不透明度/描边）
+    }
     if (actionWaterfallColormap) {
         actionWaterfallColormap->setText(tr("Color Map"));  // cn:色带
         actionWaterfallColormap->setToolTip(tr("Color map of the 3D waterfall"));  // cn:三维瀑布的色带

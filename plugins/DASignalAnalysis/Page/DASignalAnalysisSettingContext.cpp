@@ -12,6 +12,7 @@
 #include "DAChartSettingWidget.h"
 #include "DAChartWidget.h"
 #include "DAFigureWidget.h"
+#include "qwt3d_waterfall.h"
 // DAInterface
 #include "DADockingAreaInterface.h"
 // 插件
@@ -222,6 +223,42 @@ void DASignalAnalysisSettingContext::refreshTarget()
     updateChartManageTarget();
     if (DADockingAreaInterface* dockingArea = mUI->getDockingArea()) {
         dockingArea->notifySettingContextChanged();
+    }
+}
+
+/**
+ * @brief 把右侧 3D 设置面板切到当前三维瀑布图元
+ *
+ * 丝带「信号显示 → 瀑布图设置 → 瀑布设置…」的唯一落点：显示 3D 设置页、
+ * target 设为当前 3D 子图，并在图元下拉里选中瀑布图元（详细样式都在这里改，
+ * 丝带只留色带/dB/高亮三个常用项）。图元尚未生成（时频分析未完成）时不做任何事，
+ * 由调用方给出提示。
+ */
+void DASignalAnalysisSettingContext::showWaterfallItemSetting()
+{
+    if (!mUI) {
+        return;
+    }
+    DADockingAreaInterface* dockingArea = mUI->getDockingArea();
+    if (nullptr == dockingArea) {
+        return;
+    }
+    DASignalAnalysisView* view = currentView();
+    if (nullptr == view) {
+        return;
+    }
+    Qwt3DWaterfall* waterfallItem = view->waterfall3DItem();
+    if (nullptr == waterfallItem) {
+        return;  // 图元未生成：没有可定位的对象
+    }
+    DASettingContainerWidget* container = dockingArea->getSettingContainerWidget();
+    if (nullptr == container) {
+        return;
+    }
+    container->showChart3DSettingWidget();
+    if (DAChart3DSettingWidget* chart3DSetting = container->getChart3DSettingWidget()) {
+        chart3DSetting->setPlot3D(view->current3DChart());
+        chart3DSetting->setCurrentPlot3DItem(waterfallItem);
     }
 }
 
