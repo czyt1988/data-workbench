@@ -27,6 +27,7 @@ da_add_test(
             ${_signal_plugin_dir}/Archive/DASignalFigureArchive.cpp
             ${_signal_plugin_dir}/Dialogs/DAPeakMarkerDisplayDialog.cpp
             ${_signal_plugin_dir}/Page/DAPeakCurvePlotSamples.cpp
+            ${_signal_plugin_dir}/Page/DADualCursorReadout.cpp
             ${_signal_plugin_dir}/Page/DAPeakMarkerLabel.cpp
             ${_signal_plugin_dir}/Page/DAPeakMarkerSamples.cpp
             ${_signal_plugin_dir}/Page/DASignalAnalysisView.cpp

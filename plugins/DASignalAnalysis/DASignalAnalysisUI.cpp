@@ -1568,6 +1568,10 @@ void DASignalAnalysisUI::buildSignalContextCategory()
     actionLinkedZoom->setObjectName(QStringLiteral("actionSignalLinkedZoom"));
     actionLinkedZoom->setCheckable(true);
     connect(actionLinkedZoom, &QAction::toggled, this, &DASignalAnalysisUI::onLinkedZoomToggled);
+    actionDualCursor = mMeasureMenu->addAction(tr("Dual cursors"));  // cn:双光标测量
+    actionDualCursor->setObjectName(QStringLiteral("actionSignalDualCursor"));
+    actionDualCursor->setCheckable(true);
+    connect(actionDualCursor, &QAction::toggled, this, &DASignalAnalysisUI::onDualCursorToggled);
     actionMeasure->setMenu(mMeasureMenu);
     mPanelTimeFreqView->addLargeAction(actionMeasure);
     // 视图 ▾：时间格式 / 布局比例 / 重置显示（都只影响显示，不重算分析）
@@ -1969,6 +1973,11 @@ void DASignalAnalysisUI::syncSignalContextControls()
         actionLinkedZoom->setEnabled(hasView);
         actionLinkedZoom->setChecked(view && view->isLinkedZoom());
     }
+    if (actionDualCursor) {
+        const QSignalBlocker blocker(actionDualCursor);
+        actionDualCursor->setEnabled(hasView);
+        actionDualCursor->setChecked(view && view->isDualCursorEnabled());
+    }
     // 云图设置整组：只在二维热图可见时可用（三维/隐藏时置灰，色标也只有二维有意义）
     const bool heatmapActive = hasView && waterfallMode == 0;
     if (actionColormap) {
@@ -2064,13 +2073,13 @@ void DASignalAnalysisUI::syncSignalContextControls()
     // 当前 2D 子图（「点击波形即定位」互斥用）
     DAChartWidget* chart = (view ? view->currentChart() : nullptr);
     const bool chartAvailable = (chart != nullptr);
-    // 「点击波形即定位」与交互工具互斥（SF-12）：缩放/平移/十字线任一启用时关闭，
-    // 避免按下拖动瞬间播放头跳位；全关时恢复。交互工具由内置「绘图操作」上下文标签
-    // 负责开关，本插件只读取当前子图状态
+    // 「点击波形即定位」与交互工具互斥（SF-12）：缩放/平移/十字线任一启用、或双光标测量开启时
+    // 关闭，避免按下拖动/点放游标时播放头跳位；全关时恢复。交互工具由内置「绘图操作」上下文
+    // 标签负责开关，本插件只读取当前子图状态
     if (view) {
-        const bool seekEnabled =
-            !(chartAvailable && (chart->isZoomEnabled() || chart->isPanEnabled() || chart->isCrosshairEnabled()));
-        view->setSeekEnabled(seekEnabled);
+        const bool toolEnabled =
+            chartAvailable && (chart->isZoomEnabled() || chart->isPanEnabled() || chart->isCrosshairEnabled());
+        view->setSeekEnabled(!toolEnabled && !view->isDualCursorEnabled());
     }
     // 当前 2D 子图可能已被切走：重绑属性变化信号，保证用户经内置「绘图操作」标签
     // 切换缩放/平移/十字线后「点击定位」互斥仍正确（SF-12）
@@ -2340,6 +2349,19 @@ void DASignalAnalysisUI::onLinkedZoomToggled(bool on)
     if (DASignalAnalysisView* view = currentView()) {
         view->setLinkedZoom(on);
     }
+}
+
+/**
+ * @brief 「测量 → 双光标测量」开关：在当前 2D 子图上依次点放 A/B
+ * @param on true 开启
+ */
+void DASignalAnalysisUI::onDualCursorToggled(bool on)
+{
+    if (DASignalAnalysisView* view = currentView()) {
+        view->setDualCursorEnabled(on);
+    }
+    // 开启双光标会停用「点击定位」：同步一次避免其余门控状态滞后
+    syncSignalContextControls();
 }
 
 /**
@@ -3981,6 +4003,7 @@ void DASignalAnalysisUI::finalize()
         mMeasureMenu = nullptr;
     }
     actionLinkedZoom = nullptr;
+    actionDualCursor = nullptr;
     if (actionExportPeaks) {
         actionExportPeaks->setMenu(nullptr);
     }
@@ -5520,7 +5543,7 @@ void DASignalAnalysisUI::setSignalDependentActionsEnabled(bool on)
         actionWaterfallHide, actionExportPeaks, actionTimeCursor, actionViewOptions,
         actionDisplayReset, actionWaterfallColormap, actionWaterfallHighlight, actionWaterfallSettings,
         actionExportImage,  actionRelinkSource,    actionHeatmapDisplay,  actionMeasure,
-        actionLinkedZoom,
+        actionLinkedZoom,   actionDualCursor,
         actionColormap,     actionColorBar
     };
     for (QAction* act : acts) {
@@ -5734,6 +5757,12 @@ void DASignalAnalysisUI::retranslateUi()
         actionLinkedZoom->setToolTip(
             tr("Keep the waveform/heatmap time axes and the spectrum/heatmap frequency axes in sync"));
         // cn:波形与云图的时间轴、频谱与云图的频率轴保持同步缩放
+    }
+    if (actionDualCursor) {
+        actionDualCursor->setText(tr("Dual cursors"));  // cn:双光标测量
+        actionDualCursor->setToolTip(
+            tr("Click a sub-chart to place cursor A, then B: readouts show delta time/frequency and amplitudes"));
+        // cn:点一下子图放 A、再点放 B：读数给出 Δt/Δf 与对应幅值
     }
     // 分析设置页参数控件（标签 / combo 项文本；动作文本另见下方「分析」）
     if (mChannelLabel) {

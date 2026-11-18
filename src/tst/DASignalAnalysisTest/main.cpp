@@ -45,6 +45,7 @@
 #include "Dialogs/DAPeakMarkerDisplayDialog.h"
 #include "Form/DASignalFormSpecBuilder.h"
 #include "Page/DAPeakCurvePlotSamples.h"
+#include "Page/DADualCursorReadout.h"
 #include "Page/DAPeakMarkerLabel.h"
 #include "Page/DAPeakMarkerSamples.h"
 #include "Page/DASignalAnalysisView.h"
@@ -333,6 +334,8 @@ private Q_SLOTS:
     void waterfallTraceTimesAndDbConversion();
     // 色带回读：22 个预设各自匹配；自定义/空色图返回空
     void colormapPresetMatching();
+    // 双光标读数：波形 Δt/1Δt、频谱插值 Δf/ΔA、越界钳制与云图主峰频率
+    void dualCursorReadout();
     // dB 参考由幅值口径派生（D7）：dbRef1 → one，其余 → fullScale，旧档矛盾组合按幅值口径解释
     void dbReferenceDerivedFromAmplitudeMode();
 };
@@ -2437,6 +2440,88 @@ void DASignalAnalysisTest::colormapPresetMatching()
     // 只有两个端点色、与预设不同：同样返回空
     const QwtLinearColorMap twoStop(QColor(10, 20, 30), QColor(200, 150, 100));
     QCOMPARE(daMatchColormapPreset(&twoStop), QString());
+}
+
+/**
+ * @brief 双光标读数：波形 Δt/1Δt、频谱插值 Δf/ΔA、越界钳制与云图主峰频率
+ */
+void DASignalAnalysisTest::dualCursorReadout()
+{
+    using DA::daDualCursorReadoutSpectrum;
+    using DA::daDualCursorReadoutTime;
+    using DA::daInterpolateCurve;
+    using DA::daStftColumnPeakFrequency;
+
+    // 时间轴：Δt 有符号、1/Δt 用 |Δt|
+    const DA::DADualCursorReadout time = daDualCursorReadoutTime(100.5, 100.75);
+    QVERIFY(time.valid);
+    QVERIFY(time.timeAxis);
+    QCOMPARE(time.a, 100.5);
+    QCOMPARE(time.b, 100.75);
+    QVERIFY(qAbs(time.delta - 0.25) < 1e-12);
+    QVERIFY(qAbs(time.equivalentHz - 4.0) < 1e-9);
+    // B 在 A 左边：Δt 为负，等效频率仍取 |Δt|
+    const DA::DADualCursorReadout reversed = daDualCursorReadoutTime(2.0, 1.5);
+    QVERIFY(qAbs(reversed.delta + 0.5) < 1e-12);
+    QVERIFY(qAbs(reversed.equivalentHz - 2.0) < 1e-9);
+    // Δ=0：等效频率 0（不做除零）
+    const DA::DADualCursorReadout samePoint = daDualCursorReadoutTime(3.0, 3.0);
+    QCOMPARE(samePoint.delta, 0.0);
+    QCOMPARE(samePoint.equivalentHz, 0.0);
+
+    // 线性插值：端点、区间中点、越界钳制、空曲线
+    const QVector< double > xs = { 0.0, 10.0, 20.0 };
+    const QVector< double > ys = { 0.0, 100.0, 0.0 };
+    bool ok                    = false;
+    QCOMPARE(daInterpolateCurve(xs, ys, -5.0, &ok), 0.0);
+    QVERIFY(ok);
+    QCOMPARE(daInterpolateCurve(xs, ys, 5.0, &ok), 50.0);
+    QVERIFY(ok);
+    QCOMPARE(daInterpolateCurve(xs, ys, 15.0, &ok), 50.0);
+    QVERIFY(ok);
+    QCOMPARE(daInterpolateCurve(xs, ys, 25.0, &ok), 0.0);
+    QVERIFY(ok);
+    QCOMPARE(daInterpolateCurve(QVector< double >(), QVector< double >(), 1.0, &ok), 0.0);
+    QVERIFY(!ok);
+
+    // 频谱轴：A/B 频率 + 曲线插值幅值 + Δf/ΔA
+    const DA::DADualCursorReadout spec = daDualCursorReadoutSpectrum(5.0, 15.0, xs, ys);
+    QVERIFY(spec.valid);
+    QVERIFY(!spec.timeAxis);
+    QVERIFY(spec.hasValues);
+    QVERIFY(qAbs(spec.aValue - 50.0) < 1e-12);
+    QVERIFY(qAbs(spec.bValue - 50.0) < 1e-12);
+    QVERIFY(qAbs(spec.delta - 10.0) < 1e-12);
+    QVERIFY(qAbs(spec.deltaValue) < 1e-12);
+    // 越界频率钳制到端点幅值
+    const DA::DADualCursorReadout clamped = daDualCursorReadoutSpectrum(-100.0, 100.0, xs, ys);
+    QVERIFY(clamped.hasValues);
+    QCOMPARE(clamped.aValue, 0.0);
+    QCOMPARE(clamped.bValue, 0.0);
+    // 没有曲线：valid 但无幅值
+    const DA::DADualCursorReadout noCurve =
+        daDualCursorReadoutSpectrum(1.0, 2.0, QVector< double >(), QVector< double >());
+    QVERIFY(noCurve.valid);
+    QVERIFY(!noCurve.hasValues);
+
+    // 云图主峰频率：该列最大幅值对应的频率行；列号越界钳制；无效栅格返回 false
+    DA::DAStftResult stft;
+    stft.rows    = 3;
+    stft.columns = 2;
+    stft.times   = { 0.0, 0.5 };
+    stft.freqs   = { 0.0, 10.0, 20.0 };
+    for (int c = 0; c < stft.columns; ++c) {
+        for (int r = 0; r < stft.rows; ++r) {
+            stft.values.append(0.1 * (r + 1) * (c + 1));
+        }
+    }
+    QVERIFY(stft.isValid());
+    QCOMPARE(daStftColumnPeakFrequency(stft, 0, &ok), 20.0);
+    QVERIFY(ok);
+    QCOMPARE(daStftColumnPeakFrequency(stft, 99, &ok), 20.0);  // 越界钳到最后一列
+    QVERIFY(ok);
+    QCOMPARE(daStftColumnPeakFrequency(DA::DAStftResult(), 0, &ok), 0.0);
+    QVERIFY(!ok);
 }
 
 QTEST_MAIN(DASignalAnalysisTest)

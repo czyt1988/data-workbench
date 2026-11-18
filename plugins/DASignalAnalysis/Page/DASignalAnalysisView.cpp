@@ -33,6 +33,7 @@
 #include "qwt_scale_engine.h"
 #include "qwt_scale_widget.h"
 #include "qwt_symbol.h"
+#include "qwt_text.h"
 // DA
 #include "DAChart3DWidget.h"
 #include "DAChartWidget.h"
@@ -40,6 +41,7 @@
 #include "Analysis/DASignalAmplitude.h"
 #include "Page/DAPeakMarkerLabel.h"
 #include "Page/DAPeakMarkerSamples.h"
+#include "Page/DADualCursorReadout.h"
 #include "Render/DAColormapMatch.h"
 #include "Render/DAStftRasterData.h"
 #include "Render/DATimeScaleDraw.h"
@@ -211,6 +213,8 @@ void DASignalAnalysisView::setParams(const DASignalAnalysisParams& params)
     mPeakMarkersRestored = false;
     // 段长/跳步/窗/预处理口径都随参数变化：跟随帧谱快照作废（等新 STFT 算出后按新栅格重取）
     clearFollowFrameSpectrum();
+    // 参数变化后双光标读数（幅值/主峰频率）失效：清掉游标，等用户重新放置
+    clearDualCursor();
     rebuildSpectrumPlot();
     // 参数变化后热图（窗长/重叠/零填充）与矩形几何都跟着变（评审 U6 / D21）
     rebuildHeatmap();
@@ -740,6 +744,8 @@ void DASignalAnalysisView::setWaterfallMode(int mode)
     }
     mHeatmapChart->setVisible(mWaterfallMode == 0);
     mWaterfallChart->setVisible(mWaterfallMode == 1);
+    // 切 2D/3D/隐藏即换子图：双光标的当前子图可能已不可见，清掉重放
+    clearDualCursor();
     // 二维/三维切换会改变热图的可见与轴范围：当前帧标记的像素节流缓存作废
     mHeatmapCursorApplied = false;
     if (mWaterfallMode == 1) {
@@ -1119,6 +1125,197 @@ void DASignalAnalysisView::refreshLinkedZoomConnections()
 }
 
 /**
+ * @brief 开关双光标测量
+ *
+ * 开启时停用「点击波形即定位」（避免一次点击同时定位播放头与放游标），关闭时清理全部标记。
+ * 读数：时间轴给 A/B 时间、Δt、1/Δt，云图另给 A 所在列主峰频率；频谱给 A/B 频率、
+ * A/B 幅值（按已绘制曲线插值）、Δf 与 ΔA。
+ * @param on true 开启
+ */
+void DASignalAnalysisView::setDualCursorEnabled(bool on)
+{
+    if (mDualCursorEnabled == on) {
+        return;
+    }
+    mDualCursorEnabled = on;
+    if (!on) {
+        clearDualCursor();
+    }
+    setSeekEnabled(!on);
+}
+
+/**
+ * @brief 在当前 2D 子图上放置双光标（点击依次放 A / B / 再放 A）
+ *
+ * 换子图时先清掉上一对游标；三个图元都是 transient（不进存档）。
+ * 第三次点击重新放 A 时把 B 隐藏，读数只剩 A。
+ * @param chart 目标子图
+ * @param canvasPos 画布坐标
+ */
+void DASignalAnalysisView::placeDualCursor(DAChartWidget* chart, const QPoint& canvasPos)
+{
+    if (nullptr == chart) {
+        return;
+    }
+    if (mDualCursorChart != chart) {
+        clearDualCursor();
+        mDualCursorChart  = chart;
+        mDualCursorNextIsB = false;
+    }
+    // 图元可能被共享图元树删除：失效时置空并按原样式重建（BLK-03a）
+    auto ensureMarker = [this](QwtPlotMarker*& marker, const QColor& color, Qt::Alignment alignment) {
+        if (marker && !mDualCursorChart->itemList().contains(marker)) {
+            marker = nullptr;
+        }
+        if (!marker) {
+            marker = new QwtPlotMarker();
+            marker->setLineStyle(QwtPlotMarker::VLine);
+            marker->setLinePen(QPen(color, 1.2, Qt::SolidLine));
+            marker->setLabelAlignment(alignment);
+            marker->setVisible(false);
+            marker->attach(mDualCursorChart);
+            mDualCursorChart->setItemTransient(marker);  // 交互装饰：不进存档
+        }
+    };
+    ensureMarker(mDualCursorA, QColor(82, 128, 193), Qt::AlignBottom | Qt::AlignLeft);   // 主蓝
+    ensureMarker(mDualCursorB, QColor(206, 96, 67), Qt::AlignBottom | Qt::AlignRight);  // 橙红
+    ensureMarker(mDualCursorDelta, QColor(93, 109, 126), Qt::AlignTop | Qt::AlignHCenter);  // 深蓝灰
+
+    const double x = chart->invTransform(QwtPlot::xBottom, canvasPos.x());
+    if (mDualCursorNextIsB) {
+        mDualCursorB->setXValue(x);
+        mDualCursorB->setVisible(true);
+        mDualCursorNextIsB = false;
+    } else {
+        mDualCursorA->setXValue(x);
+        mDualCursorA->setVisible(true);
+        mDualCursorB->setVisible(false);  // 重新放 A：上一对的 B 作废
+        mDualCursorNextIsB = true;
+    }
+    updateDualCursorReadout();
+}
+
+/**
+ * @brief 刷新双光标读数文本并重绘
+ *
+ * 文本放在各自竖线旁的顶部：A 左对齐、B 右对齐、Δ 顶部居中；单位用符号（s/Hz），
+ * 时间格式跟随「视图 → 时间格式」。读数计算全部走纯函数 DADualCursorReadout。
+ */
+void DASignalAnalysisView::updateDualCursorReadout()
+{
+    if (nullptr == mDualCursorChart || nullptr == mDualCursorA || nullptr == mDualCursorDelta) {
+        return;
+    }
+    const QwtInterval xRange = mDualCursorChart->axisScaleDiv(QwtPlot::xBottom).interval();
+    const QwtInterval yRange = mDualCursorChart->axisScaleDiv(QwtPlot::yLeft).interval();
+    const double yTop        = yRange.isValid() ? yRange.maxValue() : 0.0;
+    mDualCursorA->setYValue(yTop);
+    if (mDualCursorB) {
+        mDualCursorB->setYValue(yTop);
+    }
+    // Δ 文本固定在可见区顶部居中：不随游标移动，避免与 A/B 文本挤在一起
+    const double xCenter = xRange.isValid() ? (xRange.minValue() + xRange.maxValue()) / 2.0 : 0.0;
+    mDualCursorDelta->setXValue(xCenter);
+    mDualCursorDelta->setYValue(yTop);
+
+    auto setLabel = [](QwtPlotMarker* marker, const QString& text, const QColor& color) {
+        QwtText label(text, QwtText::PlainText);
+        label.setColor(color);
+        marker->setLabel(label);
+    };
+    const QColor colorA(82, 128, 193);
+    const QColor colorB(206, 96, 67);
+    const QColor colorDelta(93, 109, 126);
+    // 时间轴标签的单位后缀（mm:ss 自带格式，不再加单位）
+    auto timeUnit = [this]() -> QString {
+        switch (mTimeFormat) {
+        case 1:
+            return QStringLiteral(" ms");
+        case 2:
+            return QString();
+        default:
+            return QStringLiteral(" s");
+        }
+    };
+    const bool timeAxis = (mDualCursorChart != mSpectrumChart);
+    if (timeAxis) {
+        const DADualCursorReadout readout =
+            daDualCursorReadoutTime(mDualCursorA->xValue(), mDualCursorB->xValue());
+        setLabel(mDualCursorA, daFormatTimeAxisLabel(readout.a, mTimeFormat, mTimeOrigin) + timeUnit(), colorA);
+        if (mDualCursorB) {
+            setLabel(mDualCursorB, daFormatTimeAxisLabel(readout.b, mTimeFormat, mTimeOrigin) + timeUnit(), colorB);
+        }
+        QString deltaText = QStringLiteral("Δt %1 · 1/Δt %2 Hz")
+                                .arg(QString::number(readout.delta, 'g', 6), QString::number(readout.equivalentHz, 'g', 6));
+        // 云图额外给 A 所在列的主峰频率（从当前 STFT 栅格取该列最大行）
+        if (mDualCursorChart == mHeatmapChart && mStft.isValid()) {
+            const double relative = readout.a - mTimeOrigin;
+            int column            = 0;
+            double bestDistance   = std::numeric_limits< double >::infinity();
+            for (int c = 0; c < mStft.times.size(); ++c) {
+                const double distance = std::fabs(mStft.times.at(c) - relative);
+                if (distance < bestDistance) {
+                    bestDistance = distance;
+                    column       = c;
+                }
+            }
+            bool peakOk = false;
+            const double peakFrequency = daStftColumnPeakFrequency(mStft, column, &peakOk);
+            if (peakOk) {
+                deltaText += tr(" · peak %1 Hz").arg(QString::number(peakFrequency, 'g', 6));
+                // cn: · 主峰 %1 赫兹
+            }
+        }
+        setLabel(mDualCursorDelta, deltaText, colorDelta);
+        // 两个游标都放好才显示 Δ 文本
+        mDualCursorDelta->setVisible(!mDualCursorNextIsB);
+    } else {
+        const DADualCursorReadout readout = daDualCursorReadoutSpectrum(mDualCursorA->xValue(),
+                                                                       mDualCursorB ? mDualCursorB->xValue()
+                                                                                    : mDualCursorA->xValue(),
+                                                                       mDisplayedFreqs,
+                                                                       mDisplayedValues);
+        setLabel(mDualCursorA, QStringLiteral("%1 Hz").arg(QString::number(readout.a, 'g', 6)), colorA);
+        if (mDualCursorB) {
+            setLabel(mDualCursorB, QStringLiteral("%1 Hz").arg(QString::number(readout.b, 'g', 6)), colorB);
+        }
+        QString deltaText = QStringLiteral("Δf %1 Hz").arg(QString::number(readout.delta, 'g', 6));
+        if (readout.hasValues) {
+            deltaText += QStringLiteral(" · ΔA %1").arg(QString::number(readout.deltaValue, 'g', 6));
+        }
+        setLabel(mDualCursorDelta, deltaText, colorDelta);
+        mDualCursorDelta->setVisible(!mDualCursorNextIsB);
+    }
+    mDualCursorChart->replot();
+}
+
+/**
+ * @brief 清理双光标图元与状态
+ */
+void DASignalAnalysisView::clearDualCursor()
+{
+    DAChartWidget* chart = mDualCursorChart.data();
+    auto clearMarker     = [chart](QwtPlotMarker*& marker) {
+        if (nullptr == marker) {
+            return;
+        }
+        if (chart && chart->itemList().contains(marker)) {
+            marker->detach();
+            delete marker;
+        }
+        marker = nullptr;
+    };
+    clearMarker(mDualCursorA);
+    clearMarker(mDualCursorB);
+    clearMarker(mDualCursorDelta);
+    mDualCursorChart   = nullptr;
+    mDualCursorNextIsB = false;
+    if (chart) {
+        chart->replot();
+    }
+}
+
+/**
  * @brief 2D 子图属性变化：缩放/平移工具开关变化后重新尝试挂接联动
  * @param chart 发生变化的子图（未使用）
  * @param flag 变化的属性集合
@@ -1200,15 +1397,6 @@ void DASignalAnalysisView::disconnectLinkedZoom()
 bool DASignalAnalysisView::isDualCursorEnabled() const
 {
     return mDualCursorEnabled;
-}
-
-/**
- * @brief 开关双光标测量（图元与读数在测量实现里维护）
- * @param on true 开启
- */
-void DASignalAnalysisView::setDualCursorEnabled(bool on)
-{
-    mDualCursorEnabled = on;
 }
 
 /**
@@ -1384,6 +1572,23 @@ bool DASignalAnalysisView::isFollowSlider() const
  */
 bool DASignalAnalysisView::eventFilter(QObject* watched, QEvent* e)
 {
+    // 双光标测量：左键释放时在当前 2D 子图上放置 A/B（点击被接管，不再触发定位/拖动的收尾）
+    if (mDualCursorEnabled && e && e->type() == QEvent::MouseButtonRelease && !mDraggingWindow) {
+        DAChartWidget* chart = nullptr;
+        if (mWaveChart && watched == mWaveChart->canvas()) {
+            chart = mWaveChart;
+        } else if (mSpectrumChart && watched == mSpectrumChart->canvas()) {
+            chart = mSpectrumChart;
+        } else if (mHeatmapChart && watched == mHeatmapChart->canvas()) {
+            chart = mHeatmapChart;
+        }
+        auto* me = static_cast< QMouseEvent* >(e);
+        if (chart && me->button() == Qt::LeftButton) {
+            mPressCandidate = false;  // 本次点击被双光标接管，不再残留拖动候选
+            placeDualCursor(chart, me->pos());
+            return true;
+        }
+    }
     // 点击任意 2D 子图即切换当前子图（T8 设置面板 target 跟随）。
     // 真实点击落在 QwtPlotCanvas 上：qwt figure 的激活事件过滤器原先装在 QwtPlot 上，
     // 收不到 canvas 事件（QwtPicker::eventFilter 恒 return false，并不消费点击）；
@@ -2298,6 +2503,8 @@ void DASignalAnalysisView::setCurrentChannel(int channel)
     mHeatmapCursorApplied = false;
     // 跟随帧谱快照属于上一个通道：作废，等新 STFT 算出后按新栅格重取
     clearFollowFrameSpectrum();
+    // 切通道后双光标读数失效
+    clearDualCursor();
     // 曲线可能已被共享图元树删除：失效时置空，不写已释放对象（BLK-03a）
     ensureItemAttached(mEnvelopeCurve, mWaveChart);
     if (mEnvelopeCurve) {
@@ -2633,6 +2840,8 @@ void DASignalAnalysisView::onFigureCurrentChartChanged(DA::DAChartWidget* chart)
     if (!chart) {
         return;
     }
+    // 切子图：双光标只在当前子图上工作，旧游标清理（用户在新子图上重新放置）
+    clearDualCursor();
     mCurrentIs3D = false;
     Q_EMIT currentSubChartChanged();
 }

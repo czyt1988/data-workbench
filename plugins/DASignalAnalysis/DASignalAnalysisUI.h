@@ -219,6 +219,8 @@ private Q_SLOTS:
     void resetDisplaySettings();
     // 「测量 ▾」联动缩放开关
     void onLinkedZoomToggled(bool on);
+    // 「测量 ▾」双光标测量开关
+    void onDualCursorToggled(bool on);
     // 当前视图「跟随滑块」变化（回勾底部工具栏）
     void onViewFollowSliderToggled(bool on);
     // 当前视图请求跟随帧幅值谱（同步短调用：成功回填、失败静默，不弹消息）
@@ -508,6 +510,7 @@ public:
     QAction* actionDisplayReset { nullptr };      ///< 视图 ▾：重置显示
     QAction* actionMeasure { nullptr };           ///< 时频图设置：测量 ▾（联动缩放/双光标/峰值保持）
     QAction* actionLinkedZoom { nullptr };        ///< 测量 ▾：联动缩放（勾选）
+    QAction* actionDualCursor { nullptr };        ///< 测量 ▾：双光标测量（勾选）
     QAction* actionColormap { nullptr };          ///< 云图设置：色带（带菜单，只影响二维谱图与色标）
     QAction* actionColorBar { nullptr };          ///< 云图设置：色标显隐（勾选）
     QAction* actionHeatmapDisplay { nullptr };    ///< 云图设置：显示 ▾（显示模式/插值）
