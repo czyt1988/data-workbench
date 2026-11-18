@@ -278,8 +278,8 @@ void load3DColorAttributes(Qwt3DCoordinateSystem* coordSys, const QDomElement& v
  *
  * 只在保留式网格启用时写；成员网格坐标由调用方写到各自的 chart/chart3d 节点。
  * 同时仍写 x/y/w/h（由 widgetNormRect 按网格换算而来），供旧版本/降级路径读取。
- * @note QwtFigureGrid 当前没有 spacing 的 getter，写入端不写 wspace/hspace；
- *       读取端仍支持这两个属性，待 qwt 补 getter 后写入端再补。
+ * wspace/hspace 写保留式网格的归一化间距（与 rowSizes/colSizes 同精度），
+ * 旧工程没有这两个属性时读取端按 0 处理。
  */
 void saveGridElement(const DAFigureWidget* fig, QDomDocument* doc, QDomElement& figEle)
 {
@@ -295,6 +295,8 @@ void saveGridElement(const DAFigureWidget* fig, QDomDocument* doc, QDomElement& 
     gridEle.setAttribute(QStringLiteral("cols"), grid->columnCount());
     gridEle.setAttribute(QStringLiteral("rowSizes"), sizeListToString(fig->gridRowSizes()));
     gridEle.setAttribute(QStringLiteral("colSizes"), sizeListToString(fig->gridColumnSizes()));
+    gridEle.setAttribute(QStringLiteral("wspace"), QString::number(grid->wspace(), 'g', 12));
+    gridEle.setAttribute(QStringLiteral("hspace"), QString::number(grid->hspace(), 'g', 12));
     figEle.appendChild(gridEle);
 }
 
@@ -317,7 +319,7 @@ bool loadGridElement(DAFigureWidget* fig, const QDomElement& gridEle)
         qWarning() << "DAXmlHelper::loadElement(figure): enable grid layout failed" << rows << cols;
         return false;
     }
-    // 可选 spacing（写入端暂不写，读取端向前兼容）。
+    // 可选 spacing：旧工程（无这两个属性）按默认值 0 处理，不覆盖已启用的等分轨道。
     // 先设 spacing 再 setGridSizes：setGridSizes 末尾会把撤销基线同步为当前比例。
     bool okW = false;
     bool okH = false;

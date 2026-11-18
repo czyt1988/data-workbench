@@ -265,6 +265,8 @@ private Q_SLOTS:
     void testTransientChartDestruction();
     // 网格 figure XML 往返：<grid> 行列/比例、成员 grid-* 坐标、x/y/w/h 兼容字段
     void testFigureGridXmlRoundTrip();
+    // 网格间距（wspace/hspace）写读往返；旧工程无该属性时按 0 处理
+    void testFigureGridSpacingXmlRoundTrip();
     // 旧工程兼容：无 <grid> 的 figure 走自由布局，且自由布局写出不带网格字段
     void testLegacyFigureWithoutGrid();
     // 非法 grid-* 坐标回退自由布局；缺 x/y/w/h 时回退默认矩形
@@ -828,6 +830,92 @@ void DAChartSerializeTest::testFigureGridXmlRoundTrip()
     verifyLoadedGridPosition(QStringLiteral("grid-c00"), 0, 0, 1, 2);
     verifyLoadedGridPosition(QStringLiteral("grid-c10"), 1, 0, 1, 1);
     verifyLoadedGridPosition(QStringLiteral("grid-c11"), 1, 1, 1, 1);
+}
+
+/**
+ * @brief 网格间距（wspace/hspace）的 XML 往返
+ *
+ * 写入端现在真的写 QwtFigureGrid 保留的间距（与 rowSizes/colSizes 同精度），
+ * 读端恢复同值；旧工程没有这两个属性时按默认 0 处理，不破坏等分轨道。
+ */
+void DAChartSerializeTest::testFigureGridSpacingXmlRoundTrip()
+{
+    const qreal wspace = 0.08;
+    const qreal hspace = 0.12;
+
+    std::unique_ptr< DA::DAFigureWidget > src(new DA::DAFigureWidget());
+    src->resize(800, 600);
+    src->show();
+    QTest::qWaitForWindowExposed(src.get());
+    QVERIFY(src->enableGridLayout(2, 2));
+    QVERIFY(src->grid());
+    src->grid()->setSpacing(wspace, hspace);
+    QVERIFY(nearlyEqual(src->grid()->wspace(), wspace));
+    QVERIFY(nearlyEqual(src->grid()->hspace(), hspace));
+
+    DA::DAChartWidget* chart = src->getChartFactory()->createChart();
+    QVERIFY(chart);
+    chart->setPlotId(QStringLiteral("spacing-chart"));
+    QVERIFY(src->setGridCell(chart, 0, 1));
+
+    QDomDocument doc;
+    DA::DAChartItemsManager mgr;
+    const QDomElement figEle = DA::DAXmlHelper::makeElement(src.get(), QStringLiteral("figure"), &doc, &mgr);
+    QVERIFY(!figEle.isNull());
+    const QDomElement gridEle = figEle.firstChildElement(QStringLiteral("grid"));
+    QVERIFY(!gridEle.isNull());
+    // 写入端必须真的写出间距属性
+    QVERIFY(gridEle.hasAttribute(QStringLiteral("wspace")));
+    QVERIFY(gridEle.hasAttribute(QStringLiteral("hspace")));
+    bool okW = false;
+    bool okH = false;
+    const qreal savedW = gridEle.attribute(QStringLiteral("wspace")).toDouble(&okW);
+    const qreal savedH = gridEle.attribute(QStringLiteral("hspace")).toDouble(&okH);
+    QVERIFY(okW && okH);
+    QVERIFY(nearlyEqual(savedW, wspace));
+    QVERIFY(nearlyEqual(savedH, hspace));
+
+    // 读端恢复同一间距，且单元格归一化几何与源 figure 一致
+    std::unique_ptr< DA::DAFigureWidget > dst(new DA::DAFigureWidget());
+    dst->resize(800, 600);
+    dst->show();
+    QTest::qWaitForWindowExposed(dst.get());
+    QVERIFY(DA::DAXmlHelper::loadElement(dst.get(), &figEle, &mgr));
+    QVERIFY(dst->isGridLayoutEnabled());
+    QVERIFY(dst->grid());
+    QVERIFY(nearlyEqual(dst->grid()->wspace(), wspace));
+    QVERIFY(nearlyEqual(dst->grid()->hspace(), hspace));
+    QVERIFY(dst->findPlotById(QStringLiteral("spacing-chart")));
+    const QRectF srcRect = src->grid()->normRectFor(0, 1);
+    const QRectF dstRect = dst->grid()->normRectFor(0, 1);
+    QVERIFY(nearlyEqual(dstRect.x(), srcRect.x()));
+    QVERIFY(nearlyEqual(dstRect.y(), srcRect.y()));
+    QVERIFY(nearlyEqual(dstRect.width(), srcRect.width()));
+    QVERIFY(nearlyEqual(dstRect.height(), srcRect.height()));
+
+    // 旧工程（无 wspace/hspace）：按 0 处理，等分轨道不被破坏
+    QDomDocument legacyDoc;
+    QDomElement legacyFigEle = legacyDoc.createElement(QStringLiteral("figure"));
+    legacyFigEle.setAttribute(QStringLiteral("id"), QStringLiteral("no-spacing-figure"));
+    legacyDoc.appendChild(legacyFigEle);
+    QDomElement legacyGridEle = legacyDoc.createElement(QStringLiteral("grid"));
+    legacyGridEle.setAttribute(QStringLiteral("rows"), 2);
+    legacyGridEle.setAttribute(QStringLiteral("cols"), 2);
+    legacyGridEle.setAttribute(QStringLiteral("rowSizes"), QStringLiteral("0.5,0.5"));
+    legacyGridEle.setAttribute(QStringLiteral("colSizes"), QStringLiteral("0.5,0.5"));
+    legacyFigEle.appendChild(legacyGridEle);
+    legacyFigEle.appendChild(legacyDoc.createElement(QStringLiteral("charts")));
+
+    std::unique_ptr< DA::DAFigureWidget > legacy(new DA::DAFigureWidget());
+    legacy->resize(640, 480);
+    legacy->show();
+    QTest::qWaitForWindowExposed(legacy.get());
+    DA::DAChartItemsManager legacyMgr;
+    QVERIFY(DA::DAXmlHelper::loadElement(legacy.get(), &legacyFigEle, &legacyMgr));
+    QVERIFY(legacy->grid());
+    QVERIFY(nearlyEqual(legacy->grid()->wspace(), 0.0));
+    QVERIFY(nearlyEqual(legacy->grid()->hspace(), 0.0));
+    QVERIFY(nearlyEqual(legacy->grid()->normRectFor(0, 0).width(), 0.5));
 }
 
 void DAChartSerializeTest::testLegacyFigureWithoutGrid()
