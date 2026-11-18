@@ -38,6 +38,7 @@
 #include "Analysis/DASignalAmplitude.h"
 #include "Page/DAPeakMarkerLabel.h"
 #include "Page/DAPeakMarkerSamples.h"
+#include "Render/DAColormapMatch.h"
 #include "Render/DAStftRasterData.h"
 #include "Render/DATimeScaleDraw.h"
 #include "Render/DAWaterfallBuilder.h"
@@ -66,6 +67,17 @@ QwtColorMap* cloneLinearColorMap(const QwtLinearColorMap* src)
         dst->addColorStop(pos[ i ], cols[ i ]);
     }
     return dst;
+}
+
+/**
+ * @brief 拷贝任意色图（当前只有线性色图可拷；其它类型返回 nullptr，由调用方退回预设）
+ */
+QwtColorMap* cloneColorMap(const QwtColorMap* src)
+{
+    if (const auto* linear = dynamic_cast< const QwtLinearColorMap* >(src)) {
+        return cloneLinearColorMap(linear);
+    }
+    return nullptr;
 }
 
 /**
@@ -757,15 +769,45 @@ QString DASignalAnalysisView::colormapName() const
 }
 
 /**
- * @brief 设置色带（同步临时工具栏下拉）
+ * @brief 设置色带预设（丝带「云图设置 → 色带」或工程恢复）
+ *
+ * 预设名 -> 新建色图写到谱图图元（运行时唯一真相是 item 的 colorMap），
+ * 色标轴随后经 applyHeatmapColors 同步。未知预设名（如宿主面板改色后的 "custom"）忽略，
+ * 不覆盖图元当前色图。
+ * @param name QwtColorMapPreset 预设名
  */
 void DASignalAnalysisView::setColormapName(const QString& name)
 {
     if (name.isEmpty() || mColormapName == name) {
         return;
     }
+    const std::unique_ptr< QwtLinearColorMap > preset = QwtColorMapPreset::create(name);
+    if (!preset) {
+        qWarning() << "DASignalAnalysisView::setColormapName: unknown colormap preset" << name;
+        return;
+    }
     mColormapName = name;
+    ensureItemAttached(mSpectrogramItem, mHeatmapChart);
+    if (mSpectrogramItem) {
+        mSpectrogramItem->setColorMap(cloneLinearColorMap(preset.get()));
+    }
     applyHeatmapColors();
+}
+
+/**
+ * @brief 从谱图图元当前色带回读预设名（唯一真相 = item 的 colorMap）
+ *
+ * 宿主热图面板改过起止色后不再是任何预设，返回 "custom"（丝带菜单不勾选任何项）。
+ * 图元尚未重建时返回最近一次请求的预设名，避免恢复途中菜单闪空。
+ * @return 预设名；自定义色图返回 "custom"
+ */
+QString DASignalAnalysisView::colormapPreset() const
+{
+    if (!mSpectrogramItem) {
+        return mColormapName;
+    }
+    const QString preset = daMatchColormapPreset(mSpectrogramItem->colorMap());
+    return preset.isEmpty() ? QStringLiteral("custom") : preset;
 }
 
 /**
@@ -878,6 +920,99 @@ void DASignalAnalysisView::setDbFloor(double dbFloor)
 {
     mDbFloor = dbFloor;
     applyHeatmapColors();
+}
+
+/**
+ * @brief 云图显示模式（0=图像 / 1=等高线 / 2=图像+等高线）
+ *
+ * 状态真相是谱图图元（宿主热图面板也能改它）；图元尚未重建时返回待应用值。
+ */
+int DASignalAnalysisView::heatmapDisplayMode() const
+{
+    if (!mSpectrogramItem) {
+        return qBound(0, mPendingHeatmapDisplayMode < 0 ? 0 : mPendingHeatmapDisplayMode, 2);
+    }
+    const bool image   = mSpectrogramItem->testDisplayMode(QwtPlotSpectrogram::ImageMode);
+    const bool contour = mSpectrogramItem->testDisplayMode(QwtPlotSpectrogram::ContourMode);
+    if (image && contour) {
+        return 2;
+    }
+    if (contour) {
+        return 1;
+    }
+    return 0;
+}
+
+/**
+ * @brief 设置云图显示模式（图像 / 等高线 / 图像+等高线）
+ *
+ * 同时记为待应用值：谱图图元被外部删除后重建时按它恢复。
+ * @param mode 0=图像 / 1=等高线 / 2=图像+等高线
+ */
+void DASignalAnalysisView::setHeatmapDisplayMode(int mode)
+{
+    mPendingHeatmapDisplayMode = qBound(0, mode, 2);
+    applyHeatmapDisplayMode(mPendingHeatmapDisplayMode);
+}
+
+/**
+ * @brief 云图采样插值（0=最近邻 / 1=双线性）
+ *
+ * 状态真相是栅格数据（重建栅格后按待应用值恢复）。
+ */
+int DASignalAnalysisView::heatmapResampleMode() const
+{
+    if (!mStftRaster) {
+        return qBound(0, mPendingHeatmapResampleMode < 0 ? 0 : mPendingHeatmapResampleMode, 1);
+    }
+    return (mStftRaster->resampleMode() == QwtMatrixRasterData::BilinearInterpolation) ? 1 : 0;
+}
+
+/**
+ * @brief 设置云图采样插值（最近邻 / 双线性）
+ * @param mode 0=最近邻 / 1=双线性
+ */
+void DASignalAnalysisView::setHeatmapResampleMode(int mode)
+{
+    mPendingHeatmapResampleMode = qBound(0, mode, 1);
+    applyHeatmapResampleMode();
+}
+
+/**
+ * @brief 把给定显示模式写到谱图图元（图元不存在时是空操作）
+ *
+ * 图像/等高线两个 DisplayMode 同时开 = 图像+等高线；等高线笔沿用图元当前笔
+ * （宿主热图面板可改），这里只切模式。
+ * @param mode 0=图像 / 1=等高线 / 2=图像+等高线
+ */
+void DASignalAnalysisView::applyHeatmapDisplayMode(int mode)
+{
+    if (!mSpectrogramItem) {
+        return;
+    }
+    const int bounded  = qBound(0, mode, 2);
+    const bool image   = (bounded == 0 || bounded == 2);
+    const bool contour = (bounded >= 1);
+    mSpectrogramItem->setDisplayMode(QwtPlotSpectrogram::ImageMode, image);
+    mSpectrogramItem->setDisplayMode(QwtPlotSpectrogram::ContourMode, contour);
+    if (mHeatmapChart) {
+        mHeatmapChart->replot();
+    }
+}
+
+/**
+ * @brief 把待应用的插值模式写到栅格数据（栅格不存在时是空操作）
+ */
+void DASignalAnalysisView::applyHeatmapResampleMode()
+{
+    if (!mStftRaster) {
+        return;
+    }
+    mStftRaster->setResampleMode(heatmapResampleMode() == 1 ? QwtMatrixRasterData::BilinearInterpolation
+                                                            : QwtMatrixRasterData::NearestNeighbour);
+    if (mHeatmapChart) {
+        mHeatmapChart->replot();
+    }
 }
 
 /**
@@ -1572,7 +1707,7 @@ void DASignalAnalysisView::rebuildHeatmap()
         dbValues[ i ]  = std::isfinite(v) ? 20.0 * std::log10(qMax(v / peak, 1e-30))
                                           : std::numeric_limits< double >::quiet_NaN();
     }
-    // 栅格所有权归 QwtPlotSpectrogram（setData 接管）；若图表被清空/图元树删除导致谱图
+    // 谱图图元与栅格所有权归 QwtPlotSpectrogram（setData 接管）；若图表被清空/图元树删除导致谱图
     // 图元已销毁，指针必须一起置空，避免继续写已释放的栅格（评审 H3/A5、BLK-03a）
     if (!ensureItemAttached(mSpectrogramItem, mHeatmapChart)) {
         mStftRaster = nullptr;  // 栅格随谱图图元一起被销毁
@@ -1580,6 +1715,8 @@ void DASignalAnalysisView::rebuildHeatmap()
     if (!mStftRaster) {
         mStftRaster = new DAStftRasterData();
     }
+    // 插值模式：栅格（重）建后按待应用值恢复（默认最近邻）
+    applyHeatmapResampleMode();
     mStftRaster->setGrid(dbValues,
                          mStft.rows,
                          mStft.columns,
@@ -1597,10 +1734,13 @@ void DASignalAnalysisView::rebuildHeatmap()
             mSpectrogramItem->setCachePolicy(QwtPlotRasterItem::PaintCache);
             // 分析结果图元：transient（序列化跳过，加载后重算重建）
             mHeatmapChart->setItemTransient(mSpectrogramItem);
+            // 图元是新建的：按待应用值恢复显示模式（工程恢复 / 外部删除后重建）
+            applyHeatmapDisplayMode(mPendingHeatmapDisplayMode < 0 ? 0 : mPendingHeatmapDisplayMode);
         }
     } else {
         mSpectrogramItem->setData(static_cast< QwtRasterData* >(mStftRaster));
         mSpectrogramItem->attach(mHeatmapChart);
+        // 图元常驻：保留宿主热图面板改过的显示模式，不在这里覆盖
     }
     // 色标（yRight 轴）的显隐、刻度区间 [mDbFloor, 0]、色带宽度与色图统一由
     // applyHeatmapColors 应用：不做这一步时 yRight 用 Qwt 默认 0..1000 刻度，与色标区间
@@ -1625,8 +1765,10 @@ void DASignalAnalysisView::rebuildHeatmap()
  * - 刻度：显示时必须 setAxisScale(yRight, mDbFloor, 0.0)，让刻度与色标区间 [mDbFloor, 0]
  *   一致（否则 Qwt 按默认 0..1000 画刻度，色标显示诡异）；dB 下限被调到 0 的退化区间
  *   按 -1..0 兜底，避免 Qwt 刻度区间宽度为 0；
- * - 色带：setColorBarEnabled(true) + setColorBarWidth(18) + setSpacing(4)（与绘图区间隔）
- *   + setTitle(tr("dB")) + setColorMap(QwtInterval(mDbFloor, 0), ...)；
+ * - 色带：**不再无条件重设谱图图元的 colorMap**。运行时唯一真相就是 item 的 colorMap
+ *   （宿主热图面板改的起止色、丝带选的预设都写在那里），每次 dB 变化/重建都覆盖会把
+ *   宿主面板的改动冲掉。只在「图元还没有色带」时用当前预设初始化；
+ * - 色标轴取 item 当前色带的拷贝（自定义起止色也能反映到色标），取不到才退回预设；
  * - 谱图图元可能被共享图元树删除：失效时置空（连同栅格）后只刷新色标并返回，
  *   下一次 rebuildHeatmap 重建（BLK-03a）。
  */
@@ -1638,10 +1780,21 @@ void DASignalAnalysisView::applyHeatmapColors()
     // 1. 色标状态与刻度：与谱图图元是否存在无关（工程恢复时谱图是 transient、尚未重算，
     //    也要把存档恢复出来的 yRight 轴同步到正确状态）
     mHeatmapChart->setAxisVisible(QwtPlot::yRight, mColorBarVisible);
-    auto cmap = QwtColorMapPreset::create(mColormapName);
-    // dB 下限被调到 0（无动态范围，工具栏允许 -200..0）时 [mDbFloor, 0] 是退化区间：
-    // Qwt 刻度要求下界 < 上界，这里留 1 dB 宽度兜底；正常的负下限不受影响
+    // dB 下限被调到 0（无动态范围）时 [mDbFloor, 0] 是退化区间：Qwt 刻度要求下界 < 上界，
+    // 这里留 1 dB 宽度兜底；正常的负下限不受影响
     const double colorBarLower = colorBarLowerDb(mDbFloor);
+    // 2. 谱图图元与栅格：图元被删除时置空缓存，只保留色标刷新（下次 rebuildHeatmap 重建）
+    const bool itemAlive = ensureItemAttached(mSpectrogramItem, mHeatmapChart);
+    if (!itemAlive) {
+        mStftRaster = nullptr;  // 栅格随谱图图元一起被销毁
+    }
+    // 3. 色带：只有图元还没有 colorMap 时才用当前预设初始化（不覆盖宿主面板的自定义色）
+    if (itemAlive && !mSpectrogramItem->colorMap()) {
+        if (const std::unique_ptr< QwtLinearColorMap > preset = QwtColorMapPreset::create(mColormapName)) {
+            mSpectrogramItem->setColorMap(cloneLinearColorMap(preset.get()));
+        }
+    }
+    // 4. 色标轴：item 当前色带的拷贝 + [floor, 0]；取不到时退回预设
     if (QwtScaleWidget* colorBar = mHeatmapChart->axisWidget(QwtPlot::yRight)) {
         if (mColorBarVisible) {
             // 关键：yRight 刻度必须与色标区间一致，否则 Qwt 用默认 0..1000 刻度画色标
@@ -1650,22 +1803,22 @@ void DASignalAnalysisView::applyHeatmapColors()
             colorBar->setColorBarWidth(18);
             colorBar->setSpacing(4);       // 色标与绘图区之间留间隔
             colorBar->setTitle(tr("dB"));  // cn:分贝
-            if (cmap) {
+            QwtColorMap* barMap = nullptr;
+            if (itemAlive) {
+                barMap = cloneColorMap(mSpectrogramItem->colorMap());
+            }
+            if (!barMap) {
+                if (const std::unique_ptr< QwtLinearColorMap > preset = QwtColorMapPreset::create(mColormapName)) {
+                    barMap = cloneLinearColorMap(preset.get());
+                }
+            }
+            if (barMap) {
                 // setColorMap 同时设定色标区间与色带（接管所有权）
-                colorBar->setColorMap(QwtInterval(colorBarLower, 0.0), cloneLinearColorMap(cmap.get()));
+                colorBar->setColorMap(QwtInterval(colorBarLower, 0.0), barMap);
             }
         } else {
             colorBar->setColorBarEnabled(false);
         }
-    }
-    // 2. 谱图图元与栅格：图元被删除时置空缓存，只保留色标刷新（下次 rebuildHeatmap 重建）
-    if (!ensureItemAttached(mSpectrogramItem, mHeatmapChart)) {
-        mStftRaster = nullptr;  // 栅格随谱图图元一起被销毁
-        mHeatmapChart->replot();
-        return;
-    }
-    if (cmap) {
-        mSpectrogramItem->setColorMap(cloneLinearColorMap(cmap.get()));
     }
     if (mStftRaster) {
         mStftRaster->setValueRange(colorBarLowerDb(mDbFloor), 0.0);

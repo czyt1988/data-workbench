@@ -14,6 +14,8 @@
 #include <QFileInfo>
 #include <QGridLayout>
 #include <QIcon>
+#include <QImage>
+#include <QPixmap>
 #include <QInputDialog>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -162,6 +164,35 @@ QList< qreal > layoutColumnsDefault()
 QString signalAppIcon(const char* file)
 {
     return QString::fromUtf8(cAppIconPrefix) + QString::fromUtf8(file);
+}
+
+/**
+ * @brief 用预设色带生成菜单用的渐变预览图标（64×16）
+ *
+ * 色带菜单每项带一条真实渐变色条（取自 QwtColorMapPreset::create 的 rgb 输出），
+ * 用户不必先应用再判断颜色。未知预设给透明图标（菜单项仍可用）。
+ * @param preset QwtColorMapPreset 预设名
+ * @return 64×16 图标的 QIcon
+ */
+QIcon makeColormapPreviewIcon(const QString& preset)
+{
+    constexpr int cPreviewWidth  = 64;
+    constexpr int cPreviewHeight = 16;
+    QImage image(cPreviewWidth, cPreviewHeight, QImage::Format_ARGB32);
+    const std::unique_ptr< QwtLinearColorMap > map = QwtColorMapPreset::create(preset);
+    if (!map) {
+        image.fill(Qt::transparent);
+        return QIcon(QPixmap::fromImage(image));
+    }
+    const double span = double(cPreviewWidth > 1 ? cPreviewWidth - 1 : 1);
+    for (int x = 0; x < cPreviewWidth; ++x) {
+        const double value = double(x) / span;
+        const QRgb color     = map->rgb(0.0, 1.0, value);
+        for (int y = 0; y < cPreviewHeight; ++y) {
+            image.setPixel(x, y, color);
+        }
+    }
+    return QIcon(QPixmap::fromImage(image));
 }
 
 /**
@@ -1482,6 +1513,8 @@ void DASignalAnalysisUI::buildSignalContextCategory()
             presetAction->setCheckable(true);
             presetAction->setData(preset);
             presetAction->setActionGroup(group);
+            // 渐变预览：菜单项直接显示该预设的真实色带
+            presetAction->setIcon(makeColormapPreviewIcon(preset));
             if (preset == QLatin1String("viridis")) {
                 presetAction->setChecked(true);  // 默认色带与视图默认一致
             }
@@ -1593,6 +1626,43 @@ void DASignalAnalysisUI::buildSignalContextCategory()
     mHeatmapDbFloorLabel   = heatmapGrid->addRow(tr("dB"), mHeatmapDbFloorSpin);
     heatmapGrid->finish();
     mPanelHeatmap->addLargeWidget(heatmapGrid);
+    // 显示 ▾：图像/等高线/图像+等高线 与 最近邻/双线性（只影响二维云图的绘制方式）
+    actionHeatmapDisplay =
+        createIconAction("actionSignalHeatmapDisplay", QStringLiteral(":/DAGui/icon/chart-type/chart-spectrogram.svg"), false);
+    mHeatmapDisplayMenu       = new QMenu();
+    mHeatmapDisplayModeGroup  = new QActionGroup(this);
+    mHeatmapDisplayModeGroup->setExclusive(true);
+    mHeatmapDisplayMenu->addSection(tr("Display mode"));  // cn:显示模式
+    mHeatmapDisplayModeSection = mHeatmapDisplayMenu->actions().last();
+    const QStringList displayModeNames = { tr("Image"), tr("Contour"), tr("Image + Contour") };
+    // cn:图像 / 等高线 / 图像+等高线
+    for (int i = 0; i < displayModeNames.size(); ++i) {
+        QAction* act = mHeatmapDisplayMenu->addAction(displayModeNames.at(i));
+        act->setCheckable(true);
+        act->setData(i);
+        act->setActionGroup(mHeatmapDisplayModeGroup);
+        mHeatmapDisplayModeActions.append(act);
+    }
+    mHeatmapResampleGroup = new QActionGroup(this);
+    mHeatmapResampleGroup->setExclusive(true);
+    mHeatmapDisplayMenu->addSection(tr("Interpolation"));  // cn:插值
+    mHeatmapResampleSection = mHeatmapDisplayMenu->actions().last();
+    const QStringList resampleNames = { tr("Nearest neighbour"), tr("Bilinear") };
+    // cn:最近邻 / 双线性
+    for (int i = 0; i < resampleNames.size(); ++i) {
+        QAction* act = mHeatmapDisplayMenu->addAction(resampleNames.at(i));
+        act->setCheckable(true);
+        act->setData(i);
+        act->setActionGroup(mHeatmapResampleGroup);
+        mHeatmapResampleActions.append(act);
+    }
+    connect(mHeatmapDisplayModeGroup,
+            &QActionGroup::triggered,
+            this,
+            &DASignalAnalysisUI::onHeatmapDisplayModeTriggered);
+    connect(mHeatmapResampleGroup, &QActionGroup::triggered, this, &DASignalAnalysisUI::onHeatmapResampleTriggered);
+    actionHeatmapDisplay->setMenu(mHeatmapDisplayMenu);
+    mPanelHeatmap->addMediumAction(actionHeatmapDisplay);
 
     // ---------- 瀑布图设置：色带 / dB / 当前迹线高亮（只影响三维瀑布） ----------
     // 三维瀑布有自己独立的色带与 dB 色域（D12），与二维云图互不影响
@@ -1887,7 +1957,9 @@ void DASignalAnalysisUI::syncSignalContextControls()
         actionColormap->setEnabled(heatmapActive);
     }
     if (mColormapMenu) {
-        const QString colormap          = (view ? view->colormapName() : QString());
+        // 色带勾选回读图元当前色图（单一真相）：宿主热图面板改过起止色时返回 "custom"，
+        // 菜单里没有任何预设被勾选
+        const QString colormap          = (view ? view->colormapPreset() : QString());
         const QList< QAction* > presets = mColormapMenu->actions();
         for (QAction* presetAction : presets) {
             if (nullptr == presetAction || !presetAction->isCheckable()) {
@@ -1908,6 +1980,28 @@ void DASignalAnalysisUI::syncSignalContextControls()
         const QSignalBlocker blocker(mHeatmapDbFloorSpin);
         mHeatmapDbFloorSpin->setValue(view ? view->dbFloor() : -80.0);
         mHeatmapDbFloorSpin->setEnabled(heatmapActive);
+    }
+    // 显示 ▾：显示模式与插值勾选跟随视图（显示模式的真相是谱图图元，含宿主面板改动）
+    if (actionHeatmapDisplay) {
+        actionHeatmapDisplay->setEnabled(heatmapActive);
+    }
+    const int displayMode  = (view ? view->heatmapDisplayMode() : 0);
+    const int resampleMode = (view ? view->heatmapResampleMode() : 0);
+    for (QAction* modeAction : std::as_const(mHeatmapDisplayModeActions)) {
+        if (!modeAction) {
+            continue;
+        }
+        const QSignalBlocker blocker(modeAction);
+        modeAction->setEnabled(heatmapActive);
+        modeAction->setChecked(modeAction->data().toInt() == displayMode);
+    }
+    for (QAction* resampleAction : std::as_const(mHeatmapResampleActions)) {
+        if (!resampleAction) {
+            continue;
+        }
+        const QSignalBlocker blocker(resampleAction);
+        resampleAction->setEnabled(heatmapActive);
+        resampleAction->setChecked(resampleAction->data().toInt() == resampleMode);
     }
     // 瀑布图设置整组：只在三维瀑布可见时可用
     const bool waterfallActive = hasView && waterfallMode == 1;
@@ -2127,6 +2221,34 @@ void DASignalAnalysisUI::onHeatmapDbFloorChanged(double value)
 }
 
 /**
+ * @brief 「云图设置 → 显示 → 显示模式」：图像 / 等高线 / 图像+等高线
+ * @param action 菜单项，data 为模式编号（0/1/2）
+ */
+void DASignalAnalysisUI::onHeatmapDisplayModeTriggered(QAction* action)
+{
+    if (nullptr == action) {
+        return;
+    }
+    if (DASignalAnalysisView* view = currentView()) {
+        view->setHeatmapDisplayMode(action->data().toInt());
+    }
+}
+
+/**
+ * @brief 「云图设置 → 显示 → 插值」：最近邻 / 双线性
+ * @param action 菜单项，data 为插值编号（0=最近邻 / 1=双线性）
+ */
+void DASignalAnalysisUI::onHeatmapResampleTriggered(QAction* action)
+{
+    if (nullptr == action) {
+        return;
+    }
+    if (DASignalAnalysisView* view = currentView()) {
+        view->setHeatmapResampleMode(action->data().toInt());
+    }
+}
+
+/**
  * @brief 「瀑布图设置 → 色带」：切三维瀑布的色带预设（只影响瀑布，不影响云图与色标）
  * @param action 菜单项，data 为 QwtColorMapPreset 预设名
  */
@@ -2243,6 +2365,8 @@ void DASignalAnalysisUI::resetDisplaySettings()
     view->setColormapName(QStringLiteral("viridis"));
     view->setDbFloor(-80.0);
     view->setColorBarVisible(true);
+    view->setHeatmapDisplayMode(0);
+    view->setHeatmapResampleMode(0);
     view->setHeatmapAutoScroll(false);
     // 三维瀑布：色带 / dB / 当前迹线高亮 / 图元样式回到默认
     view->setWaterfallColormapName(QStringLiteral("viridis"));
@@ -3348,6 +3472,9 @@ QByteArray DASignalAnalysisUI::serializeState() const
                 view[ QStringLiteral("waterfallDbFloor") ]   = v->waterfallDbFloor();
                 view[ QStringLiteral("waterfallHighlight") ] = v->isWaterfallHighlighted();
                 view[ QStringLiteral("waterfall") ]          = v->waterfallStyle();
+                // 云图绘制方式：显示模式与插值（从谱图图元/栅格读回，谱图 transient 不随 figures.xml 保存）
+                view[ QStringLiteral("heatmapDisplayMode") ] = v->heatmapDisplayMode();
+                view[ QStringLiteral("heatmapResample") ]    = v->heatmapResampleMode();
                 // 峰值标记开关（视图无 getter：以 UI 记录的开关状态存，恢复后新视图据此应用）
                 view[ QStringLiteral("peakMarkersVisible") ] = mPeakMarkersVisible;
                 // T7 起布局是保留式网格：存归一化行/列比例（旧 splitter 像素比例在加载时归一化兼容）
@@ -3550,6 +3677,9 @@ void DASignalAnalysisUI::restoreState(const QByteArray& json,
             v->setWaterfallHighlight(view.value(QStringLiteral("waterfallHighlight")).toBool(true));
             // 瀑布样式：STFT 异步，图元未建时视图先记为待应用，首建后套用
             v->applyWaterfallStyle(view.value(QStringLiteral("waterfall")).toObject());
+            // 云图绘制方式：显示模式与插值（谱图 transient，恢复时先记为待应用）
+            v->setHeatmapDisplayMode(view.value(QStringLiteral("heatmapDisplayMode")).toInt(0));
+            v->setHeatmapResampleMode(view.value(QStringLiteral("heatmapResample")).toInt(0));
             if (view.contains(QStringLiteral("colorBarVisible"))) {
                 const bool colorBar = view.value(QStringLiteral("colorBarVisible")).toBool(mColorBarVisible);
                 v->setColorBarVisible(colorBar);
@@ -3785,6 +3915,20 @@ void DASignalAnalysisUI::finalize()
         mWaterfallColormapMenu = nullptr;
     }
     mWaterfallColormapGroup = nullptr;
+    // 云图「显示 ▾」菜单（显示模式/插值）
+    if (actionHeatmapDisplay) {
+        actionHeatmapDisplay->setMenu(nullptr);
+    }
+    if (mHeatmapDisplayMenu) {
+        delete mHeatmapDisplayMenu;
+        mHeatmapDisplayMenu = nullptr;
+    }
+    mHeatmapDisplayModeGroup   = nullptr;
+    mHeatmapResampleGroup      = nullptr;
+    mHeatmapDisplayModeSection = nullptr;
+    mHeatmapResampleSection    = nullptr;
+    mHeatmapDisplayModeActions.clear();
+    mHeatmapResampleActions.clear();
     // 「视图 ▾」菜单：子菜单/菜单项随父菜单销毁，这里只释放父菜单并清空指针
     if (actionViewOptions) {
         actionViewOptions->setMenu(nullptr);
@@ -3924,7 +4068,7 @@ void DASignalAnalysisUI::finalize()
             actionExportImage,    actionRelinkSource,
             actionTimeCursor,     actionViewOptions,     actionColormap,
             actionColorBar,       actionWaterfallColormap, actionWaterfallHighlight,
-            actionWaterfallSettings
+            actionWaterfallSettings, actionHeatmapDisplay
         };
         for (QAction* act : allActions) {
             if (act) {
@@ -3963,6 +4107,7 @@ void DASignalAnalysisUI::finalize()
     actionWaterfallColormap = nullptr;
     actionWaterfallHighlight = nullptr;
     actionWaterfallSettings = nullptr;
+    actionHeatmapDisplay    = nullptr;
     mPanelImportExport      = nullptr;
     mPanelPreprocess        = nullptr;
     mPanelSpectrum          = nullptr;
@@ -5333,7 +5478,7 @@ void DASignalAnalysisUI::setSignalDependentActionsEnabled(bool on)
         actionPeakMarkerDisplay, actionPeakWindow, actionWaterfall2D, actionWaterfall3D,
         actionWaterfallHide, actionExportPeaks, actionTimeCursor, actionViewOptions,
         actionDisplayReset, actionWaterfallColormap, actionWaterfallHighlight, actionWaterfallSettings,
-        actionExportImage,  actionRelinkSource,
+        actionExportImage,  actionRelinkSource,    actionHeatmapDisplay,
         actionColormap,     actionColorBar
     };
     for (QAction* act : acts) {
@@ -5629,6 +5774,27 @@ void DASignalAnalysisUI::retranslateUi()
     if (mHeatmapDbFloorSpin) {
         mHeatmapDbFloorSpin->setToolTip(tr("Heatmap color scale lower limit (dB)"));
         // cn:热图色标下限（dB）
+    }
+    // 云图显示 ▾（显示模式 / 插值）
+    if (actionHeatmapDisplay) {
+        actionHeatmapDisplay->setText(tr("Display"));  // cn:显示
+        actionHeatmapDisplay->setToolTip(tr("Heatmap display mode and interpolation"));
+        // cn:云图的显示模式与插值方式
+    }
+    if (mHeatmapDisplayModeSection) {
+        mHeatmapDisplayModeSection->setText(tr("Display mode"));  // cn:显示模式
+    }
+    if (mHeatmapDisplayModeActions.size() >= 3) {
+        mHeatmapDisplayModeActions.at(0)->setText(tr("Image"));           // cn:图像
+        mHeatmapDisplayModeActions.at(1)->setText(tr("Contour"));         // cn:等高线
+        mHeatmapDisplayModeActions.at(2)->setText(tr("Image + Contour")); // cn:图像+等高线
+    }
+    if (mHeatmapResampleSection) {
+        mHeatmapResampleSection->setText(tr("Interpolation"));  // cn:插值
+    }
+    if (mHeatmapResampleActions.size() >= 2) {
+        mHeatmapResampleActions.at(0)->setText(tr("Nearest neighbour"));  // cn:最近邻
+        mHeatmapResampleActions.at(1)->setText(tr("Bilinear"));           // cn:双线性
     }
     // 瀑布图设置（只影响三维瀑布）
     if (actionWaterfallSettings) {

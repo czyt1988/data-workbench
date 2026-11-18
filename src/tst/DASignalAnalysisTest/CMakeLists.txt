@@ -34,6 +34,7 @@ da_add_test(
             ${_signal_plugin_dir}/Page/DASignalTimeText.cpp
             ${_signal_plugin_dir}/Signal/DASignal.cpp
             ${_signal_plugin_dir}/Render/DAStftRasterData.cpp
+            ${_signal_plugin_dir}/Render/DAColormapMatch.cpp
             ${_signal_plugin_dir}/Render/DATimeScaleDraw.cpp
             ${_signal_plugin_dir}/Render/DAWaterfallBuilder.cpp
             ${_signal_plugin_dir}/Render/DAWaterfallColor.cpp

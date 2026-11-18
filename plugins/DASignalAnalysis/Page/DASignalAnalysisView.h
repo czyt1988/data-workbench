@@ -84,8 +84,16 @@ public:
     // 色带与 dB 动态范围下限（视图状态持久化用）
     QString colormapName() const;
     void setColormapName(const QString& name);
+    // 从谱图图元当前色带回读预设名（唯一真相 = item 的 colorMap；不匹配返回 "custom"）
+    QString colormapPreset() const;
     double dbFloor() const;
     void setDbFloor(double dbFloor);
+    // 云图显示模式：0=图像 / 1=等高线 / 2=图像+等高线（状态真相 = 谱图图元，供宿主面板双向使用）
+    int heatmapDisplayMode() const;
+    void setHeatmapDisplayMode(int mode);
+    // 云图采样插值：0=最近邻 / 1=双线性（状态真相 = 栅格数据）
+    int heatmapResampleMode() const;
+    void setHeatmapResampleMode(int mode);
     // 当前帧标记开关（二维云图竖线 + 三维当前迹线高亮的时间游标；默认开）
     bool isTimeCursorVisible() const;
     void setTimeCursorVisible(bool on);
@@ -256,6 +264,9 @@ private:
     void updateWaterfallHighlight();
     // dB 色域下限的有效值（[floor, 0] 需要 floor < 0）
     double waterfallDbFloorLower() const;
+    // 把待应用的云图显示模式 / 插值写到谱图图元与栅格（图元不存在时空操作）
+    void applyHeatmapDisplayMode(int mode);
+    void applyHeatmapResampleMode();
     // 当前时间对应的 STFT 列索引（跟随滑块用）
     int currentStftColumn() const;
     // 时间轴标签格式应用到波形 x 与云图 x（换新 ScaleDraw 实例，plot 接管所有权）
@@ -376,6 +387,9 @@ private:
     bool mWaterfallHighlight { true };
     // 待应用的瀑布样式（工程恢复时 STFT 异步，图元尚不存在，首建后套用）
     QJsonObject mPendingWaterfallStyle;
+    // 待应用的云图显示状态（工程恢复时谱图图元尚未重建；-1 表示无待应用值）
+    int mPendingHeatmapDisplayMode { -1 };
+    int mPendingHeatmapResampleMode { -1 };
 };
 }  // namespace DA
 

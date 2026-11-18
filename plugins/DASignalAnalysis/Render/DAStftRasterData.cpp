@@ -7,8 +7,9 @@ namespace DA
 {
 DAStftRasterData::DAStftRasterData()
 {
-    // 放大时平滑（方案 §7.3）
-    setResampleMode(QwtMatrixRasterData::BilinearInterpolation);
+    // 默认最近邻（与「重置显示」的默认一致）：放大时保留原始栅格格子，
+    // 不会把相邻时频单元插值成中间色；需要平滑时由丝带「显示 ▾」切双线性
+    setResampleMode(QwtMatrixRasterData::NearestNeighbour);
 }
 
 DAStftRasterData::~DAStftRasterData()

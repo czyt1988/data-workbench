@@ -51,12 +51,15 @@
 #include "Page/DASignalChartExport.h"
 #include "Page/DASignalTimeText.h"
 #include "Render/DAStftRasterData.h"
+#include "Render/DAColormapMatch.h"
 #include "Render/DATimeScaleDraw.h"
 #include "Render/DAWaterfallBuilder.h"
 #include "DAChart3DWidget.h"
 #include "DAChartWidget.h"
 #include "DAFigureWidget.h"
 #include "qwt_figure_grid.h"
+#include "qwt_colormap.h"
+#include "qwt_colormap_preset.h"
 #include "qwt_interval.h"
 #include "qwt_plot_curve.h"
 #include "qwt_plot_intervalcurve.h"
@@ -328,6 +331,8 @@ private Q_SLOTS:
     void timeAxisFormatLabels();
     // 三维瀑布：迹线时间映射、当前迹线槽位与 dB 迹线换算（纯逻辑）
     void waterfallTraceTimesAndDbConversion();
+    // 色带回读：22 个预设各自匹配；自定义/空色图返回空
+    void colormapPresetMatching();
     // dB 参考由幅值口径派生（D7）：dbRef1 → one，其余 → fullScale，旧档矛盾组合按幅值口径解释
     void dbReferenceDerivedFromAmplitudeMode();
 };
@@ -2396,6 +2401,42 @@ void DASignalAnalysisTest::waterfallTraceTimesAndDbConversion()
     // floor >= 0 时按 -1 兜底（退化区间保护）
     const QVector< double > degenerate = DA::daStftToDb({ 0.0 }, 1.0, 0.0);
     QCOMPARE(degenerate.at(0), -1.0);
+}
+
+/**
+ * @brief 色带回读：22 个预设各自匹配；自定义/空色图返回空
+ */
+void DASignalAnalysisTest::colormapPresetMatching()
+{
+    using DA::daMatchColormapPreset;
+    // 空指针：返回空
+    QCOMPARE(daMatchColormapPreset(nullptr), QString());
+    // 每个预设用自己的色图都能反查回一个预设（个别预设色表完全相同，反查命中列表里
+    // 更靠前的那个；此时要求命中的预设色表与自己的完全一致）
+    const QStringList presets = QwtColorMapPreset::availablePresets();
+    QVERIFY2(presets.size() >= 20, "the preset registry should expose the documented colormaps");
+    int duplicateGroups = 0;
+    for (const QString& preset : presets) {
+        const std::unique_ptr< QwtLinearColorMap > map = QwtColorMapPreset::create(preset);
+        QVERIFY2(map, qPrintable(QStringLiteral("cannot create preset %1").arg(preset)));
+        const QString matched = daMatchColormapPreset(map.get());
+        QVERIFY2(!matched.isEmpty(), qPrintable(QStringLiteral("cannot match preset %1").arg(preset)));
+        if (matched != preset) {
+            const std::unique_ptr< QwtLinearColorMap > matchedMap = QwtColorMapPreset::create(matched);
+            QVERIFY(matchedMap);
+            QCOMPARE(matchedMap->colorTable(32), map->colorTable(32));
+            ++duplicateGroups;
+        }
+    }
+    // 只允许极少数历史别名预设色表重复；多了说明比较口径出了问题
+    QVERIFY2(duplicateGroups <= 2, qPrintable(QStringLiteral("unexpected duplicate presets: %1").arg(duplicateGroups)));
+    // 自定义起止色（宿主热图面板改色的同口径）：不对应任何预设，返回空
+    // 注意别用纯黑→纯白（那正好等于 gray 预设）
+    const QwtLinearColorMap custom(QColor(12, 34, 56), QColor(210, 170, 120));
+    QCOMPARE(daMatchColormapPreset(&custom), QString());
+    // 只有两个端点色、与预设不同：同样返回空
+    const QwtLinearColorMap twoStop(QColor(10, 20, 30), QColor(200, 150, 100));
+    QCOMPARE(daMatchColormapPreset(&twoStop), QString());
 }
 
 QTEST_MAIN(DASignalAnalysisTest)
