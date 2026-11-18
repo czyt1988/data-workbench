@@ -28,6 +28,7 @@
 #include "Chart/Setting3D/DAChart3DGenericItemSettingPanel.h"
 #include "Chart/Setting3D/DAChart3DItemSettingPanel.h"
 #include "Chart/Setting3D/DAChart3DItemSettingPanelFactory.h"
+#include "Chart/Setting3D/DAChart3DWaterfallSettingPanel.h"
 // DAFigure
 #include "DAChartWidget.h"
 #include "DAFigureWidget.h"
@@ -107,7 +108,7 @@ private Q_SLOTS:
     void testChartManageSetFigures();
     // 未注册 rtti → 工厂回退通用面板
     void testUnregisteredRttiFallback();
-    // 3D 未注册 rtti（含 Rtti_Plot3DWaterfall）→ 3D 工厂回退通用面板，setPlot3DItem 安全（SF-08）
+    // 3D 未注册 rtti → 3D 工厂回退通用面板；瀑布 rtti 走向专用面板，setPlot3DItem 安全（SF-08）
     void test3DUnregisteredRttiFallback();
     // updateUI 在已注册/未注册 rtti 之间切换 currentItemPanel
     void testCommonItemsSettingWidgetSwitchesPanel();
@@ -171,7 +172,7 @@ void TSTDAChartContextTest::initTestCase()
     // 3D 面板一并注册（生产环境由 DAChart3DSettingWidget 构造函数注册）
     DAChart3DItemSettingPanelFactory::instance().registerAllKnown3DPanels();
     QVERIFY2(DAChart3DItemSettingPanelFactory::instance().isRegistered(Rtti_Plot3DWaterfall),
-             "the waterfall rtti should be registered to the generic 3D panel");
+             "the waterfall rtti should be registered to its dedicated panel");
     QVERIFY2(!DAChart3DItemSettingPanelFactory::instance().isRegistered(TSTUnregistered3DPlotItem::RttValue),
              "the custom 3D rtti must stay unregistered in this test");
 }
@@ -264,19 +265,21 @@ void TSTDAChartContextTest::testUnregisteredRttiFallback()
 }
 
 /**
- * @brief 3D 未注册 rtti（含 Rtti_Plot3DWaterfall）回退通用面板，setPlot3DItem 安全
+ * @brief 3D 未注册 rtti 回退通用面板；瀑布 rtti 走向专用面板，setPlot3DItem 安全
  *
  * 面板构造与 updateUI 只读写 Qwt3DPlotItem 基类属性（title/visible/z），不需要 GL 环境；
  * 图元不挂任何 plot 也可安全设 target（setPlot3D(nullptr) 有空指针防御）。
  */
 void TSTDAChartContextTest::test3DUnregisteredRttiFallback()
 {
-    // Rtti_Plot3DWaterfall：显式注册到通用面板，createPanel 返回非空通用面板
+    // Rtti_Plot3DWaterfall：已注册到瀑布专用面板（不再是通用回退）
     QScopedPointer< DAChart3DItemSettingPanel > waterfallPanel(
         DAChart3DItemSettingPanelFactory::instance().createPanel(Rtti_Plot3DWaterfall));
     QVERIFY2(waterfallPanel.data() != nullptr, "createPanel(Rtti_Plot3DWaterfall) must not return null");
-    QVERIFY2(dynamic_cast< DAChart3DGenericItemSettingPanel* >(waterfallPanel.data()) != nullptr,
-             "Rtti_Plot3DWaterfall should use the generic 3D fallback panel");
+    QVERIFY2(dynamic_cast< DAChart3DWaterfallSettingPanel* >(waterfallPanel.data()) != nullptr,
+             "Rtti_Plot3DWaterfall should use the dedicated waterfall setting panel");
+    QVERIFY2(dynamic_cast< DAChart3DGenericItemSettingPanel* >(waterfallPanel.data()) == nullptr,
+             "the waterfall rtti must not fall back to the generic 3D panel");
 
     // 未注册 rtti：工厂一律回退通用面板（不再返回 nullptr，设置页不再停留上一个图元）
     QScopedPointer< DAChart3DItemSettingPanel > unregisteredPanel(
@@ -294,7 +297,7 @@ void TSTDAChartContextTest::test3DUnregisteredRttiFallback()
 
     TSTUnregistered3DPlotItem custom;
     waterfallPanel->setPlot3DItem(&custom);
-    QVERIFY2(waterfallPanel->getPlot3DItem() == &custom, "the generic panel should hold the custom 3D item");
+    QVERIFY2(waterfallPanel->getPlot3DItem() == &custom, "the waterfall panel should hold the custom 3D item");
     QVERIFY(waterfallPanel->isHaveItem());
 
     // 已注册 rtti 仍走向专属面板（回退不吞掉正常注册）

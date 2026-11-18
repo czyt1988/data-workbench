@@ -26,7 +26,8 @@ public:
         PID_Shininess,
         PID_SpecularIntensity,
         PID_ThemePreset,
-        PID_ResetView
+        PID_ResetView,
+        PID_ViewAngle
     };
 
     explicit DAChart3DPlotSettingPanel(QWidget* parent = nullptr);
