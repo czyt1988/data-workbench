@@ -50,6 +50,7 @@
 #include "DADataProbeMarker.h"
 #include "DAFigurePointerSelectorOverlay.h"
 #include "DALogCategory.h"
+#include "DASlowLog.h"
 // qwt
 #include "qwt_figure.h"
 #include "qwt_figure_grid.h"
@@ -65,6 +66,14 @@
 namespace DA
 {
 const QRectF c_figurewidget_default_size = QRectF(0.05, 0.05, 0.9, 0.9);
+#if defined(DA_ENABLE_SLOW_LOG)
+/// 单调时钟纳秒时间戳：用于近似测量拖动中每个 move 触发的整图布局耗时
+qint64 gridSlowLogStampNs()
+{
+    return std::chrono::duration_cast< std::chrono::nanoseconds >(std::chrono::steady_clock::now().time_since_epoch())
+        .count();
+}
+#endif
 //===================================================
 // DAFigureWidgetPrivate
 //===================================================
@@ -98,6 +107,13 @@ public:
     QVector< qreal > mGridCommittedCols;      ///< 最近一次提交的列比例（拖动基线）
     QVector< qreal > mGridOldRows;            ///< 一次比例调整开始前的行比例
     QVector< qreal > mGridOldCols;            ///< 一次比例调整开始前的列比例
+#if defined(DA_ENABLE_SLOW_LOG)
+    // 拖动期整图布局采样：见 onGridSizesChanged 的说明
+    int mGridDragLayoutPasses { 0 };       ///< 本次拖动中触发的整图布局次数（每次 sizesChanged 一次）
+    qint64 mGridDragLayoutNs { 0 };        ///< 本次拖动累计布局耗时（近似，纳秒）
+    qint64 mGridDragMaxLayoutNs { 0 };     ///< 本次拖动单次布局最大耗时（近似，纳秒）
+    qint64 mGridDragLastStampNs { 0 };     ///< 上一次回调返回时的时间戳，0 表示无采样
+#endif
 public:
     PrivateData(DAFigureWidget* p) : q_ptr(p), mColorTheme(DAColorTheme::Style_Matplotlib_Tab10)
     {
@@ -109,6 +125,55 @@ public:
     {
         q_ptr->setWindowTitle(QApplication::translate("DAFigureWidget", "Figure", 0));
     }
+
+#if defined(DA_ENABLE_SLOW_LOG)
+    // 清空拖动期布局采样（新会话开始，或收尾报告后）
+    void resetGridDragSlowLogSample()
+    {
+        mGridDragLayoutPasses = 0;
+        mGridDragLayoutNs     = 0;
+        mGridDragMaxLayoutNs  = 0;
+        mGridDragLastStampNs  = 0;
+    }
+
+    /// 汇总一次拖动中被事件驱动的整图布局耗时；超过标签阈值才输出一条慢日志
+    void reportGridDragSlowLog()
+    {
+        if (mGridDragLayoutPasses <= 0) {
+            resetGridDragSlowLogSample();
+            return;
+        }
+        // 末次布局发生在最后一次 move 之后，用「末帧时间戳→现在」补上
+        if (mGridDragLastStampNs > 0) {
+            const qint64 layoutNs = gridSlowLogStampNs() - mGridDragLastStampNs;
+            if (layoutNs > 0) {
+                mGridDragLayoutNs += layoutNs;
+                mGridDragMaxLayoutNs = qMax(mGridDragMaxLayoutNs, layoutNs);
+            }
+        }
+        const int passes      = mGridDragLayoutPasses;
+        const qint64 totalNs  = mGridDragLayoutNs;
+        const qint64 maxNs    = mGridDragMaxLayoutNs;
+        resetGridDragSlowLogSample();
+
+        if (totalNs < DASlowLog::thresholdMs("dafigure.grid.drag") * 1000000LL) {
+            return;
+        }
+        const QString detail = QStringLiteral("passes=%1 total_ms=%2 max_ms=%3")
+                                   .arg(passes)
+                                   .arg(totalNs / 1000000.0, 0, 'f', 2)
+                                   .arg(maxNs / 1000000.0, 0, 'f', 2);
+        DASlowLog::emitScopeRecord("dafigure.grid.drag",
+                                   totalNs,
+                                   totalNs,
+                                   0,
+                                   __FILE__,
+                                   __LINE__,
+                                   "onGridSizesChangeFinished",
+                                   detail,
+                                   "main");
+    }
+#endif
 
     // 将当前颜色主题同步为 qwt 的颜色循环并设置到指定绘图上。
     // 之后新附加到该绘图的图元会按主题自动取色（见 QwtPlot::nextColorForItem）。
@@ -2315,6 +2380,12 @@ bool DAFigureWidget::eventFilter(QObject* obj, QEvent* event)
  *
  * 不在此压栈：只在一次调整会话的第一帧记下上一次提交的比例作为撤销基线，
  * 由onGridSizesChangeFinished在结束时统一压入一条命令。
+ *
+ * 慢日志（仅 DA_ENABLE_SLOW_LOG 配置）：本槽由 QwtFigure 转发
+ * QwtFigureGrid::sizesChanged 触发，早于 qwt 的同步布局通道执行，因此无法在这里
+ * 计时布局本身；改为在回调返回时记时间戳，下一次回调开始时取差值，近似等于上一次
+ * move 触发的整图布局耗时（含少量事件派发开销）。松手时由
+ * onGridSizesChangeFinished 汇总整次拖动的布局次数与总耗时。
  */
 void DAFigureWidget::onGridSizesChanged()
 {
@@ -2322,12 +2393,29 @@ void DAFigureWidget::onGridSizesChanged()
     if (d->mSuppressGridUndo || !d->mGridLayoutEnabled) {
         return;
     }
+    DA_SLOW_LOG_SCOPE("dafigure.grid.sizesChanged");
     if (d->mGridChangeActive) {
-        return;
+        // 一次会话中的后续帧：不必重设撤销基线，但要采样布局耗时（见下方）
+    } else {
+        d->mGridChangeActive = true;
+        d->mGridOldRows = d->mGridCommittedRows;
+        d->mGridOldCols = d->mGridCommittedCols;
+#if defined(DA_ENABLE_SLOW_LOG)
+        // 新会话：清掉上一次（可能因 Esc/失焦被取消而没有收尾）的采样
+        d->resetGridDragSlowLogSample();
+#endif
     }
-    d->mGridChangeActive = true;
-    d->mGridOldRows = d->mGridCommittedRows;
-    d->mGridOldCols = d->mGridCommittedCols;
+#if defined(DA_ENABLE_SLOW_LOG)
+    const qint64 nowNs = gridSlowLogStampNs();
+    if (d->mGridDragLastStampNs > 0) {
+        const qint64 layoutNs = nowNs - d->mGridDragLastStampNs;
+        d->mGridDragLayoutNs += layoutNs;
+        d->mGridDragMaxLayoutNs = qMax(d->mGridDragMaxLayoutNs, layoutNs);
+    }
+    ++d->mGridDragLayoutPasses;
+    // 时间戳在回调末尾取：之后 qwt 才执行本次 sizesChanged 的整图布局
+    d->mGridDragLastStampNs = gridSlowLogStampNs();
+#endif
 }
 
 /**
@@ -2345,6 +2433,10 @@ void DAFigureWidget::onGridSizesChangeFinished()
     if (!g) {
         return;
     }
+#if defined(DA_ENABLE_SLOW_LOG)
+    // 汇总本次拖动的整图布局统计（最后一次布局发生在松手之前的 move 里）
+    d->reportGridDragSlowLog();
+#endif
     const QVector< qreal > newRows = g->rowSizes();
     const QVector< qreal > newCols = g->columnSizes();
     if (!d->mGridChangeActive) {
