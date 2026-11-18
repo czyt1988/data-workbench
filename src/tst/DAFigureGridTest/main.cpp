@@ -32,6 +32,7 @@
 // DAFigure
 #include "DAChartWidget.h"
 #include "DAFigureWidget.h"
+#include "DAFigureWidgetCommands.h"
 #include "DAFigureWidgetOverlay.h"
 // qwt
 #include "qwt_figure.h"
@@ -78,6 +79,12 @@ private Q_SLOTS:
     void testChart3DGridCell();
     // 3D 与 2D 相邻时，分隔条由 2D 一侧负责命中并可拖动（OpenGL 不可用时跳过）
     void testChart3DAdjacent2DDragDivider();
+    // 创建子图的撤销命令在网格 figure 上按单元格恢复（不出现自由成员叠压）
+    void testCreateChartCommandKeepsGridCell();
+    // 移除子图的撤销命令 undo 后回到原单元格
+    void testRemoveChartCommandKeepsGridCell();
+    // 调整子图尺寸的撤销命令在网格成员上按单元格恢复
+    void testResizeWidgetCommandKeepsGridCell();
 
 private:
     // 当前环境能否安全创建 OpenGL 子图（离屏平台、无 GL 2.x 格式或不能建上下文时为 false）
@@ -970,6 +977,159 @@ void TSTDAFigureGridTest::testChart3DAdjacent2DDragDivider()
     QVERIFY(cell2dBefore.width() != chart2d->geometry().width());
 
     QVERIFY(sendTo2D(QEvent::MouseButtonRelease, dragFigurePos, Qt::LeftButton, Qt::NoButton));
+}
+
+/**
+ * @brief 创建子图的撤销命令在网格 figure 上按单元格恢复
+ *
+ * 网格 figure 上新建的子图必须先登记到单元格，否则会作为自由成员按传入矩形压在网格成员之上；
+ * undo→redo 必须回到同一单元格，且一次操作只压入一条命令。
+ */
+void TSTDAFigureGridTest::testCreateChartCommandKeepsGridCell()
+{
+    QScopedPointer< DAFigureWidget > fig(new DAFigureWidget());
+    QVERIFY(initFigure(fig.data()));
+    QVERIFY(fig->enableGridLayout(2, 2));
+    settle(fig.data());
+
+    QUndoStack* stack = fig->getUndoStack();
+    QVERIFY(stack);
+    QCOMPARE(stack->count(), 0);
+
+    // 传入一个与网格单元格不对齐的自由矩形：修复前它会成为自由成员叠压在其他成员之上
+    DAChartWidget* chart = fig->createChart_(QRectF(0.55, 0.55, 0.4, 0.4));
+    QVERIFY(chart);
+    QCOMPARE(stack->count(), 1);
+    settle(fig.data());
+
+    int row = -1;
+    int col = -1;
+    int rowSpan = 1;
+    int colSpan = 1;
+    QVERIFY2(fig->grid()->gridPosition(chart, &row, &col, &rowSpan, &colSpan),
+             "a chart created on a grid figure must be registered as a grid member");
+    QCOMPARE(row, 0);
+    QCOMPARE(col, 0);
+    QVERIFY2(fuzzyRect(chart->geometry(), expectedCellGeometry(fig.data(), row, col, rowSpan, colSpan)),
+             qPrintable(QStringLiteral("chart geometry %1 should match cell (0,0) geometry %2")
+                            .arg(rectText(chart->geometry()),
+                                 rectText(expectedCellGeometry(fig.data(), row, col, rowSpan, colSpan)))));
+
+    // undo：子图从 figure 移除
+    stack->undo();
+    settle(fig.data());
+    QCOMPARE(fig->getChartCount(), 0);
+
+    // redo：回到同一单元格，仍不是自由成员
+    stack->redo();
+    settle(fig.data());
+    QCOMPARE(fig->getChartCount(), 1);
+    int row2 = -1;
+    int col2 = -1;
+    QVERIFY2(fig->grid()->gridPosition(chart, &row2, &col2, nullptr, nullptr),
+             "redo must restore the chart as a grid member");
+    QCOMPARE(row2, 0);
+    QCOMPARE(col2, 0);
+    QVERIFY2(fuzzyRect(chart->geometry(), expectedCellGeometry(fig.data(), 0, 0)),
+             qPrintable(QStringLiteral("after redo the chart geometry %1 should still match cell (0,0) %2")
+                            .arg(rectText(chart->geometry()), rectText(expectedCellGeometry(fig.data(), 0, 0)))));
+    QCOMPARE(stack->count(), 1);
+}
+
+/**
+ * @brief 移除子图的撤销命令 undo 后回到原单元格
+ */
+void TSTDAFigureGridTest::testRemoveChartCommandKeepsGridCell()
+{
+    QScopedPointer< DAFigureWidget > fig(new DAFigureWidget());
+    QVERIFY(initFigure(fig.data()));
+    QVERIFY(fig->enableGridLayout(2, 2));
+    settle(fig.data());
+
+    DAChartWidget* chart = fig->createChart();
+    QVERIFY(chart);
+    QVERIFY(fig->setGridCell(chart, 1, 1));
+    settle(fig.data());
+
+    QUndoStack* stack = fig->getUndoStack();
+    QVERIFY(stack);
+    const int baseCount = stack->count();
+    fig->push(new DAFigureWidgetCommandRemoveChart(fig.data(), chart));
+    QCOMPARE(stack->count(), baseCount + 1);
+    QCOMPARE(fig->getChartCount(), 0);
+
+    // undo：按原单元格恢复（不是自由布局的归一化矩形）
+    stack->undo();
+    settle(fig.data());
+    QCOMPARE(fig->getChartCount(), 1);
+    int row = -1;
+    int col = -1;
+    QVERIFY2(fig->grid()->gridPosition(chart, &row, &col, nullptr, nullptr),
+             "undoing a removal must restore the chart as a grid member");
+    QCOMPARE(row, 1);
+    QCOMPARE(col, 1);
+    QVERIFY2(fuzzyRect(chart->geometry(), expectedCellGeometry(fig.data(), 1, 1)),
+             qPrintable(QStringLiteral("restored chart geometry %1 should match cell (1,1) %2")
+                            .arg(rectText(chart->geometry()), rectText(expectedCellGeometry(fig.data(), 1, 1)))));
+
+    // redo 再次移除、再 undo 仍回同一单元格
+    stack->redo();
+    QCOMPARE(fig->getChartCount(), 0);
+    stack->undo();
+    settle(fig.data());
+    QCOMPARE(fig->getChartCount(), 1);
+    row = -1;
+    col = -1;
+    QVERIFY(fig->grid()->gridPosition(chart, &row, &col, nullptr, nullptr));
+    QCOMPARE(row, 1);
+    QCOMPARE(col, 1);
+}
+
+/**
+ * @brief 调整子图尺寸的撤销命令在网格成员上按单元格恢复
+ *
+ * 网格成员的几何由轨道比例决定，resize 命令不能再写自由归一化矩形；
+ * redo 应把成员移动到新矩形对应的单元格，undo 回到原单元格。
+ */
+void TSTDAFigureGridTest::testResizeWidgetCommandKeepsGridCell()
+{
+    QScopedPointer< DAFigureWidget > fig(new DAFigureWidget());
+    QVERIFY(initFigure(fig.data()));
+    QVERIFY(fig->enableGridLayout(2, 2));
+    settle(fig.data());
+
+    DAChartWidget* chart = fig->createChart();
+    QVERIFY(chart);
+    QVERIFY(fig->setGridCell(chart, 0, 0));
+    settle(fig.data());
+
+    const QRectF oldRect = fig->axesNormRect(chart);
+    const QRectF newRect(0.55, 0.55, 0.4, 0.4);  // 对应单元格 (1,1)
+    QUndoStack* stack = fig->getUndoStack();
+    QVERIFY(stack);
+    const int baseCount = stack->count();
+    fig->push(new DAFigureWidgetCommandResizeWidget(fig.data(), chart, oldRect, newRect));
+    QCOMPARE(stack->count(), baseCount + 1);
+    settle(fig.data());
+
+    int row = -1;
+    int col = -1;
+    QVERIFY2(fig->grid()->gridPosition(chart, &row, &col, nullptr, nullptr),
+             "resizing a grid member must keep it a grid member");
+    QCOMPARE(row, 1);
+    QCOMPARE(col, 1);
+
+    // undo：回到原单元格 (0,0)
+    stack->undo();
+    settle(fig.data());
+    row = -1;
+    col = -1;
+    QVERIFY(fig->grid()->gridPosition(chart, &row, &col, nullptr, nullptr));
+    QCOMPARE(row, 0);
+    QCOMPARE(col, 0);
+    QVERIFY2(fuzzyRect(chart->geometry(), expectedCellGeometry(fig.data(), 0, 0)),
+             qPrintable(QStringLiteral("after undo the chart geometry %1 should match cell (0,0) %2")
+                            .arg(rectText(chart->geometry()), rectText(expectedCellGeometry(fig.data(), 0, 0)))));
 }
 
 }  // namespace DA

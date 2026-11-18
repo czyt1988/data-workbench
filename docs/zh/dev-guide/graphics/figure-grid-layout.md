@@ -183,6 +183,16 @@ figure->setGridCell(waterfall, 1, 1);   // 与热图同格，按瀑布模式切�
 
 `DAFigureWidgetCommandResizeGrid`（`src/DAFigure/DAFigureWidgetCommands.h`）保存调整前后的行列比例；首帧比例已经由拖动应用，命令的第一次 `redo()` 直接跳过，避免重复设置。命令文本为「调整网格比例」。
 
+### 增删/移动子图的命令感知网格
+
+网格 figure 上，`DAFigureWidgetCommandCreateChart` / `Create3DChart` / `RemoveChart` / `Remove3DChart` / `ResizeWidget` 都带一份 `DAFigureGridCellSnapshot`（是否为网格成员 + row/col/rowSpan/colSpan）：
+
+- 网格成员走 `DAFigureWidget::setGridCell()` 恢复，否则 redo/undo 会按自由归一化矩形把子图加回去，与网格成员叠压；
+- 自由成员路径完全没有改动（`addChart` / `add3DChart` / `setWidgetNormPos` 照旧）；
+- undo 会经 removeChart 摘掉 layout item，所以恢复网格成员要先补回成员（`hasPlot`/`has3DChart` 判断）再按单元格登记；
+- 网格 figure 上首次创建子图会登记到第一个空闲单元格（网格已满时退回 (0,0)，同格共存是允许的）；
+- 网格 figure 上「新建坐标系」「调整子图大小」入口在 Ribbon 侧置灰（`updateFigureAboutRibbon`），避免交互路径制造自由成员。
+
 一个 figure 一个撤销栈（`DAFigureWidget::getUndoStack()`）。信号分析页的 provider 激活成功后，注册表会把这个栈设为 active，保证功能区撤销/重做按钮作用于当前信号的图。
 
 ## 交互约定

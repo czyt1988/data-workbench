@@ -168,8 +168,12 @@ void DAAppRibbonArea::updateFigureAboutRibbon(DAFigureWidget* fig)
     DAChartWidget* chart = fig->getCurrentChart();
     updateChartAboutRibbon(chart);
     mActions->actionChartLinkAllPickerEnabled->setChecked(fig->isDataPickerGroupEnabled());
-    // 网格布局下子图几何由网格轨道比例决定，自由调整子图大小不可用（Resize Chart 置灰）
-    mActions->actionChartEditorResizeSubChart->setEnabled(!fig->isGridLayoutEnabled());
+    // 网格布局下子图几何与成员由网格轨道比例决定：增删子图会先作为自由成员加入并与网格成员叠压，
+    // 「调整子图大小（Resize Chart）」与「新建坐标系」一律置灰；自由布局保持原有可用性。
+    // （撤销命令本身已按网格单元格恢复，见 DAFigureWidgetCommands 的网格快照）
+    const bool freeLayout = !fig->isGridLayoutEnabled();
+    mActions->actionChartEditorResizeSubChart->setEnabled(freeLayout);
+    mActions->actionFigureNewXYAxis->setEnabled(freeLayout);
 }
 
 /**

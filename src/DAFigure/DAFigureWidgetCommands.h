@@ -14,6 +14,23 @@ namespace DA
 class DAChartWidget;
 class DAChart3DWidget;
 class DAFigureWidget;
+
+/**
+ * @brief 子图在保留式网格里的单元格快照
+ *
+ * 增删/移动命令用它把网格成员按原单元格恢复：网格成员按轨道比例排版，若 undo/redo 走自由布局
+ * （addChart/setWidgetNormPos），恢复出来的子图会与网格成员叠压。valid=false 表示命令涉及的不是
+ * 网格成员（自由布局路径行为不变）。
+ */
+struct DAFIGURE_API DAFigureGridCellSnapshot
+{
+    bool valid { false };  ///< 是否为网格成员快照
+    int row { 0 };         ///< 起始行（0基）
+    int col { 0 };         ///< 起始列（0基）
+    int rowSpan { 1 };     ///< 行跨度
+    int colSpan { 1 };     ///< 列跨度
+};
+
 /**
  * @brief DAFigureWidget命令的基本体
  */
@@ -54,6 +71,7 @@ public:
 	DAChartWidget* mChart { nullptr };
 	QRectF mChartSize;
 	bool mNeedDelete { false };
+	DAFigureGridCellSnapshot mGridCell;  ///< 网格成员单元格快照（自由布局时 valid=false）
 };
 
 /**
@@ -80,6 +98,7 @@ public:
 	DAChart3DWidget* mChart3D { nullptr };
 	QRectF mChartSize;
 	bool mNeedDelete { false };
+	DAFigureGridCellSnapshot mGridCell;  ///< 网格成员单元格快照（自由布局时 valid=false）
 };
 
 /**
@@ -99,6 +118,7 @@ public:
     QRectF mChartNormRect;
 	bool mIsRelative { true };
 	bool mNeedDelete { false };
+	DAFigureGridCellSnapshot mGridCell;  ///< 网格成员单元格快照（自由布局时 valid=false）
 };
 
 /**
@@ -117,6 +137,7 @@ public:
 	DAChart3DWidget* mChart3D { nullptr };
 	QRectF mChartNormRect;
 	bool mNeedDelete { false };
+	DAFigureGridCellSnapshot mGridCell;  ///< 网格成员单元格快照（自由布局时 valid=false）
 };
 
 /**
@@ -137,6 +158,8 @@ public:
 	QPointer< QWidget > mWidget;
     QRectF mOldNormRect;
     QRectF mNewNormRect;
+    DAFigureGridCellSnapshot mOldGridCell;  ///< 调整前的网格单元格（自由布局时 valid=false）
+    DAFigureGridCellSnapshot mNewGridCell;  ///< 调整后的网格单元格（自由布局时 valid=false）
 };
 
 /**
