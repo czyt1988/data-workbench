@@ -1561,6 +1561,15 @@ void DASignalAnalysisUI::buildSignalContextCategory()
     actionTimeCursor = createIconAction("actionSignalTimeCursor", signalAppIcon("chart-vline-marker.svg"), true);
     connect(actionTimeCursor, &QAction::toggled, this, &DASignalAnalysisUI::onTimeCursorToggled);
     mPanelTimeFreqView->addLargeAction(actionTimeCursor);
+    // 测量 ▾：联动缩放（双光标/峰值保持在后续步骤加入同一菜单）
+    actionMeasure = createIconAction("actionSignalMeasure", pluginIcon("measure.svg"), false);
+    mMeasureMenu  = new QMenu();
+    actionLinkedZoom = mMeasureMenu->addAction(tr("Linked zoom"));  // cn:联动缩放
+    actionLinkedZoom->setObjectName(QStringLiteral("actionSignalLinkedZoom"));
+    actionLinkedZoom->setCheckable(true);
+    connect(actionLinkedZoom, &QAction::toggled, this, &DASignalAnalysisUI::onLinkedZoomToggled);
+    actionMeasure->setMenu(mMeasureMenu);
+    mPanelTimeFreqView->addLargeAction(actionMeasure);
     // 视图 ▾：时间格式 / 布局比例 / 重置显示（都只影响显示，不重算分析）
     actionViewOptions = createIconAction("actionSignalViewOptions", pluginIcon("viewOptions.svg"), false);
     mViewOptionsMenu  = new QMenu();
@@ -1951,6 +1960,15 @@ void DASignalAnalysisUI::syncSignalContextControls()
             presetAction->setEnabled(hasView);
         }
     }
+    // 测量 ▾：联动缩放勾选跟随视图（双光标/峰值保持的勾选在各自步骤接入）
+    if (actionMeasure) {
+        actionMeasure->setEnabled(hasView);
+    }
+    if (actionLinkedZoom) {
+        const QSignalBlocker blocker(actionLinkedZoom);
+        actionLinkedZoom->setEnabled(hasView);
+        actionLinkedZoom->setChecked(view && view->isLinkedZoom());
+    }
     // 云图设置整组：只在二维热图可见时可用（三维/隐藏时置灰，色标也只有二维有意义）
     const bool heatmapActive = hasView && waterfallMode == 0;
     if (actionColormap) {
@@ -2310,6 +2328,17 @@ void DASignalAnalysisUI::onWaterfallSettingsRequested()
     }
     if (mSettingContext) {
         mSettingContext->showWaterfallItemSetting();
+    }
+}
+
+/**
+ * @brief 「测量 → 联动缩放」开关：波形 x ↔ 云图 x、频谱 x ↔ 云图 y 同步缩放/平移
+ * @param on true 开启联动
+ */
+void DASignalAnalysisUI::onLinkedZoomToggled(bool on)
+{
+    if (DASignalAnalysisView* view = currentView()) {
+        view->setLinkedZoom(on);
     }
 }
 
@@ -3943,6 +3972,15 @@ void DASignalAnalysisUI::finalize()
     actionDisplayReset      = nullptr;
     mTimeFormatActions.clear();
     mLayoutPresetActions.clear();
+    // 「测量 ▾」菜单：菜单项随父菜单销毁
+    if (actionMeasure) {
+        actionMeasure->setMenu(nullptr);
+    }
+    if (mMeasureMenu) {
+        delete mMeasureMenu;
+        mMeasureMenu = nullptr;
+    }
+    actionLinkedZoom = nullptr;
     if (actionExportPeaks) {
         actionExportPeaks->setMenu(nullptr);
     }
@@ -4068,7 +4106,8 @@ void DASignalAnalysisUI::finalize()
             actionExportImage,    actionRelinkSource,
             actionTimeCursor,     actionViewOptions,     actionColormap,
             actionColorBar,       actionWaterfallColormap, actionWaterfallHighlight,
-            actionWaterfallSettings, actionHeatmapDisplay
+            actionWaterfallSettings, actionHeatmapDisplay,
+            actionMeasure
         };
         for (QAction* act : allActions) {
             if (act) {
@@ -4108,6 +4147,8 @@ void DASignalAnalysisUI::finalize()
     actionWaterfallHighlight = nullptr;
     actionWaterfallSettings = nullptr;
     actionHeatmapDisplay    = nullptr;
+    actionMeasure           = nullptr;
+    actionLinkedZoom        = nullptr;
     mPanelImportExport      = nullptr;
     mPanelPreprocess        = nullptr;
     mPanelSpectrum          = nullptr;
@@ -5478,7 +5519,8 @@ void DASignalAnalysisUI::setSignalDependentActionsEnabled(bool on)
         actionPeakMarkerDisplay, actionPeakWindow, actionWaterfall2D, actionWaterfall3D,
         actionWaterfallHide, actionExportPeaks, actionTimeCursor, actionViewOptions,
         actionDisplayReset, actionWaterfallColormap, actionWaterfallHighlight, actionWaterfallSettings,
-        actionExportImage,  actionRelinkSource,    actionHeatmapDisplay,
+        actionExportImage,  actionRelinkSource,    actionHeatmapDisplay,  actionMeasure,
+        actionLinkedZoom,
         actionColormap,     actionColorBar
     };
     for (QAction* act : acts) {
@@ -5681,6 +5723,17 @@ void DASignalAnalysisUI::retranslateUi()
         actionDisplayReset->setText(tr("Reset display"));  // cn:重置显示
         actionDisplayReset->setToolTip(tr("Restore all display settings to their defaults"));
         // cn:把所有显示类设置恢复为默认值
+    }
+    if (actionMeasure) {
+        actionMeasure->setText(tr("Measure"));  // cn:测量
+        actionMeasure->setToolTip(tr("Linked zoom, dual cursors and peak hold"));
+        // cn:联动缩放、双光标测量与峰值保持
+    }
+    if (actionLinkedZoom) {
+        actionLinkedZoom->setText(tr("Linked zoom"));  // cn:联动缩放
+        actionLinkedZoom->setToolTip(
+            tr("Keep the waveform/heatmap time axes and the spectrum/heatmap frequency axes in sync"));
+        // cn:波形与云图的时间轴、频谱与云图的频率轴保持同步缩放
     }
     // 分析设置页参数控件（标签 / combo 项文本；动作文本另见下方「分析」）
     if (mChannelLabel) {

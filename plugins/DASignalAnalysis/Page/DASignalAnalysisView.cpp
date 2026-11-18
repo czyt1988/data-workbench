@@ -23,6 +23,8 @@
 #include "qwt_plot_curve.h"
 #include "qwt_plot_intervalcurve.h"
 #include "qwt_plot_marker.h"
+#include "qwt_plot_panner.h"
+#include "qwt_plot_canvas_zoomer.h"
 #include "qwt_plot_picker.h"
 #include "qwt_plot_shapeitem.h"
 #include "qwt_plot_spectrogram.h"
@@ -191,6 +193,8 @@ DASignalAnalysisView::DASignalAnalysisView(const DASignalPtr& signal, QWidget* p
 
 DASignalAnalysisView::~DASignalAnalysisView()
 {
+    // 联动缩放的连接以本视图为接收者，析构时 Qt 会自动断开；这里显式清理避免析构顺序告警
+    disconnectLinkedZoom();
 }
 
 DASignalPtr DASignalAnalysisView::signal() const
@@ -1047,12 +1051,147 @@ bool DASignalAnalysisView::isLinkedZoom() const
 }
 
 /**
- * @brief 开关联动缩放（坐标轴同步在视图交互信号接通后生效）
+ * @brief 开关联动缩放（波形 x ↔ 云图 x、频谱 x ↔ 云图 y）
+ *
+ * 开启时立即挂接已存在的 zoomer/panner；工具是懒创建的，之后由
+ * chartPropertiesChanged(ZoomStateChanged/PanStateChanged) 再尝试挂接。
+ * 关闭只断开连接，不自动恢复 autoscale（保留当前范围，写进用户指南）。
  * @param on true 开启
  */
 void DASignalAnalysisView::setLinkedZoom(bool on)
 {
+    if (mLinkedZoom == on) {
+        return;
+    }
     mLinkedZoom = on;
+    if (mLinkedZoom) {
+        refreshLinkedZoomConnections();
+        // 开启时先把当前波形时间范围套到云图，避免两图范围不一致后第一次缩放跳变
+        syncLinkedAxesFrom(mWaveChart);
+    } else {
+        disconnectLinkedZoom();
+    }
+}
+
+/**
+ * @brief 联动缩放：为每个 2D 子图挂接 zoomer/panner 的缩放/平移信号（幂等）
+ *
+ * 只连接已存在的工具（不在开启联动时替用户创建/启用工具）；连接按对象去重，
+ * 重复调用不会重复触发。曲线图/热图画布已在 buildFigure 里装过事件过滤器。
+ */
+void DASignalAnalysisView::refreshLinkedZoomConnections()
+{
+    if (!mLinkedZoom) {
+        return;
+    }
+    const QList< DAChartWidget* > charts = { mWaveChart, mSpectrumChart, mHeatmapChart };
+    for (DAChartWidget* chart : charts) {
+        if (nullptr == chart) {
+            continue;
+        }
+        // 工具开关变化时重新尝试挂接（zoomer/panner 是懒创建的）
+        if (!mLinkedZoomCharts.contains(chart)) {
+            mLinkedZoomCharts.insert(chart);
+            mLinkedZoomConnections.append(connect(chart,
+                                                  &DAChartWidget::chartPropertiesChanged,
+                                                  this,
+                                                  &DASignalAnalysisView::onLinkedChartPropertiesChanged));
+        }
+        // zoomer/panner 是懒创建且会被复用的对象：用指针集合去重（lambda 不支持 UniqueConnection）
+        if (auto* zoomer = chart->getZoomer()) {
+            if (!mLinkedZoomTools.contains(zoomer)) {
+                mLinkedZoomTools.insert(zoomer);
+                mLinkedZoomConnections.append(connect(
+                    zoomer,
+                    &QwtPlotCanvasZoomer::zoomed,
+                    this,
+                    [this, chart](const QList< QwtPlotCanvasZoomState >&) { syncLinkedAxesFrom(chart); }));
+            }
+        }
+        if (auto* panner = chart->getPanner()) {
+            if (!mLinkedZoomTools.contains(panner)) {
+                mLinkedZoomTools.insert(panner);
+                mLinkedZoomConnections.append(
+                    connect(panner, &QwtPlotPanner::panned, this, [this, chart](int, int) { syncLinkedAxesFrom(chart); }));
+            }
+        }
+    }
+}
+
+/**
+ * @brief 2D 子图属性变化：缩放/平移工具开关变化后重新尝试挂接联动
+ * @param chart 发生变化的子图（未使用）
+ * @param flag 变化的属性集合
+ */
+void DASignalAnalysisView::onLinkedChartPropertiesChanged(DAChartWidget* chart,
+                                                          DAChartWidget::ChartPropertyChangeFlags flag)
+{
+    Q_UNUSED(chart)
+    if (!mLinkedZoom) {
+        return;
+    }
+    if (flag.testFlag(DAChartWidget::ZoomStateChanged) || flag.testFlag(DAChartWidget::PanStateChanged)) {
+        refreshLinkedZoomConnections();
+    }
+}
+
+/**
+ * @brief 把某个子图的缩放/平移结果同步到相关坐标轴
+ *
+ * 映射关系：波形 x（时间）↔ 云图 x；频谱 x（频率）↔ 云图 y。云图作为源时反向同步两条。
+ * 同步期间 mSyncingAxes 防重入；目标轴用 setAxisScale（会关掉该轴 autoscale），
+ * 关闭联动后不主动恢复 autoscale。
+ * @param source 发生缩放/平移的子图
+ */
+void DASignalAnalysisView::syncLinkedAxesFrom(DAChartWidget* source)
+{
+    if (!mLinkedZoom || mSyncingAxes || nullptr == source) {
+        return;
+    }
+    // 只处理三种 2D 子图（3D 没有这些坐标轴）
+    if (source != mWaveChart && source != mSpectrumChart && source != mHeatmapChart) {
+        return;
+    }
+    const QwtInterval sourceX = source->axisScaleDiv(QwtPlot::xBottom).interval();
+    const QwtInterval sourceY = source->axisScaleDiv(QwtPlot::yLeft).interval();
+    mSyncingAxes              = true;
+    auto syncX = [this](DAChartWidget* target, const QwtInterval& interval) {
+        if (nullptr == target || !interval.isValid() || interval.width() <= 0.0) {
+            return;
+        }
+        target->setAxisScale(QwtPlot::xBottom, interval.minValue(), interval.maxValue());
+        target->replot();
+    };
+    auto syncY = [this](DAChartWidget* target, const QwtInterval& interval) {
+        if (nullptr == target || !interval.isValid() || interval.width() <= 0.0) {
+            return;
+        }
+        target->setAxisScale(QwtPlot::yLeft, interval.minValue(), interval.maxValue());
+        target->replot();
+    };
+    if (source == mWaveChart) {
+        syncX(mHeatmapChart, sourceX);
+    } else if (source == mSpectrumChart) {
+        syncY(mHeatmapChart, sourceX);  // 频谱的 x（频率）对应云图的 y（频率）
+    } else {                            // 云图
+        syncX(mWaveChart, sourceX);
+        syncY(mSpectrumChart, sourceY);
+    }
+    mSyncingAxes = false;
+}
+
+/**
+ * @brief 断开全部联动缩放连接（关闭联动 / 切图 / 视图销毁时调用）
+ */
+void DASignalAnalysisView::disconnectLinkedZoom()
+{
+    for (const QMetaObject::Connection& connection : std::as_const(mLinkedZoomConnections)) {
+        disconnect(connection);
+    }
+    mLinkedZoomConnections.clear();
+    mLinkedZoomCharts.clear();
+    mLinkedZoomTools.clear();
+    mSyncingAxes = false;
 }
 
 /**

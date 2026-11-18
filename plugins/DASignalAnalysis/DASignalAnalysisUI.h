@@ -217,6 +217,8 @@ private Q_SLOTS:
     void onLayoutPresetTriggered(QAction* action);
     // 「视图 ▾」重置显示：一键回到默认显示状态
     void resetDisplaySettings();
+    // 「测量 ▾」联动缩放开关
+    void onLinkedZoomToggled(bool on);
     // 当前视图「跟随滑块」变化（回勾底部工具栏）
     void onViewFollowSliderToggled(bool on);
     // 当前视图请求跟随帧幅值谱（同步短调用：成功回填、失败静默，不弹消息）
@@ -387,6 +389,8 @@ private:
     QMenu* mTimeFormatMenu { nullptr };
     QMenu* mLayoutPresetMenu { nullptr };
     QActionGroup* mTimeFormatGroup { nullptr };
+    // 「测量 ▾」菜单（联动缩放 / 双光标 / 峰值保持）
+    QMenu* mMeasureMenu { nullptr };
     // 菜单项指针（重译需要逐条改写文本；data 里存格式/预设编号）
     QList< QAction* > mTimeFormatActions;
     QList< QAction* > mLayoutPresetActions;
@@ -502,6 +506,8 @@ public:
     QAction* actionTimeCursor { nullptr };        ///< 时频图设置：当前帧标记（勾选）
     QAction* actionViewOptions { nullptr };       ///< 时频图设置：视图 ▾（时间格式/布局比例/重置显示）
     QAction* actionDisplayReset { nullptr };      ///< 视图 ▾：重置显示
+    QAction* actionMeasure { nullptr };           ///< 时频图设置：测量 ▾（联动缩放/双光标/峰值保持）
+    QAction* actionLinkedZoom { nullptr };        ///< 测量 ▾：联动缩放（勾选）
     QAction* actionColormap { nullptr };          ///< 云图设置：色带（带菜单，只影响二维谱图与色标）
     QAction* actionColorBar { nullptr };          ///< 云图设置：色标显隐（勾选）
     QAction* actionHeatmapDisplay { nullptr };    ///< 云图设置：显示 ▾（显示模式/插值）

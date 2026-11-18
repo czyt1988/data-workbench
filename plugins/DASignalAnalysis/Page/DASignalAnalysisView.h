@@ -3,6 +3,7 @@
 #include <QWidget>
 #include <QPointer>
 #include <QVector>
+#include <QSet>
 #include <QStringList>
 #include <QJsonObject>
 #include "Signal/DASignal.h"
@@ -10,6 +11,8 @@
 #include "Analysis/DASpectrumResult.h"
 #include "Analysis/DAStftResult.h"
 #include "Analysis/DAPeakResult.h"
+// 联动缩放槽需要 DAChartWidget::ChartPropertyChangeFlags（嵌套类型不能用前向声明）
+#include "DAChartWidget.h"
 
 class QTimer;
 class QResizeEvent;
@@ -267,6 +270,14 @@ private:
     // 把待应用的云图显示模式 / 插值写到谱图图元与栅格（图元不存在时空操作）
     void applyHeatmapDisplayMode(int mode);
     void applyHeatmapResampleMode();
+    // 联动缩放：按需挂接各 2D 子图的 zoomer/panner（工具是懒创建的，不能替用户开工具）
+    void refreshLinkedZoomConnections();
+    // 2D 子图属性变化（缩放/平移工具开关）→ 重新尝试挂接联动
+    void onLinkedChartPropertiesChanged(DAChartWidget* chart, DAChartWidget::ChartPropertyChangeFlags flag);
+    // 某个子图的缩放/平移发生后，把相关坐标轴同步到其它子图
+    void syncLinkedAxesFrom(DAChartWidget* source);
+    // 断开全部联动缩放连接
+    void disconnectLinkedZoom();
     // 当前时间对应的 STFT 列索引（跟随滑块用）
     int currentStftColumn() const;
     // 时间轴标签格式应用到波形 x 与云图 x（换新 ScaleDraw 实例，plot 接管所有权）
@@ -330,6 +341,12 @@ private:
     bool mLinkedZoom { false };
     bool mDualCursorEnabled { false };
     bool mPeakHoldEnabled { false };
+    // 联动缩放：同步期间的防重入标志与已建立的连接（关闭/切图时逐条断开）
+    bool mSyncingAxes { false };
+    QList< QMetaObject::Connection > mLinkedZoomConnections;
+    // 已挂接联动信号的子图与工具（zoomer/panner 懒创建且复用，按对象去重）
+    QSet< const QObject* > mLinkedZoomCharts;
+    QSet< const QObject* > mLinkedZoomTools;
     // 时间轴格式：0=秒 / 1=毫秒 / 2=mm:ss.s
     int mTimeFormat { 0 };
 
