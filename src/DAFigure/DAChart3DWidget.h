@@ -130,6 +130,10 @@ public:
 
     // ==================== 3D样式管理 ====================
 
+    // 持久 id（存档区分多个 3D 子图用；与 QwtPlot/图元 id 无关，默认空，加入 figure 时按 c3d-<n> 生成）
+    void setChart3DId(const QString& id);
+    QString getChart3DId() const;
+
     // --- 标题与背景 ---
     void setChart3DTitle(const QString& title);
     QString getChart3DTitle() const;

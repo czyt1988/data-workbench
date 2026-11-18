@@ -386,12 +386,20 @@ bool loadGridElement(DAFigureWidget* fig, const QDomElement& gridEle)
  * @brief 写单个 3D 子图的 <chart3d> 节点
  *
  * 一期只持久化「存在性 + 布局 + 视图 + 坐标轴 + 主题」，3D 图元数据不存（见 07 遗留项 O1），
- * 由业务层按分析参数重算重建。
+ * 由业务层按分析参数重算重建。id/visible 是后续 chart3d-data 与多 3D 子图区分所需的稳定标识，
+ * 本期只写读并保存在内存，不接线到图元数据。
  */
 QDomElement make3DChartElement(DAChart3DWidget* chart3d, QDomDocument* doc)
 {
     QDomElement chart3dEle = doc->createElement(QStringLiteral("chart3d"));
     Qwt3DPlot* plot        = static_cast< Qwt3DPlot* >(chart3d);
+    // 持久 id（c3d-<n>，与 QwtPlot::plotId 的 2D 子图 id 是两套命名空间）
+    const QString chart3dId = chart3d->getChart3DId();
+    if (!chart3dId.isEmpty()) {
+        chart3dEle.setAttribute(QStringLiteral("id"), chart3dId);
+    }
+    // 显隐：热图与三维瀑布同格按模式切换时，隐藏的 3D 子图也要在重开后保持隐藏
+    chart3dEle.setAttribute(QStringLiteral("visible"), chart3d->isVisible() ? 1 : 0);
     // --- view：旋转/平移/缩放/投影/背景/标题/光照/图例/坐标系 ---
     QDomElement viewEle = doc->createElement(QStringLiteral("view"));
     setNumberAttribute(viewEle, QStringLiteral("xrot"), plot->xRotation());
@@ -661,6 +669,13 @@ void load3DChartElement(DAChart3DWidget* chart3d, const QDomElement& chart3dEle)
         return;
     }
     Qwt3DPlot* plot = static_cast< Qwt3DPlot* >(chart3d);
+    // 持久 id：旧工程没有该属性时保持当前值（加入 figure 时已按 c3d-<n> 生成）
+    const QString chart3dId = chart3dEle.attribute(QStringLiteral("id"));
+    if (!chart3dId.isEmpty()) {
+        chart3d->setChart3DId(chart3dId);
+    }
+    // 显隐由调用方在子图加入 figure 之后恢复（加入流程会 show 子图，这里设置会被覆盖）；
+    // 插件存档在已有子图上恢复时也不在这里动显隐，显隐由插件按瀑布/热图显示模式决定。
     const QDomElement viewEle = chart3dEle.firstChildElement(QStringLiteral("view"));
     // 应用顺序很重要：先应用主题（Qwt3DTheme::apply 会写背景色/坐标轴颜色等），
     // 再用 <view> 的运行期值覆盖回来，否则用户自定义的背景/轴颜色会被主题旧值覆盖。
@@ -2792,6 +2807,13 @@ bool DAXmlHelper::loadElement(DAFigureWidget* fig,
         if (!added) {
             fig->add3DChart(chart3d.get(), pos);
         }
+        // 显隐必须放在加入 figure 之后：add3DChart/setGridCell 内部都会 show 子图。
+        // 旧工程没有 visible 属性时按可见处理（与既有行为一致）。
+        bool restoreVisible = true;
+        if (chart3dEle.hasAttribute(QStringLiteral("visible"))) {
+            restoreVisible = (chart3dEle.attribute(QStringLiteral("visible")).toInt() != 0);
+        }
+        chart3d->setVisible(restoreVisible);
         chart3d.release();
     }
     // 恢复绑定关系

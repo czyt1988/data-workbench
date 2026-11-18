@@ -26,6 +26,9 @@ public:
     // chartTitle 和 colorLegendEnabled 不需要缓存——plan-01 已为 Qwt3DPlot
     // 添加了 title() 和 isColorLegendShown() const getter。
     QHash< AXIS, QString > axisLabels;
+    // 持久 id：随 figure XML 存档，供多 3D 子图区分与后续 3D 图元数据引用。
+    // 与 QwtPlot::plotId（2D 子图 uuid）是两套命名空间，不使用 DAChartItemsManager 的 key 前缀。
+    QString chart3DId;
 };
 
 /**
@@ -430,6 +433,28 @@ QColor DAChart3DWidget::get3DBackgroundColor() const
 {
     RGBA bg = backgroundRGBAColor();
     return GL2Qt(bg.r, bg.g, bg.b);
+}
+
+/**
+ * @brief 设置持久 id
+ *
+ * 由 DAFigureWidget::add3DChart 在 id 为空时按 @c c3d-&lt;n&gt; 生成，存档读回时可覆盖为保存值。
+ * @param id 持久 id
+ */
+void DAChart3DWidget::setChart3DId(const QString& id)
+{
+    DA_D(d);
+    d->chart3DId = id;
+}
+
+/**
+ * @brief 获取持久 id
+ * @return 持久 id；未加入过 figure 时为空
+ */
+QString DAChart3DWidget::getChart3DId() const
+{
+    DA_DC(d);
+    return d->chart3DId;
 }
 
 /**

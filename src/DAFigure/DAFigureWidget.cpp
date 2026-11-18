@@ -748,6 +748,25 @@ void DAFigureWidget::add3DChart(DAChart3DWidget* chart3d, qreal xVersatile, qrea
 {
     QwtFigure* fig = figure();
     Q_ASSERT(fig);
+    // 3D 子图的持久 id：加入 figure 时按 c3d-<n> 生成（存档区分多个 3D 子图、供 3D 图元数据引用）。
+    // 与 QwtPlot::plotId 无关；undo/redo 重新加入时 id 已存在，保持不变。
+    if (chart3d && chart3d->getChart3DId().isEmpty()) {
+        int seq = 1;
+        QString candidate;
+        bool duplicated = true;
+        while (duplicated) {
+            candidate  = QStringLiteral("c3d-%1").arg(seq++);
+            duplicated = false;
+            const QList< DAChart3DWidget* >& existing = d_ptr->m_3dCharts;
+            for (DAChart3DWidget* other : existing) {
+                if (other && other != chart3d && other->getChart3DId() == candidate) {
+                    duplicated = true;
+                    break;
+                }
+            }
+        }
+        chart3d->setChart3DId(candidate);
+    }
     // 使用 addWidget 添加 3D chart widget（DAChart3DWidget 不是 QwtPlot 子类，不能使用 addAxes）
     fig->addWidget(chart3d, xVersatile, yVersatile, wVersatile, hVersatile);
     // 安装事件过滤器，用于检测3D chart被点击时设置为current3DChart

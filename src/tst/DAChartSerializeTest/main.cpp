@@ -292,6 +292,10 @@ private Q_SLOTS:
     void testGridBadRatiosFallBackToEqualTracks();
     // enableGridLayout 复位塌陷尺寸约束后，设置面板经 figureSizeConstraintsChanged 自动刷新
     void testFigureSizeConstraintsSignalRefreshesSettingPanel();
+    // 3D 子图持久 id 与 visible 的 XML 往返
+    void test3DChartIdAndVisibleRoundTrip();
+    // 旧工程 <chart3d> 无 id/visible：按默认加载（可见 + 生成 c3d-<n> id）
+    void testLegacy3DChartWithoutIdVisible();
     // DAChartItemArchive::load：存档未打开时返回 false（不再被当成旧工程静默成功）
     void testChartItemArchiveRejectsClosedArchive();
     // 网格 figure XML 往返：<grid> 行列/比例、成员 grid-* 坐标、x/y/w/h 兼容字段
@@ -1456,6 +1460,108 @@ void DAChartSerializeTest::testFigureSizeConstraintsSignalRefreshesSettingPanel(
     QVERIFY(fig->enableGridLayout(2, 3));  // 会再次复位塌陷值并发信号
     QCOMPARE(qwtFig->maximumWidth(), QWIDGETSIZE_MAX);
     QCOMPARE(panel.propertyPanel()->getIntValue(DA::DAFigureWidgetSettingPanel::PID_MaxWidth), otherMaxWidth);
+}
+
+/**
+ * @brief 3D 子图的持久 id 与 visible 存档往返
+ *
+ * id 是后续 chart3d-data（3D 图元持久化）与多 3D 子图区分的稳定标识；visible 用于
+ * 「热图/三维瀑布同格按模式切换」这类隐藏子图，重开后不能又冒出来。
+ */
+void DAChartSerializeTest::test3DChartIdAndVisibleRoundTrip()
+{
+    std::unique_ptr< DA::DAFigureWidget > src(new DA::DAFigureWidget());
+    src->resize(800, 600);
+    src->show();
+    QTest::qWaitForWindowExposed(src.get());
+    QVERIFY(src->enableGridLayout(2, 2));
+
+    DA::DAChart3DWidget* chart3d = src->create3DChart();
+    QVERIFY(chart3d);
+    QVERIFY(src->setGridCell(chart3d, 1, 1));
+    const QString srcId = chart3d->getChart3DId();
+    QVERIFY2(!srcId.isEmpty(), "a 3D chart added to a figure must get a persistent id");
+    QVERIFY2(srcId.startsWith(QStringLiteral("c3d-")), qPrintable(srcId));
+    // 与 2D 子图 id（QwtPlot::plotId，uuid）是两套命名空间，不能混用
+    DA::DAChartWidget* chart2d = src->createChart();
+    QVERIFY(chart2d);
+    QVERIFY2(!chart2d->plotId().isEmpty() && chart2d->plotId() != chart3d->getChart3DId(),
+             "the 2D plot id and the 3D chart id are different id spaces");
+
+    // 隐藏：模拟「同格按显示模式切换」时被隐藏的三维瀑布
+    chart3d->setVisible(false);
+
+    QDomDocument doc;
+    DA::DAChartItemsManager mgr;
+    const QDomElement figEle = DA::DAXmlHelper::makeElement(src.get(), QStringLiteral("figure"), &doc, &mgr);
+    QVERIFY(!figEle.isNull());
+    QDomElement chart3dEle;
+    for (QDomElement ele = figEle.firstChildElement(QStringLiteral("chart3d")); !ele.isNull();
+         ele             = ele.nextSiblingElement(QStringLiteral("chart3d"))) {
+        chart3dEle = ele;
+    }
+    QVERIFY(!chart3dEle.isNull());
+    QCOMPARE(chart3dEle.attribute(QStringLiteral("id")), srcId);
+    QCOMPARE(chart3dEle.attribute(QStringLiteral("visible")).toInt(), 0);
+
+    // 载入新 figure：id/visible/grid 单元格都要恢复
+    std::unique_ptr< DA::DAFigureWidget > dst(new DA::DAFigureWidget());
+    dst->resize(800, 600);
+    dst->show();
+    QTest::qWaitForWindowExposed(dst.get());
+    QVERIFY(DA::DAXmlHelper::loadElement(dst.get(), &figEle, &mgr));
+    const QList< DA::DAChart3DWidget* > loaded = dst->get3DCharts();
+    QCOMPARE(loaded.size(), 1);
+    QCOMPARE(loaded.first()->getChart3DId(), srcId);
+    QVERIFY2(!loaded.first()->isVisible(), "a hidden 3D chart must stay hidden after reload");
+    QVERIFY(dst->grid()->gridPosition(loaded.first(), nullptr, nullptr, nullptr, nullptr));
+
+    // 同一 figure 里第二个 3D 子图必须拿到不同的 id
+    DA::DAChart3DWidget* second = dst->create3DChart();
+    QVERIFY(second);
+    QVERIFY(!second->getChart3DId().isEmpty());
+    QVERIFY2(second->getChart3DId() != srcId, "each 3D chart must have its own persistent id");
+}
+
+/**
+ * @brief 旧工程的 <chart3d> 没有 id/visible 时按默认加载
+ *
+ * 旧工程：3D 子图默认可见，id 在加入 figure 时生成（两个子图的 id 互不相同）。
+ */
+void DAChartSerializeTest::testLegacy3DChartWithoutIdVisible()
+{
+    QDomDocument doc;
+    QDomElement figEle = doc.createElement(QStringLiteral("figure"));
+    figEle.setAttribute(QStringLiteral("id"), QStringLiteral("legacy-3d-figure"));
+    doc.appendChild(figEle);
+    figEle.appendChild(doc.createElement(QStringLiteral("charts")));
+    const auto addLegacy3D = [&](qreal x, qreal y, qreal w, qreal h) {
+        QDomElement e = doc.createElement(QStringLiteral("chart3d"));
+        e.setAttribute(QStringLiteral("x"), x);
+        e.setAttribute(QStringLiteral("y"), y);
+        e.setAttribute(QStringLiteral("w"), w);
+        e.setAttribute(QStringLiteral("h"), h);
+        figEle.appendChild(e);
+    };
+    addLegacy3D(0.05, 0.05, 0.4, 0.4);
+    addLegacy3D(0.55, 0.55, 0.4, 0.4);
+
+    std::unique_ptr< DA::DAFigureWidget > fig(new DA::DAFigureWidget());
+    fig->resize(640, 480);
+    fig->show();
+    QTest::qWaitForWindowExposed(fig.get());
+    DA::DAChartItemsManager mgr;
+    QVERIFY(DA::DAXmlHelper::loadElement(fig.get(), &figEle, &mgr));
+
+    const QList< DA::DAChart3DWidget* > charts3d = fig->get3DCharts();
+    QCOMPARE(charts3d.size(), 2);
+    QVERIFY2(charts3d.at(0)->isVisible() && charts3d.at(1)->isVisible(),
+             "3D charts of an old project (no visible attribute) must load visible");
+    QVERIFY2(!charts3d.at(0)->getChart3DId().isEmpty() && !charts3d.at(1)->getChart3DId().isEmpty(),
+             "3D charts must get a persistent id even when the project has none");
+    QVERIFY2(charts3d.at(0)->getChart3DId() != charts3d.at(1)->getChart3DId(),
+             "the two 3D charts must not share an id");
+    QVERIFY(!fig->isGridLayoutEnabled());
 }
 
 void DAChartSerializeTest::testZipArchiveTaskChartItemRoundTrip()
