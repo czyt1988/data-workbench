@@ -3,9 +3,11 @@
 #include <QWidget>
 #include <QDebug>
 #include <QHash>
+#include <QSet>
 // Qwt includes
 #include "qwt_figure.h"
 // DA includes
+#include "DAChart3DItemsManager.h"
 #include "DAFigureWidget.h"
 
 namespace DA
@@ -29,6 +31,10 @@ public:
     // 持久 id：随 figure XML 存档，供多 3D 子图区分与后续 3D 图元数据引用。
     // 与 QwtPlot::plotId（2D 子图 uuid）是两套命名空间，不使用 DAChartItemsManager 的 key 前缀。
     QString chart3DId;
+    // 图元键管理：attach 登记、detach 注销（等价于监听 plot3DItemAttached），存档时按 key 引用图元
+    DAChart3DItemsManager itemsManager;
+    // transient 3D 图元：派生数据（分析结果等），不写 chart-data，加载后由占用方重建
+    QSet< Qwt3DPlotItem* > transientItems;
 };
 
 /**
@@ -92,15 +98,31 @@ DAChart3DWidget::~DAChart3DWidget()
 void DAChart3DWidget::attach(Qwt3DPlotItem* item)
 {
     Qwt3DPlot::attach(item);
+    // 析构期（~Qwt3DPlot 逐个 detach 剩余图元）PrivateData 已被销毁，这里必须判空：
+    // 图元键管理/transient 集合都随 PrivateData 消失，不再需要维护。
+    if (PrivateData* d = d_func()) {
+        if (item) {
+            d->itemsManager.recordItem(item);
+        }
+    }
     Q_EMIT plot3DItemAttached(item, true);
 }
 
 /**
  * @brief override detach，在 item 卸载后发出 plot3DItemAttached 信号
+ *
+ * 同时注销图元键登记与 transient 标记：图元删除（Qwt3DPlotItem 析构会 detach）后不能在
+ * 管理者里留下悬空地址，否则地址复用后新图元会被误判而静默漏存/错存。
  */
 void DAChart3DWidget::detach(Qwt3DPlotItem* item)
 {
     Qwt3DPlot::detach(item);
+    if (PrivateData* d = d_func()) {
+        if (item) {
+            d->itemsManager.unrecordItem(item);
+            d->transientItems.remove(item);
+        }
+    }
     Q_EMIT plot3DItemAttached(item, false);
 }
 
@@ -385,6 +407,116 @@ bool DAChart3DWidget::hasData3D() const
         }
     }
     return false;
+}
+
+// ==================== 3D图元键管理与 transient ====================
+
+/**
+ * @brief 获取图元键管理者
+ *
+ * 图元 attach 时自动登记 key、detach（含删除）时自动注销，因此管理者里的图元一定是当前挂在
+ * 本 3D 子图上的图元。存档时 XML 只记 key，图元字节由 @ref DAChart3DItemArchive 另行写入。
+ * @return 管理者指针（随本对象生存）
+ */
+DAChart3DItemsManager* DAChart3DWidget::items3DManager()
+{
+    DA_D(d);
+    return &(d->itemsManager);
+}
+
+/**
+ * @brief 获取图元键管理者（const）
+ * @return 管理者指针
+ */
+const DAChart3DItemsManager* DAChart3DWidget::items3DManager() const
+{
+    DA_DC(d);
+    return &(d->itemsManager);
+}
+
+/**
+ * @brief 标记/取消标记一个 transient 3D 图元
+ *
+ * transient 图元是派生数据（例如信号分析的三维瀑布，加载后由插件按分析参数重算重建），
+ * 不进入 chart3d-data 持久化：@ref DAXmlHelper::makeElement(const DAFigureWidget*, ...)
+ * 写 `<items>` 时跳过。
+ * 本类不接管图元所有权，也不负责删除 transient 图元（与 @ref DAChartWidget::setItemTransient 一致）。
+ * @note 图元 detach（removePlot3DItem/clearAllData3D 及占用方自行 detach）会自动注销登记；
+ *       detach 后重新 attach 必须重新调用本函数，否则该图元会被当作普通图元持久化。
+ * @note 只接受已挂在本绘图上的图元：未 attach 的图元不会经 detach 注销，删除后会在登记集合里
+ *       留下悬空地址，地址复用后新图元被误判为 transient 而静默漏存。
+ * @param item 图元，为空时忽略
+ * @param on true 标记为 transient，false 取消标记
+ */
+void DAChart3DWidget::setItemTransient(Qwt3DPlotItem* item, bool on)
+{
+    DA_D(d);
+    if (!item) {
+        return;
+    }
+    if (!on) {
+        d->transientItems.remove(item);
+        return;
+    }
+    if (item->plot() != this) {
+        qWarning() << "DAChart3DWidget::setItemTransient: item is not attached to this chart, ignored";
+        return;
+    }
+    d->transientItems.insert(item);
+}
+
+/**
+ * @brief 判断 3D 图元是否为 transient 图元
+ * @param item 图元
+ * @return 已标记返回 true；item 为空返回 false
+ */
+bool DAChart3DWidget::isItemTransient(const Qwt3DPlotItem* item) const
+{
+    DA_DC(d);
+    if (!item) {
+        return false;
+    }
+    return d->transientItems.contains(const_cast< Qwt3DPlotItem* >(item));
+}
+
+/**
+ * @brief 获取当前仍挂在图上的 transient 3D 图元
+ *
+ * 以图表实际图元列表为准做过滤，避免占用方直接 delete 图元后返回悬空指针。
+ * @return transient 图元列表
+ */
+QList< Qwt3DPlotItem* > DAChart3DWidget::transientItems() const
+{
+    DA_DC(d);
+    QList< Qwt3DPlotItem* > res;
+    const QList< Qwt3DPlotItem* > attached = itemList();
+    for (Qwt3DPlotItem* item : attached) {
+        if (d->transientItems.contains(item)) {
+            res.append(item);
+        }
+    }
+    return res;
+}
+
+/**
+ * @brief 获取需要落盘的 3D 图元
+ *
+ * 「挂在图上且不是 transient」的图元：XML 的 `<items>`、chart3d-data 的快照都以这份列表为准，
+ * 保证两处口径一致（少一处，transient 图元就会写进 chart-data 而 XML 里没有 key）。
+ * @return 图元列表
+ */
+QList< Qwt3DPlotItem* > DAChart3DWidget::persistentItems() const
+{
+    DA_DC(d);
+    QList< Qwt3DPlotItem* > res;
+    const QList< Qwt3DPlotItem* > attached = itemList();
+    for (Qwt3DPlotItem* item : attached) {
+        if (!item || d->transientItems.contains(item)) {
+            continue;
+        }
+        res.append(item);
+    }
+    return res;
 }
 
 // ==================== 3D样式管理 ====================
