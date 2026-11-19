@@ -1753,9 +1753,11 @@ bool DAFigureWidget::exportChartToFile(DAChartWidget* chart, const QString& file
 /**
  * @brief 把指定3D子图导出到PNG文件
  *
- * 3D 子图只有位图路径（Qwt3DPlot 无矢量导出）：grabFramebuffer 取帧缓冲后按 PNG 保存，
- * 内容显式指定格式、不依赖文件后缀（调用方负责让路径以 .png 结尾，
- * 见 @ref applyExportFilterSuffix 与导出动作的过滤器收窄）。
+ * 3D 子图固定走位图：qwt 虽然有 `Qwt3DPlot::saveVector`/`save`（gl2ps），但在当前 3D 渲染器
+ * （VBO+GLSL、CPU 矩阵、无固定管线矩阵栈）下产物不可用——实测 SVG 页面盒错位裁掉右侧、文本/图例
+ * 全丢，PDF 基本空白（详见 tmp/signal-analysis-chart-ops/03-3d-items-and-vector-export.md 附录）。
+ * 因此这里 grabFramebuffer 取帧缓冲后按 PNG 保存，内容显式指定格式、不依赖文件后缀
+ * （调用方负责让路径以 .png 结尾，见 @ref applyExportFilterSuffix 与导出动作的过滤器收窄）。
  * @param plot3d 要导出的3D子图
  * @param filePath 目标文件路径
  * @return 成功返回true；plot3d 为空、路径为空、控件尺寸为0、帧缓冲为空或保存失败返回false

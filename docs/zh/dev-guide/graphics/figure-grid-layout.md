@@ -156,13 +156,13 @@ figure->setGridCell(waterfall, 1, 1);   // 与热图同格，按瀑布模式切�
 </figure>
 ```
 
-`<chart3d>` 的 `id` 是 3D 子图自己的持久标识（`c3d-<n>`，加入 figure 时生成，与 2D 的 `QwtPlot::plotId` 是两套命名空间），`visible` 记录显隐（热图与三维瀑布同格按模式切换时，隐藏的三维子图重开后仍保持隐藏）。旧工程没有这两个属性时按 `id` 自动生成、`visible=1` 处理。3D 图元数据仍不持久化（由业务层按参数重算重建）。
+`<chart3d>` 的 `id` 是 3D 子图自己的持久标识（`c3d-<n>`，加入 figure 时生成，与 2D 的 `QwtPlot::plotId` 是两套命名空间），`visible` 记录显隐（热图与三维瀑布同格按模式切换时，隐藏的三维子图重开后仍保持隐藏）。旧工程没有这两个属性时按 `id` 自动生成、`visible=1` 处理。三维图元数据走 `<chart3d><items>` + `chart3d-data/`（与二维 `chart`/`chart-data` 对称）：`<items>` 只记 key，图元字节由 `DAChart3DItemArchive` 写入；transient 图元（如信号分析三维瀑布）两处都不记，加载后由占用方按参数重算重建。
 
 读取顺序（`loadElement(DAFigureWidget*, ...)`）：
 
 1. 先读 `<grid>`：调 `enableGridLayout(rows, cols)`，若节点带 `wspace` / `hspace` 就先 `setSpacing()`，再 `setGridSizes()` 恢复比例。没有 `<grid>` 走原来的自由布局路径。
 2. 逐个读 `<chart>`：有 `grid-row` / `grid-col` 时用 `setGridCell()` 登记；登记失败或没有网格坐标时回退原来的 `addChart(pos)`（旧工程兼容）。
-3. 逐个读 `<chart3d>`：规则同上，回退到 `add3DChart(pos)`；`id` 由 `load3DChartElement()` 恢复，`visible` 必须在子图加入 figure 之后套用（加入流程会 `show()` 子图）。
+3. 逐个读 `<chart3d>`：规则同上，回退到 `add3DChart(pos)`；`id` 由 `load3DChartElement()` 恢复，`visible` 必须在子图加入 figure 之后套用（加入流程会 `show()` 子图）；随后按 `<items><item key>` 从 `chart3d-data/` 读回的图元池里 `attach` 三维图元（缺 key/池里没有只记 `qWarning` 跳过，旧工程没有 `<items>` 不报错）。
 4. 最后恢复坐标轴绑定与轴对齐信息。
 
 写侧仍会写 `x` / `y` / `w` / `h`，供旧版本或降级路径使用；读侧优先网格坐标。
