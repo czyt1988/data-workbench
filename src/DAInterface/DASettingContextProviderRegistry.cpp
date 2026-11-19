@@ -1,4 +1,5 @@
 #include "DASettingContextProviderRegistry.h"
+#include <QDebug>
 #include <QScopedValueRollback>
 #include <QUndoStack>
 #include <QWidget>
@@ -48,6 +49,8 @@ void DASettingContextProviderRegistry::pruneStaleEntries()
 void DASettingContextProviderRegistry::registerProvider(QWidget* dockContent, DASettingContextProvider* provider)
 {
     if (nullptr == dockContent || nullptr == provider) {
+        // 生命周期约定要求提供者以裸指针登记且必须注销；空参数说明调用方逻辑有问题，留下早期线索
+        qWarning() << "DASettingContextProviderRegistry::registerProvider: ignored null dock content or provider";
         return;
     }
     auto it = mProviders.find(dockContent);
@@ -76,6 +79,7 @@ void DASettingContextProviderRegistry::registerProvider(QWidget* dockContent, DA
 void DASettingContextProviderRegistry::unregisterProvider(QWidget* dockContent)
 {
     if (nullptr == dockContent) {
+        qWarning() << "DASettingContextProviderRegistry::unregisterProvider: ignored null dock content";
         return;
     }
     auto it = mProviders.find(dockContent);
@@ -83,6 +87,8 @@ void DASettingContextProviderRegistry::unregisterProvider(QWidget* dockContent)
         // 条目可能已被惰性清理，但当前提供者仍指向该内容：一并失活
         if (mCurrentProvider && mCurrentContent == dockContent) {
             deactivateCurrent();
+        } else {
+            qWarning() << "DASettingContextProviderRegistry::unregisterProvider: content is not registered";
         }
         return;
     }
@@ -135,9 +141,9 @@ DASettingContextProvider* DASettingContextProviderRegistry::providerFor(QWidget*
  */
 bool DASettingContextProviderRegistry::activateFor(QWidget* dockContent)
 {
-    // 重入保护：提供者在 activateSettingContext() 里 raise 自己/其它已注册 dock 时，
-    // 会经由 dockWidgetRaised → 路由层再次进入本函数；此时不重复激活，直接返回是否已注册。
-    if (mActivating) {
+    // 重入保护：提供者在回调里 raise 自己/其它已注册 dock 时，会经由 dockWidgetRaised →
+    // 路由层再次进入本函数；此时不重复回调、也不改写当前项，直接返回是否已注册。
+    if (mInCallback) {
         return providerFor(dockContent) != nullptr;
     }
     DASettingContextProvider* provider = providerFor(dockContent);
@@ -149,9 +155,16 @@ bool DASettingContextProviderRegistry::activateFor(QWidget* dockContent)
         mCurrentProvider = provider;
         mCurrentContent  = dockContent;
     }
-    // 激活回调可能触发程序化 raise（重入），用回滚守卫保证异常/重入路径下标志复位
-    QScopedValueRollback< bool > activatingGuard(mActivating, true);
-    provider->activateSettingContext();
+    // 激活回调可能触发程序化 raise（函数重入），用回滚守卫保证异常/重入路径下标志复位
+    {
+        QScopedValueRollback< bool > callbackGuard(mInCallback, true);
+        provider->activateSettingContext();
+    }
+    // 复核：激活回调里焦点变化可能经 APP 路由触发嵌套失活，当前项已被切走。此时本次激活视为
+    // 已被取代——不回写撤销栈、返回 false，避免「注册表无当前项、撤销栈却指向本提供者」的分叉。
+    if (mCurrentProvider != provider || mCurrentContent != dockContent) {
+        return false;
+    }
     if (QUndoStack* stack = provider->contextUndoStack()) {
         if (!stack->isActive()) {
             stack->setActive();
@@ -162,6 +175,10 @@ bool DASettingContextProviderRegistry::activateFor(QWidget* dockContent)
 
 /**
  * @brief 失活当前的设置上下文提供者
+ *
+ * 先清当前项再回调：回调里查询当前提供者得到 nullptr，与「已失活」一致。回调期间置
+ * mInCallback，回调内再次触发失活只清状态不重复回调（避免两次失活回调交叉执行）；
+ * 回调返回后不复写任何状态，保留回调内可能发生的结果。
  */
 void DASettingContextProviderRegistry::deactivateCurrent()
 {
@@ -170,9 +187,17 @@ void DASettingContextProviderRegistry::deactivateCurrent()
     mCurrentProvider                   = nullptr;
     mCurrentContent.clear();
     // dock 内容已销毁时不回调（提供者可能已失效）
-    if (provider && contentAlive) {
-        provider->deactivateSettingContext();
+    if (nullptr == provider || !contentAlive) {
+        return;
     }
+    // 重入（激活/失活回调内再次触发失活）：只清当前项，不重复回调
+    if (mInCallback) {
+        return;
+    }
+    QScopedValueRollback< bool > callbackGuard(mInCallback, true);
+    provider->deactivateSettingContext();
+    // 复核：失活回调里若经非重入路径重新设置了当前项，保持回调后的结果（不回写）。
+    // 正常重入路径已被 mInCallback 挡住；此处不再解引用 provider（回调内可能已注销并销毁）。
 }
 
 /**

@@ -770,10 +770,15 @@ void DAAppController::refreshChartContextUi()
 
 /**
  * @brief 设置上下文目标变化（插件切信号/切子图/注销时通知）
+ *
+ * 除了刷新标签与动作可用性，还要处理「provider 已经不在」的失活/注销路径（插件卸载、
+ * 页面销毁都不经过 APP 的上下文路由）：把全局撤销/重做目标还给宿主最近操作的固定窗口，
+ * 避免继续指向已卸载插件的文档。
  */
 void DAAppController::onSettingContextChanged()
 {
     refreshChartContextUi();
+    restoreHostUndoStackAfterSettingContext();
 }
 
 QList< DAChartWidget* > DAAppController::gcas() const
@@ -921,6 +926,8 @@ void DAAppController::activateContextCategoryForWidget(QWidget* widget)
         }
         if (hadProviderContext) {
             refreshChartContextUi();
+            // 焦点离开全部 dock：provider 上下文结束，撤销栈还给宿主（已在固定窗口路由里恢复时幂等）
+            restoreHostUndoStackAfterSettingContext();
         }
         mRibbon->hideContextCategory(DAAppRibbonArea::AllContextCategory);
         mChartContextShownForSettingProvider = false;
@@ -1008,6 +1015,34 @@ void DAAppController::activateContextCategoryForWidget(QWidget* widget)
     }
     default:
         break;
+    }
+}
+
+/**
+ * @brief provider 失活/注销后把撤销栈还给宿主最近操作的固定窗口
+ *
+ * 注册表在 DAInterface 层，拿不到 QUndoGroup/操作窗口，因此注册表只负责「通知失活/注销」，
+ * 真正的栈恢复在 APP 完成：没有当前 provider 时按最后获得焦点的固定操作窗口
+ * （数据/工作流/绘图）激活其当前页/当前 figure 的撤销栈。已有 provider 时保持其栈不动。
+ * 重复调用是幂等的（activateUndoStackForWidget 内部只在栈非 active 时 setActive）。
+ */
+void DAAppController::restoreHostUndoStackAfterSettingContext()
+{
+    if (nullptr == mDock || nullptr != mDock->currentSettingContextProvider()) {
+        return;
+    }
+    if (mLastFocusedOpertateWidget.testFlag(LastFocusedOnDataOpt)) {
+        activateUndoStackForWidget(getDataOperateWidget());
+        return;
+    }
+    if (mLastFocusedOpertateWidget.testFlag(LastFocusedOnWorkflowOpt)) {
+        if (DAPyWorkFlowOperateWidget* w = getWorkFlowOperateWidget()) {
+            w->setUndoStackActive();
+        }
+        return;
+    }
+    if (mLastFocusedOpertateWidget.testFlag(LastFocusedOnChartOpt)) {
+        activateUndoStackForWidget(getChartOperateWidget());
     }
 }
 

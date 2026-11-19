@@ -202,7 +202,8 @@ Q_SIGNALS:
     // dock窗口被程序化唤起时发射，参数为dock内部维护的widget
     void dockWidgetRaised(QWidget* w);
 
-    // 任意 dock 内容被激活时发射（焦点变化或程序化 raise，在上下文路由前发出）
+    // 任意 dock 内容被激活时发射（焦点变化或程序化 raise，在上下文路由前发出）；
+    // 同一内容连续激活只广播一次，监听方仍需写成幂等（框架内当前无消费者，保留给插件同步自身状态）
     void dockWidgetActivated(QWidget* dockContent);
 
     // 当前设置上下文的目标发生变化（由 notifySettingContextChanged 转发，APP 据此刷新绘图上下文）

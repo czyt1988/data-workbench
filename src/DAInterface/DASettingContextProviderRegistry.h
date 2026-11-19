@@ -29,11 +29,18 @@ namespace DA
  * 激活其撤销栈」。与具体 dock 管理器解耦，便于单独测试。
  *
  * 生命周期约定：
- * - provider 的生命周期必须长于注册期：**注册方必须在 provider 销毁前调用
- *   unregisterProvider()**（否则注册表后续回调会解引用已销毁的 provider）；
+ * - provider 由注册方**以裸指针**交给注册表，注册表不接管所有权；注册方必须保证
+ *   provider 的生命周期长于注册期，并在 provider 销毁前调用 unregisterProvider()
+ *   （否则注册表后续回调会解引用已销毁的 provider）；
  * - dock 内容先于 provider 销毁时，注册表用 QPointer 惰性清理条目、只清状态不回调
  *   （提供者可能随之失效）；
  * - 同一 provider 可以注册给多个 dock 内容，注册表按「内容 + 提供者」共同判断当前项。
+ *
+ * 重入与状态一致性：
+ * - activateFor()/deactivateCurrent() 调用 provider 回调期间置 mInCallback，回调里再次
+ *   进入本注册表（程序化 raise 触发的 APP 路由）不会重复回调、也不会交错改写当前项；
+ * - 回调返回后复核当前项：激活回调里被嵌套失活切走时视为激活失败（不回写撤销栈）；
+ *   失活回调里若当前项已被重新设置，保持回调后的结果。
  */
 class DASETTINGCONTEXTREGISTRY_API DASettingContextProviderRegistry
 {
@@ -76,7 +83,7 @@ private:
     QHash< QWidget*, Entry > mProviders;
     QPointer< QWidget > mCurrentContent;
     DASettingContextProvider* mCurrentProvider { nullptr };
-    bool mActivating { false };  ///< 激活回调中的重入保护
+    bool mInCallback { false };  ///< provider 回调（激活/失活）中的重入保护
 };
 }  // namespace DA
 #endif  // DASETTINGCONTEXTPROVIDERREGISTRY_H

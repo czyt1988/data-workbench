@@ -341,6 +341,8 @@ private:
     void syncSettingContextChartCategory();
     // 设置上下文目标变化后，刷新绘图上下文标签状态与动作可用性
     void refreshChartContextUi();
+    // provider 失活/注销后把撤销栈还给宿主最近操作的固定窗口（仍有 provider 时不动）
+    void restoreHostUndoStackAfterSettingContext();
     // 激活操作窗口当前的undo栈（焦点切到数据操作/绘图窗口时同步全局undo/redo action状态）
     void activateUndoStackForWidget(DAAbstractOperateWidget* w);
     // 注册 Agent 聊天窗口本地跳转链接处理器（da-figure:/da-data: 等协议，见 DAAgentLinkDispatcher）

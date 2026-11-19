@@ -3,6 +3,7 @@
 #include <QMap>
 #include <QDebug>
 #include <QApplication>
+#include <QPointer>
 #include <QScreen>
 // DA
 #include "DAUIInterface.h"
@@ -31,6 +32,10 @@ public:
     ads::CDockManager* mDockManager { nullptr };
     ads::CDockAreaWidget* mCenterArea { nullptr };
     DASettingContextProviderRegistry mSettingContextProviders;  ///< dock内容 -> 设置上下文提供者注册表
+    // dockWidgetActivated 去重：焦点变化与程序化 raise 两条路径会对同一内容连续广播（C-10）。
+    // 记录上一次广播的内容（内容已销毁时 QPointer 为空，等价于 nullptr）。
+    QPointer< QWidget > mLastActivatedContent;
+    bool mHasActivatedContent { false };
 };
 
 //===================================================
@@ -357,16 +362,30 @@ bool DADockingAreaInterface::isDockingAreaFocused(DockingArea area) const
  */
 void DADockingAreaInterface::registerSettingContextProvider(QWidget* dockContent, DASettingContextProvider* provider)
 {
+    DASettingContextProvider* previousCurrent = d_ptr->mSettingContextProviders.currentProvider();
     d_ptr->mSettingContextProviders.registerProvider(dockContent, provider);
+    // 同一内容换提供者时旧提供者会被失活，而这条路径不经过 APP 路由：广播一次目标变化，
+    // 让 APP 收起内置绘图上下文并按当前固定窗口恢复宿主撤销栈。
+    if (previousCurrent && nullptr == d_ptr->mSettingContextProviders.currentProvider()) {
+        notifySettingContextChanged();
+    }
 }
 
 /**
  * @brief 注销 dock 内容的设置上下文提供者
  * @param dockContent dock 内部维护的内容窗口
+ *
+ * 若注销的是当前提供者，注册表会先失活（provider 可能在自己的失活逻辑里再调一次
+ * notifySettingContextChanged，重复通知是幂等的）。插件卸载/关页路径不经过 APP 路由，
+ * 这里补一次通知，让 APP 收起 provider 显示的内置绘图上下文并恢复宿主撤销栈。
  */
 void DADockingAreaInterface::unregisterSettingContextProvider(QWidget* dockContent)
 {
+    const bool hadCurrent = nullptr != d_ptr->mSettingContextProviders.currentProvider();
     d_ptr->mSettingContextProviders.unregisterProvider(dockContent);
+    if (hadCurrent && nullptr == d_ptr->mSettingContextProviders.currentProvider()) {
+        notifySettingContextChanged();
+    }
 }
 
 /**
@@ -420,10 +439,17 @@ QWidget* DADockingAreaInterface::currentSettingContextDockContent()
  *
  * 由 APP 路由层在焦点变化/程序化 raise 时、执行上下文路由之前调用；插件可据此
  * 同步自身状态（如刷新当前会话）。与 dockWidgetRaised 不同，它覆盖焦点切换路径。
+ * 同一内容连续被激活（焦点变化与程序化 raise 两条路径）只广播一次；监听方仍应写成幂等，
+ * 因为中间可能夹着 nullptr（焦点离开全部 dock）后再回来。
  * @param dockContent 被激活的 dock 内容窗口（焦点离开全部 dock 时为 nullptr）
  */
 void DADockingAreaInterface::notifyDockWidgetActivated(QWidget* dockContent)
 {
+    if (d_ptr->mHasActivatedContent && d_ptr->mLastActivatedContent == dockContent) {
+        return;
+    }
+    d_ptr->mHasActivatedContent  = true;
+    d_ptr->mLastActivatedContent = dockContent;
     Q_EMIT dockWidgetActivated(dockContent);
 }
 
