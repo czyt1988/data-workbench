@@ -30,7 +30,18 @@
 ```
 plugins/DASignalAnalysis/
 ├── DASignalAnalysisPlugin.*      # 插件主类：initialize/finalize/retranslate/createArchiveTask/createSettingPage
-├── DASignalAnalysisUI.*          # 界面层：主页入口 + 上下文两页 + 动作 + 页面/峰值窗口惰性创建 + 存档编排
+├── DASignalAnalysisUI.h          # 界面层单类 DASignalAnalysisUI（动作/面板/视图/缓存等全部状态都在这里）
+├── DASignalAnalysisUI.cpp        # 生命周期与装配：initialize/finalize、页面惰性创建、上下文标签显隐、错误上报
+├── DASignalAnalysisUIRibbon.cpp  # 丝带构建：主页入口 +「分析设置」「信号显示」两页 + 播放工具栏 + 峰值窗口
+├── DASignalAnalysisUIDisplay.cpp # 显示页同步与显示类槽：sync*、色带、dB、时间格式、布局预设、测量 ▾
+├── DASignalAnalysisUIImport.cpp  # 导入与信号标签：三入口、加入页面、视图连接、重新指定来源
+├── DASignalAnalysisUIAnalysis.cpp# 参数与计算：参数读写、分级重算、内存预算、后台结果回填、状态栏进度
+├── DASignalAnalysisUIPeaks.cpp   # 峰值：峰值表/曲线回填、标记开关与文本模板、峰值窗口显隐
+├── DASignalAnalysisUIExport.cpp  # 导出：峰值/频谱/PSD/热图 CSV、整页与子图图片、剪贴板、送表格页
+├── DASignalAnalysisUIArchive.cpp # 工程存档：signals.json 序列化与恢复、figures.xml、工程清理
+├── DASignalAnalysisUIPlayback.cpp# 播放：播放源同步、播放/暂停/停止、时间轴联动、WAV 导出回填
+├── DASignalAnalysisUIRetranslate.cpp # 重译：retranslateUi（纯文本）
+├── DASignalAnalysisUIHelpers.h   # 上述实现文件共享的 objectName/预算/防抖常量与无状态 helper
 ├── DASignalAnalysisGlobal.h      # 导出宏
 ├── DASignalAnalysisResource.qrc  # 图标资源（icon/）
 ├── Page/
@@ -454,6 +465,11 @@ python -I -m pytest tests/test_signal_dsp.py tests/test_signal_import.py `
 
 - 本文只记录**当前有效**的约束、机制与陷阱，不按版本号累积「修正要点」；行为变化时直接改对应章节，
   历史看 `git log` 与方案文档。
+- **界面层是一个类、多个 translation unit**：`DASignalAnalysisUI` 的实现按域拆成 `DASignalAnalysisUI*.cpp`
+  （仿 `src/APP/Ribbon/DAAppRibbonArea*`）。新增成员函数按域放进对应文件；跨文件共享的常量与无状态
+  helper 放 `DASignalAnalysisUIHelpers.h`，**不要**在某个 `.cpp` 的匿名 namespace 里定义后又被别的
+  `.cpp` 使用（各 TU 会各有一份副本）。拆分只是文件级组织，类定义（`DASignalAnalysisUI.h`）与
+  信号槽/ABI 不变。
 - 新增分析任务时必须同时补齐：`dedupeKey`、内存估算、取消路径、上下文版本校验、Python 侧流式
   provider 实现与 pytest 用例。
 - 新增纯逻辑（不依赖 pybind11/GUI）优先做成可单测的纯函数（参考 `DASignalMemoryEstimate.h`、
