@@ -12,6 +12,7 @@
 #include "Chart/DAChartItemsManager.h"
 #include "DAFigureWidget.h"
 #include "DAChart3DWidget.h"
+#include "DAChart3DItemsManager.h"
 #include "DAFigureElementSelection.h"
 #include "DAFigureTreeModel.h"
 #include "DAChart3DSerialize.h"
@@ -782,9 +783,10 @@ void Chart3DIntegrationTest::test3DSubChartXmlRoundTrip()
 }
 
 /**
- * @brief 测试11：3D-only figure 的 XML 不包含 chart item 数据
+ * @brief 测试11：3D-only figure 的 3D 图元只记在 <chart3d><items>，不进二维 chart-data
  *
- * 一期 3D 子图只存存在性/布局/视图/主题/坐标轴；3D 图元数据不进入 chart-data。
+ * 3D 图元持久化（03 方案）后：`<chart3d>` 带 `<items>` 索引（key 对应 chart3d-data/ 里的
+ * 二进制），但**不**进二维的 DAChartItemsManager（chart-items.xml / chart-data 是二维的键空间）。
  */
 void Chart3DIntegrationTest::test3DOnlyFigureNoChartItemData()
 {
@@ -796,7 +798,7 @@ void Chart3DIntegrationTest::test3DOnlyFigureNoChartItemData()
     DA::DAChart3DWidget* chart3d = new DA::DAChart3DWidget();
     chart3d->setTitle(QStringLiteral("only-3d"));
     fig->add3DChart(chart3d, 0.1, 0.1, 0.8, 0.8);
-    // 挂一个真实 3D 数据图元，确保“不写 chart-data”不是因为没有图元
+    // 挂一个真实 3D 数据图元，确保“不写二维 chart-data”不是因为没有图元
     Qwt3DSurface* surface = new Qwt3DSurface();
     QVERIFY(surface);
     surface->attach(chart3d);
@@ -810,9 +812,15 @@ void Chart3DIntegrationTest::test3DOnlyFigureNoChartItemData()
     QVERIFY(!figEle.isNull());
     const QDomElement c3dEle = figEle.firstChildElement(QStringLiteral("chart3d"));
     QVERIFY(!c3dEle.isNull());
-    // 3D 节点中不应出现 <items>，itemsMgr 也不应有任何 key
-    QVERIFY(c3dEle.firstChildElement(QStringLiteral("items")).isNull());
-    QVERIFY2(mgr.items().isEmpty(), "3D-only figure must not record chart items for chart-data");
+    // 3D 图元只在 <chart3d><items> 里记 key（3D 子图自己的键空间）
+    const QDomElement items3dEle = c3dEle.firstChildElement(QStringLiteral("items"));
+    QVERIFY2(!items3dEle.isNull(), "chart3d must carry a 3D <items> index");
+    QCOMPARE(items3dEle.childNodes().size(), 1);
+    const QString key3d = items3dEle.firstChildElement(QStringLiteral("item")).attribute(QStringLiteral("key"));
+    QVERIFY2(!key3d.isEmpty(), "3D chart item must carry a key");
+    QCOMPARE(chart3d->items3DManager()->keyToItem(key3d), surface);
+    // 二维 chart-data 管理者不得记录 3D 图元（两套键空间互不混用）
+    QVERIFY2(mgr.items().isEmpty(), "3D items must not be recorded into the 2D chart-data manager");
 }
 
 /**

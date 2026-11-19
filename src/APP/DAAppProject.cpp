@@ -40,6 +40,10 @@
 #include "Archive/DAZipArchiveTask_Xml.h"
 #include "Archive/DAZipArchiveTask_ArchiveFile.h"
 #include "Archive/DAZipArchiveTask_ChartItem.h"
+#include "Archive/DAZipArchiveTask_Chart3DItem.h"
+#include "Archive/DAChart3DItemArchive.h"
+#include "DAChart3DItemsManager.h"
+#include "DAChart3DWidget.h"
 #include "Table/DADataOperateWidget.h"
 #include "Table/DADataOperateOfDataFrameWidget.h"
 #include "Table/Metadata/DATableMetadata.h"
@@ -76,6 +80,7 @@ const QString c_workflowxml_save_filename  = QStringLiteral("workflow.xml");
 const QString c_workflowdata_save_filename = QStringLiteral("workflow-data.xml");
 const QString c_chartsxml_save_filename    = QStringLiteral("charts.xml");
 const QString c_chartitem_save_folder      = QStringLiteral("chart-data");
+const QString c_chart3ditem_save_folder    = QStringLiteral("chart3d-data");
 const QString c_tablestylesxml_save_filename = QStringLiteral("table-styles.xml");
 const QString c_tablemetadataxml_save_filename = QStringLiteral("table-metadata.xml");
 const QString c_dataoperatexml_save_filename = QStringLiteral("data-operate.xml");
@@ -102,6 +107,13 @@ const QString c_dataoperatexml_save_filename = QStringLiteral("data-operate.xml"
  */
 #ifndef DAAPPPROJECT_TASK_LOAD_ID_CHARTITEMMANAGER
 #define DAAPPPROJECT_TASK_LOAD_ID_CHARTITEMMANAGER (DAAPPPROJECT_TASK_LOAD_ID_BEGIN + 3)
+#endif
+
+/**
+ *@def 加载任务id - chart3dItemManager（3D 图元，先于 charts.xml 读回）
+ */
+#ifndef DAAPPPROJECT_TASK_LOAD_ID_CHART3DITEMMANAGER
+#define DAAPPPROJECT_TASK_LOAD_ID_CHART3DITEMMANAGER (DAAPPPROJECT_TASK_LOAD_ID_BEGIN + 8)
 #endif
 
 /**
@@ -719,7 +731,9 @@ bool DAAppProject::appendWorkflowInProject(const QByteArray& data, bool skipInde
  * @param chartmanager
  * @return
  */
-bool DAAppProject::appendChartsInProject(const QDomDocument& doc, DAChartItemsManager* chartmanager)
+bool DAAppProject::appendChartsInProject(const QDomDocument& doc,
+                                         DAChartItemsManager* chartmanager,
+                                         DAChart3DItemsManager* chart3dmanager)
 {
     DAChartOperateWidget* chartOpt = getChartOperateWidget();
     Q_CHECK_PTR(chartOpt);
@@ -729,7 +743,7 @@ bool DAAppProject::appendChartsInProject(const QDomDocument& doc, DAChartItemsMa
     if (chartEle.isNull()) {
         return false;
     }
-    return mXml.loadElement(chartOpt, &chartEle, chartmanager);
+    return mXml.loadElement(chartOpt, &chartEle, chartmanager, QVersionNumber(), chart3dmanager);
 }
 
 /**
@@ -1064,6 +1078,11 @@ bool DAAppProject::executeLoad(DAZipArchiveThreadWrapper* archive, const QString
     auto taskChartItem =
         archive->appendChartItemLoadTask(c_chartitem_save_folder, DAAPPPROJECT_TASK_LOAD_ID_CHARTITEMMANAGER);
 
+    // 3D 图元同样必须先于 charts.xml 读回：charts.xml 的 <chart3d><items> 只记 key，
+    // 回调里按 key 从池子取回图元再挂回 3D 子图
+    auto taskChart3DItem =
+        archive->appendChart3DItemLoadTask(c_chart3ditem_save_folder, DAAPPPROJECT_TASK_LOAD_ID_CHART3DITEMMANAGER);
+
     // 表格元数据加载（在 datamanager 之后，此时 DAData 及其持久化 id 已恢复，
     // 元数据按 data-id 回填到会话级 DATableMetadataRegistry，无需依赖 widget 是否打开）。
     // 先读新文件 table-metadata.xml；置回退标志，旧 table-styles.xml 仅在新文件缺失时生效（R18）。
@@ -1100,6 +1119,14 @@ bool DAAppProject::executeLoad(DAZipArchiveThreadWrapper* archive, const QString
         // 获取chartmanager
         mChartItemManager = chartMgrArchive->getChartItemsManager();
     });
+    if (taskChart3DItem) {
+        taskChart3DItem->setLoadedCallBack([ this ](std::shared_ptr< DAAbstractArchiveTask > t) {
+            const std::shared_ptr< DAZipArchiveTask_Chart3DItem > chart3DMgrArchive =
+                std::static_pointer_cast< DAZipArchiveTask_Chart3DItem >(t);
+            // 3D 图元池：charts.xml 的 <chart3d><items> 按 key 从这里取回图元
+            mChart3DItemManager = chart3DMgrArchive->getChart3DItemsManager();
+        });
+    }
 
     auto taskCharts = archive->appendXmlLoadTask(c_chartsxml_save_filename, DAAPPPROJECT_TASK_LOAD_ID_CHARTS_INFO);
     if (!taskCharts) {
@@ -1495,6 +1522,8 @@ void DAAppProject::makeSaveChartTask(DAZipArchiveThreadWrapper* archive)
     //! 先把涉及ui的内容保存下来,ui是无法在其它线程操作，因此需要先保存下来
     DAChartItemsManager chartItemMgr;
     QDomDocument chartXml = createChartsUIDomDocument(chartItemMgr);
+    // 3D 图元：同样必须在 GUI 线程序列化成快照（后台任务只写字节，不触碰 Qwt3DPlotItem*）
+    const QList< DAChart3DItemSnapshot > snapshots3d = makeChart3DItemSnapshots();
     // 创建archive任务队列,先保存xml
     auto t1 = archive->appendXmlSaveTask(c_chartsxml_save_filename, chartXml);
     t1->setName(tr("Save charts information"));  // cn:保存绘图的基本信息
@@ -1503,6 +1532,44 @@ void DAAppProject::makeSaveChartTask(DAZipArchiveThreadWrapper* archive)
     auto t2 = archive->appendChartItemSaveTask(c_chartitem_save_folder, chartItemMgr);
     t2->setName(tr("Save chart items information"));      // cn:保存绘图元素的基本信息
     t2->setDescribe(tr("Save chart items information"));  // cn:保存绘图元素的基本信息
+    // 创建 3D 图元保存任务（chart3d-data/chart3d-items.xml + 每图元一个二进制）
+    auto t3 = archive->appendChart3DItemSaveTask(c_chart3ditem_save_folder, snapshots3d);
+    if (t3) {
+        t3->setName(tr("Save 3D chart items information"));      // cn:保存三维绘图元素的基本信息
+        t3->setDescribe(tr("Save 3D chart items information"));  // cn:保存三维绘图元素的基本信息
+    }
+}
+
+/**
+ * @brief 收集所有 figure 里 3D 子图要落盘的图元快照
+ *
+ * 必须在 GUI 线程调用：内部对每个 3D 子图的非 transient 图元走
+ * @ref DAChart3DItemArchive::makeChart3DSnapshots（生产序列化路径）。返回的快照交给
+ * @ref DAZipArchiveTask_Chart3DItem 在后台线程写字节，后台不再解引用任何图元指针。
+ * @return 快照列表；没有绘图窗口或没有 3D 图元时返回空列表（仍会写一个空索引）
+ */
+QList< DAChart3DItemSnapshot > DAAppProject::makeChart3DItemSnapshots()
+{
+    QList< DAChart3DItemSnapshot > snapshots;
+    DAChartOperateWidget* chartOpt = getChartOperateWidget();
+    if (!chartOpt) {
+        return snapshots;
+    }
+    const int figCnt = chartOpt->getFigureCount();
+    for (int i = 0; i < figCnt; ++i) {
+        DAFigureWidget* fig = chartOpt->getFigure(i);
+        if (!fig) {
+            continue;
+        }
+        const QList< DAChart3DWidget* > charts3d = fig->get3DCharts();
+        for (DAChart3DWidget* chart3d : charts3d) {
+            if (!chart3d) {
+                continue;
+            }
+            snapshots += DAChart3DItemArchive::makeChart3DSnapshots(chart3d);
+        }
+    }
+    return snapshots;
 }
 
 /**
@@ -2063,7 +2130,13 @@ void DAAppProject::loadedChartsInfo(const std::shared_ptr< DAAbstractArchiveTask
         return;
     }
     //
-    appendChartsInProject(xmlDoc, &mChartItemManager);
+    appendChartsInProject(xmlDoc, &mChartItemManager, &mChart3DItemManager);
+    // 收尾：索引里有、但没有任何 3D 子图认领的图元（坏索引/旧工程/被删除的 3D 子图）直接删掉，
+    // 避免每次加载泄漏一批 3D 图元。已挂回子图的图元 plot() 非空，不受影响。
+    const int released = DAChart3DItemArchive::deleteUnattachedItems(&mChart3DItemManager);
+    if (released > 0) {
+        qWarning() << "DAAppProject::loadedChartsInfo: released" << released << "unattached 3D chart items";
+    }
 }
 
 /**

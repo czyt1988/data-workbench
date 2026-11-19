@@ -21,22 +21,27 @@
 #include <QSet>
 #include <QSignalSpy>
 #include <QTemporaryDir>
+#include <QScopedPointer>
 #include <QUndoStack>
 #include <QVariantMap>
+#include <QVector>
 #include <cstring>
 #include <limits>
 #include <memory>
 #include <stdexcept>
 
 #include "Archive/DAChartItemArchive.h"
+#include "Archive/DAChart3DItemArchive.h"
 #include "Archive/DAXmlHelper.h"
 #include "Archive/DAZipArchive.h"
 #include "Archive/DAZipArchiveTask_ChartItem.h"
+#include "Archive/DAZipArchiveTask_Chart3DItem.h"
 #include "Archive/DAZipArchiveTask_Xml.h"
 #include "Chart/Setting/DAFigureWidgetSettingPanel.h"
 #include "Common/Settings/DAPropertyPanelContainerWidget.h"
 #include "Chart/DAChartItemsManager.h"
 #include "DAChart3DSerialize.h"
+#include "DAChart3DItemsManager.h"
 #include "DAChart3DWidget.h"
 #include "DAChartAxisRangeBinder.h"
 #include "DAChartPlotRenderer.h"
@@ -58,6 +63,9 @@
 #include "qwt_text.h"
 #include "qwt_text_scale_draw.h"
 #include "qwt3d_waterfall.h"
+#include "qwt3d_bar.h"
+#include "qwt3d_line3d.h"
+#include "qwt3d_surface.h"
 
 namespace
 {
@@ -187,6 +195,60 @@ QSet< QString > keySet(const QList< QString >& keys)
         result.insert(key);
     }
     return result;
+}
+
+/// 3D 网格数据（z[row][column] = row * 10 + column）；行列刻意不等，转置实现会在这里失败
+Qwt3DFunctionData make3DGridData(int rows = 3, int cols = 4)
+{
+    Qwt3DFunctionData data;
+    data.columns = static_cast< unsigned >(cols);
+    data.rows    = static_cast< unsigned >(rows);
+    data.minx    = 0.0;
+    data.maxx    = static_cast< double >(cols - 1);
+    data.miny    = 0.0;
+    data.maxy    = static_cast< double >(rows - 1);
+    data.z.assign(static_cast< size_t >(rows), std::vector< double >(static_cast< size_t >(cols), 0.0));
+    for (int j = 0; j < rows; ++j) {
+        for (int i = 0; i < cols; ++i) {
+            data.z[ static_cast< size_t >(j) ][ static_cast< size_t >(i) ] = j * 10.0 + i;
+        }
+    }
+    return data;
+}
+
+/// 新建曲面图元（带网格数据，未 attach；调用方负责 delete）
+Qwt3DSurface* makeSurface3D(const QString& title = QString())
+{
+    Qwt3DSurface* surface = new Qwt3DSurface();
+    surface->loadFromData(make3DGridData());
+    if (!title.isEmpty()) {
+        surface->setTitle(title);
+    }
+    return surface;
+}
+
+/// 新建柱状图元（带网格数据，未 attach；调用方负责 delete）
+Qwt3DBar* makeBar3D(const QString& title = QString())
+{
+    Qwt3DBar* bar = new Qwt3DBar();
+    bar->setSamples(make3DGridData());
+    if (!title.isEmpty()) {
+        bar->setTitle(title);
+    }
+    return bar;
+}
+
+/// 新建线图元（未 attach；调用方负责 delete）
+Qwt3DLine* makeLine3D(const QString& title = QString())
+{
+    QVector< QwtPoint3D > samples;
+    samples << QwtPoint3D(0.0, 0.0, 1.0) << QwtPoint3D(1.0, 0.5, 2.0) << QwtPoint3D(2.0, 1.0, 3.0);
+    Qwt3DLine* line = new Qwt3DLine();
+    line->setSamples(samples);
+    if (!title.isEmpty()) {
+        line->setTitle(title);
+    }
+    return line;
 }
 
 /// 内存 archive：验证 DAChartItemArchive 的 save/load，不依赖磁盘/zip
@@ -320,6 +382,22 @@ private Q_SLOTS:
     void testProjectArchiveOrderRoundTrip();
     // SF-06 回归：设过当前 3D 子图的 figure 析构不崩（析构期 3D destroyed 回调不再访问失效 PIMPL/figure）
     void testFigureDestructionWithCurrent3DChart();
+    // 3D 图元键管理：attach 自动登记、删除自动注销、跨管理者 key 唯一、重复登记不换 key
+    void testChart3DItemsManagerKeys();
+    // 3D 图元 transient API 与 detach 注销（与 2D 同 API 形状）
+    void testChart3DTransientItemApi();
+    // DAChart3DItemArchive 内存 archive 往返（surface/bar/line/waterfall 四类）
+    void testChart3DItemArchiveMemoryRoundTrip();
+    // DAZipArchiveTask_Chart3DItem 真实 zip 往返（工程存档路径）
+    void testZipArchiveTaskChart3DItemRoundTrip();
+    // figure XML 的 <chart3d><items>：只记非 transient key，加载后按 key 挂回
+    void testFigure3DItemsXmlRoundTrip();
+    // transient 3D 图元不落盘：XML <items> 与 chart3d-data 快照都不含它
+    void testChart3DTransientItemSkippedInArchive();
+    // 坏索引降级：索引损坏/条目缺失/图元字节坏 → 不崩、跳过；未认领图元被清理
+    void testChart3DItemArchiveBadIndexDegraded();
+    // 工程级存档顺序：3D 图元先于 charts.xml 读回，按 key 挂回（对应 DAAppProject 任务顺序）
+    void testProjectArchive3DItemsOrderRoundTrip();
 };
 
 void DAChartSerializeTest::testSpectrogramZIntervalFallsBackToDataRange()
@@ -1937,6 +2015,506 @@ void DAChartSerializeTest::testFigureDestructionWithCurrent3DChart()
     fig.reset();
     // 走到这里即证明析构路径安全（修复前在 lambda 内 UAF 崩溃）
     QVERIFY(true);
+}
+
+/**
+ * @brief 3D 图元键管理：attach 自动登记、删除自动注销、跨管理者 key 唯一
+ *
+ * 3D 图元生命周期由业务层 new/delete 管理（Qwt3DPlot 不持有），所以管理者必须随 attach/detach
+ * 自动同步，否则存档会读到悬空指针或漏掉图元。
+ */
+void DAChartSerializeTest::testChart3DItemsManagerKeys()
+{
+    DA::DAChart3DItemsManager mgrA;
+    DA::DAChart3DItemsManager mgrB;
+    QScopedPointer< Qwt3DSurface > surface(makeSurface3D(QStringLiteral("keys")));
+    // 未 attach 也能登记（管理者只建立映射，不接管生命周期）
+    const QString keyA = mgrA.recordItem(surface.data());
+    QVERIFY2(!keyA.isEmpty(), "recordItem must generate a key");
+    QVERIFY2(keyA.startsWith(QStringLiteral("Surface-")), qPrintable(keyA));
+    QCOMPARE(mgrA.size(), 1);
+    QCOMPARE(mgrA.itemToKey(surface.data()), keyA);
+    QCOMPARE(mgrA.keyToItem(keyA), surface.data());
+    // 重复登记返回原 key，不重复分配
+    QCOMPARE(mgrA.recordItem(surface.data()), keyA);
+    QCOMPARE(mgrA.size(), 1);
+    // 跨管理者的 key 必须不同：工程存档里所有 3D 图元共用 chart3d-data/ 目录，key 就是文件名
+    const QString keyB = mgrB.recordItem(surface.data());
+    QVERIFY2(keyB != keyA, "keys must be unique across 3D items managers");
+    // 注销后双向映射都清掉
+    mgrA.unrecordItem(surface.data());
+    QVERIFY(mgrA.isEmpty());
+    QVERIFY(mgrA.keyToItem(keyA) == nullptr);
+    QVERIFY(mgrA.itemToKey(surface.data()).isEmpty());
+    mgrB.clear();
+    QVERIFY(mgrB.isEmpty());
+
+    // attach 自动登记 / 删除（Qwt3DPlotItem 析构会 detach）自动注销
+    DA::DAChart3DWidget chart;
+    Qwt3DSurface* attached = makeSurface3D(QStringLiteral("attached"));
+    attached->attach(&chart);
+    const QString attachedKey = chart.items3DManager()->itemToKey(attached);
+    QVERIFY2(!attachedKey.isEmpty(), "attach must register the item automatically");
+    QCOMPARE(chart.items3DManager()->size(), 1);
+    delete attached;
+    QVERIFY2(chart.items3DManager()->isEmpty(), "deleting an item must unregister it");
+}
+
+/**
+ * @brief 3D 图元 transient API 与 detach 注销
+ *
+ * 与 @ref DAChartWidget 同 API 形状：标记/查询/列表、未 attach 拒绝、detach（含 delete）自动注销。
+ */
+void DAChartSerializeTest::testChart3DTransientItemApi()
+{
+    DA::DAChart3DWidget chart;
+    Qwt3DSurface* surface = makeSurface3D(QStringLiteral("persist"));
+    surface->attach(&chart);
+    QVector< QVector< double > > traces;
+    traces << QVector< double >{ 1.0, 2.0, 3.0 };
+    Qwt3DWaterfall* waterfall = chart.addWaterfall(traces, QVector< double >(), QStringLiteral("derived"));
+    QVERIFY(waterfall);
+    // 空指针 / 未 attach 图元安全
+    chart.setItemTransient(nullptr);
+    QVERIFY(!chart.isItemTransient(nullptr));
+    QScopedPointer< Qwt3DSurface > detached(makeSurface3D());
+    chart.setItemTransient(detached.data());  // 未 attach → 拒绝登记
+    QVERIFY(!chart.isItemTransient(detached.data()));
+    // 标记 / 查询 / 列表
+    chart.setItemTransient(waterfall);
+    QVERIFY(chart.isItemTransient(waterfall));
+    QCOMPARE(chart.transientItems().size(), 1);
+    QCOMPARE(chart.transientItems().first(), waterfall);
+    QCOMPARE(chart.persistentItems().size(), 1);
+    QCOMPARE(chart.persistentItems().first(), surface);
+    // 取消标记
+    chart.setItemTransient(waterfall, false);
+    QVERIFY(!chart.isItemTransient(waterfall));
+    QCOMPARE(chart.persistentItems().size(), 2);
+    // detach（removePlot3DItem 内部 detach + delete）自动注销，不留悬空地址
+    chart.setItemTransient(waterfall);
+    chart.removePlot3DItem(waterfall);
+    QVERIFY(chart.transientItems().isEmpty());
+    QCOMPARE(chart.items3DManager()->size(), 1);
+    QVERIFY(!chart.items3DManager()->itemToKey(surface).isEmpty());
+    delete surface;
+    QVERIFY(chart.items3DManager()->isEmpty());
+}
+
+/**
+ * @brief DAChart3DItemArchive 内存 archive 往返（surface/bar/line/waterfall 四类图元）
+ *
+ * 走生产路径 @ref DAChart3DItemSerialize：surface 的网格数据、bar 的行列、line 的点数、waterfall
+ * 的样式/binValues 都必须读回（waterfall 的迹线由业务层按参数重算，不在此存档）。
+ */
+void DAChartSerializeTest::testChart3DItemArchiveMemoryRoundTrip()
+{
+    DA::DAChart3DItemsManager srcMgr;
+    Qwt3DSurface* surface = makeSurface3D(QStringLiteral("mem-surface"));
+    Qwt3DBar* bar         = makeBar3D(QStringLiteral("mem-bar"));
+    Qwt3DLine* line       = makeLine3D(QStringLiteral("mem-line"));
+    Qwt3DWaterfall* waterfall = new Qwt3DWaterfall();
+    waterfall->setTitle(QStringLiteral("mem-waterfall"));
+    QVector< QVector< double > > traces;
+    traces << QVector< double >{ 1.0, 2.0, 3.0 } << QVector< double >{ 4.0, 5.0, 6.0 };
+    const QVector< double > binValues { 10.0, 20.0, 30.0 };
+    waterfall->setTraceCapacity(traces.size());
+    for (const QVector< double >& trace : std::as_const(traces)) {
+        waterfall->pushTrace(trace);
+    }
+    waterfall->setBinValues(binValues);
+    QList< QString > srcKeys;
+    srcKeys << srcMgr.recordItem(surface) << srcMgr.recordItem(bar) << srcMgr.recordItem(line)
+            << srcMgr.recordItem(waterfall);
+    QCOMPARE(srcKeys.size(), 4);
+    QCOMPARE(keySet(srcMgr.keys()), keySet(srcKeys));
+
+    MemoryArchive mem;
+    QString error;
+    QVERIFY2(DA::DAChart3DItemArchive::save(&mem, &srcMgr, QStringLiteral("chart3d-data"), &error), qPrintable(error));
+    QVERIFY(mem.contains(QStringLiteral("chart3d-data/") + DA::DAChart3DItemArchive::itemsIndexFileName()));
+    QVERIFY(mem.contains(QStringLiteral("chart3d-data/") + srcKeys.first()));
+
+    DA::DAChart3DItemsManager restoredMgr;
+    QVERIFY2(DA::DAChart3DItemArchive::load(&mem, &restoredMgr, QStringLiteral("chart3d-data"), &error),
+             qPrintable(error));
+    QCOMPARE(restoredMgr.size(), 4);
+    QCOMPARE(keySet(restoredMgr.keys()), keySet(srcKeys));
+
+    // surface：网格数据完整恢复（3 行 4 列，z[row][column] = row * 10 + column）
+    auto* restoredSurface = dynamic_cast< Qwt3DSurface* >(restoredMgr.keyToItem(srcKeys.at(0)));
+    QVERIFY(restoredSurface);
+    QCOMPARE(restoredSurface->title(), QStringLiteral("mem-surface"));
+    Qwt3DGridData* gridData = restoredSurface->gridData();
+    QVERIFY(gridData);
+    QCOMPARE(static_cast< int >(gridData->vertices.size()), 3);
+    QCOMPARE(static_cast< int >(gridData->vertices[ 0 ].size()), 4);
+    QCOMPARE(gridData->vertices[ 1 ][ 2 ][ 2 ], 12.0);
+    // bar：行列与数据保留
+    auto* restoredBar = dynamic_cast< Qwt3DBar* >(restoredMgr.keyToItem(srcKeys.at(1)));
+    QVERIFY(restoredBar);
+    QCOMPARE(restoredBar->title(), QStringLiteral("mem-bar"));
+    QCOMPARE(restoredBar->gridRows(), 3);
+    QCOMPARE(restoredBar->gridColumns(), 4);
+    // line：点数保留
+    auto* restoredLine = dynamic_cast< Qwt3DLine* >(restoredMgr.keyToItem(srcKeys.at(2)));
+    QVERIFY(restoredLine);
+    QCOMPARE(restoredLine->title(), QStringLiteral("mem-line"));
+    QCOMPARE(static_cast< int >(restoredLine->dataSize()), 3);
+    // waterfall：样式与 binValues 保留（迹线本来就不进存档）
+    auto* restoredWaterfall = dynamic_cast< Qwt3DWaterfall* >(restoredMgr.keyToItem(srcKeys.at(3)));
+    QVERIFY(restoredWaterfall);
+    QCOMPARE(restoredWaterfall->title(), QStringLiteral("mem-waterfall"));
+    QCOMPARE(restoredWaterfall->binValues(), binValues);
+
+    qDeleteAll(restoredMgr.items());
+    qDeleteAll(srcMgr.items());
+}
+
+/**
+ * @brief DAZipArchiveTask_Chart3DItem 真实 zip 往返（工程存档路径）
+ *
+ * 快照在 GUI 线程预先生成（makeChart3DSnapshots），任务只写字节；transient 图元不进 chart3d-data。
+ */
+void DAChartSerializeTest::testZipArchiveTaskChart3DItemRoundTrip()
+{
+    QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+    const QString zipPath = tempDir.filePath(QStringLiteral("chart3d-items.dapro"));
+
+    DA::DAChart3DWidget chart;
+    Qwt3DSurface* surface = makeSurface3D(QStringLiteral("zip-surface"));
+    surface->attach(&chart);
+    QVector< QVector< double > > traces;
+    traces << QVector< double >{ 1.0, 2.0, 3.0 };
+    Qwt3DWaterfall* waterfall = chart.addWaterfall(traces, QVector< double >(), QStringLiteral("zip-derived"));
+    QVERIFY(waterfall);
+    chart.setItemTransient(waterfall);
+    const QList< DA::DAChart3DItemSnapshot > snapshots = DA::DAChart3DItemArchive::makeChart3DSnapshots(&chart);
+    QCOMPARE(snapshots.size(), 1);
+
+    // === 保存 ===
+    {
+        DA::DAZipArchive zip;
+        QSignalSpy finished(&zip, &DA::DAAbstractArchive::taskFinished);
+        auto task = std::make_shared< DA::DAZipArchiveTask_Chart3DItem >(QStringLiteral("chart3d-data"), snapshots);
+        zip.appendTask(task);
+        zip.saveAll(zipPath);
+        QCOMPARE(finished.count(), 1);
+        QCOMPARE(finished.takeFirst().at(0).toInt(), static_cast< int >(DA::DAAbstractArchive::SaveSuccess));
+        QVERIFY2(task->getLastError().isEmpty(), qPrintable(task->getLastError()));
+    }
+    QVERIFY(QFile::exists(zipPath));
+
+    // === 加载 ===
+    DA::DAChart3DItemsManager pool;
+    {
+        DA::DAZipArchive zipIn;
+        QSignalSpy finishedIn(&zipIn, &DA::DAAbstractArchive::taskFinished);
+        auto loadTask = std::make_shared< DA::DAZipArchiveTask_Chart3DItem >(QStringLiteral("chart3d-data"));
+        zipIn.appendTask(loadTask);
+        zipIn.loadAll(zipPath);
+        QCOMPARE(finishedIn.count(), 1);
+        QCOMPARE(finishedIn.takeFirst().at(0).toInt(), static_cast< int >(DA::DAAbstractArchive::LoadSuccess));
+        QVERIFY2(loadTask->getLastError().isEmpty(), qPrintable(loadTask->getLastError()));
+        pool = loadTask->getChart3DItemsManager();
+    }
+    QCOMPARE(pool.size(), 1);
+    auto* restored = dynamic_cast< Qwt3DSurface* >(pool.items().first());
+    QVERIFY(restored);
+    QCOMPARE(restored->title(), QStringLiteral("zip-surface"));
+    // 没有 figure 认领的图元由加载收尾删除，避免泄漏
+    QCOMPARE(DA::DAChart3DItemArchive::deleteUnattachedItems(&pool), 1);
+    QVERIFY(pool.isEmpty());
+    delete surface;
+}
+
+/**
+ * @brief figure XML 的 <chart3d><items>：只记 key，加载后按 key 挂回
+ *
+ * 完整往返：3D 子图 + 两个图元 → figure XML（items 索引）+ chart3d-data（图元字节）→ 新 figure
+ * 加载 → 图元类型/标题/挂载关系恢复。
+ */
+void DAChartSerializeTest::testFigure3DItemsXmlRoundTrip()
+{
+    std::unique_ptr< DA::DAFigureWidget > src(new DA::DAFigureWidget());
+    src->resize(800, 600);
+    src->show();
+    QTest::qWaitForWindowExposed(src.get());
+    DA::DAChart3DWidget* chart3d = src->create3DChart();
+    QVERIFY(chart3d);
+    const QString chart3dId = chart3d->getChart3DId();
+    QVERIFY(!chart3dId.isEmpty());
+    Qwt3DSurface* surface = makeSurface3D(QStringLiteral("fig-surface"));
+    surface->attach(chart3d);
+    Qwt3DBar* bar = makeBar3D(QStringLiteral("fig-bar"));
+    bar->attach(chart3d);
+
+    // === 保存：figure XML 只记 key ===
+    DA::DAChartItemsManager mgr2d;
+    QDomDocument doc;
+    const QDomElement figEle = DA::DAXmlHelper::makeElement(src.get(), QStringLiteral("figure"), &doc, &mgr2d);
+    QVERIFY(!figEle.isNull());
+    const QDomElement chart3dEle = figEle.firstChildElement(QStringLiteral("chart3d"));
+    QVERIFY(!chart3dEle.isNull());
+    QCOMPARE(chart3dEle.attribute(QStringLiteral("id")), chart3dId);
+    const QDomElement itemsEle = chart3dEle.firstChildElement(QStringLiteral("items"));
+    QVERIFY2(!itemsEle.isNull(), "chart3d must carry an <items> index");
+    QList< QString > xmlKeys;
+    for (QDomElement itemEle = itemsEle.firstChildElement(QStringLiteral("item")); !itemEle.isNull();
+         itemEle             = itemEle.nextSiblingElement(QStringLiteral("item"))) {
+        xmlKeys.append(itemEle.attribute(QStringLiteral("key")));
+    }
+    QCOMPARE(xmlKeys.size(), 2);
+    // key 必须就是该 3D 子图管理者里的 key（chart3d-data 的文件名）
+    QCOMPARE(keySet(xmlKeys), keySet(chart3d->items3DManager()->keys()));
+    const QList< DA::DAChart3DItemSnapshot > snapshots = DA::DAChart3DItemArchive::makeChart3DSnapshots(chart3d);
+    QCOMPARE(snapshots.size(), 2);
+    MemoryArchive mem;
+    QString error;
+    QVERIFY2(DA::DAChart3DItemArchive::saveSnapshots(&mem, snapshots, QStringLiteral("chart3d-data"), &error),
+             qPrintable(error));
+
+    // === 加载：先读 chart3d-data 池子，再按 key 挂回 3D 子图 ===
+    DA::DAChart3DItemsManager pool;
+    QVERIFY2(DA::DAChart3DItemArchive::load(&mem, &pool, QStringLiteral("chart3d-data"), &error), qPrintable(error));
+    QCOMPARE(pool.size(), 2);
+    std::unique_ptr< DA::DAFigureWidget > dst(new DA::DAFigureWidget());
+    dst->resize(800, 600);
+    dst->show();
+    QTest::qWaitForWindowExposed(dst.get());
+    DA::DAChartItemsManager mgr2dDst;
+    QVERIFY(DA::DAXmlHelper::loadElement(dst.get(), &figEle, &mgr2dDst, QVersionNumber(), &pool));
+    const QList< DA::DAChart3DWidget* > charts3d = dst->get3DCharts();
+    QCOMPARE(charts3d.size(), 1);
+    QCOMPARE(charts3d.first()->getChart3DId(), chart3dId);
+    QCOMPARE(charts3d.first()->itemList().size(), 2);
+    int surfaceCount = 0;
+    int barCount     = 0;
+    const QList< Qwt3DPlotItem* > loadedItems = charts3d.first()->itemList();
+    for (Qwt3DPlotItem* item : loadedItems) {
+        QVERIFY2(item->plot() == charts3d.first(), "loaded 3D item must be attached to the new 3D chart");
+        if (item->rtti() == Rtti_Plot3DBar) {
+            QCOMPARE(item->title(), QStringLiteral("fig-bar"));
+            ++barCount;
+        } else if (item->rtti() == Rtti_Plot3DSurface) {
+            QCOMPARE(item->title(), QStringLiteral("fig-surface"));
+            auto* loadedSurface = dynamic_cast< Qwt3DSurface* >(item);
+            QVERIFY(loadedSurface);
+            Qwt3DGridData* gridData = loadedSurface->gridData();
+            QVERIFY(gridData);
+            QCOMPARE(gridData->vertices[ 2 ][ 3 ][ 2 ], 23.0);
+            ++surfaceCount;
+        }
+    }
+    QCOMPARE(surfaceCount, 1);
+    QCOMPARE(barCount, 1);
+    // 池子里的图元都被认领，没有需要释放的孤儿
+    QCOMPARE(DA::DAChart3DItemArchive::deleteUnattachedItems(&pool), 0);
+    QCOMPARE(pool.size(), 2);
+}
+
+/**
+ * @brief transient 3D 图元不落盘：XML <items> 与 chart3d-data 快照都不含它
+ *
+ * 典型场景：信号分析的三维瀑布由分析参数重算，存档只留样式/参数，不留图元数据。
+ */
+void DAChartSerializeTest::testChart3DTransientItemSkippedInArchive()
+{
+    std::unique_ptr< DA::DAFigureWidget > fig(new DA::DAFigureWidget());
+    fig->resize(640, 480);
+    fig->show();
+    QTest::qWaitForWindowExposed(fig.get());
+    DA::DAChart3DWidget* chart3d = fig->create3DChart();
+    QVERIFY(chart3d);
+    Qwt3DSurface* surface = makeSurface3D(QStringLiteral("keep"));
+    surface->attach(chart3d);
+    QVector< QVector< double > > traces;
+    traces << QVector< double >{ 1.0, 2.0, 3.0 };
+    Qwt3DWaterfall* waterfall = chart3d->addWaterfall(traces, QVector< double >(), QStringLiteral("recomputed"));
+    QVERIFY(waterfall);
+    chart3d->setItemTransient(waterfall);
+    // 快照只含非 transient 图元
+    const QList< DA::DAChart3DItemSnapshot > snapshots = DA::DAChart3DItemArchive::makeChart3DSnapshots(chart3d);
+    QCOMPARE(snapshots.size(), 1);
+    QCOMPARE(snapshots.first().key, chart3d->items3DManager()->itemToKey(surface));
+    // XML <items> 同样只记非 transient 图元
+    DA::DAChartItemsManager mgr2d;
+    QDomDocument doc;
+    const QDomElement figEle = DA::DAXmlHelper::makeElement(fig.get(), QStringLiteral("figure"), &doc, &mgr2d);
+    const QDomElement itemsEle =
+        figEle.firstChildElement(QStringLiteral("chart3d")).firstChildElement(QStringLiteral("items"));
+    QVERIFY(!itemsEle.isNull());
+    QCOMPARE(itemsEle.childNodes().size(), 1);
+    QCOMPARE(itemsEle.firstChildElement(QStringLiteral("item")).attribute(QStringLiteral("key")),
+             chart3d->items3DManager()->itemToKey(surface));
+    QVERIFY(!chart3d->items3DManager()->itemToKey(waterfall).isEmpty());  // 仍登记，只是不落盘
+}
+
+/**
+ * @brief 坏索引降级：索引损坏/条目缺失/图元字节坏都不崩，孤儿图元被清理
+ */
+void DAChartSerializeTest::testChart3DItemArchiveBadIndexDegraded()
+{
+    const QString indexPath = QStringLiteral("chart3d-data/") + DA::DAChart3DItemArchive::itemsIndexFileName();
+    // 1) 索引存在但 XML 损坏 → load 返回 false，不崩
+    {
+        MemoryArchive mem;
+        mem.m_files.insert(indexPath, QByteArray("<items><item key=\"a\""));
+        DA::DAChart3DItemsManager mgr;
+        QString error;
+        QVERIFY2(!DA::DAChart3DItemArchive::load(&mem, &mgr, QStringLiteral("chart3d-data"), &error),
+                 "a broken index must not be treated as a valid empty index");
+        QVERIFY(!error.isEmpty());
+        QVERIFY(mgr.isEmpty());
+    }
+    // 2) 索引指向不存在的图元文件 → 跳过该条目、整体成功
+    {
+        MemoryArchive mem;
+        mem.m_files.insert(indexPath, QByteArray("<items><item key=\"Surface-missing\" rtti=\"1001\"/></items>"));
+        DA::DAChart3DItemsManager mgr;
+        QString error;
+        QVERIFY(DA::DAChart3DItemArchive::load(&mem, &mgr, QStringLiteral("chart3d-data"), &error));
+        QVERIFY(mgr.isEmpty());
+        QVERIFY(!error.isEmpty());
+    }
+    // 3) 图元字节损坏 → 跳过、不崩
+    {
+        MemoryArchive mem;
+        mem.m_files.insert(indexPath, QByteArray("<items><item key=\"Surface-bad\" rtti=\"1001\"/></items>"));
+        mem.m_files.insert(QStringLiteral("chart3d-data/Surface-bad"), QByteArray("not a serialized 3D item"));
+        DA::DAChart3DItemsManager mgr;
+        QVERIFY(DA::DAChart3DItemArchive::load(&mem, &mgr, QStringLiteral("chart3d-data"), nullptr));
+        QVERIFY(mgr.isEmpty());
+    }
+    // 4) 图元池为空时 figure XML 引用了不存在的 key：加载成功、3D 子图没挂上图元
+    {
+        QDomDocument doc;
+        QDomElement figEle = doc.createElement(QStringLiteral("figure"));
+        doc.appendChild(figEle);
+        figEle.appendChild(doc.createElement(QStringLiteral("charts")));
+        QDomElement chart3dEle = doc.createElement(QStringLiteral("chart3d"));
+        chart3dEle.setAttribute(QStringLiteral("x"), 0.05);
+        chart3dEle.setAttribute(QStringLiteral("y"), 0.05);
+        chart3dEle.setAttribute(QStringLiteral("w"), 0.8);
+        chart3dEle.setAttribute(QStringLiteral("h"), 0.8);
+        QDomElement itemsEle = doc.createElement(QStringLiteral("items"));
+        QDomElement itemEle  = doc.createElement(QStringLiteral("item"));
+        itemEle.setAttribute(QStringLiteral("key"), QStringLiteral("Surface-not-exist"));
+        itemsEle.appendChild(itemEle);
+        chart3dEle.appendChild(itemsEle);
+        figEle.appendChild(chart3dEle);
+
+        std::unique_ptr< DA::DAFigureWidget > fig(new DA::DAFigureWidget());
+        fig->resize(640, 480);
+        fig->show();
+        QTest::qWaitForWindowExposed(fig.get());
+        DA::DAChart3DItemsManager emptyPool;
+        DA::DAChartItemsManager mgr2d;
+        QVERIFY(DA::DAXmlHelper::loadElement(fig.get(), &figEle, &mgr2d, QVersionNumber(), &emptyPool));
+        QCOMPARE(fig->get3DCharts().size(), 1);
+        QVERIFY(fig->get3DCharts().first()->itemList().isEmpty());
+    }
+    // 5) 池子里的孤儿图元（没有被任何 3D 子图认领）由收尾清理，不泄漏
+    {
+        DA::DAChart3DItemsManager mgr;
+        Qwt3DSurface* orphan = makeSurface3D();
+        mgr.recordItem(orphan);
+        QCOMPARE(DA::DAChart3DItemArchive::deleteUnattachedItems(&mgr), 1);
+        QVERIFY(mgr.isEmpty());
+    }
+}
+
+/**
+ * @brief 工程级存档顺序：3D 图元先于 charts.xml 读回
+ *
+ * 按 DAAppProject 的任务顺序等价复刻：保存 charts.xml→chart3d-data；加载 chart3d-data→charts.xml
+ * （charts.xml 里只记 key，必须先从存档读回图元池才能挂回）。顺序反了 3D 图元就会丢。
+ */
+void DAChartSerializeTest::testProjectArchive3DItemsOrderRoundTrip()
+{
+    QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+    const QString zipPath = tempDir.filePath(QStringLiteral("project-3d-order.dapro"));
+
+    // 源 figure：一个 3D 子图 + 一个曲面图元
+    std::unique_ptr< DA::DAFigureWidget > src(new DA::DAFigureWidget());
+    src->resize(800, 600);
+    src->show();
+    QTest::qWaitForWindowExposed(src.get());
+    DA::DAChart3DWidget* chart3d = src->create3DChart();
+    QVERIFY(chart3d);
+    const QString chart3dId = chart3d->getChart3DId();
+    Qwt3DSurface* surface   = makeSurface3D(QStringLiteral("order-surface"));
+    surface->attach(chart3d);
+
+    DA::DAChartItemsManager srcMgr2d;
+    QDomDocument chartsXml;
+    QDomProcessingInstruction pi =
+        chartsXml.createProcessingInstruction(QStringLiteral("xml"), QStringLiteral("version=\"1.0\" encoding=\"UTF-8\""));
+    chartsXml.appendChild(pi);
+    QDomElement rootEle = chartsXml.createElement(QStringLiteral("root"));
+    rootEle.setAttribute(QStringLiteral("type"), QStringLiteral("chart"));
+    chartsXml.appendChild(rootEle);
+    QDomElement projectEle = chartsXml.createElement(QStringLiteral("project"));
+    rootEle.appendChild(projectEle);
+    QDomElement chartsEle = chartsXml.createElement(QStringLiteral("charts"));
+    projectEle.appendChild(chartsEle);
+    chartsEle.appendChild(DA::DAXmlHelper::makeElement(src.get(), QStringLiteral("figure"), &chartsXml, &srcMgr2d));
+    const QList< DA::DAChart3DItemSnapshot > snapshots = DA::DAChart3DItemArchive::makeChart3DSnapshots(chart3d);
+    QCOMPARE(snapshots.size(), 1);
+
+    // === 保存：与 makeSaveChartTask 同序（charts.xml → chart-data → chart3d-data） ===
+    {
+        DA::DAZipArchive zip;
+        QSignalSpy finished(&zip, &DA::DAAbstractArchive::taskFinished);
+        zip.appendTask(std::make_shared< DA::DAZipArchiveTask_Xml >(QStringLiteral("charts.xml"), chartsXml));
+        zip.appendTask(std::make_shared< DA::DAZipArchiveTask_Chart3DItem >(QStringLiteral("chart3d-data"), snapshots));
+        zip.saveAll(zipPath);
+        QCOMPARE(finished.count(), 1);
+        QCOMPARE(finished.takeFirst().at(0).toInt(), static_cast< int >(DA::DAAbstractArchive::SaveSuccess));
+    }
+
+    // === 加载：与 executeLoad 同序（chart3d-data 先于 charts.xml） ===
+    DA::DAChart3DItemsManager pool;
+    QDomDocument loadedChartsXml;
+    {
+        DA::DAZipArchive zipIn;
+        QSignalSpy finishedIn(&zipIn, &DA::DAAbstractArchive::taskFinished);
+        auto itemLoadTask = std::make_shared< DA::DAZipArchiveTask_Chart3DItem >(QStringLiteral("chart3d-data"));
+        zipIn.appendTask(itemLoadTask);
+        auto xmlLoadTask = std::make_shared< DA::DAZipArchiveTask_Xml >(QStringLiteral("charts.xml"));
+        zipIn.appendTask(xmlLoadTask);
+        zipIn.loadAll(zipPath);
+        QCOMPARE(finishedIn.count(), 1);
+        QCOMPARE(finishedIn.takeFirst().at(0).toInt(), static_cast< int >(DA::DAAbstractArchive::LoadSuccess));
+        QVERIFY2(itemLoadTask->getLastError().isEmpty(), qPrintable(itemLoadTask->getLastError()));
+        pool            = itemLoadTask->getChart3DItemsManager();
+        loadedChartsXml = xmlLoadTask->getDomDocument();
+    }
+    QCOMPARE(pool.size(), 1);
+    const QDomElement loadedFigEle = loadedChartsXml.documentElement()
+                                         .firstChildElement(QStringLiteral("project"))
+                                         .firstChildElement(QStringLiteral("charts"))
+                                         .firstChildElement(QStringLiteral("figure"));
+    QVERIFY2(!loadedFigEle.isNull(), "charts.xml should contain a <figure> element");
+
+    // === 应用：charts.xml 按 key 把 3D 图元挂回新 3D 子图 ===
+    std::unique_ptr< DA::DAFigureWidget > dst(new DA::DAFigureWidget());
+    dst->resize(800, 600);
+    dst->show();
+    QTest::qWaitForWindowExposed(dst.get());
+    DA::DAChartItemsManager mgr2dDst;
+    QVERIFY(DA::DAXmlHelper::loadElement(dst.get(), &loadedFigEle, &mgr2dDst, QVersionNumber(), &pool));
+    const QList< DA::DAChart3DWidget* > charts3d = dst->get3DCharts();
+    QCOMPARE(charts3d.size(), 1);
+    QCOMPARE(charts3d.first()->getChart3DId(), chart3dId);
+    QCOMPARE(charts3d.first()->itemList().size(), 1);
+    Qwt3DPlotItem* restored = charts3d.first()->itemList().first();
+    QCOMPARE(restored->rtti(), static_cast< int >(Rtti_Plot3DSurface));
+    QCOMPARE(restored->title(), QStringLiteral("order-surface"));
+    QVERIFY(restored->plot() == charts3d.first());
+    QCOMPARE(DA::DAChart3DItemArchive::deleteUnattachedItems(&pool), 0);
 }
 
 int main(int argc, char* argv[])
