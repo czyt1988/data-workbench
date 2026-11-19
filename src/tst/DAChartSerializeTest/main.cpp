@@ -18,6 +18,7 @@
 #include <QImage>
 #include <QPen>
 #include <QPixmap>
+#include <QPushButton>
 #include <QSet>
 #include <QSignalSpy>
 #include <QTemporaryDir>
@@ -354,6 +355,8 @@ private Q_SLOTS:
     void testGridBadRatiosFallBackToEqualTracks();
     // enableGridLayout 复位塌陷尺寸约束后，设置面板经 figureSizeConstraintsChanged 自动刷新
     void testFigureSizeConstraintsSignalRefreshesSettingPanel();
+    // figure 设置页网格入口：启用/退出、行列数锁定、等分
+    void testFigureSettingPanelGridEntry();
     // 3D 子图持久 id 与 visible 的 XML 往返
     void test3DChartIdAndVisibleRoundTrip();
     // 旧工程 <chart3d> 无 id/visible：按默认加载（可见 + 生成 c3d-<n> id）
@@ -1540,6 +1543,120 @@ void DAChartSerializeTest::testFigureSizeConstraintsSignalRefreshesSettingPanel(
     QVERIFY(fig->enableGridLayout(2, 3));  // 会再次复位塌陷值并发信号
     QCOMPARE(qwtFig->maximumWidth(), QWIDGETSIZE_MAX);
     QCOMPARE(panel.propertyPanel()->getIntValue(DA::DAFigureWidgetSettingPanel::PID_MaxWidth), otherMaxWidth);
+}
+
+/**
+ * @brief figure 设置页的网格入口：启用/退出、行列数锁定、等分
+ *
+ * 绘图区的网格布局只在 figure 设置页开放（Ribbon 只跟随网格状态刷新动作可用性）：
+ * 启用时按视觉顺序把已有子图放进单元格，退出时成员保持当前几何回到自由布局。
+ */
+void DAChartSerializeTest::testFigureSettingPanelGridEntry()
+{
+    std::unique_ptr< DA::DAFigureWidget > fig(new DA::DAFigureWidget());
+    fig->resize(800, 600);
+    fig->show();
+    QVERIFY(QTest::qWaitForWindowExposed(fig.get()));
+
+    // 位置故意与创建顺序不同（右侧先建），用来验证按视觉顺序填格
+    DA::DAChartWidget* right = fig->createChart();
+    QVERIFY(right);
+    fig->setWidgetNormPos(right, QRectF(0.5, 0.0, 0.5, 0.5));
+    DA::DAChartWidget* bottom = fig->createChart();
+    QVERIFY(bottom);
+    fig->setWidgetNormPos(bottom, QRectF(0.0, 0.5, 1.0, 0.5));
+    DA::DAChartWidget* topLeft = fig->createChart();
+    QVERIFY(topLeft);
+    fig->setWidgetNormPos(topLeft, QRectF(0.0, 0.0, 0.5, 0.5));
+    QApplication::processEvents();
+
+    DA::DAFigureWidgetSettingPanel panel;
+    panel.setTarget(fig.get());
+    DA::DAPropertyPanelContainerWidget* properties = panel.propertyPanel();
+    QVERIFY(properties);
+    DA::DAPropertyItemWidget* rowsItem =
+        properties->getPropertyItem(DA::DAFigureWidgetSettingPanel::PID_GridRows);
+    DA::DAPropertyItemWidget* colsItem =
+        properties->getPropertyItem(DA::DAFigureWidgetSettingPanel::PID_GridColumns);
+    QVERIFY(rowsItem && colsItem);
+    QVERIFY2(rowsItem->isEnabled(), "the row count must be editable while the grid is off");
+
+    auto* toggleButton = qobject_cast< QPushButton* >(
+        properties->getPropertyItem(DA::DAFigureWidgetSettingPanel::PID_GridToggle)->editorWidget());
+    auto* equalButton = qobject_cast< QPushButton* >(
+        properties->getPropertyItem(DA::DAFigureWidgetSettingPanel::PID_GridEqual)->editorWidget());
+    QVERIFY2(toggleButton != nullptr, "the grid toggle must be a push button");
+    QVERIFY2(equalButton != nullptr, "the equalize action must be a push button");
+
+    properties->setIntValue(DA::DAFigureWidgetSettingPanel::PID_GridRows, 2);
+    properties->setIntValue(DA::DAFigureWidgetSettingPanel::PID_GridColumns, 2);
+    toggleButton->click();
+    QApplication::processEvents();
+
+    QVERIFY2(fig->isGridLayoutEnabled(), "the panel button must enable the grid layout");
+    QVERIFY2(!rowsItem->isEnabled() && !colsItem->isEnabled(),
+             "rows/columns decide the grid structure and must be locked while the grid is on");
+    QVERIFY2(equalButton->isEnabled(), "the equalize button must be available in grid mode");
+    QCOMPARE(fig->grid()->items().size(), 3);
+
+    // 视觉顺序：左上 → 右上 → 下排整宽
+    int row = -1;
+    int col = -1;
+    QVERIFY(fig->grid()->gridPosition(topLeft, &row, &col, nullptr, nullptr));
+    QCOMPARE(row, 0);
+    QCOMPARE(col, 0);
+    QVERIFY(fig->grid()->gridPosition(right, &row, &col, nullptr, nullptr));
+    QCOMPARE(row, 0);
+    QCOMPARE(col, 1);
+    QVERIFY(fig->grid()->gridPosition(bottom, &row, &col, nullptr, nullptr));
+    QCOMPARE(row, 1);
+    QCOMPARE(col, 0);
+
+    // 单元格几何与轨道换算一致（与 QwtFigureLayout::calcActualRect 同算法，允许 ±2px）
+    const auto expectedCell = [ &fig ](int cellRow, int cellCol) {
+        const QRectF norm   = fig->grid()->normRectFor(cellRow, cellCol);
+        const QRect parent  = fig->figure()->rect();
+        const int left      = qRound(norm.left() * parent.width());
+        const int top       = qRound(norm.top() * parent.height());
+        const int right     = qRound((norm.left() + norm.width()) * parent.width());
+        const int bottomPx  = qRound((norm.top() + norm.height()) * parent.height());
+        return QRect(left, top, qMax(0, right - left), qMax(0, bottomPx - top));
+    };
+    const auto fuzzyRect = [](const QRect& actual, const QRect& expected) {
+        return qAbs(actual.x() - expected.x()) <= 2 && qAbs(actual.y() - expected.y()) <= 2
+               && qAbs(actual.width() - expected.width()) <= 2
+               && qAbs(actual.height() - expected.height()) <= 2;
+    };
+    QVERIFY2(fuzzyRect(topLeft->geometry(), expectedCell(0, 0)), "the first sub chart must land in cell (0, 0)");
+    QVERIFY2(fuzzyRect(right->geometry(), expectedCell(0, 1)), "the second sub chart must land in cell (0, 1)");
+    QVERIFY2(fuzzyRect(bottom->geometry(), expectedCell(1, 0)), "the third sub chart must land in cell (1, 0)");
+
+    // 等分：先把比例改成非等分，再让面板按钮恢复等分
+    QVERIFY(fig->setGridSizes(QList< qreal > { 0.7, 0.3 }, QList< qreal > { 0.2, 0.8 }));
+    equalButton->click();
+    QApplication::processEvents();
+    QVERIFY(qAbs(fig->gridRowSizes().at(0) - 0.5) <= 1e-9);
+    QVERIFY(qAbs(fig->gridColumnSizes().at(0) - 0.5) <= 1e-9);
+
+    // 退出：成员保持当前几何，行列数恢复可编辑
+    const QRect topLeftGeo = topLeft->geometry();
+    const QRect rightGeo   = right->geometry();
+    const QRect bottomGeo  = bottom->geometry();
+    toggleButton->click();
+    QApplication::processEvents();
+    QVERIFY2(!fig->isGridLayoutEnabled(), "the panel button must leave the grid layout again");
+    QVERIFY2(rowsItem->isEnabled(), "the row count must be editable again after leaving the grid");
+    QVERIFY2(!equalButton->isEnabled(), "equalizing tracks requires an enabled grid");
+
+    const auto settle = []() {
+        QApplication::processEvents();
+        QTest::qWait(30);
+        QApplication::processEvents();
+    };
+    settle();
+    QVERIFY2(fuzzyRect(topLeft->geometry(), topLeftGeo), "leaving the grid must not move the sub charts");
+    QVERIFY2(fuzzyRect(right->geometry(), rightGeo), "leaving the grid must not move the sub charts");
+    QVERIFY2(fuzzyRect(bottom->geometry(), bottomGeo), "leaving the grid must not move the sub charts");
 }
 
 /**

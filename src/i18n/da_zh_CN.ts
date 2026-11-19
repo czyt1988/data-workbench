@@ -3393,7 +3393,7 @@
 <context>
     <name>DA::DAAppChartActionHandler</name>
     <message>
-        <location filename="../APP/Controller/DAAppChartActionHandler.cpp" line="+1286"/>
+        <location filename="../APP/Controller/DAAppChartActionHandler.cpp" line="+1387"/>
         <source>There is no figure to export</source>
         <translation>没有可导出的绘图窗口</translation>
     </message>
@@ -3716,7 +3716,7 @@
         <translation>未找到数据集&quot;%1&quot;，可能已被移除</translation>
     </message>
     <message>
-        <location filename="../APP/Controller/DAAppChartActionHandler.cpp" line="-613"/>
+        <location filename="../APP/Controller/DAAppChartActionHandler.cpp" line="-611"/>
         <source>Before creating a new coordinate, you need to create a figure</source>
         <translation>在创建一个坐标系之前，需要先创建一个绘图窗口</translation>
     </message>
@@ -3782,7 +3782,7 @@
         <translation>获取到空工程接口</translation>
     </message>
     <message>
-        <location filename="../APP/Controller/DAAppControllerCore.cpp" line="+532"/>
+        <location filename="../APP/Controller/DAAppControllerCore.cpp" line="+567"/>
         <location filename="../APP/Controller/DAAppControllerPage.cpp" line="+254"/>
         <source>No cells selected to copy</source>
         <translation>没有选中可复制的单元格</translation>
@@ -8280,8 +8280,8 @@
 <context>
     <name>DA::DAChartManageWidget</name>
     <message>
-        <location filename="../DAGui/Chart/DAChartManageWidget.cpp" line="+102"/>
-        <location line="+818"/>
+        <location filename="../DAGui/Chart/DAChartManageWidget.cpp" line="+105"/>
+        <location line="+838"/>
         <location line="+17"/>
         <location line="+20"/>
         <location line="+22"/>
@@ -8291,26 +8291,26 @@
         <translation>重命名</translation>
     </message>
     <message>
-        <location line="-912"/>
+        <location line="-932"/>
         <source>Visible</source>
         <translation>可见</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+1016"/>
+        <location line="+1036"/>
         <location line="+24"/>
         <source>Delete</source>
         <translation>删除</translation>
     </message>
     <message>
-        <location line="-1038"/>
-        <location line="+1087"/>
+        <location line="-1058"/>
+        <location line="+1107"/>
         <location line="+20"/>
         <source>Remove Chart</source>
         <translation>删除坐标系</translation>
     </message>
     <message>
-        <location line="-1102"/>
+        <location line="-1122"/>
         <source>Transfer</source>
         <translation>转移</translation>
     </message>
@@ -8325,7 +8325,7 @@
         <translation>绘图</translation>
     </message>
     <message>
-        <location line="+484"/>
+        <location line="+504"/>
         <source>received figure create signal, but cannot find figure</source>
         <translation>获取了绘图创建的信号，但无法找到绘图</translation>
     </message>
@@ -8341,8 +8341,8 @@
         <translation>确认删除坐标系&quot;%1&quot;吗？其全部图元将一并移除。</translation>
     </message>
     <message>
-        <location line="-975"/>
-        <location line="+676"/>
+        <location line="-995"/>
+        <location line="+696"/>
         <location line="+275"/>
         <location line="+20"/>
         <source>chart</source>
@@ -12523,12 +12523,12 @@
 <context>
     <name>DA::DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+235"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+236"/>
         <source>Unexpected plotting operation: a chart that does not belong to the DAChartWidget type was added to the figure</source>
         <translation>意外的绘图操作：不属于 DAChartWidget 类型的图表被添加到了 figure 中</translation>
     </message>
     <message>
-        <location line="+1654"/>
+        <location line="+1735"/>
         <source>PNG Image (*.png);;SVG Image (*.svg);;PDF Document (*.pdf)</source>
         <translation>PNG 图片 (*.png);;SVG 图片 (*.svg);;PDF 文档 (*.pdf)</translation>
     </message>
@@ -12546,7 +12546,18 @@
 <context>
     <name>DA::DAFigureWidgetSettingPanel</name>
     <message>
-        <location filename="../DAGui/Chart/Setting/DAFigureWidgetSettingPanel.cpp" line="+137"/>
+        <location filename="../DAGui/Chart/Setting/DAFigureWidgetSettingPanel.cpp" line="+141"/>
+        <source>Exit Grid</source>
+        <translation>退出网格</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <location line="+61"/>
+        <source>Enable Grid</source>
+        <translation>启用网格</translation>
+    </message>
+    <message>
+        <location line="-25"/>
         <source>Size</source>
         <translation>尺寸</translation>
     </message>
@@ -12579,6 +12590,66 @@
         <location line="+2"/>
         <source>Background Brush</source>
         <translation>背景画刷</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Grid Layout</source>
+        <translation>网格布局</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Enable the retained grid layout: sub charts follow the row/column tracks. Existing sub charts are placed into the cells in reading order.</source>
+        <translation>启用保留式网格布局：子图按行列轨道排布，已有子图按阅读顺序放进单元格</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>State</source>
+        <translation>状态</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Rows</source>
+        <translation>行数</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Columns</source>
+        <translation>列数</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Equal Tracks</source>
+        <translation>等分轨道</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Reset the row/column ratios to equal tracks</source>
+        <translation>把行/列比例恢复为等分</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Tracks</source>
+        <translation>轨道比例</translation>
+    </message>
+    <message>
+        <location line="+83"/>
+        <source>Failed to leave the grid layout</source>
+        <translation>退出网格布局失败</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Failed to enable the grid layout</source>
+        <translation>启用网格布局失败</translation>
+    </message>
+    <message>
+        <location line="+34"/>
+        <source>Failed to equalize the grid tracks</source>
+        <translation>网格轨道等分失败</translation>
+    </message>
+    <message>
+        <location line="+59"/>
+        <source>%1 sub charts do not fit the %2 x %3 grid and stay in the free layout</source>
+        <translation>%1 个子图放不进 %2 x %3 网格，保持自由布局</translation>
     </message>
 </context>
 <context>
@@ -14656,50 +14727,50 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
 <context>
     <name>DA::DASignalAnalysisUI</name>
     <message>
-        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="+426"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="+247"/>
         <source>FFmpeg was not detected; video import is unavailable until a path is specified in Settings &gt; Signal Analysis.</source>
         <translation>未检测到 FFmpeg，在「设置 → 信号分析」里指定路径前视频导入不可用。</translation>
     </message>
     <message>
         <location line="-118"/>
-        <location line="+5596"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="+399"/>
         <source>Peak table (CSV)</source>
         <translation>峰值表（CSV）</translation>
     </message>
     <message>
-        <location line="-5593"/>
-        <location line="+5596"/>
+        <location line="+3"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="+3"/>
         <source>Spectrum curve (CSV)</source>
         <translation>频谱曲线（CSV）</translation>
     </message>
     <message>
-        <location line="-5589"/>
-        <location line="+5595"/>
+        <location line="+7"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="+6"/>
         <source>Heatmap matrix (CSV)</source>
         <translation>热图矩阵（CSV）</translation>
     </message>
     <message>
-        <location line="-5158"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIImport.cpp" line="+143"/>
         <source>Signal imported: %1 (%2 Hz, %3 s)</source>
         <translation>信号已导入：%1（%2 赫兹，%3 秒）</translation>
     </message>
     <message>
-        <location line="+259"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="+339"/>
         <location line="+3"/>
-        <location line="+439"/>
-        <location line="+4081"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="-376"/>
         <location line="+27"/>
         <location line="+19"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+371"/>
         <source>Signal Analysis</source>
         <translation>信号分析</translation>
     </message>
     <message>
-        <location line="-4224"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="-42"/>
+        <location line="+16"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="-97"/>
         <location line="+329"/>
         <location line="+2"/>
         <location line="+5"/>
-        <location line="+3846"/>
-        <location line="+16"/>
         <source>Peaks</source>
         <translation>峰值</translation>
     </message>
@@ -14709,122 +14780,122 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>显示</translation>
     </message>
     <message>
-        <location line="-5515"/>
-        <location line="+5597"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="-334"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="+82"/>
         <source>Whole page (PNG)...</source>
         <translation>整页（PNG）...</translation>
     </message>
     <message>
-        <location line="-5594"/>
-        <location line="+5597"/>
+        <location line="+3"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="+3"/>
         <source>Current sub-chart (PNG/SVG/PDF)...</source>
         <translation>当前子图（PNG/SVG/PDF）...</translation>
     </message>
     <message>
-        <location line="-5593"/>
-        <location line="+5597"/>
+        <location line="+4"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="+4"/>
         <source>Copy whole page to clipboard</source>
         <translation>复制整页到剪贴板</translation>
     </message>
     <message>
-        <location line="-5594"/>
-        <location line="+5597"/>
+        <location line="+3"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="+3"/>
         <source>Copy current sub-chart to clipboard</source>
         <translation>复制当前子图到剪贴板</translation>
     </message>
     <message>
-        <location line="-4562"/>
-        <location line="+4287"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="-275"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="-324"/>
         <source>Simple</source>
         <translation>简单</translation>
     </message>
     <message>
-        <location line="-4286"/>
-        <location line="+4287"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+1"/>
         <source>Advanced</source>
         <translation>高级</translation>
     </message>
     <message>
-        <location line="-4273"/>
-        <location line="+4265"/>
+        <location line="-8"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+14"/>
         <source>Mode</source>
         <translation>模式</translation>
     </message>
     <message>
-        <location line="-4264"/>
-        <location line="+4267"/>
+        <location line="+3"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+1"/>
         <source>Threshold</source>
         <translation>相对门限</translation>
     </message>
     <message>
-        <location line="-4190"/>
-        <location line="+4106"/>
+        <location line="-84"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+77"/>
         <source>Signal Display</source>
         <translation>信号显示</translation>
     </message>
     <message>
-        <location line="-4296"/>
+        <location line="+177"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="-190"/>
         <location line="+38"/>
-        <location line="+4435"/>
         <source>Channel</source>
         <translation>通道</translation>
     </message>
     <message>
-        <location line="-4001"/>
-        <location line="+4140"/>
+        <location line="+139"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+434"/>
         <source>Follow playback</source>
         <translation>跟随播放</translation>
     </message>
     <message>
-        <location line="-4139"/>
-        <location line="+4140"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+1"/>
         <source>Show the current frame while playback advances</source>
         <translation>播放推进时显示当前帧</translation>
     </message>
     <message>
-        <location line="-4111"/>
-        <location line="+4115"/>
+        <location line="+4"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+29"/>
         <source>Playback position</source>
         <translation>播放位置</translation>
     </message>
     <message>
-        <location line="-4097"/>
-        <location line="+4100"/>
+        <location line="+3"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+18"/>
         <source>Auto scroll</source>
         <translation>自动滚动</translation>
     </message>
     <message>
-        <location line="-4099"/>
-        <location line="+4100"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+1"/>
         <source>Scroll the time-frequency view while playback advances</source>
         <translation>播放推进时滚动时频视图</translation>
     </message>
     <message>
-        <location line="-4607"/>
-        <location line="+4499"/>
+        <location line="-108"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="-507"/>
         <source>Peak amplitude</source>
         <translation>峰值幅度</translation>
     </message>
     <message>
-        <location line="-4498"/>
-        <location line="+4499"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+1"/>
         <source>RMS</source>
         <translation>均方根</translation>
     </message>
     <message>
-        <location line="-4498"/>
-        <location line="+4499"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+1"/>
         <source>dB (FS)</source>
         <translation>dB（满量程）</translation>
     </message>
     <message>
-        <location line="-4498"/>
-        <location line="+4499"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+1"/>
         <source>dB (re 1.0)</source>
         <translation>dB（相对 1.0）</translation>
     </message>
     <message>
-        <location line="-2785"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIExport.cpp" line="+100"/>
         <source>No peak data to export.</source>
         <translation>没有可导出的峰值数据。</translation>
     </message>
@@ -14852,19 +14923,19 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>峰值表导出失败。</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIAnalysis.cpp" line="+312"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIExport.cpp" line="+11"/>
         <location line="+51"/>
         <location line="+38"/>
         <location line="+103"/>
         <location line="+31"/>
         <location line="+45"/>
         <location line="+17"/>
-        <location line="+871"/>
         <source>No signal is selected.</source>
         <translation>未选中信号。</translation>
     </message>
     <message>
-        <location line="-1151"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIExport.cpp" line="-280"/>
         <source>No spectrum data to export.</source>
         <translation>没有可导出的频谱数据。</translation>
     </message>
@@ -14910,12 +14981,12 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>热图矩阵导出失败。</translation>
     </message>
     <message>
-        <location line="+2686"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="+126"/>
         <source>Export Image</source>
         <translation>导出图片</translation>
     </message>
     <message>
-        <location line="-2669"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIExport.cpp" line="+17"/>
         <location line="+37"/>
         <source>PNG Image (*.png)</source>
         <translation>PNG 图片 (*.png)</translation>
@@ -14941,12 +15012,12 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>峰值表已作为「%1」加入数据管理器。</translation>
     </message>
     <message>
-        <location line="+1130"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIAnalysis.cpp" line="+244"/>
         <source>Spectrum ready: resolution %1 Hz, %2 bins</source>
         <translation>频谱计算完成：分辨率 %1 赫兹，%2 个频点</translation>
     </message>
     <message>
-        <location line="+1075"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="-323"/>
         <source>Import Audio</source>
         <translation>导入音频</translation>
     </message>
@@ -14971,26 +15042,26 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>导入视频</translation>
     </message>
     <message>
-        <location line="-3485"/>
-        <location line="+2741"/>
-        <location line="+755"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIDisplay.cpp" line="+388"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIPlayback.cpp" line="+168"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="+11"/>
         <source>Play</source>
         <translation>播放</translation>
     </message>
     <message>
-        <location line="-3496"/>
-        <location line="+2741"/>
+        <location line="+0"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIPlayback.cpp" line="+0"/>
         <source>Pause</source>
         <translation>暂停</translation>
     </message>
     <message>
-        <location line="+760"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="+5"/>
         <source>Stop</source>
         <translation>停止</translation>
     </message>
     <message>
-        <location line="-4432"/>
-        <location line="+4382"/>
+        <location line="-50"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="-106"/>
         <source>Analysis Settings</source>
         <translation>分析设置</translation>
     </message>
@@ -15050,8 +15121,8 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>隐藏瀑布视图</translation>
     </message>
     <message>
-        <location line="-4367"/>
-        <location line="+4469"/>
+        <location line="+102"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+129"/>
         <source>Amplitude</source>
         <translation>幅值模式</translation>
     </message>
@@ -15067,33 +15138,33 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>导出峰值表</translation>
     </message>
     <message>
-        <location line="-4587"/>
-        <location line="+4457"/>
+        <location line="-130"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="-1"/>
         <source>Window</source>
         <translation>窗口</translation>
     </message>
     <message>
-        <location line="-2175"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIArchive.cpp" line="+303"/>
         <source>Audio/Video files (*.wav *.aiff *.aif *.flac *.ogg *.mp3 *.m4a *.mp4 *.mkv *.avi);;All files (*)</source>
         <translation>音频/视频文件 (*.wav *.aiff *.aif *.flac *.ogg *.mp3 *.m4a *.mp4 *.mkv *.avi);;所有文件 (*)</translation>
     </message>
     <message>
-        <location line="+1069"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIPlayback.cpp" line="-103"/>
         <source>Cannot start playback for this signal.</source>
         <translation>无法开始播放该信号。</translation>
     </message>
     <message>
-        <location line="-2202"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIAnalysis.cpp" line="-499"/>
         <source>Continue</source>
         <translation>继续</translation>
     </message>
     <message>
-        <location line="+370"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIImport.cpp" line="+267"/>
         <source>Data frame:</source>
         <translation>数据帧：</translation>
     </message>
     <message>
-        <location line="+340"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIExport.cpp" line="-216"/>
         <source>Downsample x2</source>
         <translation>2 倍降采样</translation>
     </message>
@@ -15108,7 +15179,7 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>导出完整矩阵</translation>
     </message>
     <message>
-        <location line="-2555"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="+280"/>
         <source>Extract the audio track of a video file</source>
         <translation>抽取视频音频轨</translation>
     </message>
@@ -15118,54 +15189,54 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>未检测到 FFmpeg，请在「设置 → 信号分析」里指定路径。</translation>
     </message>
     <message>
-        <location line="+409"/>
+        <location line="+52"/>
         <source>Failed to create the signal analysis page.</source>
         <translation>创建信号分析页面失败。</translation>
     </message>
     <message>
-        <location line="+2104"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIExport.cpp" line="-41"/>
         <source>Failed to export the power spectral density.</source>
         <translation>功率谱密度导出失败。</translation>
     </message>
     <message>
-        <location line="+1636"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIImport.cpp" line="+120"/>
         <source>Failed to import audio.</source>
         <translation>导入音频失败。</translation>
     </message>
     <message>
-        <location line="-4076"/>
+        <location line="-452"/>
         <source>Failed to import data frame.</source>
         <translation>导入数据帧失败。</translation>
     </message>
     <message>
-        <location line="+4076"/>
+        <location line="+452"/>
         <source>Failed to import video.</source>
         <translation>导入视频失败。</translation>
     </message>
     <message>
-        <location line="-109"/>
-        <location line="+132"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIPlayback.cpp" line="-7"/>
+        <location line="+60"/>
         <source>Failed to prepare the playback audio for this signal.</source>
         <translation>准备该信号的播放音频失败。</translation>
     </message>
     <message>
-        <location line="-1916"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIImport.cpp" line="-79"/>
         <location line="+14"/>
         <source>Failed to relink the data frame source.</source>
         <translation>重新指定数据帧来源失败。</translation>
     </message>
     <message>
-        <location line="+727"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIArchive.cpp" line="+19"/>
         <source>Failed to restore signal &quot;%1&quot;.</source>
         <translation>恢复信号「%1」失败。</translation>
     </message>
     <message>
-        <location line="-222"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIExport.cpp" line="+262"/>
         <source>Failed to send the peak table.</source>
         <translation>峰值表发送失败。</translation>
     </message>
     <message>
-        <location line="-938"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIAnalysis.cpp" line="-8"/>
         <location line="+43"/>
         <source>Large Signal</source>
         <translation>大信号</translation>
@@ -15176,7 +15247,7 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>大信号已确认：%1 预计占用约 %2 GB 内存。</translation>
     </message>
     <message>
-        <location line="+1116"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIArchive.cpp" line="-21"/>
         <source>Locate Signal Source</source>
         <translation>重新指定信号源</translation>
     </message>
@@ -15186,12 +15257,12 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>重新指定...</translation>
     </message>
     <message>
-        <location line="-763"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIImport.cpp" line="-66"/>
         <source>No data frame is available. Import or create a data frame first.</source>
         <translation>没有可用的数据帧，请先导入或创建数据帧。</translation>
     </message>
     <message>
-        <location line="+287"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIExport.cpp" line="-284"/>
         <source>No power spectral density data to export.</source>
         <translation>没有可导出的功率谱密度数据。</translation>
     </message>
@@ -15201,7 +15272,7 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>功率谱密度（dB，相对 1.0/赫兹）</translation>
     </message>
     <message>
-        <location line="+2461"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="-186"/>
         <source>Open the signal analysis workspace</source>
         <translation>打开信号分析界面</translation>
     </message>
@@ -15421,44 +15492,44 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>导出整页/当前子图或复制到剪贴板</translation>
     </message>
     <message>
-        <location line="-5548"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="-299"/>
         <source>Playback failed. See the message log for details.</source>
         <translation>播放失败，详情见消息日志。</translation>
     </message>
     <message>
-        <location line="+5236"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="-312"/>
         <source>Point a signal whose data frame is missing to an existing data frame</source>
         <translation>把数据帧缺失的信号重新指向现有数据帧</translation>
     </message>
     <message>
-        <location line="-5291"/>
-        <location line="+5595"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="-55"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="+304"/>
         <source>Power spectral density (CSV)</source>
         <translation>功率谱密度（CSV）</translation>
     </message>
     <message>
-        <location line="-2783"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIExport.cpp" line="+4"/>
         <source>Power spectral density exported: %1</source>
         <translation>功率谱密度已导出：%1</translation>
     </message>
     <message>
-        <location line="-622"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIAnalysis.cpp" line="+28"/>
         <source>Reduce precision</source>
         <translation>降低精度</translation>
     </message>
     <message>
-        <location line="+326"/>
-        <location line="+2774"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIImport.cpp" line="+10"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="-305"/>
         <source>Relink Data Frame Source</source>
         <translation>重新指定数据帧来源</translation>
     </message>
     <message>
-        <location line="-4855"/>
+        <location line="-271"/>
         <source>Signal &quot;%1&quot; is a placeholder: its data frame is missing.</source>
         <translation>信号「%1」为占位：其数据帧缺失。</translation>
     </message>
     <message>
-        <location line="+2829"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIArchive.cpp" line="-5"/>
         <source>Signal &quot;%1&quot; refers to a missing file:
 %2
 
@@ -15466,22 +15537,22 @@ Locate the file again?</source>
         <translation>信号「%1」引用的文件不存在：%2。要重新指定文件吗？</translation>
     </message>
     <message>
-        <location line="-671"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIImport.cpp" line="+348"/>
         <source>Signal &quot;%1&quot; relinked to data frame &quot;%2&quot;.</source>
         <translation>信号「%1」已重新指向数据帧「%2」。</translation>
     </message>
     <message>
-        <location line="+670"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIArchive.cpp" line="-1"/>
         <source>Signal Source Missing</source>
         <translation>信号源缺失</translation>
     </message>
     <message>
-        <location line="-1109"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIAnalysis.cpp" line="-36"/>
         <source>Signal analysis cancelled: %1 needs more than the memory budget.</source>
         <translation>已取消信号分析：%1 超出内存预算。</translation>
     </message>
     <message>
-        <location line="+2068"/>
+        <location line="+511"/>
         <source>Signal analysis failed. See the message log for details.</source>
         <translation>信号分析失败，详情见消息日志。</translation>
     </message>
@@ -15491,7 +15562,7 @@ Locate the file again?</source>
         <translation>信号分析：参数已应用，正在重算。</translation>
     </message>
     <message>
-        <location line="-841"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIArchive.cpp" line="-12"/>
         <source>Signal source missing: data frame &quot;%1&quot; (signal &quot;%2&quot;). Use &quot;Relink Data Frame Source&quot; to point it to an existing data frame.</source>
         <translation>信号源缺失：数据帧「%1」（信号「%2」）。可用「重新指定数据帧来源」指向现有数据帧。</translation>
     </message>
@@ -15501,34 +15572,34 @@ Locate the file again?</source>
         <translation>跳过</translation>
     </message>
     <message>
-        <location line="-783"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIImport.cpp" line="-106"/>
         <source>The current signal&apos;s source is available; there is nothing to relink.</source>
         <translation>当前信号的来源可用，无需重新指定。</translation>
     </message>
     <message>
-        <location line="-347"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIAnalysis.cpp" line="-395"/>
         <source>The estimated peak memory for the %1 is about %2 GB, above the 1.5 GB budget.
 Continue or cancel?</source>
         <translation>%1 的预计峰值内存约 %2 GB，超过 1.5 GB 预算。继续还是取消？</translation>
     </message>
     <message>
-        <location line="+707"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIExport.cpp" line="+35"/>
         <source>The heatmap matrix is %1 x %2 = %3 cells (about %4 MB as CSV).
 Export the full matrix or downsample by 2?</source>
         <translation>热图矩阵为 %1 x %2 = %3 个单元（CSV 约 %4 兆字节）。导出完整矩阵还是 2 倍降采样？</translation>
     </message>
     <message>
-        <location line="-612"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIAnalysis.cpp" line="+95"/>
         <source>peak table</source>
         <translation>峰值表</translation>
     </message>
     <message>
-        <location line="-2115"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="+120"/>
         <source>soundfile is not available; only WAV files can be read directly. Install soundfile or use FFmpeg.</source>
         <translation>未安装 soundfile，只能直接读取 WAV；可安装 soundfile 或改用 FFmpeg。</translation>
     </message>
     <message>
-        <location line="+4125"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIAnalysis.cpp" line="+453"/>
         <source>spectrum</source>
         <translation>频谱</translation>
     </message>
@@ -15538,7 +15609,7 @@ Export the full matrix or downsample by 2?</source>
         <translation>波形包络</translation>
     </message>
     <message>
-        <location line="-3948"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="+200"/>
         <source>FFmpeg is available; video import is enabled.</source>
         <translation>FFmpeg 可用，视频导入已启用。</translation>
     </message>
@@ -15548,297 +15619,297 @@ Export the full matrix or downsample by 2?</source>
         <translation>仍未检测到 FFmpeg，视频导入保持置灰。</translation>
     </message>
     <message>
-        <location line="+4125"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIImport.cpp" line="+147"/>
         <source>Signal imported.</source>
         <translation>信号导入完成。</translation>
     </message>
     <message>
-        <location line="-2265"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIAnalysis.cpp" line="-528"/>
         <source>The estimated peak memory for the %1 is about %2 GB, above the 1.5 GB budget.
 Reduce the precision, scan only the visible range, or cancel?</source>
         <translation>%1 的预计峰值内存约 %2 GB，超过 1.5 GB 预算。降低精度、只扫可见区段，还是取消？</translation>
     </message>
     <message>
-        <location line="-1303"/>
-        <location line="+4350"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="-60"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="-118"/>
         <source>Import / Export</source>
         <translation>导入导出</translation>
     </message>
     <message>
-        <location line="-4300"/>
-        <location line="+4303"/>
+        <location line="+3"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+50"/>
         <source>Preprocess</source>
         <translation>预处理</translation>
     </message>
     <message>
-        <location line="-4301"/>
-        <location line="+4518"/>
+        <location line="+217"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+2"/>
         <source>Remove DC</source>
         <translation>去直流</translation>
     </message>
     <message>
-        <location line="-4512"/>
-        <location line="+4505"/>
+        <location line="-7"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+6"/>
         <source>None</source>
         <translation>无</translation>
     </message>
     <message>
-        <location line="-4504"/>
-        <location line="+4505"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+1"/>
         <source>Constant</source>
         <translation>常数</translation>
     </message>
     <message>
-        <location line="-4504"/>
-        <location line="+4505"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+1"/>
         <source>Linear</source>
         <translation>线性插值</translation>
     </message>
     <message>
-        <location line="-4499"/>
-        <location line="+4493"/>
+        <location line="-6"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+6"/>
         <source>Detrend</source>
         <translation>去趋势</translation>
     </message>
     <message>
-        <location line="-4486"/>
-        <location line="+4283"/>
+        <location line="-203"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+7"/>
         <source>Spectrum</source>
         <translation>频谱</translation>
     </message>
     <message>
-        <location line="-4272"/>
-        <location line="+4495"/>
+        <location line="+223"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+11"/>
         <source>Rectangular</source>
         <translation>矩形</translation>
     </message>
     <message>
-        <location line="-4494"/>
-        <location line="+4495"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+1"/>
         <source>Hann</source>
         <translation>汉宁</translation>
     </message>
     <message>
-        <location line="-4494"/>
-        <location line="+4495"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+1"/>
         <source>Hamming</source>
         <translation>汉明</translation>
     </message>
     <message>
-        <location line="-4494"/>
-        <location line="+4495"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+1"/>
         <source>Blackman</source>
         <translation>布莱克曼</translation>
     </message>
     <message>
-        <location line="-4494"/>
-        <location line="+4495"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+1"/>
         <source>Flat top</source>
         <translation>平顶</translation>
     </message>
     <message>
-        <location line="-4463"/>
-        <location line="+4480"/>
+        <location line="+17"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+32"/>
         <source>Resolution</source>
         <translation>分辨率</translation>
     </message>
     <message>
-        <location line="-4475"/>
-        <location line="+4234"/>
+        <location line="-241"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+5"/>
         <source>Time-Frequency</source>
         <translation>时频</translation>
     </message>
     <message>
-        <location line="-4203"/>
-        <location line="+4451"/>
+        <location line="+248"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+31"/>
         <source>Window length</source>
         <translation>窗长</translation>
     </message>
     <message>
-        <location line="-4450"/>
-        <location line="+4458"/>
+        <location line="+8"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+1"/>
         <source>Hop overlap</source>
         <translation>跳步重叠</translation>
     </message>
     <message>
-        <location line="-4408"/>
-        <location line="+4158"/>
+        <location line="-250"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+50"/>
         <source>More</source>
         <translation>更多</translation>
     </message>
     <message>
-        <location line="-4084"/>
-        <location line="+4097"/>
+        <location line="+13"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+74"/>
         <source>Time-Frequency View</source>
         <translation>时频图设置</translation>
     </message>
     <message>
-        <location line="-4076"/>
-        <location line="+4227"/>
+        <location line="+151"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+21"/>
         <source>Linked zoom</source>
         <translation>联动缩放</translation>
     </message>
     <message>
-        <location line="-4223"/>
-        <location line="+4229"/>
+        <location line="+6"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+4"/>
         <source>Dual cursors</source>
         <translation>双光标测量</translation>
     </message>
     <message>
-        <location line="-4224"/>
-        <location line="+4230"/>
+        <location line="+6"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+5"/>
         <source>Peak hold</source>
         <translation>峰值保持</translation>
     </message>
     <message>
-        <location line="-4226"/>
-        <location line="+4231"/>
+        <location line="+5"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+4"/>
         <source>Reset peak hold</source>
         <translation>重置峰值保持</translation>
     </message>
     <message>
-        <location line="-4223"/>
-        <location line="+4177"/>
+        <location line="-46"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+8"/>
         <source>Time format</source>
         <translation>时间格式</translation>
     </message>
     <message>
-        <location line="-4173"/>
-        <location line="+4177"/>
+        <location line="+4"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+4"/>
         <source>Seconds</source>
         <translation>秒</translation>
     </message>
     <message>
-        <location line="-4177"/>
-        <location line="+4178"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+0"/>
         <source>Milliseconds</source>
         <translation>毫秒</translation>
     </message>
     <message>
-        <location line="-4178"/>
-        <location line="+4179"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+0"/>
         <source>mm:ss.s</source>
         <translation>mm:ss.s</translation>
     </message>
     <message>
-        <location line="-4169"/>
-        <location line="+4172"/>
+        <location line="+3"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+10"/>
         <source>Layout</source>
         <translation>布局</translation>
     </message>
     <message>
-        <location line="-4170"/>
-        <location line="+4174"/>
+        <location line="+4"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+2"/>
         <source>1:1</source>
         <translation>1:1</translation>
     </message>
     <message>
-        <location line="-4174"/>
-        <location line="+4175"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+0"/>
         <source>Waveform priority</source>
         <translation>波形优先</translation>
     </message>
     <message>
-        <location line="-4175"/>
-        <location line="+4176"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+0"/>
         <source>Analysis priority</source>
         <translation>分析优先</translation>
     </message>
     <message>
-        <location line="-4176"/>
-        <location line="+4177"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+0"/>
         <source>Restore default</source>
         <translation>恢复默认</translation>
     </message>
     <message>
-        <location line="-4168"/>
-        <location line="+4171"/>
+        <location line="+3"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+9"/>
         <source>Reset display</source>
         <translation>重置显示</translation>
     </message>
     <message>
-        <location line="-4164"/>
-        <location line="+4026"/>
+        <location line="-138"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+7"/>
         <source>Heatmap</source>
         <translation>云图设置</translation>
     </message>
     <message>
-        <location line="-3999"/>
-        <location line="+65"/>
-        <location line="+4191"/>
+        <location line="+257"/>
         <location line="+39"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+27"/>
+        <location line="+65"/>
         <source>dB</source>
         <translation>dB</translation>
     </message>
     <message>
-        <location line="-4287"/>
-        <location line="+4261"/>
+        <location line="-26"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="-57"/>
         <source>Display mode</source>
         <translation>显示模式</translation>
     </message>
     <message>
-        <location line="-4259"/>
-        <location line="+4262"/>
+        <location line="+3"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+2"/>
         <source>Image</source>
         <translation>图像</translation>
     </message>
     <message>
-        <location line="-4262"/>
-        <location line="+4263"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+0"/>
         <source>Contour</source>
         <translation>等值线</translation>
     </message>
     <message>
-        <location line="-4263"/>
-        <location line="+4264"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+0"/>
         <source>Image + Contour</source>
         <translation>图像+等高线</translation>
     </message>
     <message>
-        <location line="-4253"/>
-        <location line="+4256"/>
+        <location line="+3"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+11"/>
         <source>Interpolation</source>
         <translation>插值模式</translation>
     </message>
     <message>
-        <location line="-4254"/>
-        <location line="+4257"/>
+        <location line="+3"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+2"/>
         <source>Nearest neighbour</source>
         <translation>最近邻</translation>
     </message>
     <message>
-        <location line="-4257"/>
-        <location line="+4258"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+0"/>
         <source>Bilinear</source>
         <translation>双线性</translation>
     </message>
     <message>
-        <location line="-4242"/>
-        <location line="+3963"/>
+        <location line="-279"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+16"/>
         <source>Waterfall</source>
         <translation>瀑布图设置</translation>
     </message>
     <message>
-        <location line="-3792"/>
-        <location line="+3835"/>
+        <location line="+43"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+171"/>
         <source>Playback position / total duration</source>
         <translation>播放位置 / 总时长</translation>
     </message>
     <message>
-        <location line="-3505"/>
-        <location line="+2741"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIDisplay.cpp" line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIPlayback.cpp" line="+51"/>
         <source>Pause playback</source>
         <translation>暂停播放</translation>
     </message>
     <message>
-        <location line="-2741"/>
-        <location line="+2741"/>
-        <location line="+755"/>
+        <location line="+0"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIPlayback.cpp" line="+0"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="-9"/>
         <source>Start playback</source>
         <translation>开始播放</translation>
     </message>
     <message>
-        <location line="-3346"/>
+        <location line="+150"/>
         <source>The 3D waterfall is not ready yet; its item appears after the time-frequency analysis finishes.</source>
         <translation>三维瀑布尚未生成；时频分析完成后才会出现对应图元。</translation>
     </message>
@@ -15848,7 +15919,7 @@ Reduce the precision, scan only the visible range, or cancel?</source>
         <translation>显示设置已重置。</translation>
     </message>
     <message>
-        <location line="+117"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIAnalysis.cpp" line="+10"/>
         <source>Scan visible range</source>
         <translation>只扫可见区段</translation>
     </message>
@@ -15868,7 +15939,7 @@ Reduce the precision, scan only the visible range, or cancel?</source>
         <translation>峰值曲线改用更粗的帧步进（局部扫描）。</translation>
     </message>
     <message>
-        <location line="+661"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIExport.cpp" line="+86"/>
         <source>Export Whole Page</source>
         <translation>导出整页</translation>
     </message>
@@ -15918,7 +15989,7 @@ Reduce the precision, scan only the visible range, or cancel?</source>
         <translation>复制当前子图到剪贴板失败。</translation>
     </message>
     <message>
-        <location line="+1023"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIDisplay.cpp" line="+95"/>
         <source>Frequency resolution of the time-frequency view</source>
         <translation>时频视图的频率分辨率</translation>
     </message>
@@ -15933,12 +16004,12 @@ Reduce the precision, scan only the visible range, or cancel?</source>
         <translation>由窗长派生的频率分辨率</translation>
     </message>
     <message>
-        <location line="+115"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIAnalysis.cpp" line="+345"/>
         <source>%1 tasks</source>
         <translation>%1 项任务</translation>
     </message>
     <message>
-        <location line="+450"/>
+        <location line="+196"/>
         <source>heatmap</source>
         <translation>热图</translation>
     </message>
@@ -18399,10 +18470,10 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/Controller/DAAppChartActionHandler.cpp" line="-565"/>
+        <location filename="../APP/Controller/DAAppChartActionHandler.cpp" line="-667"/>
         <location filename="../APP/Controller/DAAppControllerAgent.cpp" line="-106"/>
         <location filename="../APP/Controller/DAAppControllerConnections.cpp" line="+140"/>
-        <location filename="../APP/Controller/DAAppControllerCore.cpp" line="-961"/>
+        <location filename="../APP/Controller/DAAppControllerCore.cpp" line="-996"/>
         <location filename="../APP/Controller/DAAppControllerPage.cpp" line="-348"/>
         <location filename="../APP/Controller/DAAppControllerProject.cpp" line="-194"/>
         <location filename="../APP/Controller/DAAppControllerView.cpp" line="-50"/>
@@ -20656,7 +20727,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</source>
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="-2923"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="-3004"/>
         <source>Figure</source>
         <translation>绘图</translation>
     </message>

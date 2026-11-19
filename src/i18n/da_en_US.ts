@@ -3377,7 +3377,7 @@
 <context>
     <name>DA::DAAppChartActionHandler</name>
     <message>
-        <location filename="../APP/Controller/DAAppChartActionHandler.cpp" line="+1286"/>
+        <location filename="../APP/Controller/DAAppChartActionHandler.cpp" line="+1387"/>
         <source>There is no figure to export</source>
         <translation>There is no figure to export</translation>
     </message>
@@ -3700,7 +3700,7 @@
         <translation>Dataset &apos;%1&apos; not found, it may have been removed</translation>
     </message>
     <message>
-        <location filename="../APP/Controller/DAAppChartActionHandler.cpp" line="-613"/>
+        <location filename="../APP/Controller/DAAppChartActionHandler.cpp" line="-611"/>
         <source>Before creating a new coordinate, you need to create a figure</source>
         <translation>Before creating a new coordinate, you need to create a figure</translation>
     </message>
@@ -3766,7 +3766,7 @@
         <translation>Received null project interface</translation>
     </message>
     <message>
-        <location filename="../APP/Controller/DAAppControllerCore.cpp" line="+532"/>
+        <location filename="../APP/Controller/DAAppControllerCore.cpp" line="+567"/>
         <location filename="../APP/Controller/DAAppControllerPage.cpp" line="+254"/>
         <source>No cells selected to copy</source>
         <translation>No cells selected to copy</translation>
@@ -8264,8 +8264,8 @@
 <context>
     <name>DA::DAChartManageWidget</name>
     <message>
-        <location filename="../DAGui/Chart/DAChartManageWidget.cpp" line="+102"/>
-        <location line="+818"/>
+        <location filename="../DAGui/Chart/DAChartManageWidget.cpp" line="+105"/>
+        <location line="+838"/>
         <location line="+17"/>
         <location line="+20"/>
         <location line="+22"/>
@@ -8275,26 +8275,26 @@
         <translation>Rename</translation>
     </message>
     <message>
-        <location line="-912"/>
+        <location line="-932"/>
         <source>Visible</source>
         <translation>Visible</translation>
     </message>
     <message>
         <location line="+2"/>
-        <location line="+1016"/>
+        <location line="+1036"/>
         <location line="+24"/>
         <source>Delete</source>
         <translation>Delete</translation>
     </message>
     <message>
-        <location line="-1038"/>
-        <location line="+1087"/>
+        <location line="-1058"/>
+        <location line="+1107"/>
         <location line="+20"/>
         <source>Remove Chart</source>
         <translation>Remove Chart</translation>
     </message>
     <message>
-        <location line="-1102"/>
+        <location line="-1122"/>
         <source>Transfer</source>
         <translation>Transfer</translation>
     </message>
@@ -8309,7 +8309,7 @@
         <translation>figure</translation>
     </message>
     <message>
-        <location line="+484"/>
+        <location line="+504"/>
         <source>received figure create signal, but cannot find figure</source>
         <translation>received figure create signal, but cannot find figure</translation>
     </message>
@@ -8325,8 +8325,8 @@
         <translation>Are you sure to remove chart &quot;%1&quot;? All its items will be removed.</translation>
     </message>
     <message>
-        <location line="-975"/>
-        <location line="+676"/>
+        <location line="-995"/>
+        <location line="+696"/>
         <location line="+275"/>
         <location line="+20"/>
         <source>chart</source>
@@ -12507,12 +12507,12 @@
 <context>
     <name>DA::DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="+235"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="+236"/>
         <source>Unexpected plotting operation: a chart that does not belong to the DAChartWidget type was added to the figure</source>
         <translation>Unexpected plotting operation: a chart that does not belong to the DAChartWidget type was added to the figure</translation>
     </message>
     <message>
-        <location line="+1654"/>
+        <location line="+1735"/>
         <source>PNG Image (*.png);;SVG Image (*.svg);;PDF Document (*.pdf)</source>
         <translation>PNG Image (*.png);;SVG Image (*.svg);;PDF Document (*.pdf)</translation>
     </message>
@@ -12530,7 +12530,18 @@
 <context>
     <name>DA::DAFigureWidgetSettingPanel</name>
     <message>
-        <location filename="../DAGui/Chart/Setting/DAFigureWidgetSettingPanel.cpp" line="+137"/>
+        <location filename="../DAGui/Chart/Setting/DAFigureWidgetSettingPanel.cpp" line="+141"/>
+        <source>Exit Grid</source>
+        <translation>Exit Grid</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <location line="+61"/>
+        <source>Enable Grid</source>
+        <translation>Enable Grid</translation>
+    </message>
+    <message>
+        <location line="-25"/>
         <source>Size</source>
         <translation>Size</translation>
     </message>
@@ -12563,6 +12574,66 @@
         <location line="+2"/>
         <source>Background Brush</source>
         <translation>Background Brush</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Grid Layout</source>
+        <translation>Grid Layout</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>Enable the retained grid layout: sub charts follow the row/column tracks. Existing sub charts are placed into the cells in reading order.</source>
+        <translation>Enable the retained grid layout: sub charts follow the row/column tracks. Existing sub charts are placed into the cells in reading order.</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>State</source>
+        <translation>State</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Rows</source>
+        <translation>Rows</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Columns</source>
+        <translation>Columns</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Equal Tracks</source>
+        <translation>Equal Tracks</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Reset the row/column ratios to equal tracks</source>
+        <translation>Reset the row/column ratios to equal tracks</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>Tracks</source>
+        <translation>Tracks</translation>
+    </message>
+    <message>
+        <location line="+83"/>
+        <source>Failed to leave the grid layout</source>
+        <translation>Failed to leave the grid layout</translation>
+    </message>
+    <message>
+        <location line="+12"/>
+        <source>Failed to enable the grid layout</source>
+        <translation>Failed to enable the grid layout</translation>
+    </message>
+    <message>
+        <location line="+34"/>
+        <source>Failed to equalize the grid tracks</source>
+        <translation>Failed to equalize the grid tracks</translation>
+    </message>
+    <message>
+        <location line="+59"/>
+        <source>%1 sub charts do not fit the %2 x %3 grid and stay in the free layout</source>
+        <translation>%1 sub charts do not fit the %2 x %3 grid and stay in the free layout</translation>
     </message>
 </context>
 <context>
@@ -14640,50 +14711,50 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</translation>
 <context>
     <name>DA::DASignalAnalysisUI</name>
     <message>
-        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="+426"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="+247"/>
         <source>FFmpeg was not detected; video import is unavailable until a path is specified in Settings &gt; Signal Analysis.</source>
         <translation>FFmpeg was not detected; video import is unavailable until a path is specified in Settings &gt; Signal Analysis.</translation>
     </message>
     <message>
         <location line="-118"/>
-        <location line="+5596"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="+399"/>
         <source>Peak table (CSV)</source>
         <translation>Peak table (CSV)</translation>
     </message>
     <message>
-        <location line="-5593"/>
-        <location line="+5596"/>
+        <location line="+3"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="+3"/>
         <source>Spectrum curve (CSV)</source>
         <translation>Spectrum curve (CSV)</translation>
     </message>
     <message>
-        <location line="-5589"/>
-        <location line="+5595"/>
+        <location line="+7"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="+6"/>
         <source>Heatmap matrix (CSV)</source>
         <translation>Heatmap matrix (CSV)</translation>
     </message>
     <message>
-        <location line="-5158"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIImport.cpp" line="+143"/>
         <source>Signal imported: %1 (%2 Hz, %3 s)</source>
         <translation>Signal imported: %1 (%2 Hz, %3 s)</translation>
     </message>
     <message>
-        <location line="+259"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="+339"/>
         <location line="+3"/>
-        <location line="+439"/>
-        <location line="+4081"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="-376"/>
         <location line="+27"/>
         <location line="+19"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+371"/>
         <source>Signal Analysis</source>
         <translation>Signal Analysis</translation>
     </message>
     <message>
-        <location line="-4224"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="-42"/>
+        <location line="+16"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="-97"/>
         <location line="+329"/>
         <location line="+2"/>
         <location line="+5"/>
-        <location line="+3846"/>
-        <location line="+16"/>
         <source>Peaks</source>
         <translation>Peaks</translation>
     </message>
@@ -14693,122 +14764,122 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</translation>
         <translation>Display</translation>
     </message>
     <message>
-        <location line="-5515"/>
-        <location line="+5597"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="-334"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="+82"/>
         <source>Whole page (PNG)...</source>
         <translation>Whole page (PNG)...</translation>
     </message>
     <message>
-        <location line="-5594"/>
-        <location line="+5597"/>
+        <location line="+3"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="+3"/>
         <source>Current sub-chart (PNG/SVG/PDF)...</source>
         <translation>Current sub-chart (PNG/SVG/PDF)...</translation>
     </message>
     <message>
-        <location line="-5593"/>
-        <location line="+5597"/>
+        <location line="+4"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="+4"/>
         <source>Copy whole page to clipboard</source>
         <translation>Copy whole page to clipboard</translation>
     </message>
     <message>
-        <location line="-5594"/>
-        <location line="+5597"/>
+        <location line="+3"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="+3"/>
         <source>Copy current sub-chart to clipboard</source>
         <translation>Copy current sub-chart to clipboard</translation>
     </message>
     <message>
-        <location line="-4562"/>
-        <location line="+4287"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="-275"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="-324"/>
         <source>Simple</source>
         <translation>Simple</translation>
     </message>
     <message>
-        <location line="-4286"/>
-        <location line="+4287"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+1"/>
         <source>Advanced</source>
         <translation>Advanced</translation>
     </message>
     <message>
-        <location line="-4273"/>
-        <location line="+4265"/>
+        <location line="-8"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+14"/>
         <source>Mode</source>
         <translation>Mode</translation>
     </message>
     <message>
-        <location line="-4264"/>
-        <location line="+4267"/>
+        <location line="+3"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+1"/>
         <source>Threshold</source>
         <translation>Threshold</translation>
     </message>
     <message>
-        <location line="-4190"/>
-        <location line="+4106"/>
+        <location line="-84"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+77"/>
         <source>Signal Display</source>
         <translation>Signal Display</translation>
     </message>
     <message>
-        <location line="-4296"/>
+        <location line="+177"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="-190"/>
         <location line="+38"/>
-        <location line="+4435"/>
         <source>Channel</source>
         <translation>Channel</translation>
     </message>
     <message>
-        <location line="-4001"/>
-        <location line="+4140"/>
+        <location line="+139"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+434"/>
         <source>Follow playback</source>
         <translation>Follow playback</translation>
     </message>
     <message>
-        <location line="-4139"/>
-        <location line="+4140"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+1"/>
         <source>Show the current frame while playback advances</source>
         <translation>Show the current frame while playback advances</translation>
     </message>
     <message>
-        <location line="-4111"/>
-        <location line="+4115"/>
+        <location line="+4"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+29"/>
         <source>Playback position</source>
         <translation>Playback position</translation>
     </message>
     <message>
-        <location line="-4097"/>
-        <location line="+4100"/>
+        <location line="+3"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+18"/>
         <source>Auto scroll</source>
         <translation>Auto scroll</translation>
     </message>
     <message>
-        <location line="-4099"/>
-        <location line="+4100"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+1"/>
         <source>Scroll the time-frequency view while playback advances</source>
         <translation>Scroll the time-frequency view while playback advances</translation>
     </message>
     <message>
-        <location line="-4607"/>
-        <location line="+4499"/>
+        <location line="-108"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="-507"/>
         <source>Peak amplitude</source>
         <translation>Peak amplitude</translation>
     </message>
     <message>
-        <location line="-4498"/>
-        <location line="+4499"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+1"/>
         <source>RMS</source>
         <translation>RMS</translation>
     </message>
     <message>
-        <location line="-4498"/>
-        <location line="+4499"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+1"/>
         <source>dB (FS)</source>
         <translation>dB (FS)</translation>
     </message>
     <message>
-        <location line="-4498"/>
-        <location line="+4499"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+1"/>
         <source>dB (re 1.0)</source>
         <translation>dB (re 1.0)</translation>
     </message>
     <message>
-        <location line="-2785"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIExport.cpp" line="+100"/>
         <source>No peak data to export.</source>
         <translation>No peak data to export.</translation>
     </message>
@@ -14836,19 +14907,19 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</translation>
         <translation>Failed to export the peak table.</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIAnalysis.cpp" line="+312"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIExport.cpp" line="+11"/>
         <location line="+51"/>
         <location line="+38"/>
         <location line="+103"/>
         <location line="+31"/>
         <location line="+45"/>
         <location line="+17"/>
-        <location line="+871"/>
         <source>No signal is selected.</source>
         <translation>No signal is selected.</translation>
     </message>
     <message>
-        <location line="-1151"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIExport.cpp" line="-280"/>
         <source>No spectrum data to export.</source>
         <translation>No spectrum data to export.</translation>
     </message>
@@ -14894,7 +14965,7 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</translation>
         <translation>Failed to export the heatmap matrix.</translation>
     </message>
     <message>
-        <location line="+2354"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="-206"/>
         <source>Open the signal analysis workspace</source>
         <translation>Open the signal analysis workspace</translation>
     </message>
@@ -15114,7 +15185,7 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</translation>
         <translation>Export Image</translation>
     </message>
     <message>
-        <location line="-2669"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIExport.cpp" line="+17"/>
         <location line="+37"/>
         <source>PNG Image (*.png)</source>
         <translation>PNG Image (*.png)</translation>
@@ -15140,12 +15211,12 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</translation>
         <translation>Peak table added to the data manager as &quot;%1&quot;.</translation>
     </message>
     <message>
-        <location line="+1130"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIAnalysis.cpp" line="+244"/>
         <source>Spectrum ready: resolution %1 Hz, %2 bins</source>
         <translation>Spectrum ready: resolution %1 Hz, %2 bins</translation>
     </message>
     <message>
-        <location line="+1075"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="-323"/>
         <source>Import Audio</source>
         <translation>Import Audio</translation>
     </message>
@@ -15170,26 +15241,26 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</translation>
         <translation>Import Video</translation>
     </message>
     <message>
-        <location line="-3485"/>
-        <location line="+2741"/>
-        <location line="+755"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIDisplay.cpp" line="+388"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIPlayback.cpp" line="+168"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="+11"/>
         <source>Play</source>
         <translation>Play</translation>
     </message>
     <message>
-        <location line="-3496"/>
-        <location line="+2741"/>
+        <location line="+0"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIPlayback.cpp" line="+0"/>
         <source>Pause</source>
         <translation>Pause</translation>
     </message>
     <message>
-        <location line="+760"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="+5"/>
         <source>Stop</source>
         <translation>Stop</translation>
     </message>
     <message>
-        <location line="-4432"/>
-        <location line="+4382"/>
+        <location line="-50"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="-106"/>
         <source>Analysis Settings</source>
         <translation>Analysis Settings</translation>
     </message>
@@ -15249,8 +15320,8 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</translation>
         <translation>Hide the waterfall view</translation>
     </message>
     <message>
-        <location line="-4367"/>
-        <location line="+4469"/>
+        <location line="+102"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+129"/>
         <source>Amplitude</source>
         <translation>Amplitude</translation>
     </message>
@@ -15266,27 +15337,27 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</translation>
         <translation>Export Peaks</translation>
     </message>
     <message>
-        <location line="-2305"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIArchive.cpp" line="+303"/>
         <source>Audio/Video files (*.wav *.aiff *.aif *.flac *.ogg *.mp3 *.m4a *.mp4 *.mkv *.avi);;All files (*)</source>
         <translation>Audio/Video files (*.wav *.aiff *.aif *.flac *.ogg *.mp3 *.m4a *.mp4 *.mkv *.avi);;All files (*)</translation>
     </message>
     <message>
-        <location line="+1069"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIPlayback.cpp" line="-103"/>
         <source>Cannot start playback for this signal.</source>
         <translation>Cannot start playback for this signal.</translation>
     </message>
     <message>
-        <location line="-2202"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIAnalysis.cpp" line="-499"/>
         <source>Continue</source>
         <translation>Continue</translation>
     </message>
     <message>
-        <location line="+370"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIImport.cpp" line="+267"/>
         <source>Data frame:</source>
         <translation>Data frame:</translation>
     </message>
     <message>
-        <location line="+340"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIExport.cpp" line="-216"/>
         <source>Downsample x2</source>
         <translation>Downsample x2</translation>
     </message>
@@ -15301,7 +15372,7 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</translation>
         <translation>Export full</translation>
     </message>
     <message>
-        <location line="-2555"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="+280"/>
         <source>Extract the audio track of a video file</source>
         <translation>Extract the audio track of a video file</translation>
     </message>
@@ -15311,54 +15382,54 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</translation>
         <translation>FFmpeg was not detected. Specify its path in Settings &gt; Signal Analysis.</translation>
     </message>
     <message>
-        <location line="+409"/>
+        <location line="+52"/>
         <source>Failed to create the signal analysis page.</source>
         <translation>Failed to create the signal analysis page.</translation>
     </message>
     <message>
-        <location line="+2104"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIExport.cpp" line="-41"/>
         <source>Failed to export the power spectral density.</source>
         <translation>Failed to export the power spectral density.</translation>
     </message>
     <message>
-        <location line="+1636"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIImport.cpp" line="+120"/>
         <source>Failed to import audio.</source>
         <translation>Failed to import audio.</translation>
     </message>
     <message>
-        <location line="-4076"/>
+        <location line="-452"/>
         <source>Failed to import data frame.</source>
         <translation>Failed to import data frame.</translation>
     </message>
     <message>
-        <location line="+4076"/>
+        <location line="+452"/>
         <source>Failed to import video.</source>
         <translation>Failed to import video.</translation>
     </message>
     <message>
-        <location line="-109"/>
-        <location line="+132"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIPlayback.cpp" line="-7"/>
+        <location line="+60"/>
         <source>Failed to prepare the playback audio for this signal.</source>
         <translation>Failed to prepare the playback audio for this signal.</translation>
     </message>
     <message>
-        <location line="-1916"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIImport.cpp" line="-79"/>
         <location line="+14"/>
         <source>Failed to relink the data frame source.</source>
         <translation>Failed to relink the data frame source.</translation>
     </message>
     <message>
-        <location line="+727"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIArchive.cpp" line="+19"/>
         <source>Failed to restore signal &quot;%1&quot;.</source>
         <translation>Failed to restore signal &quot;%1&quot;.</translation>
     </message>
     <message>
-        <location line="-222"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIExport.cpp" line="+262"/>
         <source>Failed to send the peak table.</source>
         <translation>Failed to send the peak table.</translation>
     </message>
     <message>
-        <location line="-938"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIAnalysis.cpp" line="-8"/>
         <location line="+43"/>
         <source>Large Signal</source>
         <translation>Large Signal</translation>
@@ -15369,7 +15440,7 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</translation>
         <translation>Large signal confirmed: %1 assumes about %2 GB of memory.</translation>
     </message>
     <message>
-        <location line="+1116"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIArchive.cpp" line="-21"/>
         <source>Locate Signal Source</source>
         <translation>Locate Signal Source</translation>
     </message>
@@ -15379,12 +15450,12 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</translation>
         <translation>Locate...</translation>
     </message>
     <message>
-        <location line="-763"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIImport.cpp" line="-66"/>
         <source>No data frame is available. Import or create a data frame first.</source>
         <translation>No data frame is available. Import or create a data frame first.</translation>
     </message>
     <message>
-        <location line="+287"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIExport.cpp" line="-284"/>
         <source>No power spectral density data to export.</source>
         <translation>No power spectral density data to export.</translation>
     </message>
@@ -15394,49 +15465,49 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</translation>
         <translation>PSD (dB re 1.0/Hz)</translation>
     </message>
     <message>
-        <location line="-2753"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="-299"/>
         <source>Playback failed. See the message log for details.</source>
         <translation>Playback failed. See the message log for details.</translation>
     </message>
     <message>
-        <location line="+5236"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="-294"/>
         <source>Point a signal whose data frame is missing to an existing data frame</source>
         <translation>Point a signal whose data frame is missing to an existing data frame</translation>
     </message>
     <message>
-        <location line="-5291"/>
-        <location line="+5595"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="-55"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="+304"/>
         <source>Power spectral density (CSV)</source>
         <translation>Power spectral density (CSV)</translation>
     </message>
     <message>
-        <location line="-2783"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIExport.cpp" line="+4"/>
         <source>Power spectral density exported: %1</source>
         <translation>Power spectral density exported: %1</translation>
     </message>
     <message>
-        <location line="-622"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIAnalysis.cpp" line="+28"/>
         <source>Reduce precision</source>
         <translation>Reduce precision</translation>
     </message>
     <message>
-        <location line="+326"/>
-        <location line="+2774"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIImport.cpp" line="+10"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="-305"/>
         <source>Relink Data Frame Source</source>
         <translation>Relink Data Frame Source</translation>
     </message>
     <message>
-        <location line="+313"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="+313"/>
         <source>Export the chart page or the current sub-chart, or copy it to the clipboard</source>
         <translation>Export the chart page or the current sub-chart, or copy it to the clipboard</translation>
     </message>
     <message>
-        <location line="-5168"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIImport.cpp" line="-271"/>
         <source>Signal &quot;%1&quot; is a placeholder: its data frame is missing.</source>
         <translation>Signal &quot;%1&quot; is a placeholder: its data frame is missing.</translation>
     </message>
     <message>
-        <location line="+2829"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIArchive.cpp" line="-5"/>
         <source>Signal &quot;%1&quot; refers to a missing file:
 %2
 
@@ -15447,22 +15518,22 @@ Locate the file again?</source>
 Locate the file again?</translation>
     </message>
     <message>
-        <location line="-671"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIImport.cpp" line="+348"/>
         <source>Signal &quot;%1&quot; relinked to data frame &quot;%2&quot;.</source>
         <translation>Signal &quot;%1&quot; relinked to data frame &quot;%2&quot;.</translation>
     </message>
     <message>
-        <location line="+670"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIArchive.cpp" line="-1"/>
         <source>Signal Source Missing</source>
         <translation>Signal Source Missing</translation>
     </message>
     <message>
-        <location line="-1109"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIAnalysis.cpp" line="-36"/>
         <source>Signal analysis cancelled: %1 needs more than the memory budget.</source>
         <translation>Signal analysis cancelled: %1 needs more than the memory budget.</translation>
     </message>
     <message>
-        <location line="+2068"/>
+        <location line="+511"/>
         <source>Signal analysis failed. See the message log for details.</source>
         <translation>Signal analysis failed. See the message log for details.</translation>
     </message>
@@ -15472,7 +15543,7 @@ Locate the file again?</translation>
         <translation>Signal analysis: parameters applied, recomputing.</translation>
     </message>
     <message>
-        <location line="-841"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIArchive.cpp" line="-12"/>
         <source>Signal source missing: data frame &quot;%1&quot; (signal &quot;%2&quot;). Use &quot;Relink Data Frame Source&quot; to point it to an existing data frame.</source>
         <translation>Signal source missing: data frame &quot;%1&quot; (signal &quot;%2&quot;). Use &quot;Relink Data Frame Source&quot; to point it to an existing data frame.</translation>
     </message>
@@ -15482,42 +15553,42 @@ Locate the file again?</translation>
         <translation>Skip</translation>
     </message>
     <message>
-        <location line="-783"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIImport.cpp" line="-106"/>
         <source>The current signal&apos;s source is available; there is nothing to relink.</source>
         <translation>The current signal&apos;s source is available; there is nothing to relink.</translation>
     </message>
     <message>
-        <location line="-347"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIAnalysis.cpp" line="-395"/>
         <source>The estimated peak memory for the %1 is about %2 GB, above the 1.5 GB budget.
 Continue or cancel?</source>
         <translation>The estimated peak memory for the %1 is about %2 GB, above the 1.5 GB budget.
 Continue or cancel?</translation>
     </message>
     <message>
-        <location line="+707"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIExport.cpp" line="+35"/>
         <source>The heatmap matrix is %1 x %2 = %3 cells (about %4 MB as CSV).
 Export the full matrix or downsample by 2?</source>
         <translation>The heatmap matrix is %1 x %2 = %3 cells (about %4 MB as CSV).
 Export the full matrix or downsample by 2?</translation>
     </message>
     <message>
-        <location line="-1849"/>
-        <location line="+4457"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="-148"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="-1"/>
         <source>Window</source>
         <translation>Window</translation>
     </message>
     <message>
-        <location line="-3220"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIAnalysis.cpp" line="+95"/>
         <source>peak table</source>
         <translation>peak table</translation>
     </message>
     <message>
-        <location line="-2115"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="+120"/>
         <source>soundfile is not available; only WAV files can be read directly. Install soundfile or use FFmpeg.</source>
         <translation>soundfile is not available; only WAV files can be read directly. Install soundfile or use FFmpeg.</translation>
     </message>
     <message>
-        <location line="+4125"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIAnalysis.cpp" line="+453"/>
         <source>spectrum</source>
         <translation>spectrum</translation>
     </message>
@@ -15527,7 +15598,7 @@ Export the full matrix or downsample by 2?</translation>
         <translation>waveform envelope</translation>
     </message>
     <message>
-        <location line="-3948"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUI.cpp" line="+200"/>
         <source>FFmpeg is available; video import is enabled.</source>
         <translation>FFmpeg is available; video import is enabled.</translation>
     </message>
@@ -15537,298 +15608,298 @@ Export the full matrix or downsample by 2?</translation>
         <translation>FFmpeg is still not available; video import stays disabled.</translation>
     </message>
     <message>
-        <location line="+4125"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIImport.cpp" line="+147"/>
         <source>Signal imported.</source>
         <translation>Signal imported.</translation>
     </message>
     <message>
-        <location line="-2265"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIAnalysis.cpp" line="-528"/>
         <source>The estimated peak memory for the %1 is about %2 GB, above the 1.5 GB budget.
 Reduce the precision, scan only the visible range, or cancel?</source>
         <translation>The estimated peak memory for the %1 is about %2 GB, above the 1.5 GB budget.
 Reduce the precision, scan only the visible range, or cancel?</translation>
     </message>
     <message>
-        <location line="-1303"/>
-        <location line="+4350"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="-225"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="-118"/>
         <source>Import / Export</source>
         <translation>Import / Export</translation>
     </message>
     <message>
-        <location line="-4300"/>
-        <location line="+4303"/>
+        <location line="+3"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+50"/>
         <source>Preprocess</source>
         <translation>Preprocess</translation>
     </message>
     <message>
-        <location line="-4301"/>
-        <location line="+4518"/>
+        <location line="+217"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+2"/>
         <source>Remove DC</source>
         <translation>Remove DC</translation>
     </message>
     <message>
-        <location line="-4512"/>
-        <location line="+4505"/>
+        <location line="-7"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+6"/>
         <source>None</source>
         <translation>None</translation>
     </message>
     <message>
-        <location line="-4504"/>
-        <location line="+4505"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+1"/>
         <source>Constant</source>
         <translation>Constant</translation>
     </message>
     <message>
-        <location line="-4504"/>
-        <location line="+4505"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+1"/>
         <source>Linear</source>
         <translation>Linear</translation>
     </message>
     <message>
-        <location line="-4499"/>
-        <location line="+4493"/>
+        <location line="-6"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+6"/>
         <source>Detrend</source>
         <translation>Detrend</translation>
     </message>
     <message>
-        <location line="-4486"/>
-        <location line="+4283"/>
+        <location line="-203"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+7"/>
         <source>Spectrum</source>
         <translation>Spectrum</translation>
     </message>
     <message>
-        <location line="-4272"/>
-        <location line="+4495"/>
+        <location line="+223"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+11"/>
         <source>Rectangular</source>
         <translation>Rectangular</translation>
     </message>
     <message>
-        <location line="-4494"/>
-        <location line="+4495"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+1"/>
         <source>Hann</source>
         <translation>Hann</translation>
     </message>
     <message>
-        <location line="-4494"/>
-        <location line="+4495"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+1"/>
         <source>Hamming</source>
         <translation>Hamming</translation>
     </message>
     <message>
-        <location line="-4494"/>
-        <location line="+4495"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+1"/>
         <source>Blackman</source>
         <translation>Blackman</translation>
     </message>
     <message>
-        <location line="-4494"/>
-        <location line="+4495"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+1"/>
         <source>Flat top</source>
         <translation>Flat top</translation>
     </message>
     <message>
-        <location line="-4463"/>
-        <location line="+4480"/>
+        <location line="+17"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+32"/>
         <source>Resolution</source>
         <translation>Resolution</translation>
     </message>
     <message>
-        <location line="-4475"/>
-        <location line="+4234"/>
+        <location line="-241"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+5"/>
         <source>Time-Frequency</source>
         <translation>Time-Frequency</translation>
     </message>
     <message>
-        <location line="-4203"/>
-        <location line="+4451"/>
+        <location line="+248"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+31"/>
         <source>Window length</source>
         <translation>Window length</translation>
     </message>
     <message>
-        <location line="-4450"/>
-        <location line="+4458"/>
+        <location line="+8"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+1"/>
         <source>Hop overlap</source>
         <translation>Hop overlap</translation>
     </message>
     <message>
-        <location line="-4408"/>
-        <location line="+4158"/>
+        <location line="-250"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+50"/>
         <source>More</source>
         <translation>More</translation>
     </message>
     <message>
-        <location line="-4084"/>
-        <location line="+4097"/>
+        <location line="+13"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+74"/>
         <source>Time-Frequency View</source>
         <translation>Time-Frequency View</translation>
     </message>
     <message>
-        <location line="-4076"/>
-        <location line="+4227"/>
+        <location line="+151"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+21"/>
         <source>Linked zoom</source>
         <translation>Linked zoom</translation>
     </message>
     <message>
-        <location line="-4223"/>
-        <location line="+4229"/>
+        <location line="+6"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+4"/>
         <source>Dual cursors</source>
         <translation>Dual cursors</translation>
     </message>
     <message>
-        <location line="-4224"/>
-        <location line="+4230"/>
+        <location line="+6"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+5"/>
         <source>Peak hold</source>
         <translation>Peak hold</translation>
     </message>
     <message>
-        <location line="-4226"/>
-        <location line="+4231"/>
+        <location line="+5"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+4"/>
         <source>Reset peak hold</source>
         <translation>Reset peak hold</translation>
     </message>
     <message>
-        <location line="-4223"/>
-        <location line="+4177"/>
+        <location line="-46"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+8"/>
         <source>Time format</source>
         <translation>Time format</translation>
     </message>
     <message>
-        <location line="-4173"/>
-        <location line="+4177"/>
+        <location line="+4"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+4"/>
         <source>Seconds</source>
         <translation>Seconds</translation>
     </message>
     <message>
-        <location line="-4177"/>
-        <location line="+4178"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+0"/>
         <source>Milliseconds</source>
         <translation>Milliseconds</translation>
     </message>
     <message>
-        <location line="-4178"/>
-        <location line="+4179"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+0"/>
         <source>mm:ss.s</source>
         <translation>mm:ss.s</translation>
     </message>
     <message>
-        <location line="-4169"/>
-        <location line="+4172"/>
+        <location line="+3"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+10"/>
         <source>Layout</source>
         <translation>Layout</translation>
     </message>
     <message>
-        <location line="-4170"/>
-        <location line="+4174"/>
+        <location line="+4"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+2"/>
         <source>1:1</source>
         <translation>1:1</translation>
     </message>
     <message>
-        <location line="-4174"/>
-        <location line="+4175"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+0"/>
         <source>Waveform priority</source>
         <translation>Waveform priority</translation>
     </message>
     <message>
-        <location line="-4175"/>
-        <location line="+4176"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+0"/>
         <source>Analysis priority</source>
         <translation>Analysis priority</translation>
     </message>
     <message>
-        <location line="-4176"/>
-        <location line="+4177"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+0"/>
         <source>Restore default</source>
         <translation>Restore default</translation>
     </message>
     <message>
-        <location line="-4168"/>
-        <location line="+4171"/>
+        <location line="+3"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+9"/>
         <source>Reset display</source>
         <translation>Reset display</translation>
     </message>
     <message>
-        <location line="-4164"/>
-        <location line="+4026"/>
+        <location line="-138"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+7"/>
         <source>Heatmap</source>
         <translation>Heatmap</translation>
     </message>
     <message>
-        <location line="-3999"/>
-        <location line="+65"/>
-        <location line="+4191"/>
+        <location line="+257"/>
         <location line="+39"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+27"/>
+        <location line="+65"/>
         <source>dB</source>
         <translation>dB</translation>
     </message>
     <message>
-        <location line="-4287"/>
-        <location line="+4261"/>
+        <location line="-26"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="-57"/>
         <source>Display mode</source>
         <translation>Display mode</translation>
     </message>
     <message>
-        <location line="-4259"/>
-        <location line="+4262"/>
+        <location line="+3"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+2"/>
         <source>Image</source>
         <translation>Image</translation>
     </message>
     <message>
-        <location line="-4262"/>
-        <location line="+4263"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+0"/>
         <source>Contour</source>
         <translation>Contour</translation>
     </message>
     <message>
-        <location line="-4263"/>
-        <location line="+4264"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+0"/>
         <source>Image + Contour</source>
         <translation>Image + Contour</translation>
     </message>
     <message>
-        <location line="-4253"/>
-        <location line="+4256"/>
+        <location line="+3"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+11"/>
         <source>Interpolation</source>
         <translation>Interpolation</translation>
     </message>
     <message>
-        <location line="-4254"/>
-        <location line="+4257"/>
+        <location line="+3"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+2"/>
         <source>Nearest neighbour</source>
         <translation>Nearest neighbour</translation>
     </message>
     <message>
-        <location line="-4257"/>
-        <location line="+4258"/>
+        <location line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+0"/>
         <source>Bilinear</source>
         <translation>Bilinear</translation>
     </message>
     <message>
-        <location line="-4242"/>
-        <location line="+3963"/>
+        <location line="-279"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+16"/>
         <source>Waterfall</source>
         <translation>Waterfall</translation>
     </message>
     <message>
-        <location line="-3792"/>
-        <location line="+3835"/>
+        <location line="+43"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRibbon.cpp" line="+171"/>
         <source>Playback position / total duration</source>
         <translation>Playback position / total duration</translation>
     </message>
     <message>
-        <location line="-3505"/>
-        <location line="+2741"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIDisplay.cpp" line="+1"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIPlayback.cpp" line="+51"/>
         <source>Pause playback</source>
         <translation>Pause playback</translation>
     </message>
     <message>
-        <location line="-2741"/>
-        <location line="+2741"/>
-        <location line="+755"/>
+        <location line="+0"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIPlayback.cpp" line="+0"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="-9"/>
         <source>Start playback</source>
         <translation>Start playback</translation>
     </message>
     <message>
-        <location line="-3346"/>
+        <location line="+150"/>
         <source>The 3D waterfall is not ready yet; its item appears after the time-frequency analysis finishes.</source>
         <translation>The 3D waterfall is not ready yet; its item appears after the time-frequency analysis finishes.</translation>
     </message>
@@ -15838,7 +15909,7 @@ Reduce the precision, scan only the visible range, or cancel?</translation>
         <translation>Display settings reset.</translation>
     </message>
     <message>
-        <location line="+117"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIAnalysis.cpp" line="+10"/>
         <source>Scan visible range</source>
         <translation>Scan visible range</translation>
     </message>
@@ -15858,7 +15929,7 @@ Reduce the precision, scan only the visible range, or cancel?</translation>
         <translation>Peak curves use a coarser frame step (local scan).</translation>
     </message>
     <message>
-        <location line="+661"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIExport.cpp" line="+86"/>
         <source>Export Whole Page</source>
         <translation>Export Whole Page</translation>
     </message>
@@ -15908,7 +15979,7 @@ Reduce the precision, scan only the visible range, or cancel?</translation>
         <translation>Failed to copy the current sub-chart to the clipboard.</translation>
     </message>
     <message>
-        <location line="+1023"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIDisplay.cpp" line="+95"/>
         <source>Frequency resolution of the time-frequency view</source>
         <translation>Frequency resolution of the time-frequency view</translation>
     </message>
@@ -15923,12 +15994,12 @@ Reduce the precision, scan only the visible range, or cancel?</translation>
         <translation>Frequency resolution derived from the window length</translation>
     </message>
     <message>
-        <location line="+115"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIAnalysis.cpp" line="+345"/>
         <source>%1 tasks</source>
         <translation>%1 tasks</translation>
     </message>
     <message>
-        <location line="+450"/>
+        <location line="+196"/>
         <source>heatmap</source>
         <translation>heatmap</translation>
     </message>
@@ -18389,10 +18460,10 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAAppController</name>
     <message>
-        <location filename="../APP/Controller/DAAppChartActionHandler.cpp" line="-565"/>
+        <location filename="../APP/Controller/DAAppChartActionHandler.cpp" line="-667"/>
         <location filename="../APP/Controller/DAAppControllerAgent.cpp" line="-106"/>
         <location filename="../APP/Controller/DAAppControllerConnections.cpp" line="+140"/>
-        <location filename="../APP/Controller/DAAppControllerCore.cpp" line="-961"/>
+        <location filename="../APP/Controller/DAAppControllerCore.cpp" line="-996"/>
         <location filename="../APP/Controller/DAAppControllerPage.cpp" line="-348"/>
         <location filename="../APP/Controller/DAAppControllerProject.cpp" line="-194"/>
         <location filename="../APP/Controller/DAAppControllerView.cpp" line="-50"/>
@@ -20646,7 +20717,7 @@ Data and metadata share one undo unit (Ctrl+Z restores both). Continue?</transla
 <context>
     <name>DAFigureWidget</name>
     <message>
-        <location filename="../DAFigure/DAFigureWidget.cpp" line="-2923"/>
+        <location filename="../DAFigure/DAFigureWidget.cpp" line="-3004"/>
         <source>Figure</source>
         <translation>Figure</translation>
     </message>
