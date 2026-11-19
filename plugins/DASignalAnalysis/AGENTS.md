@@ -169,7 +169,10 @@ plugins/DASignalAnalysis/
 
 14. **不扩 v2 范围。** 滤波、重采样、包络解调、倒谱、倍频程、阶次分析、声压级换算、选区循环播放、
     变速、深色主题、智能体工具、工作流节点都不做，只留结构口。矢量导出是既有例外：2D 子图
-    PNG/SVG/PDF，3D 固定 PNG（`saveVector` 依赖 GL 上下文，未验证不扩）。
+    PNG/SVG/PDF，3D 固定 PNG。**3D 矢量导出已在 2026-11 于目标机实测不可用**：`Qwt3DPlot::saveVector`
+    能出文件，但 gl2ps 在当前 3D 渲染器（VBO+GLSL、CPU 矩阵、无固定管线矩阵栈）下 SVG 页面盒错位
+    （900×700 内容写进 700×900 页面，右侧被裁）、**文本/色标图例全部丢失**，PDF 基本空白——不要
+    据此扩 3D 导出过滤器，口径见 `tmp/signal-analysis-chart-ops/03-3d-items-and-vector-export.md` 附录。
     对数频率轴已**整体移除**（D2：动作/视图状态/存档键/图标全删，旧档 `logFrequency` 静默忽略），
     不要重新引入。
 
@@ -349,6 +352,9 @@ plugins/DASignalAnalysis/
 - 一个任务写三部分：`signal-analysis/signals.json`（来源引用 + 参数 + 视图状态）、
   `signal-analysis/figures.xml`（网格 + 子图样式 + 非 transient 图元 key）、
   `signal-analysis/chart-data`（图元二进制）。后两者只在有 figure 内容时写，旧工程可正常加载。
+- 三维瀑布通过 `DAChart3DWidget::setItemTransient()` 标 transient：工程存档的 `chart3d-data/`
+  （`DAChart3DItemArchive` 写 `<chart3d><items>` 索引）不会记录它；本插件的 figure XML 里
+  `<chart3d><items>` 因此为空，恢复时也不消费（3D 图元由 `rebuildWaterfall` 重建）。
 - `signals.json` 的 `view{}` 键（缺键取默认，旧档兼容）：`waterfallMode` / `colormap` / `dbFloor` /
   `colorBarVisible` / `autoScroll` / `peakMarkersVisible` / `timeCursor` / `linkedZoom` / `dualCursor` /
   `peakHold` / `timeFormat` / `waterfallColormap` / `waterfallDbFloor` / `waterfallHighlight` /

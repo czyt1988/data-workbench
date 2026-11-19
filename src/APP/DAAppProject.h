@@ -12,6 +12,8 @@
 #include "Archive/DAXmlHelper.h"
 #include "Archive/DAZipArchiveThreadWrapper.h"
 #include "Chart/DAChartItemsManager.h"
+#include "DAChart3DItemsManager.h"
+#include "Archive/DAChart3DItemArchive.h"
 
 namespace DA
 {
@@ -47,8 +49,10 @@ public:
 	bool appendWorkflowInProject(const QByteArray& data, bool skipIndex = false);
 	// 加载工作流视图数据（Python数据已就绪，仅创建图形项）
 	void appendWorkflowView(const QDomDocument& doc);
-	// 把绘图信息添加到工程
-	bool appendChartsInProject(const QDomDocument& doc, DAChartItemsManager* chartmanager);
+	// 把绘图信息添加到工程（chart3dmanager：chart3d-data 读回的 3D 图元池，可空）
+	bool appendChartsInProject(const QDomDocument& doc,
+							   DAChartItemsManager* chartmanager,
+							   DAChart3DItemsManager* chart3dmanager = nullptr);
 	// 繁忙状态判断
 	virtual bool isBusy() const override;
 	// 获取脚本工作区目录（工程文件内 workspace/ 在本地的缓存目录）
@@ -80,6 +84,8 @@ protected:
 	void makeSaveDataManagerTask(DAZipArchiveThreadWrapper* archive);
 	// 创建保存绘图的任务
 	void makeSaveChartTask(DAZipArchiveThreadWrapper* archive);
+	// 收集所有 figure 里 3D 子图要落盘的图元快照（GUI 线程执行，后台只写字节）
+	QList< DAChart3DItemSnapshot > makeChart3DItemSnapshots();
 	// 保存表格元数据任务（样式 + 视图状态，写 table-metadata.xml）
 	void makeSaveTableMetadataTask(DAZipArchiveThreadWrapper* archive);
 	// 保存数据操作窗口嵌套停靠区布局任务（已打开数据页列表 + dock 布局）
@@ -137,6 +143,7 @@ private:
 	DAXmlHelper mXml;
 	std::unique_ptr< QTemporaryDir > mTempDir;
 	DAChartItemsManager mChartItemManager;
+	DAChart3DItemsManager mChart3DItemManager;  ///< chart3d-data 读回的 3D 图元池（加载后按 key 挂回子图）
 	DAAppPluginManager* mPluginMgr { nullptr };
 	QString mWorkspaceLocalDir;             ///< 当前工程脚本工作区本地缓存目录
 	bool mWorkspaceLocalKept { false };     ///< 加载时用户选择保留本地工作区（加载收尾后延迟置脏）

@@ -1866,6 +1866,9 @@ void DASignalAnalysisView::rebuildWaterfall()
         }
     }
     mWaterfallTraceTimes = traceTimes;
+    // 三维瀑布是派生数据（按分析参数从 STFT 结果重算）：标 transient，不写进工程存档的
+    // chart3d-data，加载后由本视图按参数重建（与频谱/热图/包络同口径）。
+    mWaterfallChart->setItemTransient(mWaterfallItem);
     // 工程恢复的待应用样式：图元创建后才能落地（首建前后都安全）
     if (!mPendingWaterfallStyle.isEmpty()) {
         applyWaterfallStyle(mPendingWaterfallStyle);

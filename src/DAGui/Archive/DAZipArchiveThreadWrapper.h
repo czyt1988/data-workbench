@@ -1,10 +1,11 @@
-﻿#ifndef DAZIPARCHIVETHREADWRAPPER_H
+#ifndef DAZIPARCHIVETHREADWRAPPER_H
 #define DAZIPARCHIVETHREADWRAPPER_H
 #include "DAGuiAPI.h"
 #include <QObject>
 #include <QString>
 #include <QDomDocument>
 #include "Archive/DAAbstractArchiveTask.h"
+#include "Archive/DAChart3DItemArchive.h"
 #include "Chart/DAChartItemsManager.h"
 namespace DA
 {
@@ -27,11 +28,15 @@ public:
 	std::shared_ptr< DAAbstractArchiveTask > appendFileSaveTask(const QString& zipRelatePath, const QString& localFilePath);
 	std::shared_ptr< DAAbstractArchiveTask > appendChartItemSaveTask(const QString& zipRelateFolderPath,
 																	 DAChartItemsManager chartItemMgr);
+	// 保存三维图元（快照由 GUI 线程预先生成：后台只写字节，不碰 Qwt3DPlotItem*）
+	std::shared_ptr< DAAbstractArchiveTask > appendChart3DItemSaveTask(const QString& zipRelateFolderPath,
+																	   const QList< DAChart3DItemSnapshot >& snapshots);
 	// 读取任务
 	std::shared_ptr< DAAbstractArchiveTask > appendByteLoadTask(const QString& zipRelatePath, int code);
 	std::shared_ptr< DAAbstractArchiveTask > appendXmlLoadTask(const QString& zipRelatePath, int code);
 	std::shared_ptr< DAAbstractArchiveTask > appendFileLoadTask(const QString& zipRelatePath, int code);
 	std::shared_ptr< DAAbstractArchiveTask > appendChartItemLoadTask(const QString& zipRelateFolderPath, int code);
+	std::shared_ptr< DAAbstractArchiveTask > appendChart3DItemLoadTask(const QString& zipRelateFolderPath, int code);
 	// 添加任务
 	bool appendTask(const std::shared_ptr< DAAbstractArchiveTask >& task);
 public Q_SLOTS:

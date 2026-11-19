@@ -41,6 +41,7 @@
 #include "DAFigureWidget.h"
 #include "DAChartWidget.h"
 #include "DAChart3DWidget.h"
+#include "DAChart3DItemsManager.h"
 #include "Chart/DAChartItemsManager.h"
 #include "DAChartAxisRangeBinder.h"
 // qwt
@@ -385,9 +386,10 @@ bool loadGridElement(DAFigureWidget* fig, const QDomElement& gridEle)
 /**
  * @brief 写单个 3D 子图的 <chart3d> 节点
  *
- * 一期只持久化「存在性 + 布局 + 视图 + 坐标轴 + 主题」，3D 图元数据不存（见 07 遗留项 O1），
- * 由业务层按分析参数重算重建。id/visible 是后续 chart3d-data 与多 3D 子图区分所需的稳定标识，
- * 本期只写读并保存在内存，不接线到图元数据。
+ * 持久化「存在性 + 布局 + 视图 + 坐标轴 + 主题 + 3D 图元索引」：
+ * 图元本身不进 XML，只在 `<items>` 里记 key，图元字节由 @ref DAChart3DItemArchive 写到
+ * chart3d-data/（与二维 chart/chart-data 同一套 key+索引模型）。transient 图元是派生数据
+ * （加载后由占用方按参数重算重建），不记 key。
  */
 QDomElement make3DChartElement(DAChart3DWidget* chart3d, QDomDocument* doc)
 {
@@ -475,6 +477,31 @@ QDomElement make3DChartElement(DAChart3DWidget* chart3d, QDomDocument* doc)
     QDomElement themeEle = doc->createElement(QStringLiteral("theme"));
     themeEle.appendChild(doc->createTextNode(themeToBase64(plot->theme())));
     chart3dEle.appendChild(themeEle);
+    // --- items：3D 图元索引（key 对应 chart3d-data/<key> 里的二进制） ---
+    // 只记 key、不记内容：图元字节由 DAChart3DItemArchive 在 GUI 线程序列化成快照后由存档任务写入。
+    // transient 图元（信号分析瀑布等派生数据）跳过，加载后由占用方重建。
+    QDomElement items3dEle            = doc->createElement(QStringLiteral("items"));
+    DAChart3DItemsManager* items3dMgr = chart3d->items3DManager();
+    // 口径与 DAChart3DItemArchive::makeChart3DSnapshots 一致（persistentItems 已排除 transient）
+    const QList< Qwt3DPlotItem* > items3d = chart3d->persistentItems();
+    for (Qwt3DPlotItem* item : items3d) {
+        if (!item) {
+            continue;
+        }
+        QString key = items3dMgr ? items3dMgr->itemToKey(item) : QString();
+        if (key.isEmpty() && items3dMgr) {
+            // 防御：图元未登记（绕过本类 attach 的路径）时补登记，避免存档静默丢掉图元
+            key = items3dMgr->recordItem(item);
+        }
+        if (key.isEmpty()) {
+            qWarning() << "DAXmlHelper::makeElement(chart3d): 3D plot item has no key, skipped";
+            continue;
+        }
+        QDomElement itemEle = doc->createElement(QStringLiteral("item"));
+        itemEle.setAttribute(QStringLiteral("key"), key);
+        items3dEle.appendChild(itemEle);
+    }
+    chart3dEle.appendChild(items3dEle);
     return chart3dEle;
 }
 
@@ -2587,8 +2614,10 @@ QDomElement DAXmlHelper::makeElement(DAChartOperateWidget* chartOpt,
 bool DAXmlHelper::loadElement(DAChartOperateWidget* chartOpt,
                               const QDomElement* tag,
                               const DAChartItemsManager* itemsMgr,
-                              const QVersionNumber& v)
+                              const QVersionNumber& v,
+                              const DAChart3DItemsManager* items3dMgr)
 {
+    Q_UNUSED(v);
     QByteArray chartLayout;
     auto childs = tag->childNodes();
     for (int i = 0; i < childs.size(); ++i) {
@@ -2609,7 +2638,7 @@ bool DAXmlHelper::loadElement(DAChartOperateWidget* chartOpt,
         QString figId   = figEle.attribute(QStringLiteral("id"));
         QString figName = figEle.attribute(QStringLiteral("figure-name"));
         DAFigureWidget* fig = chartOpt->createFigure(figName, figId);
-        if (!loadElement(fig, &figEle, itemsMgr)) {
+        if (!loadElement(fig, &figEle, itemsMgr, QVersionNumber(), items3dMgr)) {
             // 加载失败，删除窗口
             qDebug() << "load figure error";
             chartOpt->removeFigure(fig, true);
@@ -2720,7 +2749,8 @@ DAXmlHelper::makeElement(const DAFigureWidget* fig, const QString& tagName, QDom
 bool DAXmlHelper::loadElement(DAFigureWidget* fig,
                               const QDomElement* tag,
                               const DAChartItemsManager* itemsMgr,
-                              const QVersionNumber& v)
+                              const QVersionNumber& v,
+                              const DAChart3DItemsManager* items3dMgr)
 {
     Q_UNUSED(v);
     QwtFigure* qwtFig = fig->figure();
@@ -2816,6 +2846,32 @@ bool DAXmlHelper::loadElement(DAFigureWidget* fig,
             restoreVisible = (chart3dEle.attribute(QStringLiteral("visible")).toInt() != 0);
         }
         chart3d->setVisible(restoreVisible);
+        // 3D 图元：按 <items><item key> 从 chart3d-data 读回的池子里取回并挂回本 3D 子图。
+        // 顺序要求：chart3d 元素 → 3D 子图（已加入 figure）→ attach 图元；旧工程/<chart3d>
+        // 没有 <items> 或池子为空时什么也不做（不报错）。
+        if (items3dMgr) {
+            const QDomElement items3dEle = chart3dEle.firstChildElement(QStringLiteral("items"));
+            for (QDomElement item3dEle = items3dEle.firstChildElement(QStringLiteral("item")); !item3dEle.isNull();
+                 item3dEle             = item3dEle.nextSiblingElement(QStringLiteral("item"))) {
+                const QString key = item3dEle.attribute(QStringLiteral("key"));
+                if (key.isEmpty()) {
+                    continue;
+                }
+                Qwt3DPlotItem* plot3DItem = items3dMgr->keyToItem(key);
+                if (!plot3DItem) {
+                    qWarning() << "DAXmlHelper::loadElement(figure): 3D plot item key" << key
+                               << "not found in chart3d-data, skipped";
+                    continue;
+                }
+                // 一个 3D 图元只能挂在一个 3D 子图上：已被别的子图消费时跳过（坏索引/重复 key 兜底）
+                if (plot3DItem->plot() != nullptr && plot3DItem->plot() != chart3d.get()) {
+                    qWarning() << "DAXmlHelper::loadElement(figure): 3D plot item key" << key
+                               << "already attached to another 3D chart, skipped";
+                    continue;
+                }
+                plot3DItem->attach(chart3d.get());
+            }
+        }
         chart3d.release();
     }
     // 恢复绑定关系

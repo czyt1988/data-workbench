@@ -521,23 +521,31 @@ void DAAppProject::makeSaveDataManagerTask(DAZipArchiveThreadWrapper* archive)
 ```cpp title="图表保存"
 void DAAppProject::makeSaveChartTask(DAZipArchiveThreadWrapper* archive)
 {
-    // 阶段1: 收集图表项到 DAChartItemsManager
+    // 阶段1: 收集二维图表项到 DAChartItemsManager、三维图元快照（都在 GUI 线程完成）
     DAChartItemsManager chartItemMgr;
     QDomDocument chartXml = createChartsUIDomDocument(chartItemMgr);
-    
+    const QList<DAChart3DItemSnapshot> snapshots3d = makeChart3DItemSnapshots();
+
     // 保存图表UI信息XML
     auto t1 = archive->appendXmlSaveTask("charts.xml", chartXml);
-    
+
     // 阶段2: 保存图表项二进制数据
     auto t2 = archive->appendChartItemSaveTask("chart-data", chartItemMgr);
+
+    // 阶段3: 保存三维图元（chart3d-data/chart3d-items.xml + 每图元一个二进制）
+    archive->appendChart3DItemSaveTask("chart3d-data", snapshots3d);
 }
 ```
 
+> **三维图元为什么用快照**：`Qwt3DPlotItem` 的生命周期由业务层 `new/delete` 管理，后台存档线程若直接解引用会 UAF。所以 GUI 线程先用 `DAChart3DItemArchive::makeChart3DSnapshots()` 把非 transient 图元序列化成字节，后台任务（`DAZipArchiveTask_Chart3DItem`）只写字节。
+
 **ZIP 文件位置**:
 
-- `charts.xml` - 图表 UI 配置
-- `chart-data/` - 图表项二进制数据目录
-- `chart-data/chart-items.xml` - 图表项索引
+- `charts.xml` - 图表 UI 配置（二维 `<chart><items>` + 三维 `<chart3d><items>` 只记 key）
+- `chart-data/` - 二维图表项二进制数据目录
+- `chart-data/chart-items.xml` - 二维图表项索引
+- `chart3d-data/` - 三维图元二进制数据目录
+- `chart3d-data/chart3d-items.xml` - 三维图元索引
 
 ### 4.3 临时文件处理机制
 
@@ -590,12 +598,19 @@ bool DAAppProject::load(const QString& path)
         auto chartMgr = std::static_pointer_cast<DAZipArchiveTask_ChartItem>(t);
         mChartItemManager = chartMgr->getChartItemsManager();
     });
-    
-    // 3.4 加载图表UI信息
+
+    // 3.4 加载三维图元（同样必须在 charts.xml 之前：<chart3d><items> 只记 key）
+    auto taskChart3DItem = mArchive->appendChart3DItemLoadTask("chart3d-data", TASK_LOAD_ID_CHART3DITEM);
+    taskChart3DItem->setLoadedCallBack([this](auto t) {
+        auto chart3dMgr = std::static_pointer_cast<DAZipArchiveTask_Chart3DItem>(t);
+        mChart3DItemManager = chart3dMgr->getChart3DItemsManager();
+    });
+
+    // 3.5 加载图表UI信息
     auto taskCharts = mArchive->appendXmlLoadTask("charts.xml", TASK_LOAD_ID_CHARTS_INFO);
     taskCharts->setLoadedCallBack([this](auto t) { loadedChartsInfo(t); });
     
-    // 3.5 加载插件数据
+    // 3.6 加载插件数据
     if (m_pluginMgr) {
         for (auto plugin : m_pluginMgr->getAllPlugins()) {
             auto task = plugin->createArchiveTask(false);
@@ -646,8 +661,10 @@ void DAAppProject::loadedChartsInfo(const std::shared_ptr<DAAbstractArchiveTask>
     auto xmlArchive = std::static_pointer_cast<DAZipArchiveTask_Xml>(t);
     QDomDocument xmlDoc = xmlArchive->getDomDocument();
     
-    // 使用已加载的图表项恢复图表UI
-    appendChartsInProject(xmlDoc, &mChartItemManager);
+    // 使用已加载的二维图表项 / 三维图元池恢复图表UI（figure 加载时按 key attach）
+    appendChartsInProject(xmlDoc, &mChartItemManager, &mChart3DItemManager);
+    // 收尾：索引里有、但没有 3D 子图认领的图元（坏索引/已删除的子图）在这里释放
+    DAChart3DItemArchive::deleteUnattachedItems(&mChart3DItemManager);
 }
 ```
 
@@ -662,22 +679,25 @@ flowchart TD
     B -->|"加载数据索引<br/>解压数据到临时目录"| B1["数据加载完成"]
     B1 --> C["3. chart-data/*"]
     C -->|"加载图表项二进制数据<br/>存入 DAChartItemsManager"| C1["图表项加载完成"]
-    C1 --> D["4. charts.xml"]
-    D -->|"恢复图表UI<br/>从 DAChartItemsManager 获取图表项"| D1["图表恢复完成"]
+    C1 --> C2["3b. chart3d-data/*"]
+    C2 -->|"加载三维图元<br/>存入 DAChart3DItemsManager（池）"| C3["三维图元加载完成"]
+    C3 --> D["4. charts.xml"]
+    D -->|"恢复图表UI<br/>按 key 从两个池子 attach 图元"| D1["图表恢复完成"]
     D1 --> E["5. plugin data"]
     E -->|"加载插件数据"| E1["全部加载完成"]
 ```
 
-上图展示了加载的五个阶段及其依赖关系：
+上图展示了加载的六个阶段及其依赖关系：
 - 工作流先加载，恢复节点和连接
 - 数据管理器加载数据索引和实际数据文件
-- 图表项二进制数据先加载，为图表 UI 恢复做准备
-- 图表 XML 后加载，引用已加载的图表项
+- （二维）图表项二进制数据先加载，为图表 UI 恢复做准备
+- 三维图元二进制数据同样先加载（`<chart3d><items>` 只记 key）
+- 图表 XML 后加载，引用已加载的图表项 / 三维图元
 - 插件数据最后加载
 
 **关键依赖**：
 
-- `charts.xml` 依赖 `chart-data/*` 必须先加载完成
+- `charts.xml` 依赖 `chart-data/*` 与 `chart3d-data/*` 都必须先加载完成
 - 数据恢复依赖临时文件已解压完成
 
 ## 6. 多线程架构
@@ -824,6 +844,10 @@ graph LR
             F2["item_001.bin<br/><small>图表项二进制数据</small>"]
             F3["item_002.bin"]
         end
+        subgraph chart3ddata["chart3d-data/"]
+            H1["chart3d-items.xml<br/><small>三维图元索引</small>"]
+            H2["Surface-1<br/><small>三维图元二进制数据</small>"]
+        end
         subgraph plugins["plugins/"]
             G1["plugin_xxx/"]
         end
@@ -833,8 +857,11 @@ graph LR
 上图展示了 ZIP 文件的内部组织：
 - **根目录文件**：system.xml、workflow.xml、data-manager.xml、charts.xml
 - **datas/ 目录**：存储数据文件（parquet 格式）
-- **chart-data/ 目录**：存储图表项的二进制数据和索引
+- **chart-data/ 目录**：存储二维图表项的二进制数据和索引
+- **chart3d-data/ 目录**：存储三维图元（`Qwt3DPlotItem`）的二进制数据和索引
 - **plugins/ 目录**：存储各插件的序列化数据
+
+> **两套键空间不要混用**：二维图元是 `QwtPlotItem`（rtti 0..1000），三维图元是 `Qwt3DPlotItem`（rtti 1001 起），分别由 `DAChartItemsManager` / `DAChart3DItemsManager` 管 key，分别写 `chart-data/` 与 `chart3d-data/`。三维序列化只走 `DAChart3DItemSerialize`，不要复用二维 `DAChartSerialize`。
 
 ### 7.3 XML 文件格式示例
 
@@ -875,6 +902,17 @@ graph LR
     <item key="item_002" rtti="6"/>  <!-- rtti=6 表示 QwtPlotGrid -->
 </items>
 ```
+
+**chart3d-items.xml**:
+
+```xml title="chart3d-items.xml 示例"
+<items>
+    <item key="Surface-1" rtti="1001"/>     <!-- 1001 = Qwt3DSurface -->
+    <item key="Waterfall-2" rtti="1004"/>   <!-- 1004 = Qwt3DWaterfall -->
+</items>
+```
+
+三维 `<chart3d>` 里的索引形如 `<items><item key="Surface-1"/></items>`，只记 key；加载时按 key 从 `chart3d-data/` 读回的池子里取回图元并 `attach` 到该 3D 子图。transient 图元（派生数据，如信号分析的三维瀑布）两处都不记录，由占用方按参数重算重建。
 
 **workflow-data.xml（含运行时状态）**:
 

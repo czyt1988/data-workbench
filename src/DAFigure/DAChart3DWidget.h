@@ -26,6 +26,7 @@ class QwtFigure;
 namespace DA
 {
 class DAFigureWidget;
+class DAChart3DItemsManager;
 
 /**
  * @brief 3D图表控件，继承Qwt3DPlot
@@ -127,6 +128,21 @@ public:
 
     /// 是否有数据item
     bool hasData3D() const;
+
+    // ==================== 3D图元键管理与 transient ====================
+
+    /// 图元键管理者（attach 自动登记、detach 自动注销；存档用 key 引用图元）
+    DAChart3DItemsManager* items3DManager();
+    const DAChart3DItemsManager* items3DManager() const;
+
+    /// 标记/取消标记 transient 3D 图元（派生数据不落盘，加载后由占用方重建）
+    void setItemTransient(Qwt3DPlotItem* item, bool on = true);
+    /// 是否 transient 3D 图元
+    bool isItemTransient(const Qwt3DPlotItem* item) const;
+    /// 当前仍挂在图上的 transient 3D 图元
+    QList< Qwt3DPlotItem* > transientItems() const;
+    /// 需要落盘的 3D 图元（挂在图上且非 transient；存档写 key/字节都以它为准）
+    QList< Qwt3DPlotItem* > persistentItems() const;
 
     // ==================== 3D样式管理 ====================
 

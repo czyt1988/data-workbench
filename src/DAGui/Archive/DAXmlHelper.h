@@ -35,6 +35,7 @@ class DAFigureWidget;
 class DAChartWidget;
 class DAChart3DWidget;
 class DAChartItemsManager;
+class DAChart3DItemsManager;
 class DAChartAxisRangeBinder;
 
 /**
@@ -90,22 +91,22 @@ public:
     // DAColorTheme
     static QDomElement makeElement(const DAColorTheme* ct, const QString& tagName, QDomDocument* doc);
     static bool loadElement(DAColorTheme* ct, const QDomElement* tag, const QVersionNumber& v = QVersionNumber());
-    //===============================================================
-    // DAChartOperate相关
-    //===============================================================
+    // DAChartOperate（items3dMgr：加载时 chart3d-data 读回的 3D 图元池，可空）
     static QDomElement
     makeElement(DAChartOperateWidget* chartOpt, const QString& tagName, QDomDocument* doc, DAChartItemsManager* itemsMgr);
     static bool loadElement(DAChartOperateWidget* chartOpt,
                             const QDomElement* tag,
                             const DAChartItemsManager* itemsMgr,
-                            const QVersionNumber& v = QVersionNumber());
+                            const QVersionNumber& v = QVersionNumber(),
+                            const DAChart3DItemsManager* items3dMgr = nullptr);
     // DAFigureWidget
     static QDomElement
     makeElement(const DAFigureWidget* fig, const QString& tagName, QDomDocument* doc, DAChartItemsManager* itemsMgr);
     static bool loadElement(DAFigureWidget* fig,
                             const QDomElement* tag,
                             const DAChartItemsManager* itemsMgr,
-                            const QVersionNumber& v = QVersionNumber());
+                            const QVersionNumber& v = QVersionNumber(),
+                            const DAChart3DItemsManager* items3dMgr = nullptr);
     // DAChartWidget
     static QDomElement
     makeElement(const DAChartWidget* chart, const QString& tagName, QDomDocument* doc, DAChartItemsManager* itemsMgr);
