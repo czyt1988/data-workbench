@@ -10,7 +10,8 @@
 - 网格成员与自由布局成员可以共存：网格成员走轨道换算，其它成员仍走原来的归一化矩形。
 - 只做**新增** API。`addGridAxes()` 等既有接口的行为保持不变，避免影响并行开发与已有工程。
 - 分隔条交互只在显式启用后安装，鼠标不在分隔带内时事件原样放行，不破坏缩放、平移、拾取、三维旋转。
-- 一期只在信号分析窗口启用网格，绘图区仍是自由布局，不开放网格入口。
+- 网格可以被退出（`disableGrid()` / `disableGridLayout()`）：退出时成员按当前几何退回自由布局，行列比例与成员登记丢弃，操作不可逆。
+- 信号分析窗口在创建图时就启用网格；绘图区（绘图操作窗口的 figure）由用户在 figure 设置页手动启用/退出。
 
 ## 模型与分层
 
@@ -34,6 +35,7 @@ qwt 层只依赖 Qt（`QObject` / `QWidget`），不引用 `QwtFigure` / `QwtFig
 | 方法 | 说明 |
 |------|------|
 | `setup(rowCount, columnCount)` | 启用并重建网格，轨道等分，丢弃旧成员登记 |
+| `disable()` | 停用网格：清掉成员登记与轨道，`isEnabled()` 变 false；比例与间距丢弃，再次 `setup()` 从等分开始；对已停用的模型是空操作 |
 | `isEnabled()` / `rowCount()` / `columnCount()` | 状态与轨道数 |
 | `rowSizes()` / `columnSizes()` | 归一化轨道比例，和约为 1 |
 | `setRowSizes(sizes)` / `setColumnSizes(sizes)` | 设置比例，内部归一化 |
@@ -68,6 +70,7 @@ height= Σ rowSizes[row .. row+rowSpan-1] + (rowSpan − 1) × hspace
 | 方法 | 说明 |
 |------|------|
 | `enableGrid(rowCount, columnCount)` | 创建或重建网格并等分轨道；参数非法返回 false |
+| `disableGrid()` | 退出网格：按成员**当前实际几何**转成自由矩形后停用网格，子图不跳位、不缩水；无网格时返回 false（重复调用无副作用） |
 | `grid()` / `isGridEnabled()` | 网格模型指针与启用状态 |
 | `addAxes(plot, row, col, rowSpan, colSpan)` | 把 `QwtPlot` 登记为网格成员；发 `axesAdded` 后再发 `currentAxesChanged` |
 | `addGridItem(widget, row, col, rowSpan, colSpan)` | 把非 `QwtPlot` 控件（如三维图）登记为网格成员，不发 axes 信号 |
@@ -109,6 +112,7 @@ height= Σ rowSizes[row .. row+rowSpan-1] + (rowSpan − 1) × hspace
 |------|------|
 | `enableGridLayout(rows, cols)` | 启用网格布局。行列数不变时幂等；会退出自由缩放的子图编辑器、只在 figure 的最小/最大尺寸约束确实塌陷时复位（`maximum<=0` 或 `minimum>maximum`，复位后发 `figureSizeConstraintsChanged` 让设置面板刷新）；重建网格会清空旧登记 |
 | `isGridLayoutEnabled()` | 是否处于网格布局 |
+| `disableGridLayout()` | 退出网格布局。成员按当前几何退回自由布局，比例与成员登记丢弃，发射 `gridLayoutEnabledChanged(false)`；未启用时返回 false 且不改变任何状态。**不入撤销栈**（与 `enableGridLayout` 一致） |
 | `grid()` | 底层 `QwtFigureGrid*`，未启用时为 nullptr |
 | `setGridCell(widget, row, col, rowSpan, colSpan)` | 登记或移动成员。2D 子图、三维子图、普通控件都支持；越界返回 false 且保留原登记 |
 | `gridRowSizes()` / `gridColumnSizes()` | 当前轨道比例，`QList<qreal>` |
@@ -135,6 +139,29 @@ figure->setGridCell(waterfall, 1, 1);   // 与热图同格，按瀑布模式切�
 ```
 
 `createChart()` / `create3DChart()` 只负责创建对象，位置由随后的 `setGridCell()` 决定。已经在 figure 里的控件再次 `setGridCell()` 只更新网格登记并重排布局，不会重建 layout item。
+
+## 退出网格与绘图区入口
+
+网格是**可以退出**的：`DAFigureWidget::disableGridLayout()`（底层 `QwtFigure::disableGrid()` + `QwtFigureGrid::disable()`）。
+
+- **几何语义**：退出时每个网格成员都把**当前实际像素矩形**换算成自由布局的归一化矩形，所以子图不跳位、不缩水；隐藏成员（例如同格切换显隐的热图/三维瀑布）用它所在单元格的归一化矩形转换，避免拿到过期的像素几何。从未进过网格的自由成员不受影响。
+- **丢弃的东西**：行列比例、网格间距、成员登记全部丢弃，分隔条交互同时关闭。再次启用网格从等分轨道开始，需要重新指定行列与比例 —— 因此退出是**不可逆**操作，界面上必须写清楚。
+- **不进撤销栈**：与 `enableGridLayout()` 一致，布局切换不产生撤销命令（不顺手加 undo 命令）。退出后对子图几何的修改仍按自由布局正常入栈。
+- **上层刷新**：退出会发射 `gridLayoutEnabledChanged(false)`，`DAChartContextActionPolicy` 据此恢复「调整子图大小」「新建坐标系」等仅自由布局可用的入口（网格启用时这些入口置灰，见 `DAAppChartActionHandler::applyChartContextActionPlan()`）。
+
+绘图区的网格入口只放在 **figure 设置页**（`DAFigureWidgetSettingPanel` 的「Grid Layout」组，在绘图管理树里双击 figure 打开）：
+
+| 控件 | 行为 |
+|------|------|
+| 启用/退出按钮 | 按钮文案随状态在 Enable Grid / Exit Grid 之间切换；启用按面板上的行列数建网格，并把 figure 里**已有的子图按视觉顺序（先上后下、先左后右）填进单元格** |
+| 行数 / 列数 | 1～8；**网格启用期间锁定**（改行列会重建网格并清空成员登记），退出后可改；超过 `rows × cols` 的子图保持自由布局并给出提示 |
+| 等分轨道 | 把当前行列比例恢复为等分（`setGridSizes()`，不入撤销栈） |
+
+网格启用期间「调整子图大小」保持置灰：`Resize Chart` 依赖自由布局的子图编辑器，网格状态由策略统一写入可用性。
+
+> **⚠️ 退出网格的操作不可逆**
+>
+> 没有「撤销退出网格」这条路：比例与单元格登记都已丢弃。要恢复请在设置页重新启用并重新设置比例。
 
 ## XML 持久化
 
@@ -228,7 +255,8 @@ figure->setGridCell(waterfall, 1, 1);   // 与热图同格，按瀑布模式切�
 - 恢复顺序固定为「启用网格 → 设置间距/比例 → 成员登记」，顺序颠倒会丢掉比例或成员。
 - `setGridCell()` 对越界单元返回 false 且不改变已有登记；调用方应处理失败回退，不要假定成功。
 - 三维单元格的分隔条边界由相邻二维子图命中，不要把三维控件当作边界命中的唯一来源。
-- 本期不为绘图区开放网格入口；新增入口前先确认导出、图元树、撤销等链路都已适配。
+- 绘图区的网格入口只在 figure 设置页；新增入口前先确认导出、图元树、撤销等链路都已适配。
+- 退出网格会丢弃比例与成员登记，不要把 `disableGridLayout()` 当成「临时关一下」用；需要临时关闭拖动时用 `setGridEditable(false)`（qwt 层）而不是退出网格。
 
 ## 涉及文件
 
@@ -238,17 +266,19 @@ figure->setGridCell(waterfall, 1, 1);   // 与热图同格，按瀑布模式切�
 | `src/3rdparty/qwt/src/plot/qwt_figure_grid_splitter.h/.cpp` | 分隔条交互：命中、拖动、Esc 取消、光标 |
 | `src/3rdparty/qwt/src/plot/qwt_figure.h/.cpp` | 网格入口、成员增删、点击激活、信号转发 |
 | `src/3rdparty/qwt/src/plot/qwt_figure_layout.cpp` | 布局：网格成员按轨道矩形，其它成员按归一化矩形，跳过不可见成员 |
-| `src/DAFigure/DAFigureWidget.h/.cpp` | 主仓封装、撤销接线、子图编辑器限制 |
+| `src/DAFigure/DAFigureWidget.h/.cpp` | 主仓封装、撤销接线、子图编辑器限制、启用/退出网格 |
 | `src/DAFigure/DAFigureWidgetCommands.h/.cpp` | `DAFigureWidgetCommandResizeGrid` |
 | `src/DAGui/Archive/DAXmlHelper.cpp` | `<grid>` 与 `grid-*` 属性的读写 |
+| `src/DAGui/Chart/Setting/DAFigureWidgetSettingPanel.h/.cpp` | figure 设置页的网格入口：启用/退出、行列数、等分 |
 | `src/APP/Ribbon/DAAppRibbonAreaChart.cpp` | 网格模式下置灰 Resize Chart |
 | `plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp` | 参考用法：2×2 网格、2D/3D 同格显隐切换 |
 
 ## 测试与参考
 
-- `src/tst/DAFigureGridTest/`：网格数学、成员登记、分隔条命中/拖动/最小轨道、撤销命令。
-- `src/tst/DAChartSerializeTest/`：`<grid>` 与 `grid-*` 的保存/加载往返。
+- `src/tst/DAFigureGridTest/`：网格数学、成员登记、分隔条命中/拖动/最小轨道、撤销命令、退出网格（几何保持/不入撤销/幂等、子图编辑器恢复）。
+- `src/tst/DAChartSerializeTest/`：`<grid>` 与 `grid-*` 的保存/加载往返；figure 设置页网格入口（启用/退出、行列数锁定、等分、按视觉顺序填格）。
 - `src/tst/DASignalAnalysisTest/`：2×2 成员坐标、瀑布模式显隐、点击切换当前子图。
+- qwt 侧：`figure_grid_test`（模型 `disable()`）、`figure_grid_layout_test`（退出后几何不变、自由/网格混用、重复退出幂等）。
 - 运行：`.\scripts\test.ps1 -Suite chart`、`.\scripts\test.ps1 -Suite data`。
 
 相关文档：
