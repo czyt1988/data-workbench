@@ -14913,13 +14913,13 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</translation>
         <location line="+38"/>
         <location line="+103"/>
         <location line="+31"/>
-        <location line="+45"/>
+        <location line="+46"/>
         <location line="+17"/>
         <source>No signal is selected.</source>
         <translation>No signal is selected.</translation>
     </message>
     <message>
-        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIExport.cpp" line="-280"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIExport.cpp" line="-281"/>
         <source>No spectrum data to export.</source>
         <translation>No spectrum data to export.</translation>
     </message>
@@ -15191,7 +15191,7 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</translation>
         <translation>PNG Image (*.png)</translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location line="+21"/>
         <source>3D sub-chart supports PNG export only; saved as PNG.</source>
         <translation>3D sub-chart supports PNG export only; saved as PNG.</translation>
     </message>
@@ -15241,7 +15241,7 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</translation>
         <translation>Import Video</translation>
     </message>
     <message>
-        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIDisplay.cpp" line="+388"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIDisplay.cpp" line="+389"/>
         <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIPlayback.cpp" line="+168"/>
         <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="+11"/>
         <source>Play</source>
@@ -15357,7 +15357,7 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</translation>
         <translation>Data frame:</translation>
     </message>
     <message>
-        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIExport.cpp" line="-216"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIExport.cpp" line="-217"/>
         <source>Downsample x2</source>
         <translation>Downsample x2</translation>
     </message>
@@ -15424,7 +15424,7 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</translation>
         <translation>Failed to restore signal &quot;%1&quot;.</translation>
     </message>
     <message>
-        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIExport.cpp" line="+262"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIExport.cpp" line="+263"/>
         <source>Failed to send the peak table.</source>
         <translation>Failed to send the peak table.</translation>
     </message>
@@ -15455,7 +15455,7 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</translation>
         <translation>No data frame is available. Import or create a data frame first.</translation>
     </message>
     <message>
-        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIExport.cpp" line="-284"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIExport.cpp" line="-285"/>
         <source>No power spectral density data to export.</source>
         <translation>No power spectral density data to export.</translation>
     </message>
@@ -15551,6 +15551,11 @@ Locate the file again?</translation>
         <location line="+19"/>
         <source>Skip</source>
         <translation>Skip</translation>
+    </message>
+    <message>
+        <location line="+230"/>
+        <source>Some chart items could not be restored and were discarded (%1 item(s)).</source>
+        <translation>Some chart items could not be restored and were discarded (%1 item(s)).</translation>
     </message>
     <message>
         <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIImport.cpp" line="-106"/>
@@ -15949,7 +15954,7 @@ Reduce the precision, scan only the visible range, or cancel?</translation>
         <translation>Export Sub-chart</translation>
     </message>
     <message>
-        <location line="+25"/>
+        <location line="+26"/>
         <source>Sub-chart exported: %1</source>
         <translation>Sub-chart exported: %1</translation>
     </message>
@@ -16017,49 +16022,50 @@ Reduce the precision, scan only the visible range, or cancel?</translation>
 <context>
     <name>DA::DASignalAnalysisView</name>
     <message>
-        <location filename="../../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="+469"/>
-        <location line="+2570"/>
+        <location filename="../../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="+471"/>
+        <location line="+2725"/>
         <source>Envelope</source>
         <translation>Envelope</translation>
     </message>
     <message>
-        <location line="-2527"/>
-        <location line="+2530"/>
+        <location line="-2682"/>
+        <location line="+2685"/>
         <source>Amplitude spectrum</source>
         <translation>Amplitude spectrum</translation>
     </message>
     <message>
-        <location line="-1194"/>
-        <location line="+1205"/>
+        <location line="-1260"/>
+        <location line="+1271"/>
         <source>Waterfall</source>
         <translation>Waterfall</translation>
     </message>
     <message>
-        <location line="-856"/>
-        <location line="+851"/>
+        <location line="-922"/>
+        <location line="+917"/>
         <source>Spectrogram</source>
         <translation>Spectrogram</translation>
     </message>
     <message>
-        <location line="-1183"/>
+        <location line="-1249"/>
         <location line="+72"/>
-        <location line="+334"/>
+        <location line="+336"/>
+        <location line="+290"/>
         <source>dB</source>
         <translation>dB</translation>
     </message>
     <message>
-        <location line="-1001"/>
+        <location line="-1293"/>
         <source> · peak %1 Hz</source>
         <translation> · peak %1 Hz</translation>
     </message>
     <message>
         <location line="+239"/>
-        <location line="+1536"/>
+        <location line="+1602"/>
         <source>Max hold</source>
         <translation>Max hold</translation>
     </message>
     <message>
-        <location line="-1477"/>
+        <location line="-1543"/>
         <source>Time (ms)</source>
         <translation>Time (ms)</translation>
     </message>
@@ -16075,18 +16081,18 @@ Reduce the precision, scan only the visible range, or cancel?</translation>
     </message>
     <message>
         <location line="+287"/>
-        <location line="+356"/>
-        <location line="+264"/>
+        <location line="+685"/>
+        <location line="+17"/>
         <source>Frequency (Hz)</source>
         <translation>Frequency (Hz)</translation>
     </message>
     <message>
-        <location line="-617"/>
+        <location line="-699"/>
         <source>Trace</source>
         <translation>Trace</translation>
     </message>
     <message>
-        <location line="+610"/>
+        <location line="+675"/>
         <location line="+8"/>
         <source>Amplitude</source>
         <translation>Amplitude</translation>

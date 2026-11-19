@@ -192,8 +192,14 @@ plugins/DASignalAnalysis/
 - `serializeState()` / `finalize()` / `retranslateUi()` / 各后台结果回填都必须容忍 `mPage == nullptr`
   （页面从未打开过的会话）。页面 dock 图标为 `icon/showSignalAnalysis.svg`。
 - 页面 dock 激活时由 `DASignalAnalysisSettingContext` 接管设置面板、图元树、上下文标签与播放器控制条；
-  失活时还原宿主绘图区目标，并停止播放（D6：停止只挂在 provider 失活，不挂在
+  失活时还原宿主绘图区目标（**2D 与 3D 两页 target 都复位**：2D 页指向宿主当前子图，
+  3D 页 `setPlot3D(nullptr)`），并停止播放（D6：停止只挂在 provider 失活，不挂在
   `setSignalToolbarVisible(false)`——该函数在激活流程里也会被调用）。
+- 设置面板目标页由纯函数 `Page/DASignalSettingTarget`（`daSignalSettingPage()`）判定：
+  无视图 → None（两页 target 都置空）、3D 子图 → Chart3D、其余 → Chart2D。
+- 图元树只在 figure 列表**真的变化**时 `setFigures`（列表同构判定 `daSameFigureList`），
+  否则只 `setCurrentFigure`：`setFigures` 会清空重建 combo/树视图，每次点一下子图都重建
+  会丢展开/选中状态。provider 失活时缓存作废（图元树已切回宿主绘图区）。
 
 ### 4.2 导入
 
@@ -258,13 +264,20 @@ plugins/DASignalAnalysis/
 - 布局：`DAFigureWidget` 2×2 保留式网格——波形 (0,0,1,2)、频谱 (1,0)、热图/三维瀑布 (1,1)；
   瀑布默认二维（`setWaterfallMode` 0=二维 / 1=三维 / 2=隐藏）；播放头、STFT 窗口矩形、峰值标记是
   画布图元。视图内不放 inline 控件：分析参数在「分析设置」上下文页、显示类在「信号显示」页、
-  播放类在窗口底部播放器控制条、外观类在右侧设置面板，视图的 setter/getter 是这些入口共同
-  操作的状态源。
+  播放类在窗口底部播放器控制条、外观类在右侧设置面板。**视图的 setter/getter 是这些入口共同的
+  状态源**：每个显示开关都必须成对（例：`setPeakMarkersVisible` / `peakMarkersVisible`），
+  丝带勾选状态从视图回填，**不要**在 `DASignalAnalysisUI` 里另记一份全局值当真相
+  （UI 层同名成员只作为「新建视图的默认值」）；峰值标记显隐随信号存档（§4.8）。
 - **窗口底部播放器控制条**（`buildSignalToolbar`，只在信号分析页激活时显示）：跟随播放 / ▶⏸ 单切换 /
   ■ / 时间滑块 / 时间文本（`Page/DASignalTimeText` 纯函数，`mm:ss.s` 与「当前 / 总长」占位）/
   自动滚动。**只放播放相关控件**：dB 范围已归「信号显示 → 云图设置」（D5）。`actionPlay` 是可勾选动作
   （勾选 = 正在播放），`DASignalPlayer::stateChanged(bool)` 驱动图标与勾选；`actionPause` 已删除。
   失活停止播放挂在 provider 失活，不挂在 `setSignalToolbarVisible(false)`。
+  **分工澄清**：插件**没有**丝带上的播放面板，播放类控件只在底部控制条（丝带「分析设置」页只放
+  分析参数与峰值/导出入口）；控制条随页面激活显隐，不占常驻丝带空间。
+- **切通道清屏**：`setCurrentChannel` 调 `clearRealtimePlots()` 一次性清掉上一个通道的频谱曲线、
+  峰值标记、热图栅格与三维瀑布迹线（热图是**隐藏谱图图元**，只 replot 会让旧栅格留在屏上）。
+  只在切通道时清一次，播放/重绘路径不动（避免闪烁）；`rebuildHeatmap` 拿到新栅格后恢复可见。
 - **「信号显示」页按对象分组**（D1）：时频图设置（2D/3D/隐藏、当前帧标记、测量 ▾、视图 ▾）/
   云图设置（色带、色标、dB、显示 ▾）/ 瀑布图设置（瀑布设置…、色带、dB、当前迹线高亮）。
   该页单独开启面板标题（D9）；`SARibbonBar::setRibbonStyle()` 会按样式统一改写面板标题，
@@ -329,10 +342,17 @@ plugins/DASignalAnalysis/
   峰值表与曲线（`ParamScope::Peaks`），不重算频谱；模板改动立即写配置并广播到全部已创建视图。
 - 存档优先：加载后到第一次重算之间，`mPeakMarkersRestored` 保证不删除重建用户调整过的标记；
   `setPeaks()` 收到新计算结果时复位该窗口。
+- **标记重建时机**（性能 + 不闪烁）：只有「峰值数据」（`setPeaks`）、「显隐切换」、「模板/参数变化」
+  三条路径调 `rebuildPeakMarkers()`；曲线重绘/播放路径（`rebuildSpectrumPlot`）只调
+  `updatePeakMarkerPositions()` **就地改坐标**，不新建/不删除图元。两处都**复用现成图元**
+  （数量一致时不 delete+new），连续回填时标记指针稳定。不要在重绘路径重新调 `rebuildPeakMarkers`。
 - 窗口显隐偏好 `peakDockVisible`：`ensurePageCreated()` 读取、`finalize()` 写回；首次导入只按偏好决定
   是否显示峰值窗口，**不得**覆盖用户关闭过的选择。
 - 导出：峰值表 / 频谱 / 功率谱密度 / 热图矩阵 CSV，整页或当前子图图片，峰值表还可送表格页；
   数值一律先过 `DASignalAmplitude`，PSD 是功率量（10·log10），不随幅值模式变化。
+  当前子图的格式由「所选过滤器修正后的后缀」决定（`DAFigureWidget::exportFormatFromFilePath`），
+  实际写入格式再过 `DASignalChartExport::effectiveFormat`：3D 子图只有 PNG 位图，请求 SVG/PDF
+  一律降级为 PNG（UI 给用户可见提示），不要给 3D 放开矢量过滤器（见铁律 14）。
 
 ### 4.7 内置「绘图操作」上下文
 
@@ -351,7 +371,9 @@ plugins/DASignalAnalysis/
 
 - 一个任务写三部分：`signal-analysis/signals.json`（来源引用 + 参数 + 视图状态）、
   `signal-analysis/figures.xml`（网格 + 子图样式 + 非 transient 图元 key）、
-  `signal-analysis/chart-data`（图元二进制）。后两者只在有 figure 内容时写，旧工程可正常加载。
+  `signal-analysis/chart-data`（图元二进制）。后两者只在**有 figure 内容**时写：`saveFigures` 在
+  没有可写视图时返回**空字节**、`buildFiguresXml` 在页面无信号时提前返回，存档任务按 `!isEmpty`
+  判据跳过——空工程不会留下只有根节点的 `figures.xml` 与空 `chart-items.xml`。旧工程可正常加载。
 - 三维瀑布通过 `DAChart3DWidget::setItemTransient()` 标 transient：工程存档的 `chart3d-data/`
   （`DAChart3DItemArchive` 写 `<chart3d><items>` 索引）不会记录它；本插件的 figure XML 里
   `<chart3d><items>` 因此为空，恢复时也不消费（3D 图元由 `rebuildWaterfall` 重建）。
@@ -365,8 +387,18 @@ plugins/DASignalAnalysis/
   峰值保持只在跟随播放时可用（跟随开关不存档），恢复时一律关闭。
 - 保存流程在主线程收集 figure XML 与图元快照，后台线程只写文件；恢复在主线程 `loadedCallBack` 里
   重建界面并应用 XML。figure 元素同时写 `signal-id`（精确匹配）与 `signal-name`（旧档回退）；
-  一个 figure 元素只能被一个视图消费、一个 chart-data key 只能 attach 到一个子图（重复命中跳过并
-  `qWarning`）。
+  元素分派走 `DASignalFigureArchive::assignFigureElements`（纯逻辑、可单测）：一个 figure 元素只能被
+  一个视图消费、一个 chart-data key 只能 attach 到一个子图（重复命中跳过并 `qWarning`）。
+- `view{}.peakMarkersVisible` **按信号**存档：序列化取该视图的 `peakMarkersVisible()`，读档按信号
+  回填视图；UI 层的 `mPeakMarkersVisible` 只作为「新建视图的默认值」，不要再用一个全局值覆盖全部
+  信号标签页。
+- 恢复子图的匹配规则：`role` → `grid-row/grid-col`。**两者都认不出来时**：整档都没有 `role`
+  （旧存档）才按 XML 顺序回退到 wave/spectrum/heatmap；新存档直接跳过该 `<chart>` 并 `qWarning`，
+  绝不把认不出的子图套到下一个空子图（否则串图比丢样式更难排查）。
+- 图元管理者**不持有所有权**（`DAChartItemsManager` 析构为空）：加载残档后未被任何子图消费的图元
+  必须由 `DASignalFigureArchive::releaseUnattachedItems()` 统一释放（`applyFiguresXml` 收尾调用，
+  判据是 `plot() == nullptr`），并给用户可见提示「部分图元未能恢复，已丢弃」。已 attach 的图元归
+  子图所有，不要在那里删。
 - 宿主 `DAProjectInterface::projectIsCleaned`（新建工程 / 加载前 / 快照回滚）必须触发幂等清理：停
   worker/播放器、清信号与峰值缓存、清临时文件，否则「工程包里没有 signals.json」会把上一工程的
   信号带进新工程。

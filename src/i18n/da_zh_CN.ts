@@ -14929,13 +14929,13 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <location line="+38"/>
         <location line="+103"/>
         <location line="+31"/>
-        <location line="+45"/>
+        <location line="+46"/>
         <location line="+17"/>
         <source>No signal is selected.</source>
         <translation>未选中信号。</translation>
     </message>
     <message>
-        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIExport.cpp" line="-280"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIExport.cpp" line="-281"/>
         <source>No spectrum data to export.</source>
         <translation>没有可导出的频谱数据。</translation>
     </message>
@@ -14992,7 +14992,7 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>PNG 图片 (*.png)</translation>
     </message>
     <message>
-        <location line="+20"/>
+        <location line="+21"/>
         <source>3D sub-chart supports PNG export only; saved as PNG.</source>
         <translation>三维子图仅支持 PNG 导出，已按 PNG 保存。</translation>
     </message>
@@ -15042,7 +15042,7 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>导入视频</translation>
     </message>
     <message>
-        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIDisplay.cpp" line="+388"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIDisplay.cpp" line="+389"/>
         <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIPlayback.cpp" line="+168"/>
         <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIRetranslate.cpp" line="+11"/>
         <source>Play</source>
@@ -15164,7 +15164,7 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>数据帧：</translation>
     </message>
     <message>
-        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIExport.cpp" line="-216"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIExport.cpp" line="-217"/>
         <source>Downsample x2</source>
         <translation>2 倍降采样</translation>
     </message>
@@ -15231,7 +15231,7 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>恢复信号「%1」失败。</translation>
     </message>
     <message>
-        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIExport.cpp" line="+262"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIExport.cpp" line="+263"/>
         <source>Failed to send the peak table.</source>
         <translation>峰值表发送失败。</translation>
     </message>
@@ -15262,7 +15262,7 @@ STFT: window = %4 samples (%5 ms), hop = %6 samples</source>
         <translation>没有可用的数据帧，请先导入或创建数据帧。</translation>
     </message>
     <message>
-        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIExport.cpp" line="-284"/>
+        <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIExport.cpp" line="-285"/>
         <source>No power spectral density data to export.</source>
         <translation>没有可导出的功率谱密度数据。</translation>
     </message>
@@ -15570,6 +15570,11 @@ Locate the file again?</source>
         <location line="+19"/>
         <source>Skip</source>
         <translation>跳过</translation>
+    </message>
+    <message>
+        <location line="+230"/>
+        <source>Some chart items could not be restored and were discarded (%1 item(s)).</source>
+        <translation>部分图元未能恢复，已丢弃（%1 个）。</translation>
     </message>
     <message>
         <location filename="../../plugins/DASignalAnalysis/DASignalAnalysisUIImport.cpp" line="-106"/>
@@ -15959,7 +15964,7 @@ Reduce the precision, scan only the visible range, or cancel?</source>
         <translation>导出当前子图</translation>
     </message>
     <message>
-        <location line="+25"/>
+        <location line="+26"/>
         <source>Sub-chart exported: %1</source>
         <translation>当前子图已导出：%1</translation>
     </message>
@@ -16027,49 +16032,50 @@ Reduce the precision, scan only the visible range, or cancel?</source>
 <context>
     <name>DA::DASignalAnalysisView</name>
     <message>
-        <location filename="../../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="+469"/>
-        <location line="+2570"/>
+        <location filename="../../plugins/DASignalAnalysis/Page/DASignalAnalysisView.cpp" line="+471"/>
+        <location line="+2725"/>
         <source>Envelope</source>
         <translation>包络</translation>
     </message>
     <message>
-        <location line="-2527"/>
-        <location line="+2530"/>
+        <location line="-2682"/>
+        <location line="+2685"/>
         <source>Amplitude spectrum</source>
         <translation>幅值谱</translation>
     </message>
     <message>
-        <location line="-1194"/>
-        <location line="+1205"/>
+        <location line="-1260"/>
+        <location line="+1271"/>
         <source>Waterfall</source>
         <translation>三维瀑布</translation>
     </message>
     <message>
-        <location line="-856"/>
-        <location line="+851"/>
+        <location line="-922"/>
+        <location line="+917"/>
         <source>Spectrogram</source>
         <translation>时频图</translation>
     </message>
     <message>
-        <location line="-1183"/>
+        <location line="-1249"/>
         <location line="+72"/>
-        <location line="+334"/>
+        <location line="+336"/>
+        <location line="+290"/>
         <source>dB</source>
         <translation>分贝</translation>
     </message>
     <message>
-        <location line="-1001"/>
+        <location line="-1293"/>
         <source> · peak %1 Hz</source>
         <translation> · 主峰 %1 赫兹</translation>
     </message>
     <message>
         <location line="+239"/>
-        <location line="+1536"/>
+        <location line="+1602"/>
         <source>Max hold</source>
         <translation>峰值保持</translation>
     </message>
     <message>
-        <location line="-1477"/>
+        <location line="-1543"/>
         <source>Time (ms)</source>
         <translation>时间（毫秒）</translation>
     </message>
@@ -16085,18 +16091,18 @@ Reduce the precision, scan only the visible range, or cancel?</source>
     </message>
     <message>
         <location line="+287"/>
-        <location line="+356"/>
-        <location line="+264"/>
+        <location line="+685"/>
+        <location line="+17"/>
         <source>Frequency (Hz)</source>
         <translation>频率（赫兹）</translation>
     </message>
     <message>
-        <location line="-617"/>
+        <location line="-699"/>
         <source>Trace</source>
         <translation>跟踪</translation>
     </message>
     <message>
-        <location line="+610"/>
+        <location line="+675"/>
         <location line="+8"/>
         <source>Amplitude</source>
         <translation>幅值</translation>
