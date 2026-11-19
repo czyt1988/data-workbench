@@ -386,6 +386,8 @@ void DASignalAnalysisView::buildFigure()
 
     // 时间轴标签格式（默认秒）与轴标题：波形 x 与云图 x 用同一格式
     applyTimeAxisFormat();
+    // 轴标题一次下发（含热图纵轴与色标标题）：首帧就有标题，不必等第一次 rebuild
+    updateAxisTitles();
 
     connect(mFigure, &DAFigureWidget::currentChartChanged, this, &DASignalAnalysisView::onFigureCurrentChartChanged);
     connect(mFigure, &DAFigureWidget::current3DChartChanged, this, &DASignalAnalysisView::onFigureCurrent3DChartChanged);
@@ -491,7 +493,7 @@ void DASignalAnalysisView::rebuildWavePlot()
 }
 
 /**
- * @brief 重绘频谱曲线（峰值标记由 rebuildPeakMarkers 独立维护）
+ * @brief 重绘频谱曲线（峰值标记只就地更新坐标，见 updatePeakMarkerPositions）
  */
 void DASignalAnalysisView::rebuildSpectrumPlot()
 {
@@ -563,7 +565,9 @@ void DASignalAnalysisView::rebuildSpectrumPlot()
     mSpectrumCurve->setSamples(freqs, values);
     // 峰值保持曲线与频谱曲线同口径重绘（幅值模式变化时数值跟着换算）
     updatePeakHoldCurve();
-    rebuildPeakMarkers();
+    // 峰值标记只在数据/显隐/模板变化时重建；重绘与播放路径只就地更新已有标记的坐标，
+    // 不新建/不删除图元（避免每帧整批重建导致闪烁、丢掉用户调整过的标记）
+    updatePeakMarkerPositions();
     updateAxisTitles();
     mSpectrumChart->setAxisAutoScale(QwtPlot::yLeft, true);
     mSpectrumChart->replot();
@@ -572,7 +576,9 @@ void DASignalAnalysisView::rebuildSpectrumPlot()
 /**
  * @brief 重建频谱峰值标记（峰值标记非 transient：T9 会写入 chart-data）
  *
- * 只在峰值数据或显隐变化时调用；曲线数据更新不重建标记，避免闪烁。
+ * 只在峰值数据、显隐或模板/参数变化时调用；曲线重绘与播放路径走
+ * updatePeakMarkerPositions（只改坐标、不动图元）。这里同样复用现成图元：数量一致时
+ * 只更新坐标，数量变化才增删，因此连续回填不会反复 delete+new（标记指针稳定、不闪烁）。
  * 若峰值标记已从存档接管（mPeakMarkersRestored 且列表非空），存档优先：不删除、
  * 不按重算结果重建，只同步显隐（用户可能手动调整过峰位）。该优先只在「加载后到
  * 第一次重算前」成立：setParams/setAmplitudeDisplay/setPeaks/切通道复位该标志（SF-13）。
@@ -604,16 +610,66 @@ void DASignalAnalysisView::rebuildPeakMarkers()
         mSpectrumChart->replot();
         return;
     }
-    clearPeakMarkers(mPeakMarkers, mSpectrumChart);
     if (!mPeakMarkersVisible || !mPeaks.isValid()) {
+        clearPeakMarkers(mPeakMarkers, mSpectrumChart);
         return;
     }
-    // 曲线快照可用时按曲线吸附；否则回退旧口径（峰值频率 + 峰值表幅值换算）
+    // 缓存图元可能已被共享图元树删除：失效项只移除登记，不做二次 delete（BLK-03a）
+    const QList< QwtPlotItem* > attached = mSpectrumChart->itemList();
+    for (int i = mPeakMarkers.size() - 1; i >= 0; --i) {
+        if (!attached.contains(mPeakMarkers.at(i))) {
+            mPeakMarkers.removeAt(i);
+        }
+    }
+    const QVector< QPointF > positions = visiblePeakMarkerPositions();
+    // 复用现成图元：数量一致时只改坐标（指针稳定，播放/重绘不闪、不丢用户调整）
+    while (mPeakMarkers.size() > positions.size()) {
+        QwtPlotMarker* extra = mPeakMarkers.takeLast();
+        if (extra) {
+            extra->detach();
+            delete extra;
+        }
+    }
+    while (mPeakMarkers.size() < positions.size()) {
+        auto* marker = new QwtPlotMarker();
+        // 倒三角尖端对准峰值点；文本由 applyPeakMarkerLabels 按模板写入
+        marker->setSymbol(makePeakMarkerSymbol());
+        marker->setLabelAlignment(Qt::AlignHCenter | Qt::AlignTop);
+        marker->setSpacing(cPeakMarkerLabelSpacing);
+        marker->attach(mSpectrumChart);
+        // 峰值标记不标 transient：T9 会把它写入 chart-data（inline 持久化）
+        mPeakMarkers.append(marker);
+    }
+    for (int i = 0; i < positions.size(); ++i) {
+        QwtPlotMarker* marker = mPeakMarkers.at(i);
+        marker->setXValue(positions.at(i).x());
+        marker->setYValue(positions.at(i).y());
+        marker->setVisible(mPeakMarkersVisible);
+    }
+    applyPeakMarkerLabels();
+}
+
+/**
+ * @brief 按当前峰值数据与已绘制曲线快照算出可画标记的位置
+ *
+ * 峰值表频率与频谱曲线按离散频点绘制的位置有一两个 bin 的偏差，直接换算会落在曲线旁边。
+ * 这里用「当前已绘制曲线」的快照（mDisplayedFreqs/mDisplayedValues，跟随播放时是当前帧谱）
+ * 经 snapPeakMarkersToCurve 吸附到最近局部极大，x/y 都取曲线显示值，标记必然落在曲线峰顶；
+ * 没有曲线快照时（频谱尚未算出）回退旧口径按峰值表幅值换算。
+ * 曲线范围外的峰（0 Hz 起点之前的峰、越界峰）不产生标记，因此返回的个数可能少于峰值数。
+ * @return 按峰值顺序排列、只含可画项的位置列表
+ */
+QVector< QPointF > DASignalAnalysisView::visiblePeakMarkerPositions() const
+{
+    QVector< QPointF > positions;
+    if (!mPeaks.isValid()) {
+        return positions;
+    }
     const bool hasCurveSnapshot = !mDisplayedFreqs.isEmpty() && mDisplayedFreqs.size() == mDisplayedValues.size();
     QVector< QPointF > snappedByPeak(mPeaks.frequencies.size());
     QVector< char > snappedValid(mPeaks.frequencies.size(), 0);
     if (hasCurveSnapshot) {
-        // 先筛出落在曲线频率范围内的峰（对数轴起点之前的 0 Hz 峰、越界峰不参与吸附），
+        // 先筛出落在曲线频率范围内的峰（起点之前的 0 Hz 峰、越界峰不参与吸附），
         // 同时记录所在峰序号：吸附结果按峰序回填，第 0 个峰的配色不会因跳过而错位
         QVector< double > snapFreqs;
         QVector< int > snapPeaks;
@@ -636,42 +692,72 @@ void DASignalAnalysisView::rebuildPeakMarkers()
             snappedValid[ snapPeaks.at(k) ]  = 1;
         }
         if (snappedCount < mPeaks.frequencies.size()) {
-            // 开发诊断：曲线范围外的峰不画标记（对数轴起点/越界），排查时看日志
-            qWarning() << "DASignalAnalysisView::rebuildPeakMarkers:" << (mPeaks.frequencies.size() - snappedCount)
-                       << "of" << mPeaks.frequencies.size()
+            // 开发诊断：曲线范围外的峰不画标记（起点之前的峰/越界），排查时看日志
+            qWarning() << "DASignalAnalysisView::visiblePeakMarkerPositions:"
+                       << (mPeaks.frequencies.size() - snappedCount) << "of" << mPeaks.frequencies.size()
                        << "peaks are outside the displayed spectrum range and were skipped";
         }
     } else {
-        qWarning() << "DASignalAnalysisView::rebuildPeakMarkers: no displayed spectrum snapshot yet, "
+        qWarning() << "DASignalAnalysisView::visiblePeakMarkerPositions: no displayed spectrum snapshot yet, "
                       "falling back to peak-table magnitudes";
     }
     const double signalPeakCal = signalPeak() * mParams.calibration;
+    positions.reserve(mPeaks.frequencies.size());
     for (int i = 0; i < mPeaks.frequencies.size(); ++i) {
-        QPointF pos;
         if (snappedValid.at(i)) {
-            pos = snappedByPeak.at(i);
-        } else if (hasCurveSnapshot) {
-            continue;  // 快照存在但该峰在曲线范围外：与纯函数口径一致，跳过
-        } else {
-            const double f = mPeaks.frequencies.at(i);
-            pos            = QPointF(f,
-                                     DASignalAmplitude::toDisplay(mPeaks.magnitudes.value(i),
-                                                                  f <= 0.0,
-                                                                  mParams.amplitudeMode,
-                                                                  mParams.dbReference,
-                                                                  mParams.calibration,
-                                                                  signalPeakCal));
+            positions.append(snappedByPeak.at(i));
+            continue;
         }
-        auto* marker = new QwtPlotMarker();
-        marker->setXValue(pos.x());
-        marker->setYValue(pos.y());
-        // 倒三角尖端对准峰值点；文本由 applyPeakMarkerLabels 按模板写入
-        marker->setSymbol(makePeakMarkerSymbol());
-        marker->setLabelAlignment(Qt::AlignHCenter | Qt::AlignTop);
-        marker->setSpacing(cPeakMarkerLabelSpacing);
-        marker->attach(mSpectrumChart);
-        // 峰值标记不标 transient：T9 会把它写入 chart-data（inline 持久化）
-        mPeakMarkers.append(marker);
+        if (hasCurveSnapshot) {
+            continue;  // 快照存在但该峰在曲线范围外：与纯函数口径一致，跳过
+        }
+        const double f = mPeaks.frequencies.at(i);
+        positions.append(QPointF(f,
+                                 DASignalAmplitude::toDisplay(mPeaks.magnitudes.value(i),
+                                                              f <= 0.0,
+                                                              mParams.amplitudeMode,
+                                                              mParams.dbReference,
+                                                              mParams.calibration,
+                                                              signalPeakCal)));
+    }
+    return positions;
+}
+
+/**
+ * @brief 就地更新已有峰值标记的坐标（重绘/播放/参数显示口径变化路径）
+ *
+ * 与 rebuildPeakMarkers 的分工：本函数**只更新已有图元**，不新建、不删除、不清空，
+ * 因此连续重绘时标记对象指针不变、不会闪烁，用户拖动过的标记也不会被整批替换。
+ * 峰的数量变化（跟随帧的峰数不同等）时退回完整重建，保证标记与结果一致。
+ * 存档接管的标记位置以存档为准，这里只做显隐/文本同步。
+ */
+void DASignalAnalysisView::updatePeakMarkerPositions()
+{
+    if (!mSpectrumChart) {
+        return;
+    }
+    if (mPeakMarkersRestored && !mPeakMarkers.isEmpty()) {
+        rebuildPeakMarkers();  // 存档接管：不改位置，只同步显隐与文本
+        return;
+    }
+    if (!mPeakMarkersVisible || !mPeaks.isValid()) {
+        return;  // 没有需要更新的标记（显隐切换与数据回填由 rebuildPeakMarkers 负责）
+    }
+    const QList< QwtPlotItem* > attached = mSpectrumChart->itemList();
+    for (int i = mPeakMarkers.size() - 1; i >= 0; --i) {
+        if (!attached.contains(mPeakMarkers.at(i))) {
+            mPeakMarkers.removeAt(i);  // 已被外部（图元树）删除：只移除登记
+        }
+    }
+    const QVector< QPointF > positions = visiblePeakMarkerPositions();
+    if (positions.size() != mPeakMarkers.size()) {
+        rebuildPeakMarkers();  // 峰数变化：走完整同步
+        return;
+    }
+    for (int i = 0; i < positions.size(); ++i) {
+        QwtPlotMarker* marker = mPeakMarkers.at(i);
+        marker->setXValue(positions.at(i).x());
+        marker->setYValue(positions.at(i).y());
     }
     applyPeakMarkerLabels();
 }
@@ -2206,14 +2292,16 @@ void DASignalAnalysisView::rebuildHeatmap()
     } else {
         mSpectrogramItem->setData(static_cast< QwtRasterData* >(mStftRaster));
         mSpectrogramItem->attach(mHeatmapChart);
+        // 切通道时谱图图元被隐藏（clearRealtimePlots）：有新栅格后恢复可见
+        mSpectrogramItem->setVisible(true);
         // 图元常驻：保留宿主热图面板改过的显示模式，不在这里覆盖
     }
     // 色标（yRight 轴）的显隐、刻度区间 [mDbFloor, 0]、色带宽度与色图统一由
     // applyHeatmapColors 应用：不做这一步时 yRight 用 Qwt 默认 0..1000 刻度，与色标区间
     // [mDbFloor, 0] 不一致（用户报告的色标刻度对不上问题）
-    mHeatmapChart->setAxisTitle(QwtPlot::xBottom, timeAxisTitle());       // cn:时间（秒/毫秒/分:秒）
-    mHeatmapChart->setAxisTitle(QwtPlot::yLeft, tr("Frequency (Hz)"));  // cn:频率（赫兹）
     applyHeatmapColors();
+    // 轴标题（含热图纵轴与色标）统一走 updateAxisTitles，避免标题只在某个 rebuild 路径里设一次
+    updateAxisTitles();
     mHeatmapChart->replot();
     // 栅格/轴范围都变了：当前帧标记重新按新变换对齐
     mHeatmapCursorApplied = false;
@@ -2293,6 +2381,54 @@ void DASignalAnalysisView::applyHeatmapColors()
 }
 
 /**
+ * @brief 清空全部实时分析结果显示（切通道用）
+ *
+ * 只清「当前结果」这一类瞬时内容：频谱曲线与曲线快照、峰值标记（含存档接管标志）、
+ * 热图栅格、三维瀑布迹线、跟随帧快照与峰值保持缓冲。显示设置（色带/dB 下限/色标显隐/
+ * 瀑布模式与样式/轴标题）保持不动，新通道的结果回来后按同一套设置重绘。
+ *
+ * 热图这里是「隐藏谱图图元」而不只是 replot：谱图图元被显式重绘时仍会拿旧栅格画，
+ * 请求被取消或延迟时旧通道的时频图会长期留在屏上（用户报告的切通道残留问题）。
+ * 新结果回填时 rebuildHeatmap 会重新 setData 并恢复可见。
+ */
+void DASignalAnalysisView::clearRealtimePlots()
+{
+    // 1) 频谱：清结果、曲线、曲线快照与峰值标记（标记随通道切换重算重建）
+    mSpectrum = DASpectrumResult();
+    mDisplayedFreqs.clear();
+    mDisplayedValues.clear();
+    clearFollowFrameSpectrum();
+    resetPeakHold();
+    ensureItemAttached(mSpectrumCurve, mSpectrumChart);
+    if (mSpectrumCurve) {
+        mSpectrumCurve->setSamples(QVector< double >(), QVector< double >());
+    }
+    clearPeakMarkers(mPeakMarkers, mSpectrumChart);
+    mPeakMarkersRestored = false;
+    if (mSpectrumChart) {
+        mSpectrumChart->replot();
+    }
+    // 2) 热图：清栅格结果并隐藏谱图图元，避免旧通道的时频图残留在屏上
+    mStft = DAStftResult();
+    mHeatmapCursorApplied = false;
+    if (ensureItemAttached(mSpectrogramItem, mHeatmapChart)) {
+        mSpectrogramItem->setVisible(false);
+    }
+    if (mHeatmapChart) {
+        mHeatmapChart->replot();
+    }
+    // 3) 三维瀑布：清迹线与高亮槽位（图元本身复用，不 delete+重建）
+    if (mWaterfallItem) {
+        mWaterfallItem->clear();
+        mWaterfallTraceTimes.clear();
+        mWaterfallHighlightSlot = -1;
+        if (mWaterfallChart) {
+            mWaterfallChart->update();
+        }
+    }
+}
+
+/**
  * @brief 请求外部计算时频热图（目标尺寸按绘图区像素）
  */
 void DASignalAnalysisView::requestHeatmapRefresh()
@@ -2364,6 +2500,17 @@ void DASignalAnalysisView::setPeakMarkersVisible(bool on)
     if (mSpectrumChart) {
         mSpectrumChart->replot();
     }
+}
+
+/**
+ * @brief 峰值标记当前显隐状态
+ *
+ * 与 setPeakMarkersVisible 成对：丝带「峰值标记」勾选状态从视图回填（instead of UI 层
+ * 另记一份全局值），切信号/切通道后勾选始终等于当前视图的真实状态。
+ */
+bool DASignalAnalysisView::peakMarkersVisible() const
+{
+    return mPeakMarkersVisible;
 }
 
 /**
@@ -2464,6 +2611,10 @@ double DASignalAnalysisView::dbReferenceValue() const
 
 /**
  * @brief 更新坐标轴标题（含标定单位）
+ *
+ * 三张 2D 子图的轴标题与色标标题的唯一出口：语言切换（retranslateUi）、幅值口径变化、
+ * 工程恢复都经这里重下发，热图/色标标题不再只在 rebuildHeatmap/applyHeatmapColors 里设一次
+ * （否则切语言后热图纵轴与色标标题停在旧语言）。
  */
 void DASignalAnalysisView::updateAxisTitles()
 {
@@ -2489,6 +2640,14 @@ void DASignalAnalysisView::updateAxisTitles()
             specY += QStringLiteral(" [%1]").arg(mParams.unit);
         }
         mSpectrumChart->setAxisTitle(QwtPlot::yLeft, specY);
+    }
+    if (mHeatmapChart) {
+        // 热图横轴与波形同一时间格式；纵轴固定频率；色标标题（yRight）只在显示色条时可见
+        mHeatmapChart->setAxisTitle(QwtPlot::xBottom, timeAxisTitle());
+        mHeatmapChart->setAxisTitle(QwtPlot::yLeft, tr("Frequency (Hz)"));  // cn:频率（赫兹）
+        if (QwtScaleWidget* colorBar = mHeatmapChart->axisWidget(QwtPlot::yRight)) {
+            colorBar->setTitle(tr("dB"));  // cn:分贝
+        }
     }
 }
 
@@ -2622,31 +2781,17 @@ void DASignalAnalysisView::setCurrentChannel(int channel)
     mEnvXs.clear();
     mEnvMins.clear();
     mEnvMaxs.clear();
-    mStft = DAStftResult();
-    // 当前帧标记依赖 STFT 栅格：通道切换后缓存作废，等新栅格回来后重画
-    mHeatmapCursorApplied = false;
-    // 跟随帧谱快照属于上一个通道：作废，等新 STFT 算出后按新栅格重取
-    clearFollowFrameSpectrum();
     // 切通道后双光标读数失效
     clearDualCursor();
-    // 切通道后峰值保持缓冲作废
-    resetPeakHold();
+    // 上一个通道的显示结果必须立即清掉：谱图/热图/瀑布/峰值标记/跟随帧快照/峰值保持。
+    // 这里只在切通道时清一次（播放路径不动，避免闪烁）；请求被取消时也不会残留旧栅格。
+    clearRealtimePlots();
     // 曲线可能已被共享图元树删除：失效时置空，不写已释放对象（BLK-03a）
     ensureItemAttached(mEnvelopeCurve, mWaveChart);
     if (mEnvelopeCurve) {
         mEnvelopeCurve->setSamples(QVector< QwtIntervalSample >());
         mWaveChart->replot();
     }
-    ensureItemAttached(mSpectrumCurve, mSpectrumChart);
-    if (mSpectrumCurve) {
-        mSpectrumCurve->setSamples(QVector< double >(), QVector< double >());
-    }
-    // 曲线快照随频谱一起作废，避免峰值标记吸附到上一个通道的旧曲线
-    mDisplayedFreqs.clear();
-    mDisplayedValues.clear();
-    clearPeakMarkers(mPeakMarkers, mSpectrumChart);
-    // 通道切换会重算峰值：存档恢复的标记已随上面的清理删除，复位「存档接管」状态
-    mPeakMarkersRestored = false;
     requestEnvelopeRefresh();
     Q_EMIT spectrumRequested(mSignal, mCurrentChannel);
     requestHeatmapRefresh();

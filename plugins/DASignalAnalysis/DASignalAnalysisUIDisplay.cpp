@@ -268,11 +268,12 @@ void DASignalAnalysisUI::syncSignalContextControls()
         actionWaterfallHighlight->setEnabled(waterfallActive && !solidMode);
         actionWaterfallHighlight->setChecked(view ? view->isWaterfallHighlighted() : true);
     }
-    // 峰值标记（视图无 getter：以 UI 记录的开关状态为准；动作在「分析设置 → 峰值」panel）
+    // 峰值标记：勾选状态以当前视图的 peakMarkersVisible() 为准（视图是状态源，
+    // UI 层的 mPeakMarkersVisible 只作为新建视图的默认值，不再回填勾选）
     if (actionPeakMarker) {
         const QSignalBlocker blocker(actionPeakMarker);
         actionPeakMarker->setEnabled(hasView);
-        actionPeakMarker->setChecked(view && mPeakMarkersVisible);
+        actionPeakMarker->setChecked(view && view->peakMarkersVisible());
     }
     // 分析设置页参数控件（预处理/频谱/时频/峰值）跟随当前信号参数
     syncParamsRibbonControls();

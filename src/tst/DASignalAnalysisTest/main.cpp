@@ -67,6 +67,7 @@
 #include "qwt_plot_marker.h"
 #include "qwt_plot_shapeitem.h"
 #include "qwt_plot_spectrogram.h"
+#include "qwt_scale_widget.h"
 #include "qwt_symbol.h"
 
 namespace
@@ -328,6 +329,10 @@ private Q_SLOTS:
     void undoStackGroupWiring();
     // SF-13：峰值「存档优先」只在加载后到第一次重算前——幅值/参数变化即重建
     void signalPeakMarkersRestoredUntilRecompute();
+    void signalViewPeakMarkersVisibleGetter();
+    void signalViewChannelSwitchClearsPlots();
+    void signalViewPeakMarkerItemsStableOnRedraw();
+    void signalViewHeatmapTitlesRetranslated();
     // 播放器控制条时间文本：mm:ss.s 格式、占位与越界夹取（纯函数）
     void playbackTimeTextFormatting();
     // 时间轴标签格式（纯函数）：秒/毫秒/mm:ss.s（含时间原点）
@@ -2318,6 +2323,194 @@ void DASignalAnalysisTest::signalPeakMarkersRestoredUntilRecompute()
     QVERIFY2(qAbs(view2.peakMarkers().first()->yValue() - 6.020599913279624) < 1e-6,
              "setParams must reset the archive priority and rebuild the markers with the new amplitude mode");
     QCOMPARE(view2.peakMarkers().first()->xValue(), 10.0);
+}
+
+/**
+ * @brief D1-07：峰值标记显隐 setter/getter 一致（丝带勾选状态以视图为准）
+ *
+ * 视图是峰值标记显隐的状态源：仓库层不再另存一份全局值来背板勾选状态，
+ * 因此 setter 必须有对应 getter，且存档接管的标记也会把状态同步回 getter。
+ */
+void DASignalAnalysisTest::signalViewPeakMarkersVisibleGetter()
+{
+    if (!openGLAvailable()) {
+        QSKIP("OpenGL is not available: skip the peak markers getter test");
+    }
+    DA::DASignalAnalysisView view(makeTestSignal());
+    QVERIFY2(!view.peakMarkersVisible(), "peak markers are hidden by default");
+    view.setPeakMarkersVisible(true);
+    QVERIFY(view.peakMarkersVisible());
+    view.setPeakMarkersVisible(true);  // 幂等：重复设置不改变状态
+    QVERIFY(view.peakMarkersVisible());
+
+    // 存档接管：显隐跟随存档标记（adoptRestoredPeakMarkers 同步 setter 状态）
+    auto* restoredMarker = new QwtPlotMarker();
+    restoredMarker->setXValue(10.0);
+    restoredMarker->setYValue(2.0);
+    restoredMarker->attach(view.spectrumChart());
+    view.adoptRestoredPeakMarkers({ restoredMarker });
+    QVERIFY2(view.peakMarkersVisible(), "an adopted visible marker must turn the visibility flag on");
+    view.setPeakMarkersVisible(false);
+    QVERIFY(!view.peakMarkersVisible());
+}
+
+/**
+ * @brief D1-08：切通道立即清空上一个通道的谱图/热图/瀑布与峰值标记
+ *
+ * 切通道只清一次（播放路径不动）；热图这里额外断言谱图图元被隐藏——只 replot 时
+ * 旧栅格仍在屏上，请求被取消或延迟时会长期残留上一个通道的时频图。
+ */
+void DASignalAnalysisTest::signalViewChannelSwitchClearsPlots()
+{
+    if (!openGLAvailable()) {
+        QSKIP("OpenGL is not available: skip the channel switch clear test");
+    }
+    DA::DASignalAnalysisView view(makeTestSignal(2));
+    QCOMPARE(view.channelNames().size(), 2);
+    QCOMPARE(view.currentChannel(), 0);
+
+    DA::DASpectrumResult spectrum;
+    spectrum.freqs        = { 0.0, 10.0, 20.0 };
+    spectrum.amplitudes   = { 1.0, 2.0, 1.0 };
+    spectrum.resolutionHz = 10.0;
+    view.setSpectrum(spectrum);
+    DA::DAStftResult stft;
+    stft.rows          = 2;
+    stft.columns       = 3;
+    stft.times         = { 0.0, 0.5, 1.0 };
+    stft.freqs         = { 0.0, 10.0 };
+    stft.values        = { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 };
+    stft.windowSeconds = 0.1;
+    view.setStft(stft);
+    DA::DAPeakResult peaks;
+    peaks.frequencies = { 10.0 };
+    peaks.magnitudes  = { 2.0 };
+    view.setPeaks(peaks);
+    view.setPeakMarkersVisible(true);
+    QCOMPARE(view.peakMarkers().size(), 1);
+    QVERIFY(view.stftResult().isValid());
+
+    // 已画出的频谱曲线与谱图图元（切通道前都有内容/可见）
+    QwtPlotCurve* spectrumCurve = nullptr;
+    const QList< QwtPlotItem* > spectrumItems = view.spectrumChart()->itemList();
+    for (QwtPlotItem* item : spectrumItems) {
+        auto* curve = dynamic_cast< QwtPlotCurve* >(item);
+        if (curve && curve->title().text() == QStringLiteral("Amplitude spectrum")) {
+            spectrumCurve = curve;
+            break;
+        }
+    }
+    QVERIFY2(spectrumCurve != nullptr, "the spectrum curve should exist after a spectrum result");
+    QVERIFY(spectrumCurve->dataSize() > 0);
+    QwtPlotSpectrogram* spectrogram = nullptr;
+    const QList< QwtPlotItem* > heatmapItems = view.heatmapChart()->itemList();
+    for (QwtPlotItem* item : heatmapItems) {
+        if (auto* spec = dynamic_cast< QwtPlotSpectrogram* >(item)) {
+            spectrogram = spec;
+            break;
+        }
+    }
+    QVERIFY2(spectrogram != nullptr, "the spectrogram item should exist after an STFT result");
+    QVERIFY(spectrogram->isVisible());
+
+    int spectrumRequests = 0;
+    int heatmapRequests  = 0;
+    QObject::connect(&view,
+                     &DA::DASignalAnalysisView::spectrumRequested,
+                     &view,
+                     [ &spectrumRequests ](const DA::DASignalPtr&, int) { ++spectrumRequests; });
+    QObject::connect(&view,
+                     &DA::DASignalAnalysisView::heatmapRequested,
+                     &view,
+                     [ &heatmapRequests ](int, int) { ++heatmapRequests; });
+
+    view.setCurrentChannel(1);
+    QCOMPARE(view.currentChannel(), 1);
+    // 谱图/热图结果与显示内容立即清空，不等异步结果回来（请求被取消也不会残留旧栅格）
+    QVERIFY2(!view.stftResult().isValid(), "the STFT result must be cleared on channel switch");
+    QCOMPARE(spectrumCurve->dataSize(), 0);
+    QVERIFY2(!spectrogram->isVisible(), "the spectrogram item must be hidden on channel switch");
+    QCOMPARE(view.peakMarkers().size(), 0);
+    // 新通道的分析请求已经重发
+    QCOMPARE(spectrumRequests, 1);
+    QVERIFY2(heatmapRequests >= 1, "the heatmap must be requested again for the new channel");
+}
+
+/**
+ * @brief D1-04：连续重绘不重建峰值标记（图元指针稳定，只就地更新坐标）
+ *
+ * 播放/重绘路径此前每次都整批 clear + new，标记每帧被替换（闪烁、丢用户调整）。
+ * 现在 rebuildSpectrumPlot 只调用就地更新：标记对象身份不变，且图上不会累积图元。
+ */
+void DASignalAnalysisTest::signalViewPeakMarkerItemsStableOnRedraw()
+{
+    if (!openGLAvailable()) {
+        QSKIP("OpenGL is not available: skip the peak marker redraw stability test");
+    }
+    DA::DASignalAnalysisView view(makeTestSignal());
+    DA::DASpectrumResult spectrum;
+    spectrum.freqs        = { 0.0, 10.0, 20.0 };
+    spectrum.amplitudes   = { 1.0, 2.0, 1.0 };
+    spectrum.resolutionHz = 10.0;
+    view.setSpectrum(spectrum);
+    DA::DAPeakResult peaks;
+    peaks.frequencies = { 10.0 };
+    peaks.magnitudes  = { 2.0 };
+    view.setPeaks(peaks);
+    view.setPeakMarkersVisible(true);
+    QCOMPARE(view.peakMarkers().size(), 1);
+    QwtPlotMarker* marker = view.peakMarkers().first();
+    QVERIFY(marker);
+    QCOMPARE(marker->xValue(), 10.0);
+    QCOMPARE(marker->yValue(), 2.0);
+
+    // 连续 10 次重绘：标记对象指针不变（只改坐标），图元不会累积
+    for (int i = 0; i < 10; ++i) {
+        spectrum.amplitudes = { 1.0, 3.0 + i, 1.0 };
+        view.setSpectrum(spectrum);
+        QCOMPARE(view.peakMarkers().size(), 1);
+        QCOMPARE(view.peakMarkers().first(), marker);
+    }
+    QCOMPARE(marker->xValue(), 10.0);
+    QVERIFY2(marker->yValue() >= 3.0, "the marker coordinates must follow the redrawn curve");
+    int markerItems = 0;
+    const QList< QwtPlotItem* > spectrumItems = view.spectrumChart()->itemList();
+    for (QwtPlotItem* item : spectrumItems) {
+        if (item && item->rtti() == QwtPlotItem::Rtti_PlotMarker) {
+            ++markerItems;
+        }
+    }
+    QCOMPARE(markerItems, 1);
+}
+
+/**
+ * @brief D1-06：语言切换后热图轴标题与色标标题跟随 tr()
+ *
+ * 修复前 retranslateUi 只重译波形/频谱标题，热图纵轴与色标标题只在 rebuildHeatmap/
+ * applyHeatmapColors 里设一次，切语言后停在旧语言。
+ */
+void DASignalAnalysisTest::signalViewHeatmapTitlesRetranslated()
+{
+    if (!openGLAvailable()) {
+        QSKIP("OpenGL is not available: skip the heatmap title retranslation test");
+    }
+    DA::DASignalAnalysisView view(makeTestSignal());
+    // 建图即下发（不必等第一次热图重建）
+    QCOMPARE(view.heatmapChart()->axisTitle(QwtPlot::yLeft).text(), QStringLiteral("Frequency (Hz)"));
+    QCOMPARE(view.heatmapChart()->axisTitle(QwtPlot::xBottom).text(), QStringLiteral("Time (s)"));
+    QwtScaleWidget* colorBar = view.heatmapChart()->axisWidget(QwtPlot::yRight);
+    QVERIFY(colorBar != nullptr);
+    QCOMPARE(colorBar->title().text(), QStringLiteral("dB"));
+
+    // 模拟换语言：标题被清空后由 LanguageChange → retranslateUi 重新下发
+    view.heatmapChart()->setAxisTitle(QwtPlot::yLeft, QString());
+    view.heatmapChart()->setAxisTitle(QwtPlot::xBottom, QString());
+    colorBar->setTitle(QString());
+    QEvent langEvent(QEvent::LanguageChange);
+    QApplication::sendEvent(&view, &langEvent);
+    QCOMPARE(view.heatmapChart()->axisTitle(QwtPlot::yLeft).text(), QStringLiteral("Frequency (Hz)"));
+    QCOMPARE(view.heatmapChart()->axisTitle(QwtPlot::xBottom).text(), QStringLiteral("Time (s)"));
+    QCOMPARE(colorBar->title().text(), QStringLiteral("dB"));
 }
 
 /**

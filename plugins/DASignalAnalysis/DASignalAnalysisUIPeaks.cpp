@@ -187,8 +187,8 @@ void DASignalAnalysisUI::onPeakWindowToggled(bool on)
 /**
  * @brief 峰值标记显隐（峰值 panel 第一个动作）
  *
- * 视图没有该状态的 getter：UI 记录 mPeakMarkersVisible，新建/切换视图时由
- * connectSignalView 应用，保证各信号标签页口径一致。
+ * 切通道路径：勾选状态从视图 peakMarkersVisible() 回填（视图是状态源）。UI 层仍保留
+ * mPeakMarkersVisible，只作为「新建视图/未打开页面时」的默认值（比如恢复工程前先建视图）。
  */
 void DASignalAnalysisUI::onPeakMarkerToggled(bool on)
 {

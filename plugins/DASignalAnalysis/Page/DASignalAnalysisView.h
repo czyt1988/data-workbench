@@ -2,6 +2,7 @@
 #define DASIGNALANALYSISVIEW_H
 #include <QWidget>
 #include <QPointer>
+#include <QPointF>
 #include <QVector>
 #include <QSet>
 #include <QStringList>
@@ -74,6 +75,8 @@ public:
     void setPeaks(const DAPeakResult& peaks);
     // 峰值标记显隐（丝带「峰值标记」开关）
     void setPeakMarkersVisible(bool on);
+    // 峰值标记当前显隐（与 setter 成对：丝带勾选状态以此为准，不再依赖 UI 全局值）
+    bool peakMarkersVisible() const;
     // 峰值标记文本模板（{index}/{fre}/{amp}，空串表示不显示文本）
     void setPeakMarkerText(const QString& textTemplate);
     QString peakMarkerText() const;
@@ -167,6 +170,9 @@ public:
     void requestEnvelopeRefresh();
     // 请求一次时频热图计算（外部参数变化后调用）
     void requestHeatmapRefresh();
+    // 清空全部实时分析结果显示（频谱曲线/热图栅格/三维瀑布/峰值标记）；
+    // 切通道时调用：只清一次，播放路径不动（避免闪烁）
+    void clearRealtimePlots();
     // 首次分析：发起包络、整段频谱与时频热图三类计算（外部信号连接完成后调用）
     void requestInitialAnalysis();
     // 导出用整页位图：三维瀑布可见时把 OpenGL 帧缓冲合成到页面位图中（评审 I11）
@@ -246,6 +252,10 @@ private:
     void rebuildWavePlot();
     void rebuildSpectrumPlot();
     void rebuildPeakMarkers();
+    // 按当前峰值数据 + 已绘制曲线快照算出可画标记位置（曲线范围外的峰被跳过）
+    QVector< QPointF > visiblePeakMarkerPositions() const;
+    // 就地更新已有峰值标记坐标（重绘/播放路径：不增删图元；数量不匹配时回退完整重建）
+    void updatePeakMarkerPositions();
     // 按当前模板重写全部峰值标记的文本（原点位置不变：同时适用于重算生成的与存档接管的标记）
     void applyPeakMarkerLabels();
     void rebuildHeatmap();
