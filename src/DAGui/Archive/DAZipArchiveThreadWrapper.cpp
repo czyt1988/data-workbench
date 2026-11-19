@@ -1,4 +1,4 @@
-﻿#include "Archive/DAZipArchiveThreadWrapper.h"
+#include "Archive/DAZipArchiveThreadWrapper.h"
 #include <QThread>
 #include <QDebug>
 #include "Archive/DAZipArchive.h"
@@ -6,6 +6,7 @@
 #include "Archive/DAZipArchiveTask_Xml.h"
 #include "Archive/DAZipArchiveTask_ArchiveFile.h"
 #include "Archive/DAZipArchiveTask_ChartItem.h"
+#include "Archive/DAZipArchiveTask_Chart3DItem.h"
 namespace DA
 {
 class DAZipArchiveThreadWrapper::PrivateData
@@ -112,6 +113,18 @@ DAZipArchiveThreadWrapper::appendChartItemSaveTask(const QString& zipRelateFolde
     return t;
 }
 
+std::shared_ptr< DAAbstractArchiveTask > DAZipArchiveThreadWrapper::appendChart3DItemSaveTask(
+    const QString& zipRelateFolderPath,
+    const QList< DAChart3DItemSnapshot >& snapshots)
+{
+    if (isBusy()) {
+        return std::shared_ptr< DAAbstractArchiveTask >();
+    }
+    auto t = std::make_shared< DAZipArchiveTask_Chart3DItem >(zipRelateFolderPath, snapshots);
+    d_ptr->mArchive->appendTask(t);
+    return t;
+}
+
 std::shared_ptr< DAAbstractArchiveTask > DAZipArchiveThreadWrapper::appendByteLoadTask(const QString& zipRelatePath, int code)
 {
     if (isBusy()) {
@@ -152,6 +165,19 @@ DAZipArchiveThreadWrapper::appendChartItemLoadTask(const QString& zipRelateFolde
         return std::shared_ptr< DAAbstractArchiveTask >();
     }
     std::shared_ptr< DAZipArchiveTask_ChartItem > task = std::make_shared< DAZipArchiveTask_ChartItem >(zipRelateFolderPath);
+    task->setCode(code);
+    d_ptr->mArchive->appendTask(task);
+    return task;
+}
+
+std::shared_ptr< DAAbstractArchiveTask >
+DAZipArchiveThreadWrapper::appendChart3DItemLoadTask(const QString& zipRelateFolderPath, int code)
+{
+    if (isBusy()) {
+        return std::shared_ptr< DAAbstractArchiveTask >();
+    }
+    std::shared_ptr< DAZipArchiveTask_Chart3DItem > task =
+        std::make_shared< DAZipArchiveTask_Chart3DItem >(zipRelateFolderPath);
     task->setCode(code);
     d_ptr->mArchive->appendTask(task);
     return task;
