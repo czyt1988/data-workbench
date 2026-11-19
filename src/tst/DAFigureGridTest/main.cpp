@@ -69,6 +69,10 @@ private Q_SLOTS:
     void testSubChartEditorBlockedInGridMode();
     // 非网格 figure 上子图编辑器仍生效（回归）
     void testSubChartEditorWorksWithoutGrid();
+    // 退出网格：成员保持当前几何、状态与登记清理、子图编辑器恢复可用
+    void testDisableGridLayoutKeepsGeometry();
+    // 退出网格不入撤销栈；重复退出无副作用；可再次启用
+    void testDisableGridLayoutNoUndoAndIdempotent();
     // 非绘图控件通过 setGridCell 登记进网格
     void testNonPlotWidgetGridCell();
     // 未加入 figure 的 QwtPlot 通过 setGridCell 直接按网格坐标加入
@@ -715,6 +719,116 @@ void TSTDAFigureGridTest::testSubChartEditorWorksWithoutGrid()
     fig->endChartEditor();
     QApplication::processEvents();
     QVERIFY(!fig->isChartEditorActive());
+}
+
+/**
+ * @brief 退出网格：成员保持当前几何、网格登记清理、子图编辑器恢复可用
+ *
+ * 退出网格用成员「当前实际矩形」转成自由矩形，所以退出瞬间子图既不能跳位也不能缩水；
+ * 比例为非等分时同样成立（不能退回等分单元格）。
+ */
+void TSTDAFigureGridTest::testDisableGridLayoutKeepsGeometry()
+{
+    QScopedPointer< DAFigureWidget > fig(new DAFigureWidget());
+    QVERIFY(initFigure(fig.data()));
+    QVERIFY(fig->enableGridLayout(2, 2));
+
+    DAChartWidget* top         = fig->createChart();
+    DAChartWidget* bottomLeft  = fig->createChart();
+    DAChartWidget* bottomRight = fig->createChart();
+    QVERIFY(top && bottomLeft && bottomRight);
+    QVERIFY(fig->setGridCell(top, 0, 0, 1, 2));
+    QVERIFY(fig->setGridCell(bottomLeft, 1, 0));
+    QVERIFY(fig->setGridCell(bottomRight, 1, 1));
+    // 非等分比例：退出后必须保持这套实际几何
+    QVERIFY(fig->setGridSizes(QList< qreal > { 0.4, 0.6 }, QList< qreal > { 0.3, 0.7 }));
+    settle(fig.data());
+
+    const QRect topGeo         = top->geometry();
+    const QRect bottomLeftGeo  = bottomLeft->geometry();
+    const QRect bottomRightGeo = bottomRight->geometry();
+    QVERIFY2(!topGeo.isEmpty() && !bottomLeftGeo.isEmpty() && !bottomRightGeo.isEmpty(),
+             "grid members should have a geometry before leaving the grid");
+
+    QSignalSpy gridSpy(fig.data(), &DAFigureWidget::gridLayoutEnabledChanged);
+    QVERIFY(gridSpy.isValid());
+    QVERIFY(fig->disableGridLayout());
+    QCOMPARE(gridSpy.count(), 1);
+    QCOMPARE(gridSpy.takeFirst().at(0).toBool(), false);
+    QVERIFY2(!fig->isGridLayoutEnabled(), "isGridLayoutEnabled() must report false after leaving the grid");
+    QVERIFY2(fig->grid() == nullptr || !fig->grid()->isEnabled(), "the qwt grid model must be disabled");
+    // 比例与成员登记都已丢弃
+    QVERIFY(fig->gridRowSizes().isEmpty());
+    QVERIFY(fig->gridColumnSizes().isEmpty());
+    QVERIFY2(fig->grid() == nullptr || fig->grid()->items().isEmpty(), "grid registrations must be cleared");
+
+    settle(fig.data());
+    QVERIFY2(fuzzyRect(top->geometry(), topGeo),
+             qPrintable(QStringLiteral("spanning chart moved: actual=%1 before=%2")
+                            .arg(rectText(top->geometry()), rectText(topGeo))));
+    QVERIFY2(fuzzyRect(bottomLeft->geometry(), bottomLeftGeo),
+             qPrintable(QStringLiteral("bottom left chart moved: actual=%1 before=%2")
+                            .arg(rectText(bottomLeft->geometry()), rectText(bottomLeftGeo))));
+    QVERIFY2(fuzzyRect(bottomRight->geometry(), bottomRightGeo),
+             qPrintable(QStringLiteral("bottom right chart moved: actual=%1 before=%2")
+                            .arg(rectText(bottomRight->geometry()), rectText(bottomRightGeo))));
+
+    // 网格已退出：登记/比例接口返回 false 且不崩
+    QVERIFY2(!fig->setGridCell(top, 0, 0), "setGridCell must fail once the grid is gone");
+    QVERIFY(!fig->setGridSizes(QList< qreal > { 0.5, 0.5 }, QList< qreal > { 0.5, 0.5 }));
+
+    // 子图编辑器（仅自由布局可用）恢复
+    QVERIFY(!fig->isChartEditorActive());
+    fig->beginChartEditor(DAFigureWidget::SubChartEditor);
+    QApplication::processEvents();
+    QVERIFY2(fig->isChartEditorActive(), "the sub chart editor should work again after leaving the grid");
+    fig->endChartEditor();
+    QApplication::processEvents();
+    QVERIFY(!fig->isChartEditorActive());
+}
+
+/**
+ * @brief 退出网格不入撤销栈；重复退出无副作用；再次启用从等分轨道开始
+ */
+void TSTDAFigureGridTest::testDisableGridLayoutNoUndoAndIdempotent()
+{
+    QScopedPointer< DAFigureWidget > fig(new DAFigureWidget());
+    QVERIFY(initFigure(fig.data()));
+    // 未启用网格：返回 false，不改变任何状态
+    QVERIFY2(!fig->disableGridLayout(), "disabling without a grid should report false");
+    QVERIFY(!fig->isGridLayoutEnabled());
+
+    QVERIFY(fig->enableGridLayout(1, 2));
+    DAChartWidget* left  = fig->createChart();
+    DAChartWidget* right = fig->createChart();
+    QVERIFY(left && right);
+    QVERIFY(fig->setGridCell(left, 0, 0));
+    QVERIFY(fig->setGridCell(right, 0, 1));
+    settle(fig.data());
+
+    QUndoStack* stack = fig->getUndoStack();
+    QVERIFY(stack);
+    const int undoCountBefore = stack->count();
+
+    QSignalSpy gridSpy(fig.data(), &DAFigureWidget::gridLayoutEnabledChanged);
+    QVERIFY(gridSpy.isValid());
+    QVERIFY(fig->disableGridLayout());
+    QCOMPARE(gridSpy.count(), 1);
+    QCOMPARE(gridSpy.takeFirst().at(0).toBool(), false);
+    QVERIFY2(stack->count() == undoCountBefore, "leaving the grid must not push an undo command");
+
+    // 重复退出：false，且不再发信号、不改撤销栈
+    QVERIFY(!fig->disableGridLayout());
+    QCOMPARE(gridSpy.count(), 0);
+    QCOMPARE(stack->count(), undoCountBefore);
+
+    // 再次启用：等分轨道、无成员登记；原成员仍是自由成员
+    QVERIFY(fig->enableGridLayout(2, 2));
+    QVERIFY(fig->isGridLayoutEnabled());
+    QCOMPARE(fig->grid()->rowCount(), 2);
+    QCOMPARE(fig->grid()->columnCount(), 2);
+    QVERIFY(fig->grid()->items().isEmpty());
+    QCOMPARE(fig->getCharts().size(), 2);
 }
 
 /**

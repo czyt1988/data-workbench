@@ -1068,6 +1068,42 @@ bool DAFigureWidget::enableGridLayout(int rows, int cols)
 }
 
 /**
+ * @brief 退出保留式网格布局
+ *
+ * 网格成员按当前几何转成自由成员：退出瞬间子图不跳变，之后按自由布局的归一化矩形
+ * 跟随 figure 缩放。网格的行列比例与成员登记都会被丢弃，再次启用网格会重新等分轨道，
+ * 需要重新指定比例与单元格。
+ * @return figure不存在或当前未启用网格布局时返回false（重复调用不会改变任何状态）
+ * @note 不入撤销栈（与 enableGridLayout 一致）：退出本身不产生撤销命令，要恢复网格需重新
+ *       启用并设置比例；退出后对成员几何的修改仍按自由布局入栈，可正常撤销。
+ * @note 退出后发射 @ref gridLayoutEnabledChanged(false)，上层据此恢复「调整子图大小」等
+ *       仅自由布局可用的入口。
+ */
+bool DAFigureWidget::disableGridLayout()
+{
+    DA_D(d);
+    QwtFigure* fig = figure();
+    if (!fig || !d->mGridLayoutEnabled || !fig->isGridEnabled()) {
+        return false;
+    }
+    // 先撤掉网格标志：qwt 侧的几何转换与随后的重排不再被当成一次拖动会话
+    d->mGridLayoutEnabled       = false;
+    d->mGridChangeActive        = false;
+    d->mGridCommittedRows.clear();
+    d->mGridCommittedCols.clear();
+    d->mGridOldRows.clear();
+    d->mGridOldCols.clear();
+    d->mGridEditorBlockedWarned = false;
+    if (!fig->disableGrid()) {
+        // 兜底：qwt 侧没有退出成功时恢复标志，避免两层状态不一致
+        d->mGridLayoutEnabled = true;
+        return false;
+    }
+    Q_EMIT gridLayoutEnabledChanged(false);
+    return true;
+}
+
+/**
  * @brief 是否已启用网格布局
  * @return 网格已启用返回true
  */

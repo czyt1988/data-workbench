@@ -152,6 +152,8 @@ public:
 
     // 启用网格布局（行列数不变时幂等；改变行列数会重建等分轨道并清空已有网格成员登记）
     bool enableGridLayout(int rows, int cols);
+    // 退出网格布局，成员保持当前几何退回自由布局（不可逆：比例与成员登记都会丢弃）
+    bool disableGridLayout();
     // 是否已启用网格布局
     bool isGridLayoutEnabled() const;
     // 获取底层网格模型，未启用时返回nullptr
