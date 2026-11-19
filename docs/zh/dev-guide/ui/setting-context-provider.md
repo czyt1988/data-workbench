@@ -88,11 +88,13 @@ public:
 行为约定：
 
 - **当前项由「内容 + 提供者」共同判定**。同一个 provider 可以注册给多个 dock 内容，只比较 provider 指针会把非当前条目的清理误判成当前项。
-- **重入保护**。`activateFor()` 内部用 `mActivating` 标记：provider 在 `activateSettingContext()` 里程序化 raise 自己或其它已注册 dock 时会再次经过 APP 路由，重入调用直接返回「已注册」，不会重复激活。
+- **重入保护覆盖激活与失活**。`activateFor()` 与 `deactivateCurrent()` 在调用 provider 回调期间都会置同一个重入标记：回调里因程序化 raise 再次进入注册表时，激活调用只返回「是否已注册」、不再改状态；失活调用只清当前项、不重复回调，避免两次回调交叉执行。
+- **激活回调返回后复核当前项**。回调内焦点变化可能经 APP 路由触发嵌套失活，当前项被切走；此时本次激活视为已被取代——**不激活撤销栈、返回 false**，避免「注册表无当前项、撤销栈却指向本提供者」的分叉。再次激活同一内容即可恢复。
 - **重复激活仍会回调**。同一内容再次调用 `activateFor()` 时，注册表不会跳过 `activateSettingContext()`（只跳过失活），因此实现方要保证激活逻辑幂等。
 - **失活时机由调用方决定**。`activateFor()` 未命中时不动当前状态；APP 只在焦点回到固定操作窗口或离开全部 dock 时调用 `deactivateCurrent()`。这样工具 dock（设置、日志、图表管理）激活时不会误清插件上下文。
 - **内容销毁时不回调**。注册表用 `QPointer` 跟踪 dock 内容；内容先于 provider 销毁时只清指针与条目，不调用 `deactivateSettingContext()`（此时 provider 可能已经失效）。因此 provider 自身的清理要自己保证。
-- **撤销栈**。激活成功后若 `contextUndoStack()` 非空且不是 active，注册表调用 `setActive()`。撤销/重做按钮因此跟随当前插件文档。
+- **空参数/未注册注销会告警**。provider 以裸指针登记且必须注销；`registerProvider()` 收到空参数、`unregisterProvider()` 收到从未注册的内容时会 `qWarning`，便于早期发现生命周期问题（注册表不接管所有权）。
+- **撤销栈激活**。激活成功后若 `contextUndoStack()` 非空且不是 active，注册表调用 `setActive()`；**恢复宿主栈不在这里做**（注册表在 `DAInterface`，拿不到 `QUndoGroup`），由 APP 在失活/注销通知里完成（见下文「撤销栈的恢复」）。
 
 ## DADockingAreaInterface 与 dockWidgetActivated
 
@@ -101,13 +103,13 @@ public:
 | 方法/信号 | 说明 |
 |-----------|------|
 | `registerSettingContextProvider(dockContent, provider)` | 注册 dock 内容的设置上下文 |
-| `unregisterSettingContextProvider(dockContent)` | 注销（注册方在内容销毁前调用） |
+| `unregisterSettingContextProvider(dockContent)` | 注销（注册方在内容销毁前调用）。注销当前 provider 时会先失活，并广播一次 `settingContextChanged()`（插件卸载/关页路径不经过 APP 路由） |
 | `activateSettingContextForWidget(dockContent)` | 激活对应 provider；未命中返回 false |
 | `deactivateSettingContextProvider()` | 失活当前 provider |
 | `settingContextProviderFor(dockContent)` | 查询 provider |
 | `currentSettingContextProvider()` / `currentSettingContextDockContent()` | 当前激活的 provider 与其 dock 内容（无则 nullptr） |
-| `notifySettingContextChanged()` / `settingContextChanged()` | 插件内部目标变化（切文档/切子图/注销）后通知 APP 重新同步绘图上下文标签与动作状态 |
-| `dockWidgetActivated(QWidget* dockContent)` | 任意 dock 内容被激活时广播，参数是 dock 内部维护的内容窗口 |
+| `notifySettingContextChanged()` / `settingContextChanged()` | 插件内部目标变化（切文档/切子图/注销）后通知 APP 重新同步绘图上下文标签与动作状态；APP 收到且当前无 provider 时还会恢复宿主撤销栈 |
+| `dockWidgetActivated(QWidget* dockContent)` | 任意 dock 内容被激活时广播，参数是 dock 内部维护的内容窗口；同一内容连续激活只广播一次（框架内当前无消费者，保留给插件同步自身状态） |
 | `raiseDockByWidget(QWidget*)` | 唤起某个控件对应的 dock（provider 激活时唤起右侧设置面板用） |
 
 `dockWidgetActivated` 与 `dockWidgetRaised` 的区别：
@@ -255,6 +257,16 @@ default: break;    // UtilityDock：不改上下文
 - 宿主在 provider 激活成功后 `setActive()`。切换插件内部文档（信号标签页）时注册表不会再次回调，`DAFigureWidget::push()` 在自己栈非 active 时会 `setActive()`，所以下一次编辑会自动切到正确栈。
 - 撤销/重做命令本身由 `DAFigureWidget` 管理，provider 不参与命令入栈。
 
+#### 撤销栈的恢复（失活/注销）
+
+注册表在 `DAInterface` 层，拿不到 `QUndoGroup`/操作窗口，因此**注册表只负责通知、APP 负责恢复**：
+
+1. 注册表在失活时清掉当前 provider；`DADockingAreaInterface` 在「注销当前 provider」「同一内容换 provider」时广播 `settingContextChanged()`（插件卸载/关页路径不经过 APP 路由）。
+2. `DAAppController::onSettingContextChanged()` 在收到通知且**当前已无 provider** 时，按最后获得焦点的固定操作窗口（数据/工作流/绘图）重新激活其当前页/当前 figure 的撤销栈。
+3. 焦点离开全部 dock（`widget == nullptr`）与「焦点回到固定操作窗口」两条路由分支也会走同一恢复逻辑；恢复是幂等的（栈已 active 时不再 setActive），不会与固定窗口路由重复切换。
+
+provider 侧不需要（也不应该）自己管宿主的撤销栈。
+
 ## 内置绘图操作上下文（chartContextFigure）
 
 插件页面里如果有 `DAFigureWidget`（例如信号分析窗口），可以在 provider 里实现
@@ -271,17 +283,28 @@ default: break;    // UtilityDock：不改上下文
 
 ### 动作可用性（插件绘图上下文）
 
-| 动作 | 行为 |
-|------|------|
-| 网格总开关/XY/Xmin/Ymin、缩放开关/放大/缩小/显示全部、平移、禁止 X/Y 缩放 | 目标 = provider figure 的当前 2D 子图 |
-| 十字/XY/Y 拾取、联动拾取、拾取文字位置、图例显隐/位置 | 同上 |
-| 绘图主题、复制绘图到剪贴板、导出当前子图 | figure 级动作，2D/3D 子图都可用（3D 导出为 PNG） |
-| 选区工具、辅助工具（十字/水平/垂直标记、箭头、文本） | 目标 = provider figure，图元进插件 figure 的 undo 栈 |
-| 「应用到所有绘图」 | 只作用于 provider figure 的 2D 子图（`DAFigureWidget::getCharts()`），不是全部插件 figure |
-| 新建绘图、新建坐标系、调整子图大小、数据探针 | **禁用**：新建绘图会落到宿主绘图区；其余与插件 figure 的布局/生命周期或数据联动不兼容 |
+可用性判定是**纯函数** `DAChartContextActionPolicy`（`src/APP/Controller/DAChartContextActionPolicy.h/.cpp`），
+输入「当前子图类型 × 来源（provider/宿主）× figure 是否网格布局」，输出各动作分组的启用/置灰；
+`DAAppChartActionHandler::applyChartContextActionPlan()` 是唯一写入口（负责把分组映射到 QAction/QActionGroup
+并回灌状态）。判定与界面解耦，便于表驱动单测（`APPRefactorTest`）。
+
+| 动作分组 | provider 上下文（插件 figure） | 宿主绘图上下文 |
+|------|------|------|
+| 2D 交互（网格/缩放/平移/拾取/图例/应用到所有绘图） | 目标 = provider figure 的当前 2D 子图；3D/无子图时置灰 | 目标 = 宿主当前 figure；3D/无子图时置灰 |
+| 图表编辑器工具（指针/选框/辅助标记） | 仅 2D 子图可用 | 仅 2D 子图可用 |
+| 调整子图大小 | **禁用**（与插件 figure 布局/生命周期不兼容；网格 figure 同样禁用） | 网格 figure 禁用，自由布局可用 |
+| 数据探针 | **禁用**（与插件数据联动不兼容） | 2D 子图可用 |
+| 绘图主题、复制绘图到剪贴板 | figure 级动作，2D/3D 子图都可用（无激活子图时置灰） | 同左 |
+| 导出当前子图 | 2D/3D 都可用（3D 导出为 PNG）；无激活子图时置灰 | 同左 |
+| 新建绘图、新建坐标系 | **禁用**（新建绘图会落到宿主绘图区） | 新建绘图可用；新建坐标系在网格 figure 下禁用 |
+| 添加曲线/散点/柱状/误差棒/箱线/谱图/统计图/3D 系列（主「绘图」标签页） | **禁用**（会作用到宿主绘图区） | 可用 |
 
 3D 子图激活时（`DAFigureWidget::currentSubChartKind() == Chart3D`）：内置 Chart 标签保持显示，
-主题/复制/导出保持可用，其余 2D 类动作置灰；切回 2D 子图后自动恢复。
+主题/复制/导出保持可用，其余 2D 类动作与选区/标记工具置灰；**同时会结束图表编辑器并清空工具勾选**，
+切回 2D 子图后自动恢复。上述规则对宿主绘图区同样生效（不再只在插件上下文里判定）。
+
+网格布局启用状态变化会经 `DAFigureWidget::gridLayoutEnabledChanged` 通知，APP 据此即时刷新
+「调整子图大小/新建坐标系」的可用性（不必等切换 figure）。
 
 ### provider 侧约定
 
@@ -422,8 +445,9 @@ mSettingContext = nullptr;
 | `src/DAInterface/DASettingContextProviderRegistry.h/.cpp` | 注册表：当前项、重入保护、激活/失活、撤销栈 |
 | `src/DAInterface/DADockingAreaInterface.h/.cpp` | 注册/注销/激活入口，`dockWidgetActivated` 广播 |
 | `src/APP/Controller/DAAppContextRoutePolicy.h/.cpp` | 路由判定纯函数 |
+| `src/APP/Controller/DAChartContextActionPolicy.h/.cpp` | 绘图动作可用性判定纯函数（子图类型 × 来源 × 网格布局） |
 | `src/APP/Controller/DAAppControllerCore.cpp` | `activateContextCategoryForWidget()`：provider/固定窗口分支、内置绘图上下文显隐、`settingContextChanged` 处理 |
-| `src/APP/Controller/DAAppChartActionHandler.cpp` | 绘图域动作目标切换、`syncChartContextActions()`（勾选/可用性/3D 置灰/结构性动作禁用） |
+| `src/APP/Controller/DAAppChartActionHandler.cpp` | 绘图域动作目标切换、`applyChartContextActionPlan()`（按策略写入可用性）、3D 切换结束编辑器 |
 | `src/APP/Controller/DAAppControllerConnections.cpp` | `settingContextChanged` 连接 |
 | `src/DAGui/Chart/DAChartManageWidget.h/.cpp` | 管理树内部/外部模式与目标还原 |
 | `src/DAGui/Common/Settings/DASettingContainerWidget.h` | 设置页 getter 与 `show*()` 切换方法 |

@@ -193,7 +193,7 @@ figure->setGridCell(waterfall, 1, 1);   // 与热图同格，按瀑布模式切�
 - 自由成员路径完全没有改动（`addChart` / `add3DChart` / `setWidgetNormPos` 照旧）；
 - undo 会经 removeChart 摘掉 layout item，所以恢复网格成员要先补回成员（`hasPlot`/`has3DChart` 判断）再按单元格登记；
 - 网格 figure 上首次创建子图会登记到第一个空闲单元格（网格已满时退回 (0,0)，同格共存是允许的）；
-- 网格 figure 上「新建坐标系」「调整子图大小」入口在 Ribbon 侧置灰（`updateFigureAboutRibbon`），避免交互路径制造自由成员。
+- 网格 figure 上「新建坐标系」「调整子图大小」入口在 Ribbon 侧置灰（可用性由 `DAChartContextActionPolicy` 判定、`DAAppChartActionHandler::applyChartContextActionPlan()` 写入；网格状态变化经 `gridLayoutEnabledChanged` 即时刷新），避免交互路径制造自由成员。
 
 一个 figure 一个撤销栈（`DAFigureWidget::getUndoStack()`）。信号分析页的 provider 激活成功后，注册表会把这个栈设为 active，保证功能区撤销/重做按钮作用于当前信号的图。
 
