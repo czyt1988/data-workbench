@@ -1390,7 +1390,7 @@ void DASignalAnalysisUI::buildAnalysisSettingsPage(SARibbonContextCategory* cont
     actionPeakMarkerDisplay =
         createRibbonIconAction("actionSignalPeakMarkerDisplay", signalPluginIcon("peakLabel.svg"), false);
     connect(actionPeakMarkerDisplay, &QAction::triggered, this, &DASignalAnalysisUI::openPeakMarkerDisplaySettings);
-    mPanelPeaks->addSmallAction(actionPeakMarkerDisplay);
+    mPanelPeaks->addLargeAction(actionPeakMarkerDisplay);
     // 峰值窗口：峰值表 + 每帧前 N 曲线停靠窗口的唯一开关
     actionPeakWindow = createRibbonIconAction("actionSignalPeakWindow", signalPluginIcon("peaksWindow.svg"), true);
     connect(actionPeakWindow, &QAction::toggled, this, &DASignalAnalysisUI::onPeakWindowToggled);
