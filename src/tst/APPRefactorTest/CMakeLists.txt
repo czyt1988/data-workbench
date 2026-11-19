@@ -6,6 +6,8 @@
 # 3. T6：设置上下文提供者注册表（DASettingContextProviderRegistry）与 dock 激活路由判定
 #    （DAAppContextRoutePolicy）。两者只依赖 Qt，故直接把实现源文件编入测试，
 #    不链接 DAInterface/APP 库，保持 core 套件轻量。
+# 4. 绘图动作可用性策略（DAChartContextActionPolicy）：APP 内部纯函数（只依赖标准库），
+#    与 DAAppContextRoutePolicy.cpp 并列编入，覆盖 2D/3D × 网格/自由 × provider/宿主。
 
 da_add_test(
     NAME APPRefactorTest
@@ -13,6 +15,7 @@ da_add_test(
     SOURCES main.cpp
             ${CMAKE_SOURCE_DIR}/src/DAInterface/DASettingContextProviderRegistry.cpp
             ${CMAKE_SOURCE_DIR}/src/APP/Controller/DAAppContextRoutePolicy.cpp
+            ${CMAKE_SOURCE_DIR}/src/APP/Controller/DAChartContextActionPolicy.cpp
     QT_COMPONENTS Core Widgets Test
     LINK_PRIVATE
         Qt${QT_VERSION_MAJOR}::Core

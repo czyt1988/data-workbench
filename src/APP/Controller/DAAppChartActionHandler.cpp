@@ -1,5 +1,6 @@
-﻿#include "DAAppChartActionHandler.h"
+#include "DAAppChartActionHandler.h"
 #include "DAAppController.h"
+#include "DAChartContextActionPolicy.h"
 // Qt
 #include <QDebug>
 #include <QFileDialog>
@@ -164,6 +165,49 @@
 
 namespace DA
 {
+
+namespace
+{
+/**
+ * @brief 把 figure 的当前子图类型映射为策略输入
+ * @param fig 目标 figure（可为空）
+ * @return 策略输入的子图类型
+ */
+DAChartSubChartKind toPolicySubChartKind(DAFigureWidget* fig)
+{
+    if (nullptr == fig) {
+        return DAChartSubChartKind::None;
+    }
+    switch (fig->currentSubChartKind()) {
+    case DAFigureCurrentSubChart::Chart2D:
+        return DAChartSubChartKind::Chart2D;
+    case DAFigureCurrentSubChart::Chart3D:
+        return DAChartSubChartKind::Chart3D;
+    default:
+        return DAChartSubChartKind::None;
+    }
+}
+
+// 应用单个动作的可用性
+void setActionEnabled(QAction* action, DAChartActionState state)
+{
+    if (action) {
+        action->setEnabled(DAChartActionState::Enabled == state);
+    }
+}
+
+// 应用动作组内全部动作的可用性（组内含独立维度的动作时由调用方随后覆盖）
+void setGroupEnabled(QActionGroup* group, DAChartActionState state)
+{
+    if (nullptr == group) {
+        return;
+    }
+    const QList< QAction* > actions = group->actions();
+    for (QAction* action : actions) {
+        setActionEnabled(action, state);
+    }
+}
+}  // namespace
 
 DAAppChartActionHandler::DAAppChartActionHandler(const DAAppActionHandlerDeps& deps, QObject* par)
     : QObject(par), mDeps(deps)
@@ -418,8 +462,14 @@ void DAAppChartActionHandler::onFigureCreated(DAFigureWidget* f)
     // updateFigureAboutRibbon(f);//在onActionAddFigureTriggered中调用了
     mDeps.controller->setDirty();
     connect(f, &DAFigureWidget::currentChartChanged, this, &DAAppChartActionHandler::onCurrentChartChanged);
-    // 3D 当前子图变化也影响「导出当前子图」的可用性（2D 变化经 onCurrentChartChanged 同步）
-    connect(f, &DAFigureWidget::current3DChartChanged, this, &DAAppChartActionHandler::updateExportChartActionState);
+    // 3D 当前子图变化：导出可用性 + 2D↔3D 动作可用性（切 3D 时结束编辑器）
+    connect(f, &DAFigureWidget::current3DChartChanged, this, &DAAppChartActionHandler::onChartSubChartKindChanged);
+    // 网格布局启用状态变化：调整子图大小/新建坐标系入口跟随刷新（C-15）
+    connect(f, &DAFigureWidget::gridLayoutEnabledChanged, this, [ this, f ](bool) {
+        if (mDeps.controller->getChartContextFigure() == f) {
+            applyChartContextActionPlan();
+        }
+    });
     connect(f, &DAFigureWidget::chartEditorStatusChanged, this, &DAAppChartActionHandler::onChartEditorStatusChanged);
     // 指针工具在图中选中元素 → 联动属性设置面板（与树形控件点击同链路）
     connect(f, &DAFigureWidget::figureElementClicked, this, &DAAppChartActionHandler::onFigureElementClicked);
@@ -444,6 +494,8 @@ void DAAppChartActionHandler::onCurrentFigureChanged(DAFigureWidget* f, int inde
     qDebug() << "DAAppChartActionHandler::onCurrentFigureChanged";
     mDeps.ribbon->updateFigureAboutRibbon(f);
     updateExportChartActionState();
+    // 宿主当前 figure 变化后按策略重算可用性（网格 figure 的几何编辑入口等）
+    applyChartContextActionPlan();
     QUndoStack* stack = f->getUndoStack();
     if (stack) {
         stack->setActive();
@@ -462,10 +514,11 @@ void DAAppChartActionHandler::onCurrentChartChanged(DAChartWidget* c)
     }
     // 2D 当前子图变化（含被清空为 nullptr）影响「导出当前子图」的可用性
     updateExportChartActionState();
-    if (nullptr == c) {
-        return;
+    if (c) {
+        mDeps.ribbon->updateChartAboutRibbon(c);
     }
-    mDeps.ribbon->updateChartAboutRibbon(c);
+    // 2D↔3D↔无子图切换：按策略刷新可用性并结束不再适用的编辑器
+    onChartSubChartKindChanged();
 }
 
 /**
@@ -482,15 +535,29 @@ void DAAppChartActionHandler::updateExportChartActionState()
 }
 
 /**
- * @brief 2D 子图相关动作的可用性切换
+ * @brief 按动作可用性策略刷新 Ribbon/主动作
  *
- * 3D 子图激活时，网格/缩放/平移/拾取/图例/图表编辑器等 2D 类动作置灰；主题、复制、
- * 导出是 figure 级动作，不在此列。
- * @param on true 启用
+ * 这是绘图动作可用性的**唯一写入口**：组内清单只在这里出现一次，判定逻辑在
+ * DAChartContextActionPolicy（纯函数，可单测）。动作目标 figure 由
+ * DAAppController::getChartContextFigure() 解析（provider 接管时是插件 figure）。
+ *
+ * 注意 `actionGroupChartEditor` 内含「调整子图大小」与「数据探针」，它们各有独立维度，
+ * 因此先按编辑器工具组整体设置，再用各自分组的结果覆盖。
  */
-void DAAppChartActionHandler::setChart2DActionsEnabled(bool on)
+void DAAppChartActionHandler::applyChartContextActionPlan()
 {
     DAAppActions* acts = mDeps.actions;
+    if (nullptr == acts) {
+        return;
+    }
+    DAFigureWidget* fig = mDeps.controller->getChartContextFigure();
+    DAChartContextActionInput input;
+    input.subChart     = toPolicySubChartKind(fig);
+    input.fromProvider = mDeps.controller->isChartContextFromProvider();
+    input.gridLayout   = (fig && fig->isGridLayoutEnabled());
+    const DAChartContextActionPlan plan = resolveChartContextActionPlan(input);
+
+    // 2D 子图交互：网格/缩放/平移/拾取/图例/应用到所有绘图
     QAction* chart2DActions[] = {
         acts->actionFigureSettingApplyAllChart,
         acts->actionChartEnableGrid,
@@ -513,30 +580,60 @@ void DAAppChartActionHandler::setChart2DActionsEnabled(bool on)
         acts->actionChartEnableLegend,
         acts->actionChartDataPickerSetting,
     };
-    for (QAction* a : chart2DActions) {
-        if (a) {
-            a->setEnabled(on);
-        }
+    const DAChartActionState chart2DState = plan.stateOf(DAChartActionGroup::Chart2DInteraction);
+    for (QAction* action : chart2DActions) {
+        setActionEnabled(action, chart2DState);
     }
-    QActionGroup* groups[] = { acts->actionGroupChartPickerTextRegion,
-                               acts->actionGroupChartLegendPosition,
-                               acts->actionGroupChartEditor };
-    for (QActionGroup* group : groups) {
-        if (!group) {
-            continue;
-        }
-        const QList< QAction* > groupActions = group->actions();
-        for (QAction* a : groupActions) {
-            a->setEnabled(on);
-        }
+    setGroupEnabled(acts->actionGroupChartPickerTextRegion, chart2DState);
+    setGroupEnabled(acts->actionGroupChartLegendPosition, chart2DState);
+
+    // 图表编辑器工具组（含调整子图大小/数据探针，随后按各自分组覆盖）
+    setGroupEnabled(acts->actionGroupChartEditor, plan.stateOf(DAChartActionGroup::ChartEditorTools));
+    setActionEnabled(acts->actionChartEditorResizeSubChart, plan.stateOf(DAChartActionGroup::ResizeSubChart));
+    setActionEnabled(acts->actionChartEditorDataProbe, plan.stateOf(DAChartActionGroup::DataProbe));
+
+    // figure 级动作：主题、复制、导出（2D/3D 均可用，无激活子图时置灰）
+    const DAChartActionState themeState = plan.stateOf(DAChartActionGroup::FigureTheme);
+    for (QAction* action : std::as_const(acts->actionListOfColorTheme)) {
+        setActionEnabled(action, themeState);
     }
+    setActionEnabled(acts->actionCopyFigureInClipboard, themeState);
+    setActionEnabled(acts->actionExportChartToFile, plan.stateOf(DAChartActionGroup::ExportChart));
+
+    // 结构性动作：新建绘图/坐标系
+    setActionEnabled(acts->actionAddFigure, plan.stateOf(DAChartActionGroup::AddFigure));
+    setActionEnabled(acts->actionFigureNewXYAxis, plan.stateOf(DAChartActionGroup::NewXYAxis));
+
+    // 主「绘图」标签页的添加绘图入口（曲线/散点/柱状/统计图/3D 系列）
+    QAction* addPlotActions[] = {
+        acts->actionChartAddCurve,       acts->actionChartAddScatter2D,  acts->actionChartAddErrorBar,
+        acts->actionChartAddBoxPlot,     acts->actionChartAddBar,        acts->actionChartAddMultiBar,
+        acts->actionChartAddHistogramBar, acts->actionChartAddContourMap, acts->actionChartAddCloudMap,
+        acts->actionChartAddVectorfield, acts->actionChartAdd3DSurface,  acts->actionChartAdd3DBar,
+        acts->actionChartAdd3DLine,      acts->actionStatsHistplot,      acts->actionStatsKdeplot1d,
+        acts->actionStatsKdeplot2d,      acts->actionStatsBoxplot,       acts->actionStatsHeatmap,
+        acts->actionStatsScatterplot,    acts->actionStatsBarplot,       acts->actionStatsRegplot,
+        acts->actionStatsECDFplot,
+    };
+    const DAChartActionState addSeriesState = plan.stateOf(DAChartActionGroup::AddSeries);
+    for (QAction* action : addPlotActions) {
+        setActionEnabled(action, addSeriesState);
+    }
+
+    // 网格分级开关（X/Y/Xmin/Ymin）跟随总开关勾选，且仅在 2D 子图下可用
+    const bool gridSubActionsEnabled = plan.isEnabled(DAChartActionGroup::Chart2DInteraction)
+                                       && acts->actionChartEnableGrid->isChecked();
+    acts->actionChartEnableGridX->setEnabled(gridSubActionsEnabled);
+    acts->actionChartEnableGridY->setEnabled(gridSubActionsEnabled);
+    acts->actionChartEnableGridXMin->setEnabled(gridSubActionsEnabled);
+    acts->actionChartEnableGridYMin->setEnabled(gridSubActionsEnabled);
 }
 
 /**
  * @brief 清空图表编辑器动作勾选
  *
  * 用 QSignalBlocker 阻断 QActionGroup::triggered，避免误触发 onActionGroupChartEditorTriggered
- * 去结束错误目标的编辑器（进入/离开插件绘图上下文时由本函数负责状态复位）。
+ * 去结束错误目标的编辑器（进入/离开插件绘图上下文、切到 3D 子图时由本函数负责状态复位）。
  */
 void DAAppChartActionHandler::resetChartEditorActions()
 {
@@ -557,11 +654,10 @@ void DAAppChartActionHandler::resetChartEditorActions()
 /**
  * @brief 同步绘图上下文动作的目标可用性
  *
- * 插件设置上下文提供者接管时（provider 声明了 chartContextFigure）：
- * - 绘图动作目标切换到插件 figure；3D 子图激活时 2D 类动作置灰，主题/复制/导出保持可用；
- * - 结构性/数据类动作（新建绘图、新建坐标系、调整子图大小、数据探针）禁用——它们要么
- *   作用到宿主绘图区，要么与插件 figure 的生命周期/布局管理不兼容。
- * 回到宿主绘图上下文时恢复这些动作并回灌宿主当前 figure 的 Ribbon 状态。
+ * 插件设置上下文提供者接管时（provider 声明了 chartContextFigure）：绘图动作目标切换到
+ * 插件 figure，可用性按 DAChartContextActionPolicy 统一计算（3D 子图置灰 2D 类动作、
+ * 结构性/添加绘图入口禁用、网格布局禁用几何编辑）。
+ * 回到宿主绘图上下文时同样按策略恢复——宿主自身选中 3D 子图时 2D 类动作也置灰。
  */
 void DAAppChartActionHandler::syncChartContextActions()
 {
@@ -571,42 +667,47 @@ void DAAppChartActionHandler::syncChartContextActions()
 
     DAFigureWidget* fig     = mDeps.controller->getChartContextFigure();
     DAFigureWidget* hostFig = mDeps.controller->getCurrentFigure();
-    if (fromProvider) {
-        if (!wasProvider) {
-            // 刚进入插件绘图上下文：结束宿主 figure 上可能残留的图表编辑器并清空动作勾选
-            if (hostFig && hostFig->isChartEditorActive()) {
-                hostFig->endChartEditor();
-            }
-            resetChartEditorActions();
+    if (fromProvider && !wasProvider) {
+        // 刚进入插件绘图上下文：结束宿主 figure 上可能残留的图表编辑器并清空动作勾选
+        if (hostFig && hostFig->isChartEditorActive()) {
+            hostFig->endChartEditor();
         }
-        const bool is2D = (fig && DAFigureCurrentSubChart::Chart2D == fig->currentSubChartKind() && fig->getCurrentChart());
-        if (is2D) {
-            setChart2DActionsEnabled(true);
-        }
-        if (fig) {
-            mDeps.ribbon->updateFigureAboutRibbon(fig);
-        }
-        if (!is2D) {
-            setChart2DActionsEnabled(false);
-        }
-        mDeps.actions->actionAddFigure->setEnabled(false);
-        mDeps.actions->actionFigureNewXYAxis->setEnabled(false);
-        mDeps.actions->actionChartEditorResizeSubChart->setEnabled(false);
-        mDeps.actions->actionChartEditorDataProbe->setEnabled(false);
-        mDeps.actions->actionExportChartToFile->setEnabled(fig && DAFigureCurrentSubChart::None != fig->currentSubChartKind());
-        return;
-    }
-    // 回到宿主绘图上下文（含 provider 注销/失活）：恢复绘图上下文动作
-    if (wasProvider) {
+        resetChartEditorActions();
+    } else if (!fromProvider && wasProvider) {
+        // 离开插件绘图上下文（含 provider 注销/失活）：勾选状态复位，动作目标已切回宿主
         resetChartEditorActions();
     }
-    setChart2DActionsEnabled(true);
-    mDeps.actions->actionAddFigure->setEnabled(true);
-    mDeps.actions->actionFigureNewXYAxis->setEnabled(true);
-    mDeps.actions->actionChartEditorDataProbe->setEnabled(true);
-    if (hostFig) {
-        mDeps.ribbon->updateFigureAboutRibbon(hostFig);
+    // 3D 子图激活（或子图被清空）时结束编辑器：选区/标记工具只对 2D 子图有意义
+    if (fig && DAFigureCurrentSubChart::Chart2D != fig->currentSubChartKind() && fig->isChartEditorActive()) {
+        fig->endChartEditor();
+        resetChartEditorActions();
     }
+    if (fig) {
+        // 先回灌勾选状态（网格/缩放/拾取/图例随目标 figure），再应用可用性策略
+        mDeps.ribbon->updateFigureAboutRibbon(fig);
+    }
+    applyChartContextActionPlan();
+    updateExportChartActionState();
+}
+
+/**
+ * @brief 子图类型变化（2D↔3D↔无子图）后刷新动作可用性
+ *
+ * 宿主侧「当前 2D 子图变化」与「当前 3D 子图变化」都走这里：切到 3D 时结束图表编辑器、
+ * 复位勾选并置灰 2D 类动作；切回 2D 后重新可用。provider 接管期间由
+ * syncChartContextActions()（notifySettingContextChanged）维护，这里不重复写。
+ */
+void DAAppChartActionHandler::onChartSubChartKindChanged()
+{
+    if (mDeps.controller->isChartContextFromProvider()) {
+        return;
+    }
+    DAFigureWidget* fig = mDeps.controller->getCurrentFigure();
+    if (fig && DAFigureCurrentSubChart::Chart2D != fig->currentSubChartKind() && fig->isChartEditorActive()) {
+        fig->endChartEditor();
+        resetChartEditorActions();
+    }
+    applyChartContextActionPlan();
     updateExportChartActionState();
 }
 
@@ -664,6 +765,8 @@ void DAAppChartActionHandler::onActionAddFigureTriggered()
     // 把fig的undostack添加
     mDeps.command->addStack(fig->getUndoStack());
     mDeps.ribbon->updateFigureAboutRibbon(fig);
+    // 新建 figure 后按策略刷新（新 figure 有 2D 子图，2D 交互动作应恢复可用）
+    applyChartContextActionPlan();
     mDeps.dock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
     chartopt->setCurrentFigure(fig);
     mDeps.controller->setDirty();
@@ -720,9 +823,7 @@ void DAAppChartActionHandler::onActionFigureNewXYAxisTriggered()
  */
 void DAAppChartActionHandler::onActionChartAddCurveTriggered()
 {
-    DAAppChartOperateWidget* chartopt = mDeps.controller->getChartOperateWidget();
-    chartopt->showPlotGuideDialog(DA::DAChartTypes::Curve);
-    mDeps.dock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
+    showHostChartGuide(DA::DAChartTypes::Curve);
 }
 
 /**
@@ -730,9 +831,7 @@ void DAAppChartActionHandler::onActionChartAddCurveTriggered()
  */
 void DAAppChartActionHandler::onActionChartAddScatterTriggered()
 {
-    DAAppChartOperateWidget* chartopt = mDeps.controller->getChartOperateWidget();
-    chartopt->showPlotGuideDialog(DA::DAChartTypes::Scatter);
-    mDeps.dock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
+    showHostChartGuide(DA::DAChartTypes::Scatter);
 }
 
 /**
@@ -740,9 +839,7 @@ void DAAppChartActionHandler::onActionChartAddScatterTriggered()
  */
 void DAAppChartActionHandler::onActionChartAddBarTriggered()
 {
-    DAAppChartOperateWidget* chartopt = mDeps.controller->getChartOperateWidget();
-    chartopt->showPlotGuideDialog(DA::DAChartTypes::Bar);
-    mDeps.dock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
+    showHostChartGuide(DA::DAChartTypes::Bar);
 }
 
 /**
@@ -750,9 +847,7 @@ void DAAppChartActionHandler::onActionChartAddBarTriggered()
  */
 void DAAppChartActionHandler::onActionactionChartAddErrorBarTriggered()
 {
-    DAAppChartOperateWidget* chartopt = mDeps.controller->getChartOperateWidget();
-    chartopt->showPlotGuideDialog(DA::DAChartTypes::ErrorBar);
-    mDeps.dock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
+    showHostChartGuide(DA::DAChartTypes::ErrorBar);
 }
 
 /**
@@ -760,9 +855,7 @@ void DAAppChartActionHandler::onActionactionChartAddErrorBarTriggered()
  */
 void DAAppChartActionHandler::onActionChartAddBoxPlotTriggered()
 {
-    DAAppChartOperateWidget* chartopt = mDeps.controller->getChartOperateWidget();
-    chartopt->showPlotGuideDialog(DA::DAChartTypes::Box);
-    mDeps.dock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
+    showHostChartGuide(DA::DAChartTypes::Box);
 }
 
 /**
@@ -770,9 +863,7 @@ void DAAppChartActionHandler::onActionChartAddBoxPlotTriggered()
  */
 void DAAppChartActionHandler::onActionChartAddCloudMapTriggered()
 {
-    DAAppChartOperateWidget* chartopt = mDeps.controller->getChartOperateWidget();
-    chartopt->showPlotGuideDialog(DA::DAChartTypes::Spectrogram);
-    mDeps.dock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
+    showHostChartGuide(DA::DAChartTypes::Spectrogram);
 }
 
 /**
@@ -780,9 +871,7 @@ void DAAppChartActionHandler::onActionChartAddCloudMapTriggered()
  */
 void DAAppChartActionHandler::onActionChartAddMultiBarTriggered()
 {
-    DAAppChartOperateWidget* chartopt = mDeps.controller->getChartOperateWidget();
-    chartopt->showPlotGuideDialog(DA::DAChartTypes::MultiBar);
-    mDeps.dock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
+    showHostChartGuide(DA::DAChartTypes::MultiBar);
 }
 
 /**
@@ -790,9 +879,7 @@ void DAAppChartActionHandler::onActionChartAddMultiBarTriggered()
  */
 void DAAppChartActionHandler::onActionChartAddHistogramTriggered()
 {
-    DAAppChartOperateWidget* chartopt = mDeps.controller->getChartOperateWidget();
-    chartopt->showPlotGuideDialog(DA::DAChartTypes::Histogram);
-    mDeps.dock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
+    showHostChartGuide(DA::DAChartTypes::Histogram);
 }
 
 /**
@@ -800,9 +887,7 @@ void DAAppChartActionHandler::onActionChartAddHistogramTriggered()
  */
 void DAAppChartActionHandler::onActionChartAddContourMapTriggered()
 {
-    DAAppChartOperateWidget* chartopt = mDeps.controller->getChartOperateWidget();
-    chartopt->showPlotGuideDialog(DA::DAChartTypes::Contour);
-    mDeps.dock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
+    showHostChartGuide(DA::DAChartTypes::Contour);
 }
 
 /**
@@ -810,9 +895,7 @@ void DAAppChartActionHandler::onActionChartAddContourMapTriggered()
  */
 void DAAppChartActionHandler::onActionChartAddVectorfieldTriggered()
 {
-    DAAppChartOperateWidget* chartopt = mDeps.controller->getChartOperateWidget();
-    chartopt->showPlotGuideDialog(DA::DAChartTypes::VectorField);
-    mDeps.dock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
+    showHostChartGuide(DA::DAChartTypes::VectorField);
 }
 
 /**
@@ -820,9 +903,7 @@ void DAAppChartActionHandler::onActionChartAddVectorfieldTriggered()
  */
 void DAAppChartActionHandler::onActionChartAdd3DSurfaceTriggered()
 {
-    DAAppChartOperateWidget* chartopt = mDeps.controller->getChartOperateWidget();
-    chartopt->showPlotGuideDialog(DA::DAChartTypes::Surface3D);
-    mDeps.dock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
+    showHostChartGuide(DA::DAChartTypes::Surface3D);
 }
 
 /**
@@ -830,9 +911,7 @@ void DAAppChartActionHandler::onActionChartAdd3DSurfaceTriggered()
  */
 void DAAppChartActionHandler::onActionChartAdd3DBarTriggered()
 {
-    DAAppChartOperateWidget* chartopt = mDeps.controller->getChartOperateWidget();
-    chartopt->showPlotGuideDialog(DA::DAChartTypes::Bar3D);
-    mDeps.dock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
+    showHostChartGuide(DA::DAChartTypes::Bar3D);
 }
 
 /**
@@ -840,9 +919,7 @@ void DAAppChartActionHandler::onActionChartAdd3DBarTriggered()
  */
 void DAAppChartActionHandler::onActionChartAdd3DLineTriggered()
 {
-    DAAppChartOperateWidget* chartopt = mDeps.controller->getChartOperateWidget();
-    chartopt->showPlotGuideDialog(DA::DAChartTypes::Line3D);
-    mDeps.dock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
+    showHostChartGuide(DA::DAChartTypes::Line3D);
 }
 
 /**
@@ -947,11 +1024,35 @@ bool DAAppChartActionHandler::ensureFigureChart(DAFigureWidget*& fig, DAChartWid
 }
 
 /**
+ * @brief 主「绘图」标签页的添加绘图入口：provider 接管期间兜底忽略
+ *
+ * 该标签页在插件绘图上下文里仍然可见，动作本身也会被策略置灰；这里再兜底一次，
+ * 避免任何路径（快捷键/程序化触发）把绘图建到宿主绘图区。
+ * @param type 要添加的绘图类型
+ */
+void DAAppChartActionHandler::showHostChartGuide(DA::DAChartTypes type)
+{
+    if (mDeps.controller->isChartContextFromProvider()) {
+        return;
+    }
+    DAAppChartOperateWidget* chartopt = mDeps.controller->getChartOperateWidget();
+    if (nullptr == chartopt) {
+        return;
+    }
+    chartopt->showPlotGuideDialog(type);
+    mDeps.dock->raiseDockingArea(DAAppDockingArea::DockingAreaDataManager);
+}
+
+/**
  * @brief 显示统计绘图引导对话框并预选指定类型
  * @param type 统计绘图类型
  */
 void DAAppChartActionHandler::showStatsChartGuide(DA::DAChartTypes type)
 {
+    // 统计绘图会确保/创建宿主绘图窗口的 figure：插件上下文接管期间一律忽略
+    if (mDeps.controller->isChartContextFromProvider()) {
+        return;
+    }
     DAFigureWidget* fig  = nullptr;
     DAChartWidget* chart = nullptr;
     if (!ensureFigureChart(fig, chart)) {
@@ -1406,6 +1507,8 @@ void DAAppChartActionHandler::onStatsGuideAccepted(const DA::DAStatsPlotRequest&
 
     mDeps.dock->raiseDockingArea(DAAppDockingArea::DockingAreaChartOperate);
     mDeps.ribbon->updateFigureAboutRibbon(req.figure);
+    // 新建的 figure/子图会改变网格与 2D/3D 维度，重算动作可用性
+    applyChartContextActionPlan();
     if (DAAppChartOperateWidget* chartopt = mDeps.controller->getChartOperateWidget()) {
         chartopt->setCurrentFigure(req.figure);
     }

@@ -6,6 +6,7 @@
 #include "DAAppActionHandlerDeps.h"
 #include "Chart/DAStatsPlotRequest.h"
 #include "DAFigureElementSelection.h"
+#include "DAFigureAPI.h"     // DA::DAChartTypes（添加绘图入口的声明参数）
 #include "DAFigureWidget.h"  // onChartEditorStatusChanged 用嵌套枚举 ChartEditorStatus
 
 class QAction;
@@ -150,10 +151,14 @@ private Q_SLOTS:
     void onStatsGuideAccepted(const DA::DAStatsPlotRequest& req);
     // 同步「导出当前子图」动作可用性（无当前figure/无当前子图时置灰）
     void updateExportChartActionState();
-    // 2D 子图相关动作的可用性（3D 子图激活时置灰）
-    void setChart2DActionsEnabled(bool on);
+    // 按动作可用性策略刷新 Ribbon/主动作（唯一写入口，见 DAChartContextActionPolicy）
+    void applyChartContextActionPlan();
     // 清空图表编辑器动作勾选（不触发 onActionGroupChartEditorTriggered 的结束编辑分支）
     void resetChartEditorActions();
+    // 子图类型变化（2D↔3D↔无子图）后刷新动作可用性，并在离开 2D 时结束编辑器
+    void onChartSubChartKindChanged();
+    // 主「绘图」标签页的添加绘图入口：provider 接管期间兜底忽略，否则走宿主绘图引导
+    void showHostChartGuide(DA::DAChartTypes type);
 
 private:
     DAAppActionHandlerDeps mDeps;

@@ -1,6 +1,7 @@
 #include "DAAppProjectActionPolicy.h"
 #include "DAAppWindowStateSerializer.h"
 #include "Controller/DAAppContextRoutePolicy.h"
+#include "Controller/DAChartContextActionPolicy.h"
 #include "DASettingContextProvider.h"
 #include "DASettingContextProviderRegistry.h"
 #include <QApplication>
@@ -23,6 +24,8 @@ public:
     QUndoStack* undoStack { nullptr };
     // 激活回调内追加动作（用于验证重入保护/程序化 raise）
     std::function< void() > onActivate;
+    // 失活回调内追加动作（用于验证重入保护/回调内注销）
+    std::function< void() > onDeactivate;
 
     void activateSettingContext() override
     {
@@ -34,6 +37,9 @@ public:
     void deactivateSettingContext() override
     {
         ++deactivateCount;
+        if (onDeactivate) {
+            onDeactivate();
+        }
     }
     QUndoStack* contextUndoStack() const override
     {
@@ -81,11 +87,24 @@ private Q_SLOTS:
     void testSettingContextProvider_nullArguments();
     void testSettingContextProvider_sameProviderMultipleContents();
     void testSettingContextProvider_reentrantActivateGuarded();
+    void testSettingContextProvider_nestedDeactivateDuringActivateRollsBack();
+    void testSettingContextProvider_reentrantActivateDuringDeactivateIgnored();
+    void testSettingContextProvider_unregisterInsideDeactivateSafe();
     // T6：APP 上下文路由判定（provider 优先 / 固定窗口 / 工具 dock）
     void testContextRoute_providerTakesPrecedence();
     void testContextRoute_fixedOperateWindows();
     void testContextRoute_utilityDockKeepsProvider();
     void testContextRoute_nullWidget();
+    // 绘图动作可用性策略（DAChartContextActionPolicy，纯函数）
+    void testChartActionPolicy_2DFreeLayout();
+    void testChartActionPolicy_3DDisables2DInteraction();
+    void testChartActionPolicy_gridDisablesGeometryEditing();
+    void testChartActionPolicy_providerDisablesStructure();
+    void testChartActionPolicy_provider3DDisablesSelectors();
+    void testChartActionPolicy_noSubChartDisablesChartActions();
+    void testChartActionPolicy_providerWithoutSubChart();
+    void testChartActionPolicy_stateOfInvalidGroup();
+    void testChartActionPolicy_matrixInvariants();
 };
 
 void APPRefactorTest::testCloseAction_cleanProject()
@@ -479,6 +498,82 @@ void APPRefactorTest::testSettingContextProvider_reentrantActivateGuarded()
     QCOMPARE(registry.currentProvider(), &provider);
 }
 
+// 激活回调内焦点切到固定窗口（APP 路由会调用 deactivateSettingContextProvider）：
+// 激活视为已被取代——不回写撤销栈、返回 false、当前项保持为空，随后可正常重新激活。
+void APPRefactorTest::testSettingContextProvider_nestedDeactivateDuringActivateRollsBack()
+{
+    using namespace DA;
+    DASettingContextProviderRegistry registry;
+    QWidget content;
+    FakeSettingContextProvider provider;
+    QUndoGroup group;
+    QUndoStack figureStack;
+    QUndoStack otherStack;
+    group.addStack(&figureStack);
+    group.addStack(&otherStack);
+    group.setActiveStack(&otherStack);
+    provider.undoStack = &figureStack;
+    registry.registerProvider(&content, &provider);
+    provider.onActivate = [ &registry ]() { registry.deactivateCurrent(); };
+
+    QVERIFY2(!registry.activateFor(&content), "activation superseded by a nested deactivation must report failure");
+    QCOMPARE(provider.activateCount, 1);
+    // 重入保护：嵌套失活只清当前项，不重复回调失活（不与正在进行的激活交叉执行）
+    QCOMPARE(provider.deactivateCount, 0);
+    QCOMPARE(registry.currentProvider(), nullptr);
+    QCOMPARE(registry.currentDockContent(), nullptr);
+    // 状态不分叉：撤销栈没有被切到被取代的提供者
+    QVERIFY2(otherStack.isActive(), "the host undo stack must stay active when the activation is rolled back");
+    QVERIFY2(!figureStack.isActive(), "a rolled back activation must not activate the provider undo stack");
+
+    // 回调结束后可正常重新激活：这次回写撤销栈并返回成功
+    provider.onActivate = nullptr;
+    QVERIFY(registry.activateFor(&content));
+    QCOMPARE(registry.currentProvider(), &provider);
+    QVERIFY2(figureStack.isActive(), "a successful activation must activate the provider undo stack");
+}
+
+// 失活回调内再次激活（APP 路由竞态）：重入保护挡住状态改写，失活结果保持
+void APPRefactorTest::testSettingContextProvider_reentrantActivateDuringDeactivateIgnored()
+{
+    using namespace DA;
+    DASettingContextProviderRegistry registry;
+    QWidget contentA;
+    QWidget contentB;
+    FakeSettingContextProvider providerA;
+    FakeSettingContextProvider providerB;
+    registry.registerProvider(&contentA, &providerA);
+    registry.registerProvider(&contentB, &providerB);
+    QVERIFY(registry.activateFor(&contentA));
+    // 失活 A 期间路由又把 B 激活
+    providerA.onDeactivate = [ &registry, &contentB ]() { registry.activateFor(&contentB); };
+
+    registry.deactivateCurrent();
+    QCOMPARE(providerA.deactivateCount, 1);
+    QCOMPARE(providerB.activateCount, 0);
+    QCOMPARE(registry.currentProvider(), nullptr);
+    QCOMPARE(registry.currentDockContent(), nullptr);
+}
+
+// 失活回调内注销自身（插件关页/卸载路径）：不 UAF、条目被清理、不再命中
+void APPRefactorTest::testSettingContextProvider_unregisterInsideDeactivateSafe()
+{
+    using namespace DA;
+    DASettingContextProviderRegistry registry;
+    QWidget content;
+    FakeSettingContextProvider provider;
+    registry.registerProvider(&content, &provider);
+    provider.onDeactivate = [ &registry, &content ]() { registry.unregisterProvider(&content); };
+    QVERIFY(registry.activateFor(&content));
+
+    registry.deactivateCurrent();
+    QCOMPARE(provider.deactivateCount, 1);
+    QCOMPARE(registry.providerCount(), 0);
+    QCOMPARE(registry.currentProvider(), nullptr);
+    QVERIFY(!registry.isRegistered(&content));
+    QVERIFY(!registry.activateFor(&content));
+}
+
 // 路由判定：插件设置上下文提供者优先，命中即由 provider 接管（不进入 hide-all 分支）
 void APPRefactorTest::testContextRoute_providerTakesPrecedence()
 {
@@ -557,11 +652,10 @@ void APPRefactorTest::testContextRoute_utilityDockKeepsProvider()
     FakeSettingContextProvider provider;
     registry.registerProvider(&pluginPage, &provider);
     QVERIFY(registry.activateFor(&pluginPage));
-    if (DAAppContextRoutePolicy::UtilityDock == route) {
-        // 控制器不做任何处理
-    }
+    QCOMPARE(static_cast< int >(route), static_cast< int >(DAAppContextRoutePolicy::UtilityDock));
     QCOMPARE(provider.deactivateCount, 0);
     QCOMPARE(registry.currentProvider(), &provider);
+    QCOMPARE(registry.currentDockContent(), &pluginPage);
 }
 
 // 路由判定：nullptr（焦点离开全部 dock 内容）由控制器先走 hide-all，本函数返回工具 dock
@@ -571,6 +665,170 @@ void APPRefactorTest::testContextRoute_nullWidget()
     QWidget dataOperate;
     QCOMPARE(static_cast< int >(resolveAppContextRoutePolicy(nullptr, false, &dataOperate, nullptr, nullptr, nullptr)),
              static_cast< int >(DAAppContextRoutePolicy::UtilityDock));
+}
+
+// ===============================================================
+// 绘图动作可用性策略（DAChartContextActionPolicy）
+// ===============================================================
+
+namespace
+{
+// 构造策略输入，避免每个用例重复写结构体初始化
+DA::DAChartContextActionInput makeActionInput(DA::DAChartSubChartKind kind, bool fromProvider, bool gridLayout)
+{
+    DA::DAChartContextActionInput input;
+    input.subChart     = kind;
+    input.fromProvider = fromProvider;
+    input.gridLayout   = gridLayout;
+    return input;
+}
+}  // namespace
+
+// 宿主 2D 自由布局：所有绘图动作可用（与改造前的默认行为等价）
+void APPRefactorTest::testChartActionPolicy_2DFreeLayout()
+{
+    using namespace DA;
+    const DAChartContextActionPlan plan =
+        resolveChartContextActionPlan(makeActionInput(DAChartSubChartKind::Chart2D, false, false));
+    for (int group = 0; group < static_cast< int >(DAChartActionGroup::Count); ++group) {
+        QVERIFY2(plan.isEnabled(static_cast< DAChartActionGroup >(group)),
+                 qPrintable(QStringLiteral("host 2D free layout must enable action group %1").arg(group)));
+    }
+}
+
+// 宿主 3D 子图：2D 交互/编辑器/几何编辑不可用，主题/复制/导出与结构入口保持可用
+void APPRefactorTest::testChartActionPolicy_3DDisables2DInteraction()
+{
+    using namespace DA;
+    const DAChartContextActionPlan plan =
+        resolveChartContextActionPlan(makeActionInput(DAChartSubChartKind::Chart3D, false, false));
+    QVERIFY(!plan.isEnabled(DAChartActionGroup::Chart2DInteraction));
+    QVERIFY(!plan.isEnabled(DAChartActionGroup::ChartEditorTools));
+    QVERIFY(!plan.isEnabled(DAChartActionGroup::ResizeSubChart));
+    QVERIFY(!plan.isEnabled(DAChartActionGroup::DataProbe));
+    // figure 级动作 2D/3D 都可用（3D 导出为 PNG）
+    QVERIFY(plan.isEnabled(DAChartActionGroup::FigureTheme));
+    QVERIFY(plan.isEnabled(DAChartActionGroup::ExportChart));
+    // 宿主结构动作不受 3D 影响
+    QVERIFY(plan.isEnabled(DAChartActionGroup::AddFigure));
+    QVERIFY(plan.isEnabled(DAChartActionGroup::NewXYAxis));
+    QVERIFY(plan.isEnabled(DAChartActionGroup::AddSeries));
+}
+
+// 宿主网格布局：调整子图大小/新建坐标系不可用，其它 2D 动作（含数据探针）保持可用
+void APPRefactorTest::testChartActionPolicy_gridDisablesGeometryEditing()
+{
+    using namespace DA;
+    const DAChartContextActionPlan plan =
+        resolveChartContextActionPlan(makeActionInput(DAChartSubChartKind::Chart2D, false, true));
+    QVERIFY(plan.isEnabled(DAChartActionGroup::Chart2DInteraction));
+    QVERIFY(plan.isEnabled(DAChartActionGroup::ChartEditorTools));
+    QVERIFY2(!plan.isEnabled(DAChartActionGroup::ResizeSubChart), "grid layout must disable resize sub-chart");
+    QVERIFY2(!plan.isEnabled(DAChartActionGroup::NewXYAxis), "grid layout must disable new axes");
+    QVERIFY(plan.isEnabled(DAChartActionGroup::DataProbe));
+    QVERIFY(plan.isEnabled(DAChartActionGroup::FigureTheme));
+    QVERIFY(plan.isEnabled(DAChartActionGroup::ExportChart));
+    QVERIFY(plan.isEnabled(DAChartActionGroup::AddFigure));
+    QVERIFY(plan.isEnabled(DAChartActionGroup::AddSeries));
+}
+
+// provider 2D：结构动作与主「绘图」添加入口禁用，2D 交互/figure 级动作可用
+void APPRefactorTest::testChartActionPolicy_providerDisablesStructure()
+{
+    using namespace DA;
+    const DAChartContextActionPlan plan =
+        resolveChartContextActionPlan(makeActionInput(DAChartSubChartKind::Chart2D, true, false));
+    QVERIFY(plan.isEnabled(DAChartActionGroup::Chart2DInteraction));
+    QVERIFY(plan.isEnabled(DAChartActionGroup::ChartEditorTools));
+    QVERIFY(plan.isEnabled(DAChartActionGroup::FigureTheme));
+    QVERIFY(plan.isEnabled(DAChartActionGroup::ExportChart));
+    QVERIFY2(!plan.isEnabled(DAChartActionGroup::AddFigure), "provider context must disable new figure");
+    QVERIFY2(!plan.isEnabled(DAChartActionGroup::NewXYAxis), "provider context must disable new axes");
+    QVERIFY2(!plan.isEnabled(DAChartActionGroup::ResizeSubChart), "provider context must disable resize");
+    QVERIFY2(!plan.isEnabled(DAChartActionGroup::DataProbe), "provider context must disable data probe");
+    QVERIFY2(!plan.isEnabled(DAChartActionGroup::AddSeries), "provider context must disable add-curve/scatter/bar/3D");
+}
+
+// provider + 3D：选择器/辅助标记（编辑器工具）与 2D 交互一并禁用
+void APPRefactorTest::testChartActionPolicy_provider3DDisablesSelectors()
+{
+    using namespace DA;
+    const DAChartContextActionPlan plan =
+        resolveChartContextActionPlan(makeActionInput(DAChartSubChartKind::Chart3D, true, false));
+    QVERIFY2(!plan.isEnabled(DAChartActionGroup::ChartEditorTools), "3D must disable selectors and markers");
+    QVERIFY(!plan.isEnabled(DAChartActionGroup::Chart2DInteraction));
+    QVERIFY(!plan.isEnabled(DAChartActionGroup::DataProbe));
+    QVERIFY(!plan.isEnabled(DAChartActionGroup::AddSeries));
+    QVERIFY(plan.isEnabled(DAChartActionGroup::FigureTheme));
+    QVERIFY(plan.isEnabled(DAChartActionGroup::ExportChart));
+}
+
+// 无激活子图（宿主）：2D 与 figure 级动作置灰，结构入口仍可用
+void APPRefactorTest::testChartActionPolicy_noSubChartDisablesChartActions()
+{
+    using namespace DA;
+    const DAChartContextActionPlan plan =
+        resolveChartContextActionPlan(makeActionInput(DAChartSubChartKind::None, false, false));
+    QVERIFY(!plan.isEnabled(DAChartActionGroup::Chart2DInteraction));
+    QVERIFY(!plan.isEnabled(DAChartActionGroup::ChartEditorTools));
+    QVERIFY(!plan.isEnabled(DAChartActionGroup::ResizeSubChart));
+    QVERIFY(!plan.isEnabled(DAChartActionGroup::DataProbe));
+    QVERIFY(!plan.isEnabled(DAChartActionGroup::FigureTheme));
+    QVERIFY(!plan.isEnabled(DAChartActionGroup::ExportChart));
+    QVERIFY(plan.isEnabled(DAChartActionGroup::AddFigure));
+    QVERIFY(plan.isEnabled(DAChartActionGroup::NewXYAxis));
+    QVERIFY(plan.isEnabled(DAChartActionGroup::AddSeries));
+}
+
+// provider 但没声明 figure（无激活子图）：全部绘图动作禁用（含结构入口）
+void APPRefactorTest::testChartActionPolicy_providerWithoutSubChart()
+{
+    using namespace DA;
+    const DAChartContextActionPlan plan =
+        resolveChartContextActionPlan(makeActionInput(DAChartSubChartKind::None, true, false));
+    for (int group = 0; group < static_cast< int >(DAChartActionGroup::Count); ++group) {
+        QVERIFY2(!plan.isEnabled(static_cast< DAChartActionGroup >(group)),
+                 qPrintable(QStringLiteral("provider without figure must disable action group %1").arg(group)));
+    }
+}
+
+// 非法分组下标：stateOf 返回 Disabled（防御性，不让越界读未定义值）
+void APPRefactorTest::testChartActionPolicy_stateOfInvalidGroup()
+{
+    using namespace DA;
+    const DAChartContextActionPlan plan;
+    QCOMPARE(static_cast< int >(plan.stateOf(static_cast< DAChartActionGroup >(999))),
+             static_cast< int >(DAChartActionState::Disabled));
+}
+
+// 表驱动不变量：3 种子图 × provider/宿主 × 网格/自由 全部组合
+void APPRefactorTest::testChartActionPolicy_matrixInvariants()
+{
+    using namespace DA;
+    const DAChartSubChartKind kinds[] = { DAChartSubChartKind::None, DAChartSubChartKind::Chart2D,
+                                          DAChartSubChartKind::Chart3D };
+    for (DAChartSubChartKind kind : kinds) {
+        for (int providerFlag = 0; providerFlag <= 1; ++providerFlag) {
+            for (int gridFlag = 0; gridFlag <= 1; ++gridFlag) {
+                const bool fromProvider = (providerFlag != 0);
+                const bool gridLayout   = (gridFlag != 0);
+                const bool is2D         = (DAChartSubChartKind::Chart2D == kind);
+                const bool hasSubChart  = (DAChartSubChartKind::None != kind);
+                const DAChartContextActionPlan plan =
+                    resolveChartContextActionPlan(makeActionInput(kind, fromProvider, gridLayout));
+
+                QCOMPARE(plan.isEnabled(DAChartActionGroup::Chart2DInteraction), is2D);
+                QCOMPARE(plan.isEnabled(DAChartActionGroup::ChartEditorTools), is2D);
+                QCOMPARE(plan.isEnabled(DAChartActionGroup::ResizeSubChart), is2D && !gridLayout && !fromProvider);
+                QCOMPARE(plan.isEnabled(DAChartActionGroup::DataProbe), is2D && !fromProvider);
+                QCOMPARE(plan.isEnabled(DAChartActionGroup::FigureTheme), hasSubChart);
+                QCOMPARE(plan.isEnabled(DAChartActionGroup::ExportChart), hasSubChart);
+                QCOMPARE(plan.isEnabled(DAChartActionGroup::AddFigure), !fromProvider);
+                QCOMPARE(plan.isEnabled(DAChartActionGroup::AddSeries), !fromProvider);
+                QCOMPARE(plan.isEnabled(DAChartActionGroup::NewXYAxis), !fromProvider && !gridLayout);
+            }
+        }
+    }
 }
 
 QTEST_MAIN(APPRefactorTest)
