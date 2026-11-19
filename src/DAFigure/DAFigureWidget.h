@@ -215,13 +215,14 @@ public:
     DAColorTheme getColorTheme() const;
     const DAColorTheme& colorTheme() const;
     DAColorTheme& colorTheme();
-    // 把当前绘图复制到剪切板
+    // 把整个 figure 的截图复制到剪切板（APP「复制绘图」动作使用，无返回值）
     void copyToClipboard();
     // 导出指定2D子图到文件（Png/Svg/Pdf），失败返回false
     bool exportChartToFile(DAChartWidget* chart, const QString& filePath, DAFigureExportFormat format);
     // 导出指定3D子图到PNG文件（grabFramebuffer 位图路径），失败返回false
     bool export3DChartToFile(Qwt3DPlot* plot3d, const QString& filePath);
-    // 把指定2D子图复制到剪贴板（nullptr用当前子图），失败返回false
+    // 把单个2D子图复制到剪贴板（nullptr用当前子图），失败返回false；
+    // 与 copyToClipboard() 的区别：只抓子图且返回成功/失败，供「导出/复制当前子图」类调用使用
     bool copyChartToClipboard(DAChartWidget* chart = nullptr);
     // 根据文件后缀推断导出格式（.png/.svg/.pdf，其它按Png）
     static DAFigureExportFormat exportFormatFromFilePath(const QString& filePath);

@@ -51,6 +51,9 @@ public:
     bool mSetCurrentChartOnDbClicked { true };
     QHash< QwtFigure*, DAFigureWidget* > mFigToFigWidget;             ///< 建立figure和figureWidget的关系
     QHash< DAFigureWidget*, DAFigureTreeView* > mFigureWidgetToTree;  ///< 建立figurewidget和tree的关系
+    // figure → 销毁监听连接。管理树会随 setFigures()/切 figure 反复重建，连接必须显式断开，
+    // 否则同一个 figure 会被重复 connect，figure 销毁时重复清管理项（连接泄露，C-09）。
+    QHash< DAFigureWidget*, QMetaObject::Connection > mFigureDestroyedConnections;
 
     // 右键菜单（懒加载复用，避免每次右键都栈上构造）
     QMenu* mTreeContextMenu { nullptr };
@@ -402,8 +405,11 @@ void DAChartManageWidget::addManagedFigure(DAFigureWidget* fig)
     ui->stackedWidget->addWidget(figTreeview);
 
     ui->comboBoxFigure->addItem(fig->windowTitle(), reinterpret_cast< quintptr >(fig));
-    // figure 对象先于管理树销毁时（外部模式下插件 figure 可能重建）移除管理项，避免裸指针悬空
-    connect(fig, &QObject::destroyed, this, &DAChartManageWidget::onManagedFigureDestroyed);
+    // figure 对象先于管理树销毁时（外部模式下插件 figure 可能重建）移除管理项，避免裸指针悬空。
+    // 连接记录在表里，clearManagedFigures()/removeManagedFigure() 会显式断开，
+    // 避免同一 figure 在管理树反复重建时累积重复连接（C-09）。
+    d_ptr->mFigureDestroyedConnections[ fig ] =
+        connect(fig, &QObject::destroyed, this, &DAChartManageWidget::onManagedFigureDestroyed);
 }
 
 /**
@@ -414,6 +420,12 @@ void DAChartManageWidget::addManagedFigure(DAFigureWidget* fig)
 void DAChartManageWidget::clearManagedFigures()
 {
     QSignalBlocker blocker(ui->comboBoxFigure);
+    // 先断开 figure 销毁监听：管理树会被 setFigures()/setChartOperateWidget() 反复重建，
+    // 不断开会在同一 figure 上累积重复连接（C-09）
+    for (auto it = d_ptr->mFigureDestroyedConnections.begin(); it != d_ptr->mFigureDestroyedConnections.end(); ++it) {
+        disconnect(it.value());
+    }
+    d_ptr->mFigureDestroyedConnections.clear();
     ui->comboBoxFigure->clear();
     while (ui->stackedWidget->count() > 0) {
         QWidget* w = ui->stackedWidget->widget(0);
@@ -441,6 +453,8 @@ void DAChartManageWidget::removeManagedFigure(DAFigureWidget* fig)
     if (!fig) {
         return;
     }
+    // 先断开本 figure 的销毁监听，避免移除后仍保留连接（figure 销毁时才断开已无意义）
+    disconnect(d_ptr->mFigureDestroyedConnections.take(fig));
     {
         QSignalBlocker blocker(ui->comboBoxFigure);
         if (DAFigureTreeView* tree = d_ptr->mFigureWidgetToTree.take(fig)) {
@@ -477,6 +491,15 @@ void DAChartManageWidget::removeManagedFigure(DAFigureWidget* fig)
 void DAChartManageWidget::onManagedFigureDestroyed(QObject* obj)
 {
     removeManagedFigure(reinterpret_cast< DAFigureWidget* >(obj));
+}
+
+/**
+ * @brief 已纳管 figure 的销毁监听连接数
+ * @return 当前记录的连接数量（应等于管理树里的 figure 数，不随 setFigures 重建累积）
+ */
+int DAChartManageWidget::managedFigureConnectionCount() const
+{
+    return d_ptr->mFigureDestroyedConnections.size();
 }
 
 void DAChartManageWidget::setCurrentChartOnItemClicked(bool on)

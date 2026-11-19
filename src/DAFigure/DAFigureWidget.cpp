@@ -26,6 +26,7 @@
 #include <QTimer>
 #include <QShortcut>
 #include <QFileInfo>
+#include <QSaveFile>
 #include <QImage>
 #include <QPixmap>
 #include <QPdfWriter>
@@ -1685,12 +1686,46 @@ void DAFigureWidget::copyToClipboard()
     QApplication::clipboard()->setPixmap(screenshot);
 }
 
+namespace
+{
+/**
+ * @brief 通过 QSaveFile 写文件：先写同目录临时文件，commit 时替换目标
+ *
+ * 直接写目标文件有两个问题：写入失败会留下半成品；只判断 QFileInfo::exists() 又会在
+ * 「覆盖保存但本次写入失败」时误报成功（旧文件仍然存在）。QSaveFile::commit() 只在
+ * 本次写入成功时才替换目标文件，失败或取消时保留原有同名文件（C-13）。
+ * @param filePath 目标文件路径
+ * @param writeTo 写入回调（参数是已打开的写入设备，返回是否写入成功）
+ * @param context 诊断用的调用位置
+ * @return 目标文件被成功写入返回 true
+ */
+bool exportViaSaveFile(const QString& filePath, const std::function< bool(QIODevice&) >& writeTo, const char* context)
+{
+    QSaveFile file(filePath);
+    if (!file.open(QIODevice::WriteOnly)) {
+        qWarning() << context << "cannot open the target file for writing:" << filePath << file.errorString();
+        return false;
+    }
+    if (!writeTo(file)) {
+        file.cancelWriting();
+        return false;
+    }
+    if (!file.commit()) {
+        qWarning() << context << "cannot commit the exported file:" << filePath << file.errorString();
+        return false;
+    }
+    return true;
+}
+}  // namespace
+
 /**
  * @brief 把指定2D子图导出到文件
  *
  * - Png：用QWidget::grab取得子图位图后保存
  * - Svg：用QSvgGenerator把子图渲染为矢量图
  * - Pdf：用QPdfWriter把子图渲染为PDF（页面尺寸按96dpi换算成点，避免裁切）
+ * 三种格式都经 QSaveFile 写入：失败不破坏已存在的同名文件，成功判定基于本次写入结果
+ * 而不是「目标文件是否存在」（C-13）。
  * @param chart 要导出的2D子图
  * @param filePath 目标文件路径
  * @param format 导出格式
@@ -1714,37 +1749,48 @@ bool DAFigureWidget::exportChartToFile(DAChartWidget* chart, const QString& file
         if (pixmap.isNull()) {
             return false;
         }
-        return pixmap.save(filePath, "PNG");
+        return exportViaSaveFile(
+            filePath,
+            [ &pixmap ](QIODevice& device) { return pixmap.save(&device, "PNG"); },
+            "DAFigureWidget::exportChartToFile");
     }
     case DAFigureExportFormat::Svg: {
-        QSvgGenerator generator;
-        generator.setFileName(filePath);
-        generator.setSize(chartSize);
-        generator.setViewBox(QRect(QPoint(0, 0), chartSize));
-        generator.setResolution(96);
-        QPainter painter;
-        if (!painter.begin(&generator)) {
-            return false;
-        }
-        chart->render(&painter);
-        const bool paintOk = painter.end();
-        // QSvgGenerator 的文件在 painter.end() 时才写完，end 失败或文件未生成都视为失败
-        return paintOk && QFileInfo::exists(filePath);
+        return exportViaSaveFile(
+            filePath,
+            [ chart, chartSize ](QIODevice& device) {
+                QSvgGenerator generator;
+                generator.setOutputDevice(&device);
+                generator.setSize(chartSize);
+                generator.setViewBox(QRect(QPoint(0, 0), chartSize));
+                generator.setResolution(96);
+                QPainter painter;
+                if (!painter.begin(&generator)) {
+                    return false;
+                }
+                chart->render(&painter);
+                // QSvgGenerator 的内容在 painter.end() 时才写完
+                return painter.end();
+            },
+            "DAFigureWidget::exportChartToFile");
     }
     case DAFigureExportFormat::Pdf: {
-        QPdfWriter writer(filePath);
-        writer.setResolution(96);
-        // 96dpi的像素尺寸换算为点（1pt = 1/72 inch），页面与外框一致，避免渲染被裁切
-        const QSizeF pageSizeInPoint(chartSize.width() * 72.0 / 96.0, chartSize.height() * 72.0 / 96.0);
-        writer.setPageSize(QPageSize(pageSizeInPoint, QPageSize::Point));
-        writer.setPageMargins(QMarginsF(0, 0, 0, 0));
-        QPainter painter;
-        if (!painter.begin(&writer)) {
-            return false;
-        }
-        chart->render(&painter);
-        const bool paintOk = painter.end();
-        return paintOk && QFileInfo::exists(filePath);
+        return exportViaSaveFile(
+            filePath,
+            [ chart, chartSize ](QIODevice& device) {
+                QPdfWriter writer(&device);
+                writer.setResolution(96);
+                // 96dpi的像素尺寸换算为点（1pt = 1/72 inch），页面与外框一致，避免渲染被裁切
+                const QSizeF pageSizeInPoint(chartSize.width() * 72.0 / 96.0, chartSize.height() * 72.0 / 96.0);
+                writer.setPageSize(QPageSize(pageSizeInPoint, QPageSize::Point));
+                writer.setPageMargins(QMarginsF(0, 0, 0, 0));
+                QPainter painter;
+                if (!painter.begin(&writer)) {
+                    return false;
+                }
+                chart->render(&painter);
+                return painter.end();
+            },
+            "DAFigureWidget::exportChartToFile");
     }
     }
     return false;

@@ -44,6 +44,8 @@ public:
     void setCurrentFigure(DAFigureWidget* figure);
     // 当前管理树里的figure列表（按combobox顺序；测试与插件查询用）
     QList< DAFigureWidget* > figures() const;
+    // 已纳管figure的销毁监听连接数（诊断/回归用：重建管理树后应与figure数一致，不随重建累积）
+    int managedFigureConnectionCount() const;
     // 设置item点击时如果不是当前chart，设置为当前chart
     void setCurrentChartOnItemClicked(bool on);
     bool isSetCurrentChartOnItemClicked() const;

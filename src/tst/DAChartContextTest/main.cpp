@@ -25,6 +25,7 @@
 #include "Chart/Setting/DAChartGenericItemSettingPanel.h"
 #include "Chart/Setting/DAChartItemSettingPanel.h"
 #include "Chart/Setting/DAChartItemSettingPanelFactory.h"
+#include "Common/Settings/DAPropertyPanelContainerWidget.h"
 #include "Chart/Setting3D/DAChart3DGenericItemSettingPanel.h"
 #include "Chart/Setting3D/DAChart3DItemSettingPanel.h"
 #include "Chart/Setting3D/DAChart3DItemSettingPanelFactory.h"
@@ -106,8 +107,12 @@ private Q_SLOTS:
     void initTestCase();
     // setFigures/setCurrentFigure/figures()/清空
     void testChartManageSetFigures();
+    // setFigures 反复重建管理树不累积 figure 销毁监听连接（C-09）
+    void testChartManageRepeatedSetFiguresDoesNotLeakConnections();
     // 未注册 rtti → 工厂回退通用面板
     void testUnregisteredRttiFallback();
+    // 通用回退面板的属性修改写回图元（标题/Z值/可见性）
+    void testGenericItemPanelPropertyWriteBack();
     // 3D 未注册 rtti → 3D 工厂回退通用面板；瀑布 rtti 走向专用面板，setPlot3DItem 安全（SF-08）
     void test3DUnregisteredRttiFallback();
     // updateUI 在已注册/未注册 rtti 之间切换 currentItemPanel
@@ -118,6 +123,8 @@ private Q_SLOTS:
     void testCopyChartToClipboard();
     // 空 chart/空路径导出返回 false 且不崩溃
     void testExportWithEmptyArguments();
+    // 覆盖保存失败时返回 false 且不破坏已存在的同名文件（C-13）
+    void testExportOverwriteFailureKeepsExistingFile();
 
 private:
     // 创建并显示指定尺寸的 figure，等待窗口暴露与布局完成
@@ -223,6 +230,44 @@ void TSTDAChartContextTest::testChartManageSetFigures()
 }
 
 /**
+ * @brief setFigures 反复重建管理树：figure 销毁监听连接不累积（C-09）
+ *
+ * 信号分析页每次刷新目标都会调 setFigures()；旧实现只在 figure 销毁时清理连接，
+ * 同一 figure 会被重复连接。这里用连接计数把「重建后连接数 = figure 数」固化下来。
+ */
+void TSTDAChartContextTest::testChartManageRepeatedSetFiguresDoesNotLeakConnections()
+{
+    DAChartManageWidget manager;
+    QScopedPointer< DAFigureWidget > first(new DAFigureWidget());
+    QScopedPointer< DAFigureWidget > second(new DAFigureWidget());
+    QVERIFY(first->createChart());
+    QVERIFY(second->createChart());
+
+    manager.setFigures({ first.data(), second.data() }, first.data());
+    QCOMPARE(manager.managedFigureConnectionCount(), 2);
+    // 同一列表重建两次：连接数不增长
+    manager.setFigures({ first.data(), second.data() }, first.data());
+    QCOMPARE(manager.figures().size(), 2);
+    QVERIFY2(manager.managedFigureConnectionCount() == 2,
+             "rebuilding the manage tree must not accumulate destroyed-signal connections");
+    // 新列表包含重复项时按 figure 去重
+    manager.setFigures({ first.data(), second.data(), first.data() }, second.data());
+    QCOMPARE(manager.figures().size(), 2);
+    QCOMPARE(manager.managedFigureConnectionCount(), 2);
+
+    // figure 销毁：管理项被移除且连接记录随之清理
+    first.reset();
+    QCOMPARE(manager.figures().size(), 1);
+    QCOMPARE(manager.figures().first(), second.data());
+    QCOMPARE(manager.managedFigureConnectionCount(), 1);
+
+    // 清空管理树：连接全部断开
+    manager.setFigures({}, nullptr);
+    QVERIFY(manager.figures().isEmpty());
+    QCOMPARE(manager.managedFigureConnectionCount(), 0);
+}
+
+/**
  * @brief 未注册 rtti 的图元：工厂回退 DAChartGenericItemSettingPanel，setPlotItem 安全
  */
 void TSTDAChartContextTest::testUnregisteredRttiFallback()
@@ -262,6 +307,44 @@ void TSTDAChartContextTest::testUnregisteredRttiFallback()
              "a registered rtti should not use the generic fallback panel");
 
     item->detach();
+}
+
+/**
+ * @brief 通用回退面板的属性修改写回图元（C-11）
+ *
+ * 面板此前只断言了 setPlotItem 持有，属性写回分支（title/legend/visible/z）没有断言。
+ * 这里通过属性面板改值并触发 onPropertyValueChanged，验证图元确实被更新。
+ */
+void TSTDAChartContextTest::testGenericItemPanelPropertyWriteBack()
+{
+    QScopedPointer< TSTUnregisteredPlotItem > item(new TSTUnregisteredPlotItem(QStringLiteral("origin")));
+    QScopedPointer< DAChartGenericItemSettingPanel > panel(new DAChartGenericItemSettingPanel());
+    panel->setPlotItem(item.data());
+    QVERIFY(panel->getPlotItem() == item.data());
+
+    auto applyProperty = [ &panel ](int propertyId) {
+        return QMetaObject::invokeMethod(panel.data(), "onPropertyValueChanged", Q_ARG(int, propertyId));
+    };
+
+    // 标题写回
+    panel->propertyPanel()->setStringValue(DAChartGenericItemSettingPanel::PropTitle, QStringLiteral("renamed"));
+    QVERIFY(applyProperty(DAChartGenericItemSettingPanel::PropTitle));
+    QCOMPARE(item->title().text(), QStringLiteral("renamed"));
+
+    // Z 值写回
+    panel->propertyPanel()->setDoubleValue(DAChartGenericItemSettingPanel::PropZ, 7.5);
+    QVERIFY(applyProperty(DAChartGenericItemSettingPanel::PropZ));
+    QCOMPARE(item->z(), 7.5);
+
+    // 可见性写回
+    panel->propertyPanel()->setBoolValue(DAChartGenericItemSettingPanel::PropVisible, false);
+    QVERIFY(applyProperty(DAChartGenericItemSettingPanel::PropVisible));
+    QCOMPARE(item->isVisible(), false);
+
+    // 图例属性写回
+    panel->propertyPanel()->setBoolValue(DAChartGenericItemSettingPanel::PropLegend, true);
+    QVERIFY(applyProperty(DAChartGenericItemSettingPanel::PropLegend));
+    QVERIFY(item->testItemAttribute(QwtPlotItem::Legend));
 }
 
 /**
@@ -488,6 +571,66 @@ void TSTDAChartContextTest::testExportWithEmptyArguments()
     QVERIFY2(!fig->exportChartToFile(chart, QString(), DAFigureExportFormat::Pdf),
              "exporting PDF with an empty file path must fail");
     QVERIFY(chart->width() > 0 && chart->height() > 0);
+}
+
+/**
+ * @brief 覆盖保存：写下失败时返回 false 且旧文件原样保留；可写时成功替换（C-13）
+ *
+ * 旧实现只判 `painter.end() && QFileInfo::exists(filePath)`：目标文件已存在时，即使本次
+ * 写入失败也会误报成功。新实现经 QSaveFile 写入，commit 成功才替换目标文件。
+ */
+void TSTDAChartContextTest::testExportOverwriteFailureKeepsExistingFile()
+{
+    QScopedPointer< DAFigureWidget > fig(new DAFigureWidget());
+    QVERIFY(initFigure(fig.data(), 400, 300));
+    DAChartWidget* chart = fig->createChart();
+    QVERIFY(chart);
+    settle(fig.data());
+
+    QTemporaryDir tmpDir;
+    QVERIFY(tmpDir.isValid());
+    const QByteArray sentinel = QByteArrayLiteral("SENTINEL");
+
+    struct ExportCase
+    {
+        const char* suffix;
+        DAFigureExportFormat format;
+    };
+    const ExportCase cases[] = {
+        { "png", DAFigureExportFormat::Png },
+        { "svg", DAFigureExportFormat::Svg },
+        { "pdf", DAFigureExportFormat::Pdf },
+    };
+    for (const ExportCase& c : cases) {
+        const QString suffix = QString::fromLatin1(c.suffix);
+        const QString path   = tmpDir.filePath(QStringLiteral("chart.") + suffix);
+        {
+            QFile seed(path);
+            QVERIFY(seed.open(QIODevice::WriteOnly | QIODevice::Truncate));
+            QCOMPARE(seed.write(sentinel), static_cast< qint64 >(sentinel.size()));
+        }
+#if defined(Q_OS_WIN)
+        // 用不带删除共享的读句柄占用目标文件：本次覆盖保存无法替换目标，必须返回 false。
+        // （Windows 上 Qt 的读句柄不带 FILE_SHARE_DELETE，MoveFileEx/ReplaceFile 会失败）
+        QFile lock(path);
+        QVERIFY(lock.open(QIODevice::ReadOnly));
+        const bool lockedOk = fig->exportChartToFile(chart, path, c.format);
+        lock.close();
+        QVERIFY2(!lockedOk, qPrintable(QStringLiteral("export must fail while the target cannot be replaced: %1").arg(suffix)));
+        // 失败不破坏旧文件
+        QFile preserved(path);
+        QVERIFY(preserved.open(QIODevice::ReadOnly));
+        QCOMPARE(preserved.readAll(), sentinel);
+        preserved.close();
+#endif
+        // 目标可写时的覆盖保存：返回 true 且内容确实被替换
+        QVERIFY2(fig->exportChartToFile(chart, path, c.format),
+                 qPrintable(QStringLiteral("overwriting an existing file must succeed: %1").arg(suffix)));
+        const QFileInfo exported(path);
+        QVERIFY(exported.exists());
+        QVERIFY2(exported.size() > sentinel.size(),
+                 qPrintable(QStringLiteral("the exported file should be replaced with new content: %1").arg(suffix)));
+    }
 }
 
 }  // namespace DA
