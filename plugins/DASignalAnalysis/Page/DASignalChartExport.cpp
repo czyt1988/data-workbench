@@ -125,6 +125,23 @@ bool DASignalChartExport::saveWholePage(DASignalAnalysisView* view, const QStrin
 }
 
 /**
+ * @brief 有效导出格式（3D 只支持 PNG 位图，其它请求降级为 PNG）
+ *
+ * 用户可见的降级提示由调用方（UI 的 exportCurrentSubChartImage）负责；这里只给判定，
+ * 便于单测覆盖「格式由过滤器决定 + 3D 降级」这条规则（不依赖 GL 上下文）。
+ * @param is3DChartActive 当前子图是否为三维
+ * @param requested 调用方请求的格式
+ * @return 实际写文件用的格式
+ */
+DAFigureExportFormat DASignalChartExport::effectiveFormat(bool is3DChartActive, DAFigureExportFormat requested)
+{
+    if (is3DChartActive && DAFigureExportFormat::Png != requested) {
+        return DAFigureExportFormat::Png;
+    }
+    return requested;
+}
+
+/**
  * @brief 当前子图保存到文件（2D 支持 PNG/SVG/PDF，3D 本期固定 PNG）
  *
  * - 二维子图：委托 @ref DAFigureWidget::exportChartToFile，按 format 输出 PNG/SVG/PDF；
@@ -151,7 +168,7 @@ bool DASignalChartExport::saveCurrentSubChart(DASignalAnalysisView* view,
         return false;
     }
     if (view->is3DChartActive()) {
-        if (DAFigureExportFormat::Png != format) {
+        if (effectiveFormat(true, format) != format) {
             // 3D 子图本期仅 PNG 位图导出（saveVector 依赖 GL 上下文未验证）：SVG/PDF 请求
             // 降级为 PNG 位图；用户可见提示由调用方（exportCurrentSubChartImage）负责
             qWarning() << "DASignalChartExport::saveCurrentSubChart: the 3D sub-chart supports bitmap "

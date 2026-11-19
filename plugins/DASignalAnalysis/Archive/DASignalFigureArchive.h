@@ -49,6 +49,11 @@ public:
     static QDomElement findFigureElement(const QDomDocument& doc, qint64 signalId, const QString& signalName);
     // 从候选集合里取走匹配的 figure 元素（同一元素只能被消费一次；找不到返回空元素）
     static QDomElement takeFigureElement(QList< QDomElement >& candidates, qint64 signalId, const QString& signalName);
+    // 按视图顺序把候选 figure 元素分派给视图（signal-id 优先、旧档按 signal-name 回退），
+    // 每个视图最多拿一个元素、每个元素最多被消费一次；返回与 views 等长的列表（未命中为空元素）。
+    // 纯分派逻辑（不碰 GUI），供 UI 恢复流程与单测复用
+    static QList< QDomElement > assignFigureElements(QList< QDomElement > candidates,
+                                                     const QList< DASignalAnalysisView* >& views);
     // 把 figure XML 应用到已存在的视图子图上；XML 缺失/损坏返回 false（视图保持默认布局）。
     // consumedItemKeys 跨视图共享：记录已 attach 的 chart-data 图元 key，重复命中跳过（防争用）
     static bool restoreFigure(DASignalAnalysisView* view,

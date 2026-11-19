@@ -401,6 +401,31 @@ QDomElement DASignalFigureArchive::takeFigureElement(QList< QDomElement >& candi
 }
 
 /**
+ * @brief 按视图顺序把候选 figure 元素分派给视图
+ *
+ * 恢复端的「谁拿哪个 figure 元素」这一步不依赖任何界面对象，抽出来便于单测：
+ * 每个视图按 signal-id（精确）→ signal-name（旧档回退）取走一个元素，取走的元素不再参与
+ * 后续匹配（同名信号按顺序错开，不串档）；没有命中 figure 的视图得到空元素。
+ * @param candidates 候选元素集合（按引用深拷贝传入，函数内部消费）
+ * @param views 目标视图列表（保持信号顺序）
+ * @return 与 @p views 等长的元素列表，未命中的位置为空元素
+ */
+QList< QDomElement > DASignalFigureArchive::assignFigureElements(QList< QDomElement > candidates,
+                                                                 const QList< DASignalAnalysisView* >& views)
+{
+    QList< QDomElement > assigned;
+    assigned.reserve(views.size());
+    for (DASignalAnalysisView* view : views) {
+        if (nullptr == view || !view->signal()) {
+            assigned.append(QDomElement());
+            continue;
+        }
+        assigned.append(takeFigureElement(candidates, view->signal()->signalId(), view->signal()->name()));
+    }
+    return assigned;
+}
+
+/**
  * @brief 把 figure XML 恢复到已存在的信号视图上
  *
  * 恢复顺序（都作用在视图已有的子图上，不新建子图）：

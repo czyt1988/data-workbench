@@ -338,6 +338,11 @@ private Q_SLOTS:
     void signalFigureRestoreSkipsUnknownRoleChart();
     void signalFigureReleaseUnattachedItems();
     void signalSettingTargetPageAndFigureList();
+    void signalArchiveFigureAssignment();
+    void signalArchiveWaterfall3DRestore();
+    void signalArchiveSaveRestoreIdempotent();
+    void signalChartExportFormats();
+    void signalChartExport3DToPng();
     // 播放器控制条时间文本：mm:ss.s 格式、占位与越界夹取（纯函数）
     void playbackTimeTextFormatting();
     // 时间轴标签格式（纯函数）：秒/毫秒/mm:ss.s（含时间原点）
@@ -2693,6 +2698,278 @@ void DASignalAnalysisTest::signalSettingTargetPageAndFigureList()
     QCOMPARE(subChartEmits, 1);
     view.setWaterfallMode(0);
     QCOMPARE(subChartEmits, 2);
+}
+
+/**
+ * @brief F-12：figure 元素分派（applyFiguresXml 的可测内核）
+ *
+ * 恢复端「谁拿哪个 figure 元素」不依赖界面对象，抽成 assignFigureElements 后可直接断言：
+ * signal-id 精确优先、旧档按 signal-name 回退、同名元素按顺序错开、每个视图最多一个元素。
+ */
+void DASignalAnalysisTest::signalArchiveFigureAssignment()
+{
+    if (!openGLAvailable()) {
+        QSKIP("OpenGL is not available: skip the figure assignment test");
+    }
+    DA::DASignalPtr first  = makeTestSignal();
+    DA::DASignalPtr second = makeTestSignal();  // 与 first 同名（"unit"），仅 signal-id 不同
+    QVERIFY(first->signalId() != second->signalId());
+    DA::DASignalAnalysisView firstView(first);
+    DA::DASignalAnalysisView secondView(second);
+    DA::DASignalAnalysisView thirdView(makeTestSignal());
+
+    // 两个候选：一个带 second 的 signal-id，一个是旧档（无 signal-id，只有名字）
+    const QByteArray xml = QStringLiteral("<signal-figures version=\"1\">"
+                                          "<figure signal-id=\"%1\" signal-name=\"unit\" id=\"fig-exact\"/>"
+                                          "<figure signal-name=\"unit\" id=\"fig-legacy\"/>"
+                                          "</signal-figures>")
+                               .arg(second->signalId())
+                               .toUtf8();
+    QDomDocument doc;
+    QString parseError;
+    QVERIFY2(doc.setContent(xml, &parseError), qPrintable(parseError));
+    const QList< QDomElement > candidates = DA::DASignalFigureArchive::figureElements(doc);
+    QCOMPARE(candidates.size(), 2);
+
+    const QList< DA::DASignalAnalysisView* > views { &firstView, &secondView };
+    const QList< QDomElement > assigned = DA::DASignalFigureArchive::assignFigureElements(candidates, views);
+    QCOMPARE(assigned.size(), 2);
+    // 第一个视图没有精确 id 命中 → 走名字回退拿旧档元素；第二个视图按 id 精确命中
+    QCOMPARE(assigned.at(0).attribute(QStringLiteral("id")), QStringLiteral("fig-legacy"));
+    QCOMPARE(assigned.at(1).attribute(QStringLiteral("id")), QStringLiteral("fig-exact"));
+
+    // 三个视图一次分派：两个元素各被消费一次，第三个视图（同名但无元素可拿）得到空元素
+    const QList< DA::DASignalAnalysisView* > threeViews { &firstView, &secondView, &thirdView };
+    const QList< QDomElement > allAssigned =
+        DA::DASignalFigureArchive::assignFigureElements(candidates, threeViews);
+    QCOMPARE(allAssigned.size(), 3);
+    QCOMPARE(allAssigned.at(0).attribute(QStringLiteral("id")), QStringLiteral("fig-legacy"));
+    QCOMPARE(allAssigned.at(1).attribute(QStringLiteral("id")), QStringLiteral("fig-exact"));
+    QVERIFY2(allAssigned.at(2).isNull(), "a figure element must be consumed at most once");
+    const QList< DA::DASignalAnalysisView* > withNull { nullptr };
+    const QList< QDomElement > nullAssigned =
+        DA::DASignalFigureArchive::assignFigureElements(candidates, withNull);
+    QCOMPARE(nullAssigned.size(), 1);
+    QVERIFY(nullAssigned.at(0).isNull());
+}
+
+/**
+ * @brief F-12：三维瀑布子图的存档恢复（chart3d 的视图/标题/角色往返）
+ *
+ * 3D 图元持久化属 03，这里只覆盖 figure 存档里已有能力：<chart3d role="waterfall"> 的
+ * 旋转/标题等视图状态按 XML 恢复到已存在的 3D 子图。
+ */
+void DASignalAnalysisTest::signalArchiveWaterfall3DRestore()
+{
+    if (!openGLAvailable()) {
+        QSKIP("OpenGL is not available: skip the 3D waterfall archive test");
+    }
+    DA::DASignalAnalysisView source(makeTestSignal());
+    DA::DAStftResult stft;
+    stft.rows          = 2;
+    stft.columns       = 3;
+    stft.times         = { 0.0, 0.5, 1.0 };
+    stft.freqs         = { 0.0, 10.0 };
+    stft.values        = { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 };
+    stft.windowSeconds = 0.1;
+    source.setStft(stft);
+    source.setWaterfallMode(1);
+    DA::DAChart3DWidget* chart3d = source.waterfall3DChart();
+    QVERIFY(chart3d != nullptr);
+    chart3d->setRotation(30.0, 45.0, 0.0);
+    chart3d->setTitle(QStringLiteral("WF-TITLE"));
+
+    DA::DAChartItemsManager itemsMgr;
+    const QByteArray xml = DA::DASignalFigureArchive::saveFigures({ &source }, &itemsMgr);
+    QVERIFY(!xml.isEmpty());
+    QDomDocument doc;
+    QString parseError;
+    QVERIFY2(doc.setContent(xml, &parseError), qPrintable(parseError));
+    const QDomElement figureEle = doc.documentElement().firstChildElement(QStringLiteral("figure"));
+    QVERIFY(!figureEle.isNull());
+    const QDomElement chart3dEle = figureEle.firstChildElement(QStringLiteral("chart3d"));
+    QVERIFY2(!chart3dEle.isNull(), "a 3D sub chart must be archived as <chart3d>");
+    QCOMPARE(chart3dEle.attribute(QStringLiteral("role")), QStringLiteral("waterfall"));
+    QVERIFY(chart3dEle.firstChildElement(QStringLiteral("view")).attribute(QStringLiteral("title"))
+            == QStringLiteral("WF-TITLE"));
+
+    DA::DASignalPtr restoredSignal = makeTestSignal();
+    restoredSignal->restoreSignalId(source.signal()->signalId());
+    DA::DASignalAnalysisView restored(restoredSignal);
+    QVERIFY(DA::DASignalFigureArchive::restoreFigure(&restored, figureEle, &itemsMgr));
+    DA::DAChart3DWidget* restored3d = restored.waterfall3DChart();
+    QVERIFY(restored3d != nullptr);
+    QVERIFY2(qAbs(restored3d->xRotation() - 30.0) < 1e-6, "the 3D view rotation must be restored");
+    QVERIFY2(qAbs(restored3d->yRotation() - 45.0) < 1e-6, "the 3D view rotation must be restored");
+    QCOMPARE(restored3d->title(), QStringLiteral("WF-TITLE"));
+}
+
+/**
+ * @brief F-12：存档 → 恢复 → 再保存 幂等（figure 数/角色/网格/图元数不变）
+ *
+ * 用结构比较而不是字节比较：chart/item 的 id 与 key 是会话内生成的，不保证逐字节一致；
+ * 需要保证的是「再保存不会丢 figure、不会丢角色、不会把峰值标记变成 transient」。
+ */
+void DASignalAnalysisTest::signalArchiveSaveRestoreIdempotent()
+{
+    if (!openGLAvailable()) {
+        QSKIP("OpenGL is not available: skip the archive idempotency test");
+    }
+    DA::DASignalAnalysisView source(makeTestSignal());
+    DA::DASpectrumResult spectrum;
+    spectrum.freqs        = { 0.0, 10.0, 20.0 };
+    spectrum.amplitudes   = { 1.0, 2.0, 1.0 };
+    spectrum.resolutionHz = 10.0;
+    source.setSpectrum(spectrum);
+    DA::DAPeakResult peaks;
+    peaks.frequencies = { 10.0 };
+    peaks.magnitudes  = { 2.0 };
+    source.setPeaks(peaks);
+    source.setPeakMarkersVisible(true);
+    QCOMPARE(source.peakMarkers().size(), 1);
+    const QList< qreal > gridRows { 0.4, 0.6 };
+    const QList< qreal > gridCols { 0.55, 0.45 };
+    source.setGridSizes(gridRows, gridCols);
+
+    DA::DAChartItemsManager firstItems;
+    const QByteArray firstXml = DA::DASignalFigureArchive::saveFigures({ &source }, &firstItems);
+    QVERIFY(!firstXml.isEmpty());
+    DA::DASignalPtr restoredSignal = makeTestSignal();
+    restoredSignal->restoreSignalId(source.signal()->signalId());
+    DA::DASignalAnalysisView restored(restoredSignal);
+    QDomDocument firstDoc;
+    QString parseError;
+    QVERIFY2(firstDoc.setContent(firstXml, &parseError), qPrintable(parseError));
+    const QDomElement firstFigure = firstDoc.documentElement().firstChildElement(QStringLiteral("figure"));
+    QVERIFY(DA::DASignalFigureArchive::restoreFigure(&restored, firstFigure, &firstItems));
+    QCOMPARE(restored.peakMarkers().size(), 1);
+
+    // 再保存：结构一致
+    DA::DAChartItemsManager secondItems;
+    const QByteArray secondXml = DA::DASignalFigureArchive::saveFigures({ &restored }, &secondItems);
+    QVERIFY(!secondXml.isEmpty());
+    QDomDocument secondDoc;
+    QVERIFY2(secondDoc.setContent(secondXml, &parseError), qPrintable(parseError));
+    const QDomElement secondFigure = secondDoc.documentElement().firstChildElement(QStringLiteral("figure"));
+    QVERIFY(!secondFigure.isNull());
+    QCOMPARE(secondDoc.documentElement().elementsByTagName(QStringLiteral("figure")).size(), 1);
+
+    // 角色集合一致
+    auto collectRoles = [](const QDomElement& figureEle) {
+        QStringList roles;
+        const QDomElement charts = figureEle.firstChildElement(QStringLiteral("charts"));
+        for (QDomElement chartEle = charts.firstChildElement(QStringLiteral("chart")); !chartEle.isNull();
+             chartEle             = chartEle.nextSiblingElement(QStringLiteral("chart"))) {
+            roles.append(chartEle.attribute(QStringLiteral("role")));
+        }
+        for (QDomElement chart3dEle = figureEle.firstChildElement(QStringLiteral("chart3d")); !chart3dEle.isNull();
+             chart3dEle             = chart3dEle.nextSiblingElement(QStringLiteral("chart3d"))) {
+            roles.append(chart3dEle.attribute(QStringLiteral("role")));
+        }
+        roles.sort();
+        return roles;
+    };
+    QCOMPARE(collectRoles(secondFigure), collectRoles(firstFigure));
+    // 网格比例一致
+    const QDomElement firstGrid  = firstFigure.firstChildElement(QStringLiteral("grid"));
+    const QDomElement secondGrid = secondFigure.firstChildElement(QStringLiteral("grid"));
+    QVERIFY(!firstGrid.isNull());
+    QVERIFY(!secondGrid.isNull());
+    QCOMPARE(secondGrid.attribute(QStringLiteral("rowSizes")), firstGrid.attribute(QStringLiteral("rowSizes")));
+    QCOMPARE(secondGrid.attribute(QStringLiteral("colSizes")), firstGrid.attribute(QStringLiteral("colSizes")));
+    // 图元数一致（峰值标记仍是非 transient，会被再次写入）
+    QCOMPARE(secondItems.keys().size(), firstItems.keys().size());
+    QVERIFY(secondItems.keys().size() >= 1);
+}
+
+/**
+ * @brief F-12：导出格式由过滤器/后缀决定 + PDF 导出（2D 子图）
+ */
+void DASignalAnalysisTest::signalChartExportFormats()
+{
+    using DA::DAFigureExportFormat;
+    // 后缀 → 格式（UI 用所选过滤器修正后缀后按它定格式）
+    QCOMPARE(DA::DAFigureWidget::exportFormatFromFilePath(QStringLiteral("a.pdf")), DAFigureExportFormat::Pdf);
+    QCOMPARE(DA::DAFigureWidget::exportFormatFromFilePath(QStringLiteral("a.svg")), DAFigureExportFormat::Svg);
+    QCOMPARE(DA::DAFigureWidget::exportFormatFromFilePath(QStringLiteral("a.PNG")), DAFigureExportFormat::Png);
+    QCOMPARE(DA::DAFigureWidget::exportFormatFromFilePath(QStringLiteral("a.unknown")), DAFigureExportFormat::Png);
+    // 3D 降级：非 PNG 请求一律落到 PNG（3D 只有位图路径，见 03 的实测附录）
+    QCOMPARE(DA::DASignalChartExport::effectiveFormat(true, DAFigureExportFormat::Svg), DAFigureExportFormat::Png);
+    QCOMPARE(DA::DASignalChartExport::effectiveFormat(true, DAFigureExportFormat::Pdf), DAFigureExportFormat::Png);
+    QCOMPARE(DA::DASignalChartExport::effectiveFormat(true, DAFigureExportFormat::Png), DAFigureExportFormat::Png);
+    // 2D 原样返回
+    QCOMPARE(DA::DASignalChartExport::effectiveFormat(false, DAFigureExportFormat::Svg), DAFigureExportFormat::Svg);
+    QCOMPARE(DA::DASignalChartExport::effectiveFormat(false, DAFigureExportFormat::Pdf), DAFigureExportFormat::Pdf);
+
+    if (!openGLAvailable()) {
+        QSKIP("OpenGL is not available: skip the PDF export test");
+    }
+    // 2D 子图导出 PDF：内容必须是 PDF（%PDF 头），不能只是个非空文件
+    DA::DASignalAnalysisView view(makeTestSignal());
+    view.resize(900, 640);
+    if (view.figure()) {
+        view.figure()->resize(900, 640);
+        if (view.figure()->layout()) {
+            view.figure()->layout()->activate();
+        }
+    }
+    const QList< DA::DAChartWidget* > charts = { view.waveChart(), view.spectrumChart(), view.heatmapChart() };
+    for (DA::DAChartWidget* chart : charts) {
+        if (chart && chart->size().isEmpty()) {
+            chart->resize(400, 240);
+        }
+    }
+    DA::DASpectrumResult spectrum;
+    spectrum.freqs        = { 0.0, 10.0, 20.0 };
+    spectrum.amplitudes   = { 1.0, 2.0, 3.0 };
+    spectrum.resolutionHz = 10.0;
+    view.setSpectrum(spectrum);
+    view.setCurrentChart(view.spectrumChart());
+
+    QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+    const QString pdfPath = tempDir.filePath(QStringLiteral("chart.pdf"));
+    QVERIFY(DA::DASignalChartExport::saveCurrentSubChart(&view, pdfPath, DAFigureExportFormat::Pdf));
+    QFile pdfFile(pdfPath);
+    QVERIFY(pdfFile.open(QIODevice::ReadOnly));
+    const QByteArray pdfHead = pdfFile.read(8);
+    QVERIFY2(pdfHead.startsWith("%PDF"), "the PDF export must contain a PDF header");
+}
+
+/**
+ * @brief F-12：三维子图导出（非 PNG 请求降级为 PNG 内容）
+ */
+void DASignalAnalysisTest::signalChartExport3DToPng()
+{
+    if (!openGLAvailable()) {
+        QSKIP("OpenGL is not available: skip the 3D export test");
+    }
+    DA::DASignalAnalysisView view(makeTestSignal());
+    view.resize(900, 640);
+    DA::DAStftResult stft;
+    stft.rows          = 2;
+    stft.columns       = 3;
+    stft.times         = { 0.0, 0.5, 1.0 };
+    stft.freqs         = { 0.0, 10.0 };
+    stft.values        = { 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 };
+    stft.windowSeconds = 0.1;
+    view.setStft(stft);
+    view.setWaterfallMode(1);
+    QVERIFY(view.is3DChartActive());
+    DA::DAChart3DWidget* chart3d = view.waterfall3DChart();
+    QVERIFY(chart3d != nullptr);
+    chart3d->resize(320, 240);
+    if (DA::DASignalChartExport::grabCurrentSubChart(&view).isNull()) {
+        QSKIP("the 3D frame buffer is not available in this session");
+    }
+    QTemporaryDir tempDir;
+    QVERIFY(tempDir.isValid());
+    const QString svgPath = tempDir.filePath(QStringLiteral("chart3d.svg"));
+    QVERIFY(DA::DASignalChartExport::saveCurrentSubChart(&view, svgPath, DA::DAFigureExportFormat::Svg));
+    QFile file(svgPath);
+    QVERIFY(file.open(QIODevice::ReadOnly));
+    const QByteArray head = file.read(4);
+    QVERIFY2(head == QByteArray("\x89PNG", 4), "a 3D sub chart must be saved as PNG content");
 }
 
 /**

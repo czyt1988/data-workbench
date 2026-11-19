@@ -386,12 +386,13 @@ void DASignalAnalysisUI::exportCurrentSubChartImage()
     // 仍保留 .png，只按后缀推断格式会「选 SVG 却存成 PNG」；统一走框架侧助手收口
     path                        = DAFigureWidget::applyExportFilterSuffix(path, selectedFilter);
     DAFigureExportFormat format = DAFigureWidget::exportFormatFromFilePath(path);
-    if (is3D && format != DAFigureExportFormat::Png) {
+    const DAFigureExportFormat effective = DASignalChartExport::effectiveFormat(is3D, format);
+    if (effective != format) {
         // 防御分支：3D 子图仅支持 PNG 位图导出，改存 PNG 并给用户可见提示（SF-14）
         const QFileInfo fi(path);
         path   = fi.path().isEmpty() ? fi.completeBaseName() + QStringLiteral(".png")
                                      : fi.path() + QLatin1Char('/') + fi.completeBaseName() + QStringLiteral(".png");
-        format = DAFigureExportFormat::Png;
+        format = effective;
         qWarning() << "DASignalAnalysisUI::exportCurrentSubChartImage: 3D sub-chart supports PNG export "
                       "only, saved as PNG:"
                    << path;

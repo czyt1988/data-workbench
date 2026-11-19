@@ -32,6 +32,8 @@ public:
     static bool saveWholePage(DASignalAnalysisView* view, const QString& filePath);
     // 当前子图保存（2D 支持 Png/Svg/Pdf；3D 仅位图，非 Png 按 Png 保存）
     static bool saveCurrentSubChart(DASignalAnalysisView* view, const QString& filePath, DAFigureExportFormat format);
+    // 有效导出格式：3D 子图只有 PNG 位图路径（请求 SVG/PDF 时降级为 Png），2D 原样返回
+    static DAFigureExportFormat effectiveFormat(bool is3DChartActive, DAFigureExportFormat requested);
     // 整页复制到剪贴板（空图返回 false）
     static bool copyWholePageToClipboard(DASignalAnalysisView* view);
     // 当前子图复制到剪贴板（空图返回 false）

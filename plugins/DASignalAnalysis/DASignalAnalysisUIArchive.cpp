@@ -535,27 +535,35 @@ void DASignalAnalysisUI::applyFiguresXml(const QByteArray& figuresXml, const DAC
         releaseUnattachedItems();
         return;
     }
-    // 候选 figure 元素逐个消费：同一元素不会被两个视图命中（旧存档同名信号按顺序错开）
-    QList< QDomElement > candidates = DASignalFigureArchive::figureElements(figureDoc);
-    // 已 attach 的 chart-data 图元 key：跨视图共享，防止同一 QwtPlotItem 被两个子图争用
-    QSet< QString > consumedItemKeys;
+    // 候选 figure 元素逐个消费：同一元素不会被两个视图命中（旧存档同名信号按顺序错开）。
+    // 分派逻辑抽在 DASignalFigureArchive::assignFigureElements（不依赖界面，可单测）
+    QList< DASignalAnalysisView* > views;
     const QList< DASignalPtr > signalList = mPage->allSignals();
+    views.reserve(signalList.size());
     for (const DASignalPtr& sig : signalList) {
         if (!sig) {
             continue;
         }
-        DASignalAnalysisView* view = mPage->viewForSignal(sig.get());
-        if (!view) {
-            continue;
+        if (DASignalAnalysisView* view = mPage->viewForSignal(sig.get())) {
+            views.append(view);
         }
-        const QDomElement figureEle = DASignalFigureArchive::takeFigureElement(candidates, sig->signalId(), sig->name());
+    }
+    const QList< QDomElement > assigned =
+        DASignalFigureArchive::assignFigureElements(DASignalFigureArchive::figureElements(figureDoc), views);
+    // 已 attach 的 chart-data 图元 key：跨视图共享，防止同一 QwtPlotItem 被两个子图争用
+    QSet< QString > consumedItemKeys;
+    for (int i = 0; i < views.size() && i < assigned.size(); ++i) {
+        DASignalAnalysisView* view = views.at(i);
+        const QDomElement& figureEle = assigned.at(i);
+        const DASignalPtr sig        = (view ? view->signal() : DASignalPtr());
         if (figureEle.isNull()) {
-            qWarning() << "DASignalAnalysisUI::applyFiguresXml: no figure element for signal" << sig->name() << "id"
-                       << sig->signalId();
+            qWarning() << "DASignalAnalysisUI::applyFiguresXml: no figure element for signal"
+                       << (sig ? sig->name() : QString()) << "id" << (sig ? sig->signalId() : -1);
             continue;
         }
         if (!DASignalFigureArchive::restoreFigure(view, figureEle, chartItems, &consumedItemKeys)) {
-            qWarning() << "DASignalAnalysisUI::applyFiguresXml: restore figure failed for signal" << sig->name();
+            qWarning() << "DASignalAnalysisUI::applyFiguresXml: restore figure failed for signal"
+                       << (sig ? sig->name() : QString());
         }
         // 峰值标记显隐按信号存档（F-09）：勾选状态取该视图接管到的标记的真实可见性；
         // UI 层只把**当前视图**的值留作「新建视图」的默认值，不再覆盖别的信号标签页
