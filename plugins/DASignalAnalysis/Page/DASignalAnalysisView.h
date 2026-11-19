@@ -342,6 +342,8 @@ private:
     QPointer< DAChart3DWidget > mWaterfallChart;
     // 当前激活子图是否为 3D（点击 3D 置 true，点击任一 2D 子图置 false）
     bool mCurrentIs3D { false };
+    // 切换子图时的防重入标志：setWaterfallMode 自己会 emit 一次，抑制 figure 侧的重复 emit
+    bool mSuppressSubChartEmit { false };
 
     // 视图状态（T8 起由 Ribbon/底部工具栏驱动；临时工具栏只是视图）
     int mCurrentChannel { 0 };

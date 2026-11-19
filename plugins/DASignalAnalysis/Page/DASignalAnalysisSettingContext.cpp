@@ -18,6 +18,7 @@
 // 插件
 #include "DASignalAnalysisUI.h"
 #include "Page/DASignalAnalysisPage.h"
+#include "Page/DASignalSettingTargets.h"
 
 namespace DA
 {
@@ -144,6 +145,11 @@ void DASignalAnalysisSettingContext::deactivateSettingContext()
             if (DAChartSettingWidget* chartSetting = container->getChartSettingWidget()) {
                 chartSetting->setPlot(hostChart);
             }
+            // D1-10：3D 设置页的 target 同样要复位。失活后 3D 页仍指向信号视图的三维瀑布子图，
+            // 而该子图会随页面销毁；宿主绘图区的「3D 设置」不该停在一个插件对象上。
+            if (DAChart3DSettingWidget* chart3DSetting = container->getChart3DSettingWidget()) {
+                chart3DSetting->setPlot3D(nullptr);
+            }
         }
     }
     // 4) 结束信号 figure 上可能仍激活的图表编辑器：内置「绘图操作」的选区/标记工具
@@ -162,6 +168,9 @@ void DASignalAnalysisSettingContext::deactivateSettingContext()
         }
     }
     unbindCurrentView();
+    // 图元树已被恢复成宿主绘图区目标（setChartOperateWidget 重建了管理树）：
+    // 缓存作废，下次激活必须重新 setFigures 注入信号 figure 列表（D1-09）
+    mFigureListCache.clear();
     mActive = false;
     // 6) 通知宿主刷新绘图上下文：注销/卸载路径不走 APP 的固定窗口路由，需要显式通知
     //    （注册表已清空当前 provider，宿主据此恢复绘图区动作状态并收起内置「绘图操作」标签）
@@ -339,7 +348,10 @@ void DASignalAnalysisSettingContext::unbindCurrentView()
  *
  * - 当前为 3D 子图：显示 3D 设置页并把 target 设为 current3DChart()；
  * - 否则显示 2D 绘图设置页并把 target 设为 currentChart()；
- * - 页面还没有信号（无当前视图）：2D 设置页 + 空 target，避免继续编辑宿主绘图区子图。
+ * - 页面还没有信号（无当前视图）：2D 设置页 + 空 target，**并把 3D 页 target 也置空**，
+ *   避免继续编辑宿主绘图区/已销毁的信号子图（D1-10）。
+ *
+ * 页面类型判定抽成纯函数 daSignalSettingPage()，便于单测（不依赖 ADS 停靠结构）。
  */
 void DASignalAnalysisSettingContext::applySettingTarget()
 {
@@ -354,23 +366,23 @@ void DASignalAnalysisSettingContext::applySettingTarget()
     if (nullptr == container) {
         return;
     }
-    DASignalAnalysisView* view = currentView();
-    if (nullptr == view) {
-        container->showChartSettingWidget();
-        if (DAChartSettingWidget* chartSetting = container->getChartSettingWidget()) {
-            chartSetting->setPlot(nullptr);
-        }
-        return;
-    }
-    if (view->is3DChartActive()) {
+    DASignalAnalysisView* view     = currentView();
+    const DASignalSettingPage page = daSignalSettingPage(view);
+    if (DASignalSettingPage::Chart3D == page) {
         container->showChart3DSettingWidget();
         if (DAChart3DSettingWidget* chart3DSetting = container->getChart3DSettingWidget()) {
             chart3DSetting->setPlot3D(view->current3DChart());
         }
-    } else {
-        container->showChartSettingWidget();
-        if (DAChartSettingWidget* chartSetting = container->getChartSettingWidget()) {
-            chartSetting->setPlot(view->currentChart());
+        return;
+    }
+    container->showChartSettingWidget();
+    if (DAChartSettingWidget* chartSetting = container->getChartSettingWidget()) {
+        chartSetting->setPlot(DASignalSettingPage::Chart2D == page ? view->currentChart() : nullptr);
+    }
+    if (DASignalSettingPage::None == page) {
+        // 无当前视图：3D 设置页 target 一并复位（D1-10）
+        if (DAChart3DSettingWidget* chart3DSetting = container->getChart3DSettingWidget()) {
+            chart3DSetting->setPlot3D(nullptr);
         }
     }
 }
@@ -378,8 +390,11 @@ void DASignalAnalysisSettingContext::applySettingTarget()
 /**
  * @brief 图元树目标设为全部信号 figure，当前 figure 为当前信号的 figure
  *
- * setFigures 走 DAChartManageWidget 的外部模式：不依赖宿主 DAChartOperateWidget，
- * 失活时由 deactivateSettingContext() 用 setChartOperateWidget 恢复宿主目标。
+ * setFigures 走 DAChartManageWidget 的外部模式：它会在外部模式置位、清空 combo 与树视图
+ * 并逐个重建（旧树视图 deleteLater + 新对象），因此**只在 figure 列表真的变化时**才调用。
+ * 切信号/点一下子图都会走 refreshTarget，列表通常不变，此时只 setCurrentFigure，
+ * 既保留树的展开/选中状态，也避免每次点击都重建整棵树（D1-09）。
+ * 失活时由 deactivateSettingContext() 用 setChartOperateWidget 恢复宿主目标（缓存同时作废）。
  */
 void DASignalAnalysisSettingContext::updateChartManageTarget()
 {
@@ -394,8 +409,16 @@ void DASignalAnalysisSettingContext::updateChartManageTarget()
     if (nullptr == chartManage) {
         return;
     }
-    DASignalAnalysisView* view = currentView();
-    chartManage->setFigures(mUI->signalFigures(), (view ? view->figure() : nullptr));
+    DASignalAnalysisView* view    = currentView();
+    DAFigureWidget* currentFigure = (view ? view->figure() : nullptr);
+    const QList< DAFigureWidget* > figures = mUI->signalFigures();
+    if (currentFigure && daSameFigureList(figures, mFigureListCache)) {
+        // 列表同构：只切当前项，不重建 combo/树视图
+        chartManage->setCurrentFigure(currentFigure);
+        return;
+    }
+    chartManage->setFigures(figures, currentFigure);
+    mFigureListCache = figures;
 }
 
 /**

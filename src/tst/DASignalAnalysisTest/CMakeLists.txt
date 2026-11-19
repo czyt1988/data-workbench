@@ -31,6 +31,7 @@ da_add_test(
             ${_signal_plugin_dir}/Page/DAPeakMarkerLabel.cpp
             ${_signal_plugin_dir}/Page/DAPeakMarkerSamples.cpp
             ${_signal_plugin_dir}/Page/DASignalAnalysisView.cpp
+            ${_signal_plugin_dir}/Page/DASignalSettingTargets.cpp
             ${_signal_plugin_dir}/Page/DASignalChartExport.cpp
             ${_signal_plugin_dir}/Page/DASignalTimeText.cpp
             ${_signal_plugin_dir}/Signal/DASignal.cpp

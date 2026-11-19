@@ -49,6 +49,7 @@
 #include "Page/DAPeakMarkerLabel.h"
 #include "Page/DAPeakMarkerSamples.h"
 #include "Page/DASignalAnalysisView.h"
+#include "Page/DASignalSettingTargets.h"
 #include "Page/DASignalChartExport.h"
 #include "Page/DASignalTimeText.h"
 #include "Render/DAStftRasterData.h"
@@ -336,6 +337,7 @@ private Q_SLOTS:
     void signalFigureSaveSkipsEmptyProject();
     void signalFigureRestoreSkipsUnknownRoleChart();
     void signalFigureReleaseUnattachedItems();
+    void signalSettingTargetPageAndFigureList();
     // 播放器控制条时间文本：mm:ss.s 格式、占位与越界夹取（纯函数）
     void playbackTimeTextFormatting();
     // 时间轴标签格式（纯函数）：秒/毫秒/mm:ss.s（含时间原点）
@@ -2644,6 +2646,53 @@ void DASignalAnalysisTest::signalFigureReleaseUnattachedItems()
 
     attachedMarker->detach();
     delete attachedMarker;
+}
+
+/**
+ * @brief D1-09 / D1-10：设置面板目标页判定、图元树列表同构判定、切子图只发一次信号
+ *
+ * - 目标页判定（纯函数）：无视图 None（2D/3D 两页 target 都复位）、2D 子图 Chart2D、3D 子图 Chart3D；
+ * - 图元树列表同构：figure 列表未变时提供者只 setCurrentFigure（不重建 combo/树），
+ *   顺序变化/增删都算变化；
+ * - setWaterfallMode 同一次切换只发一次 currentSubChartChanged（此前 figure 侧信号 + 末尾 emit 双发）。
+ */
+void DASignalAnalysisTest::signalSettingTargetPageAndFigureList()
+{
+    using DA::DASignalSettingPage;
+    // 无视图：设置面板两页都不该有 target（D1-10）
+    QCOMPARE(DA::daSignalSettingPage(nullptr), DASignalSettingPage::None);
+    // 列表同构判定与视图无关，先测（不依赖 OpenGL）
+    DA::DAFigureWidget figureA;
+    DA::DAFigureWidget figureB;
+    const QList< DA::DAFigureWidget* > listAB { &figureA, &figureB };
+    const QList< DA::DAFigureWidget* > listABCopy { &figureA, &figureB };
+    const QList< DA::DAFigureWidget* > listBA { &figureB, &figureA };
+    QVERIFY(DA::daSameFigureList(listAB, listABCopy));
+    QVERIFY2(!DA::daSameFigureList(listAB, listBA), "a different figure order must rebuild the item tree");
+    QVERIFY(!DA::daSameFigureList(listAB, { &figureA }));
+    QVERIFY(DA::daSameFigureList({}, {}));
+
+    if (!openGLAvailable()) {
+        QSKIP("OpenGL is not available: skip the setting target page and emit test");
+    }
+    DA::DASignalAnalysisView view(makeTestSignal());
+    QCOMPARE(DA::daSignalSettingPage(&view), DASignalSettingPage::Chart2D);
+    view.setWaterfallMode(1);
+    QVERIFY(view.is3DChartActive());
+    QCOMPARE(DA::daSignalSettingPage(&view), DASignalSettingPage::Chart3D);
+    view.setWaterfallMode(0);
+    QCOMPARE(DA::daSignalSettingPage(&view), DASignalSettingPage::Chart2D);
+
+    // 同一次 2D↔3D 切换只发一次 currentSubChartChanged（设置面板/上下文控件不重复刷新）
+    int subChartEmits = 0;
+    QObject::connect(&view,
+                     &DA::DASignalAnalysisView::currentSubChartChanged,
+                     &view,
+                     [ &subChartEmits ]() { ++subChartEmits; });
+    view.setWaterfallMode(1);
+    QCOMPARE(subChartEmits, 1);
+    view.setWaterfallMode(0);
+    QCOMPARE(subChartEmits, 2);
 }
 
 /**

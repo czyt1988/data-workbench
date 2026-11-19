@@ -1,6 +1,7 @@
 #ifndef DASIGNALANALYSISSETTINGCONTEXT_H
 #define DASIGNALANALYSISSETTINGCONTEXT_H
 #include <QObject>
+#include <QList>
 #include <QPointer>
 #include "DASettingContextProvider.h"
 #include "Page/DASignalAnalysisView.h"
@@ -62,6 +63,8 @@ private:
     QPointer< DASignalAnalysisUI > mUI;
     QPointer< DASignalAnalysisView > mView;
     QMetaObject::Connection mViewConnection;
+    // 上次注入图元树的 figure 列表：列表同构时只切当前项，不重建 combo/树视图（D1-09）
+    QList< DAFigureWidget* > mFigureListCache;
     bool mActive { false };
 };
 }  // namespace DA

@@ -826,6 +826,9 @@ void DASignalAnalysisView::setStft(const DAStftResult& result)
  * @brief 瀑布模式切换：0=二维 / 1=三维 / 2=隐藏（D12 / D25）
  *
  * 热图与三维瀑布登记在同一网格 (1,1)，这里按模式切显隐（隐藏者不参与布局重算）。
+ * 切子图会经 figure 的 currentChartChanged/current3DChartChanged → 本类的槽再 emit
+ * currentSubChartChanged；本函数末尾**只**补发一次，故切换期间用 mSuppressSubChartEmit
+ * 抑制槽里的 emit，避免同一次切换双发（D1-09；双发会让设置面板/上下文控件重复刷新）。
  */
 void DASignalAnalysisView::setWaterfallMode(int mode)
 {
@@ -839,6 +842,7 @@ void DASignalAnalysisView::setWaterfallMode(int mode)
     clearDualCursor();
     // 二维/三维切换会改变热图的可见与轴范围：当前帧标记的像素节流缓存作废
     mHeatmapCursorApplied = false;
+    mSuppressSubChartEmit = true;
     if (mWaterfallMode == 1) {
         // 切到三维：当前子图 = 三维（T8 设置面板切 3D 页）
         mCurrentIs3D = true;
@@ -850,6 +854,7 @@ void DASignalAnalysisView::setWaterfallMode(int mode)
             mFigure->setCurrentChart(mHeatmapChart);
         }
     }
+    mSuppressSubChartEmit = false;
     Q_EMIT currentSubChartChanged();
 }
 
@@ -3111,6 +3116,10 @@ void DASignalAnalysisView::onFigureCurrentChartChanged(DA::DAChartWidget* chart)
     if (!chart) {
         return;
     }
+    // setWaterfallMode 自己会补发一次：切换期间抑制这里的 emit，避免同一次切换双发（D1-09）
+    if (mSuppressSubChartEmit) {
+        return;
+    }
     // 切子图：双光标只在当前子图上工作，旧游标清理（用户在新子图上重新放置）
     clearDualCursor();
     mCurrentIs3D = false;
@@ -3120,6 +3129,9 @@ void DASignalAnalysisView::onFigureCurrentChartChanged(DA::DAChartWidget* chart)
 void DASignalAnalysisView::onFigureCurrent3DChartChanged(DA::DAChart3DWidget* chart)
 {
     if (!chart || chart != mWaterfallChart || mWaterfallMode != 1) {
+        return;
+    }
+    if (mSuppressSubChartEmit) {
         return;
     }
     mCurrentIs3D = true;
