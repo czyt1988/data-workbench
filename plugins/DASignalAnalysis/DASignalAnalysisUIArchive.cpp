@@ -173,8 +173,8 @@ QByteArray DASignalAnalysisUI::serializeState() const
                 // 云图绘制方式：显示模式与插值（从谱图图元/栅格读回，谱图 transient 不随 figures.xml 保存）
                 view[ QStringLiteral("heatmapDisplayMode") ] = v->heatmapDisplayMode();
                 view[ QStringLiteral("heatmapResample") ]    = v->heatmapResampleMode();
-                // 峰值标记开关（视图无 getter：以 UI 记录的开关状态存，恢复后新视图据此应用）
-                view[ QStringLiteral("peakMarkersVisible") ] = mPeakMarkersVisible;
+                // 峰值标记开关：视图是状态源（F-09 起按信号存档，见 v->peakMarkersVisible()）
+                view[ QStringLiteral("peakMarkersVisible") ] = v->peakMarkersVisible();
                 // T7 起布局是保留式网格：存归一化行/列比例（旧 splitter 像素比例在加载时归一化兼容）
                 QJsonArray rowsArr;
                 const QList< qreal > gridRows = v->gridRowSizes();
@@ -340,13 +340,16 @@ void DASignalAnalysisUI::restoreState(const QByteArray& json, const QByteArray& 
         }
         // D7 兼容：旧档可能存了「dBFS + 相对 1.0」的矛盾组合，加载后统一按幅值口径重新解释
         mDbReference = DASignalAnalysisParams::dbReferenceForAmplitudeMode(mAmplitudeMode);
-        // 峰值标记开关：在 addSignalAndActivate 之前恢复，connectSignalView 会把它应用到新视图
-        if (view.contains(QStringLiteral("peakMarkersVisible"))) {
-            mPeakMarkersVisible = view.value(QStringLiteral("peakMarkersVisible")).toBool(mPeakMarkersVisible);
-        }
+        // 峰值标记开关：按信号存档（F-09）。先在 addSignalAndActivate 之前把 UI 默认值对齐
+        // （connectSignalView 会用它初始化新视图），随后在视图状态恢复处按本信号的值覆盖
+        const bool savedPeakMarkersVisible =
+            view.value(QStringLiteral("peakMarkersVisible")).toBool(mPeakMarkersVisible);
+        mPeakMarkersVisible = savedPeakMarkersVisible;
         addSignalAndActivate(sig);
         // 恢复视图状态（P1）
         if (DASignalAnalysisView* v = mPage ? mPage->viewForSignal(sig.get()) : nullptr) {
+            // 峰值标记显隐按本信号的存档值恢复（不是全局值；F-09）
+            v->setPeakMarkersVisible(savedPeakMarkersVisible);
             v->setWaterfallMode(view.value(QStringLiteral("waterfallMode")).toInt(0));
             const QString cmap = view.value(QStringLiteral("colormap")).toString();
             if (!cmap.isEmpty()) {
@@ -470,7 +473,8 @@ std::shared_ptr< DAAbstractArchiveTask > DASignalAnalysisUI::createArchiveTask(b
  * 只在主线程调用：figure XML 生成需要读取控件状态，并把非 transient 图元
  * （峰值标记/用户添加的标注等）登记到 itemsMgr；后台存档任务只负责写字节。
  * @param chartItems 输出：图元 key 映射（保存任务据此写 chart-data），不可为空
- * @return figures.xml 字节；没有页面/信号时返回空（不写 figures.xml）
+ * @return figures.xml 字节；没有页面/信号时返回**空字节**（F-08：不再写一个只有根节点的
+ *         figures.xml 与空 chart-data，存档任务按 !isEmpty 判据跳过它们）
  */
 QByteArray DASignalAnalysisUI::buildFiguresXml(DAChartItemsManager* chartItems) const
 {
@@ -485,6 +489,11 @@ QByteArray DASignalAnalysisUI::buildFiguresXml(DAChartItemsManager* chartItems) 
                 views.append(view);
             }
         }
+    }
+    if (views.isEmpty()) {
+        // 空工程 / 页面从未创建：没有 figure 可写，跳过 figures.xml 与 chart-data（F-08）
+        qInfo() << "DASignalAnalysisUI::buildFiguresXml: no signal view, figures.xml is skipped";
+        return QByteArray();
     }
     return DASignalFigureArchive::saveFigures(views, chartItems);
 }
@@ -501,13 +510,29 @@ QByteArray DASignalAnalysisUI::buildFiguresXml(DAChartItemsManager* chartItems) 
  */
 void DASignalAnalysisUI::applyFiguresXml(const QByteArray& figuresXml, const DAChartItemsManager* chartItems)
 {
+    // F-10：图元管理者不持有所有权，未被任何子图消费的图元（figure 缺失/损坏/角色对不上）
+    // 在这里没人释放。统一回收「没有挂到任何 plot」的图元，并给用户可见提示；
+    // 已 attach 的图元归子图所有，绝不在这里删（回收口径见 DASignalFigureArchive::releaseUnattachedItems）。
+    auto releaseUnattachedItems = [ this, chartItems ]() {
+        const int released = DASignalFigureArchive::releaseUnattachedItems(chartItems);
+        if (released <= 0) {
+            return;
+        }
+        qWarning() << "DASignalAnalysisUI::applyFiguresXml: released" << released
+                   << "unattached chart item(s) that no sub chart consumed";
+        reportError(tr("Some chart items could not be restored and were discarded (%1 item(s)).")
+                    // cn:部分图元未能恢复，已丢弃（%1 个）。
+                    .arg(released));
+    };
     if (figuresXml.isEmpty() || nullptr == mPage) {
+        releaseUnattachedItems();
         return;
     }
     QDomDocument figureDoc;
     QString parseError;
     if (!figureDoc.setContent(figuresXml, &parseError)) {
         qWarning() << "DASignalAnalysisUI::applyFiguresXml: cannot parse figures.xml:" << parseError;
+        releaseUnattachedItems();
         return;
     }
     // 候选 figure 元素逐个消费：同一元素不会被两个视图命中（旧存档同名信号按顺序错开）
@@ -532,12 +557,14 @@ void DASignalAnalysisUI::applyFiguresXml(const QByteArray& figuresXml, const DAC
         if (!DASignalFigureArchive::restoreFigure(view, figureEle, chartItems, &consumedItemKeys)) {
             qWarning() << "DASignalAnalysisUI::applyFiguresXml: restore figure failed for signal" << sig->name();
         }
-        // 存档里的峰值标记非 transient：视图接管后把 UI 开关同步为「可见」，
-        // 后续分析结果回填不再重建标记（以存档为准，用户在设置面板里调整过）
+        // 峰值标记显隐按信号存档（F-09）：勾选状态取该视图接管到的标记的真实可见性；
+        // UI 层只把**当前视图**的值留作「新建视图」的默认值，不再覆盖别的信号标签页
         if (!view->peakMarkers().isEmpty() && view == currentView()) {
-            mPeakMarkersVisible = true;
+            mPeakMarkersVisible = view->peakMarkersVisible();
         }
     }
+    // 收尾：没有视图消费到的图元统一释放（F-10），避免加载半损坏存档时泄漏
+    releaseUnattachedItems();
 }
 
 }  // namespace DA

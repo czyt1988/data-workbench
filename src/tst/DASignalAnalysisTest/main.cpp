@@ -333,6 +333,9 @@ private Q_SLOTS:
     void signalViewChannelSwitchClearsPlots();
     void signalViewPeakMarkerItemsStableOnRedraw();
     void signalViewHeatmapTitlesRetranslated();
+    void signalFigureSaveSkipsEmptyProject();
+    void signalFigureRestoreSkipsUnknownRoleChart();
+    void signalFigureReleaseUnattachedItems();
     // 播放器控制条时间文本：mm:ss.s 格式、占位与越界夹取（纯函数）
     void playbackTimeTextFormatting();
     // 时间轴标签格式（纯函数）：秒/毫秒/mm:ss.s（含时间原点）
@@ -2511,6 +2514,136 @@ void DASignalAnalysisTest::signalViewHeatmapTitlesRetranslated()
     QCOMPARE(view.heatmapChart()->axisTitle(QwtPlot::yLeft).text(), QStringLiteral("Frequency (Hz)"));
     QCOMPARE(view.heatmapChart()->axisTitle(QwtPlot::xBottom).text(), QStringLiteral("Time (s)"));
     QCOMPARE(colorBar->title().text(), QStringLiteral("dB"));
+}
+
+/**
+ * @brief F-08：空工程（没有信号视图）不产出 figures.xml，也不再写空 chart-data
+ *
+ * 修复前 saveFigures 恒返回只含根节点的 XML，存档任务按 !isEmpty 判据照写，
+ * 于是空工程里会多出 figures.xml 与一个空的 chart-items.xml。
+ */
+void DASignalAnalysisTest::signalFigureSaveSkipsEmptyProject()
+{
+    DA::DAChartItemsManager itemsMgr;
+    QVERIFY2(DA::DASignalFigureArchive::saveFigures({}, &itemsMgr).isEmpty(),
+             "an empty view list must not produce figures.xml");
+    QVERIFY(itemsMgr.isEmpty());
+    QVERIFY2(DA::DASignalFigureArchive::saveFigures({ nullptr }, &itemsMgr).isEmpty(),
+             "an invalid view must not produce figures.xml");
+    QVERIFY(DA::DASignalFigureArchive::saveFigures({}, nullptr).isEmpty());  // 无图元管理者
+    QVERIFY(itemsMgr.isEmpty());
+
+    // 存档任务：figures.xml 为空时只写 signals.json，figures.xml 与 chart-data 都不落
+    MemoryArchive mem;
+    DA::DASignalArchiveTask task(QByteArrayLiteral("{\"signals\":[]}"), QByteArray(), {});
+    QVERIFY(task.exec(&mem, DA::DAAbstractArchiveTask::WriteMode));
+    QVERIFY(mem.contains(DA::DASignalArchiveTask::archivePath()));
+    QVERIFY(!mem.contains(DA::DASignalArchiveTask::figuresArchivePath()));
+    QVERIFY(!mem.contains(DA::DASignalArchiveTask::chartDataPrefix() + QStringLiteral("/chart-items.xml")));
+}
+
+/**
+ * @brief F-11：role 与网格坐标都认不出的子图按「跳过」处理，不占下一个空子图
+ *
+ * 用子图标题（chart 级 <title>，refreshAfterFigureRestore 不会重置）判断 XML 被应用到哪个子图：
+ * - 新存档（整档有 role）：role=wave 改成 unknown 后该 <chart> 被跳过，波形标题保持默认；
+ *   频谱按 role 正常恢复（证明跳过只影响那一个元素）；
+ * - 旧存档（整档都没有 role）：仍按 XML 顺序回退（wave → spectrum → heatmap）。
+ */
+void DASignalAnalysisTest::signalFigureRestoreSkipsUnknownRoleChart()
+{
+    if (!openGLAvailable()) {
+        QSKIP("OpenGL is not available: skip the unknown role chart test");
+    }
+    DA::DASignalAnalysisView source(makeTestSignal());
+    // chart 级标题是各子图可识别的标记（存档会写 <title>，恢复时 QwtPlot::setTitle）
+    source.waveChart()->setTitle(QStringLiteral("WaveMark"));
+    source.spectrumChart()->setTitle(QStringLiteral("SpecMark"));
+    source.heatmapChart()->setTitle(QStringLiteral("HeatMark"));
+    DA::DAChartItemsManager itemsMgr;
+    const QByteArray xml = DA::DASignalFigureArchive::saveFigures({ &source }, &itemsMgr);
+    QVERIFY(!xml.isEmpty());
+
+    // ---------- 1. 新存档：wave 的 role 与网格坐标都坏掉 ----------
+    QDomDocument doc;
+    QString parseError;
+    QVERIFY2(doc.setContent(xml, &parseError), qPrintable(parseError));
+    const QDomElement figureEle = doc.documentElement().firstChildElement(QStringLiteral("figure"));
+    QVERIFY(!figureEle.isNull());
+    const QDomElement chartsEle = figureEle.firstChildElement(QStringLiteral("charts"));
+    QVERIFY(!chartsEle.isNull());
+    for (QDomElement chartEle = chartsEle.firstChildElement(QStringLiteral("chart")); !chartEle.isNull();
+         chartEle             = chartEle.nextSiblingElement(QStringLiteral("chart"))) {
+        if (chartEle.attribute(QStringLiteral("role")) != QLatin1String("wave")) {
+            continue;
+        }
+        chartEle.setAttribute(QStringLiteral("role"), QStringLiteral("bogus"));
+        chartEle.removeAttribute(QStringLiteral("grid-row"));
+        chartEle.removeAttribute(QStringLiteral("grid-col"));
+        chartEle.removeAttribute(QStringLiteral("grid-rowspan"));
+        chartEle.removeAttribute(QStringLiteral("grid-colspan"));
+    }
+    DA::DASignalPtr restoredSignal = makeTestSignal();
+    restoredSignal->restoreSignalId(source.signal()->signalId());
+    DA::DASignalAnalysisView restored(restoredSignal);
+    QVERIFY(DA::DASignalFigureArchive::restoreFigure(&restored, figureEle, &itemsMgr));
+    QVERIFY2(restored.waveChart()->title().isEmpty(),
+             "a chart whose role and grid cell are both unknown must be skipped, not applied to the next sub chart");
+    QCOMPARE(restored.spectrumChart()->title().text(), QStringLiteral("SpecMark"));
+    QCOMPARE(restored.heatmapChart()->title().text(), QStringLiteral("HeatMark"));
+
+    // ---------- 2. 旧存档：整档去掉 role 与网格坐标 → 顺序回退仍然生效 ----------
+    QDomDocument legacyDoc;
+    QVERIFY2(legacyDoc.setContent(xml, &parseError), qPrintable(parseError));
+    const QDomElement legacyFigure = legacyDoc.documentElement().firstChildElement(QStringLiteral("figure"));
+    QVERIFY(!legacyFigure.isNull());
+    const QDomElement legacyCharts = legacyFigure.firstChildElement(QStringLiteral("charts"));
+    QVERIFY(!legacyCharts.isNull());
+    for (QDomElement chartEle = legacyCharts.firstChildElement(QStringLiteral("chart")); !chartEle.isNull();
+         chartEle             = chartEle.nextSiblingElement(QStringLiteral("chart"))) {
+        chartEle.removeAttribute(QStringLiteral("role"));
+        chartEle.removeAttribute(QStringLiteral("grid-row"));
+        chartEle.removeAttribute(QStringLiteral("grid-col"));
+        chartEle.removeAttribute(QStringLiteral("grid-rowspan"));
+        chartEle.removeAttribute(QStringLiteral("grid-colspan"));
+    }
+    DA::DAChartItemsManager legacyItems;
+    DA::DASignalAnalysisView legacyView(makeTestSignal());
+    legacyView.signal()->restoreSignalId(source.signal()->signalId());
+    QVERIFY(DA::DASignalFigureArchive::restoreFigure(&legacyView, legacyFigure, &legacyItems));
+    QCOMPARE(legacyView.waveChart()->title().text(), QStringLiteral("WaveMark"));
+    QCOMPARE(legacyView.spectrumChart()->title().text(), QStringLiteral("SpecMark"));
+    QCOMPARE(legacyView.heatmapChart()->title().text(), QStringLiteral("HeatMark"));
+}
+
+/**
+ * @brief F-10：加载残档时未被子图消费的图元被释放，已 attach 的不动
+ *
+ * 图元管理者不持有所有权（析构为空）；figure 缺失/损坏时这些图元没人消费也没人释放。
+ * 只释放「没有挂到任何 plot」的图元；已 attach 的仍归子图所有。
+ */
+void DASignalAnalysisTest::signalFigureReleaseUnattachedItems()
+{
+    if (!openGLAvailable()) {
+        QSKIP("OpenGL is not available: skip the unattached item release test");
+    }
+    DA::DASignalAnalysisView view(makeTestSignal());
+    DA::DAChartItemsManager itemsMgr;
+    auto* attachedMarker = new QwtPlotMarker();
+    attachedMarker->setXValue(1.0);
+    attachedMarker->attach(view.waveChart());
+    auto* orphanMarker = new QwtPlotMarker();
+    itemsMgr.recordItem(attachedMarker, QStringLiteral("attached-key"));
+    itemsMgr.recordItem(orphanMarker, QStringLiteral("orphan-key"));
+
+    // 只释放没挂到 plot 的那个（orphanMarker 之后不可再访问，已 delete）
+    QCOMPARE(DA::DASignalFigureArchive::releaseUnattachedItems(&itemsMgr), 1);
+    QVERIFY2(view.waveChart()->itemList().contains(attachedMarker),
+             "an attached chart item must not be released");
+    QCOMPARE(DA::DASignalFigureArchive::releaseUnattachedItems(nullptr), 0);
+
+    attachedMarker->detach();
+    delete attachedMarker;
 }
 
 /**

@@ -40,7 +40,8 @@ class DAChartItemsManager;
 class DASignalFigureArchive
 {
 public:
-    // 生成 <signal-figures version="1"> XML 字节（每个 view 一个 <figure signal-name="..." signal-id="...">）
+    // 生成 <signal-figures version="1"> XML 字节（每个 view 一个 <figure signal-name="..." signal-id="...">）；
+    // 没有可写视图（空工程/全部视图无效）时返回空字节，调用方据此跳过 figures.xml 与 chart-data
     static QByteArray saveFigures(const QList< DASignalAnalysisView* >& views, DAChartItemsManager* itemsMgr);
     // 收集文档里全部 <figure> 元素（恢复端逐个消费的候选集合）
     static QList< QDomElement > figureElements(const QDomDocument& doc);
@@ -54,6 +55,9 @@ public:
                               const QDomElement& figureEle,
                               const DAChartItemsManager* itemsMgr,
                               QSet< QString >* consumedItemKeys = nullptr);
+    // 释放图元管理者里「没有挂到任何子图」的图元（未被任何 figure 消费的残留），返回释放个数；
+    // 已 attach 的图元归子图所有，不动。manager 不持有所有权，这是加载残档后唯一的回收点（F-10）
+    static int releaseUnattachedItems(const DAChartItemsManager* itemsMgr);
 };
 }  // namespace DA
 

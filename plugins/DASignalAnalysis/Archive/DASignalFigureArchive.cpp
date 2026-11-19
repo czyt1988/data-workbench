@@ -300,7 +300,8 @@ void consumeChartItemKeys(QDomElement& chartEle, QSet< QString >& consumedItemKe
  * @param views 待保存的信号视图（一个信号一个视图）
  * @param itemsMgr 图元管理者（输出：记录所有非 transient 图元的 key，随后由
  *        DAChartItemArchive 写 chart-data）；为空时无法生成，返回空字节
- * @return @c signal-figures XML 字节；无有效视图时返回只有根节点的合法 XML
+ * @return @c signal-figures XML 字节；没有可写视图（空工程/页面从未创建）时返回**空字节**，
+ *         调用方据此不写 figures.xml 与 chart-data（F-08：不再落一个只有根节点的空档）
  */
 QByteArray DASignalFigureArchive::saveFigures(const QList< DASignalAnalysisView* >& views, DAChartItemsManager* itemsMgr)
 {
@@ -308,10 +309,15 @@ QByteArray DASignalFigureArchive::saveFigures(const QList< DASignalAnalysisView*
         qWarning() << "DASignalFigureArchive::saveFigures: items manager is null";
         return QByteArray();
     }
+    if (views.isEmpty()) {
+        qWarning() << "DASignalFigureArchive::saveFigures: no signal view to save, figures.xml is skipped";
+        return QByteArray();
+    }
     QDomDocument doc(QStringLiteral("signal-figures"));
     QDomElement root = doc.createElement(QStringLiteral("signal-figures"));
     root.setAttribute(QStringLiteral("version"), 1);
     doc.appendChild(root);
+    int savedCount = 0;
     for (DASignalAnalysisView* view : views) {
         if (!view || !view->figure() || !view->signal()) {
             qWarning() << "DASignalFigureArchive::saveFigures: skip an invalid signal view";
@@ -329,6 +335,12 @@ QByteArray DASignalFigureArchive::saveFigures(const QList< DASignalAnalysisView*
         figureEle.setAttribute(QStringLiteral("signal-id"), QString::number(view->signal()->signalId()));
         markFigureRoles(view, figureEle);
         root.appendChild(figureEle);
+        ++savedCount;
+    }
+    if (savedCount <= 0) {
+        // 全部视图无效（figure 已销毁等）：同样不写空档，交给调用方跳过 figures.xml/chart-data
+        qWarning() << "DASignalFigureArchive::saveFigures: every signal view was invalid, figures.xml is skipped";
+        return QByteArray();
     }
     return doc.toByteArray();
 }
@@ -393,8 +405,9 @@ QDomElement DASignalFigureArchive::takeFigureElement(QList< QDomElement >& candi
  *
  * 恢复顺序（都作用在视图已有的子图上，不新建子图）：
  * 1. figure 级：id / 背景 / 主题 / <grid> 行列比例（只接受 2×2，比例数量匹配才应用）；
- * 2. chart 级：按 role 匹配子图；无 role 时按 grid-row/grid-col 回退，再按 XML 顺序
- *    wave/spectrum/heatmap 回退（跳过已被其它元素占用的目标子图）；
+ * 2. chart 级：按 role 匹配子图；无 role 时按 grid-row/grid-col 回退。两者都认不出来时：
+ *    整档都没有 role（旧存档）才按 XML 顺序 wave/spectrum/heatmap 回退（跳过已占用子图），
+ *    否则跳过该 <chart> 并 qWarning（F-11：不把认不出的子图误套到下一个空子图）；
  * 3. chart3d：交给 @ref DAXmlHelper::loadElement(DAChart3DWidget*) 恢复视图/主题/坐标轴；
  * 4. 频谱 chart 里 peak="1" 的 item key → 图元管理者取回 QwtPlotMarker 并交给视图接管；
  * 5. 刷新视图（replot/轴标题/瀑布模式显隐），不触发新的分析请求。
@@ -494,15 +507,33 @@ bool DASignalFigureArchive::restoreFigure(DASignalAnalysisView* view,
         }
     }
     // 3.2 2D 子图：role → grid-row/grid-col → XML 顺序
+    // 顺序回退只对「整档都没有 role 属性」的旧存档开放：新存档里 role 与 grid 都认不出来
+    // 说明该 <chart> 与本视图的子图对不上（版本差异/损坏），此时按顺序套到下一个空子图
+    // 会张冠李戴（F-11），直接跳过并记录诊断。
+    bool archiveHasRoles = false;
+    for (QDomElement chartEle = chartsEle.firstChildElement(QStringLiteral("chart")); !chartEle.isNull();
+         chartEle             = chartEle.nextSiblingElement(QStringLiteral("chart"))) {
+        if (!chartEle.attribute(QStringLiteral("role")).isEmpty()) {
+            archiveHasRoles = true;
+            break;
+        }
+    }
     QList< QDomElement > pendingCharts;
     for (QDomElement chartEle = chartsEle.firstChildElement(QStringLiteral("chart")); !chartEle.isNull();
          chartEle             = chartEle.nextSiblingElement(QStringLiteral("chart"))) {
-        FigureRole role = figureRoleFromString(chartEle.attribute(QStringLiteral("role")));
+        FigureRole role       = figureRoleFromString(chartEle.attribute(QStringLiteral("role")));
         DAChartWidget* target = chartForRole(view, role);
         if (!target) {
             target = chartForRole(view, roleFromGridCell(chartEle));
         }
         if (!target || usedTargets.contains(target)) {
+            if (archiveHasRoles) {
+                // 新存档：role/grid 无法唯一定位（或目标子图已被占用）时不猜，跳过该元素
+                qWarning() << "DASignalFigureArchive::restoreFigure: cannot resolve the target sub chart for a "
+                              "<chart> element (role"
+                           << chartEle.attribute(QStringLiteral("role")) << "), skipped to avoid mis-applying it";
+                continue;
+            }
             pendingCharts.append(chartEle);
             continue;
         }
@@ -517,7 +548,8 @@ bool DASignalFigureArchive::restoreFigure(DASignalAnalysisView* view,
             spectrumEle = chartEle;
         }
     }
-    // 3.3 剩余的 chart 元素按 XML 顺序回退到未被占用的 wave/spectrum/heatmap
+    // 3.3 旧存档（整档都没有 role）：剩余的 chart 元素按 XML 顺序回退到未被占用的
+    // wave/spectrum/heatmap。新存档不走这条路径，避免把认不出的子图误套到别的子图上。
     const QList< DAChartWidget* > fallbackOrder = { view->waveChart(), view->spectrumChart(), view->heatmapChart() };
     for (const QDomElement& chartEle : std::as_const(pendingCharts)) {
         DAChartWidget* target = nullptr;
@@ -564,5 +596,31 @@ bool DASignalFigureArchive::restoreFigure(DASignalAnalysisView* view,
     //! 5.刷新（不触发新的分析请求）
     view->refreshAfterFigureRestore();
     return true;
+}
+/**
+ * @brief 释放图元管理者里没有被任何子图消费的图元
+ *
+ * DAChartItemsManager 只做 key ↔ QwtPlotItem* 映射，**不持有所有权**（析构为空）。加载
+ * figures.xml 时图元由 DAXmlHelper/DAChartItemArchive 建出来放进管理者，再由各 <chart> 的
+ * <items> 按 key 取回 attach；figure 元素缺失/损坏/角色对不上时这些图元没人消费也每人释放，
+ * 会一直泄漏到进程退出（F-10）。这里按「是否挂到某个 plot」判定：plot() 为空即未被消费。
+ * @param itemsMgr 读档后的图元管理者；为空直接返回 0
+ * @return 释放的图元个数
+ */
+int DASignalFigureArchive::releaseUnattachedItems(const DAChartItemsManager* itemsMgr)
+{
+    if (nullptr == itemsMgr) {
+        return 0;
+    }
+    int released            = 0;
+    const QList< QwtPlotItem* > items = itemsMgr->items();
+    for (QwtPlotItem* item : items) {
+        if (nullptr == item || nullptr != item->plot()) {
+            continue;  // 已 attach 到子图：归该子图所有，绝不在这里删
+        }
+        delete item;
+        ++released;
+    }
+    return released;
 }
 }  // namespace DA
