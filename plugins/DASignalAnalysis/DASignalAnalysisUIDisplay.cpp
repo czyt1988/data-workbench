@@ -1,5 +1,6 @@
 #include "DASignalAnalysisUI.h"
 #include "DASignalAnalysisUIHelpers.h"
+#include <algorithm>
 
 // Qt
 #include <QMenu>
@@ -363,13 +364,13 @@ void DASignalAnalysisUI::syncSignalToolbar()
     if (mToolbarTimeSlider) {
         const qint64 durationMs =
             (sig && sig->duration() > 0.0)
-                ? qBound< qint64 >(0, qRound64(sig->duration() * 1000.0), std::numeric_limits< int >::max())
+                ? std::clamp< qint64 >(0, qRound64(sig->duration() * 1000.0), std::numeric_limits< int >::max())
                 : 0;
         const QSignalBlocker blocker(mToolbarTimeSlider);
         mToolbarTimeSlider->setRange(0, int(durationMs > 0 ? durationMs : 1));
         int value = 0;
         if (hasView) {
-            value = int(qBound< qint64 >(0, qRound64(view->currentTime() * 1000.0), mToolbarTimeSlider->maximum()));
+            value = int(std::clamp< qint64 >(0, qRound64(view->currentTime() * 1000.0), mToolbarTimeSlider->maximum()));
         }
         mToolbarTimeSlider->setValue(value);
         mToolbarTimeSlider->setEnabled(hasView && durationMs > 0);

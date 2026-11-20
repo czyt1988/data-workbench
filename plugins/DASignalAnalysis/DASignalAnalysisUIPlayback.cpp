@@ -1,5 +1,6 @@
 #include "DASignalAnalysisUI.h"
 #include "DASignalAnalysisUIHelpers.h"
+#include <algorithm>
 
 // Qt
 #include <QIcon>
@@ -147,7 +148,7 @@ void DASignalAnalysisUI::onPlayerPositionChanged(qint64 ms)
         DASignalAnalysisView* view = currentView();
         if (view) {
             const QSignalBlocker blocker(mToolbarTimeSlider);
-            const qint64 value = qBound< qint64 >(0, qRound64(view->currentTime() * 1000.0), mToolbarTimeSlider->maximum());
+            const qint64 value = std::clamp< qint64 >(0, qRound64(view->currentTime() * 1000.0), mToolbarTimeSlider->maximum());
             mToolbarTimeSlider->setValue(int(value));
         }
     }

@@ -3030,7 +3030,7 @@ DAChartWidget* DASignalAnalysisView::currentChart() const
     if (chart == mHeatmapChart && mWaterfallMode != 0) {
         chart = nullptr;
     }
-    return chart ? chart : mWaveChart;
+    return chart ? chart : mWaveChart.data();
 }
 
 DAChart3DWidget* DASignalAnalysisView::current3DChart() const
