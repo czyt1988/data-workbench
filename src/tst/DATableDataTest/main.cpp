@@ -90,6 +90,7 @@
 #include "Table/Controllers/DATableConditionalFormatController.h"
 #include <QDomDocument>
 #include <QStandardItemModel>
+#include <QTableView>
 #include <QElapsedTimer>
 #include <QLabel>
 #include <QImage>
@@ -1748,6 +1749,11 @@ void DATableDataTest::testStyleDelegateAlignmentAndBorderPixels()
     DA::DATableStyleManager mgr;
     DA::DATableStyleItemDelegate dlg(&mgr, nullptr);
     QStandardItemModel model(1, 2);
+    // 真实视图控件：Qt 6.7 的 Windows 11 样式只在 option.widget 为视图时才绘制条目文字
+    // （widget 为空时 CE_ItemViewItem 什么都不画），这里按 QAbstractItemView::initViewItemOption
+    // 的方式把视图塞进 option.widget，让像素断言在默认样式下也能反映真实表格的绘制结果。
+    QTableView view;
+    view.setModel(&model);
     model.setData(model.index(0, 0), QStringLiteral("MMMM"));
     model.setData(model.index(0, 1), QStringLiteral("MMMM"));
 
@@ -1769,6 +1775,7 @@ void DATableDataTest::testStyleDelegateAlignmentAndBorderPixels()
         opt.rect  = QRect(0, 0, cellW, cellH);
         opt.font  = QApplication::font();
         opt.state = QStyle::State_Enabled;
+        opt.widget = &view;
         dlg.paint(&p, opt, model.index(0, 0));
         opt.rect = QRect(cellW, 0, cellW, cellH);
         dlg.paint(&p, opt, model.index(0, 1));
@@ -2146,6 +2153,11 @@ void DATableDataTest::testStyleDelegateWrapTextPixels()
     DA::DATableStyleManager mgr;
     DA::DATableStyleItemDelegate dlg(&mgr, nullptr);
     QStandardItemModel model(1, 2);
+    // 真实视图控件：Qt 6.7 的 Windows 11 样式只在 option.widget 为视图时才绘制条目文字
+    // （widget 为空时 CE_ItemViewItem 什么都不画），这里按 QAbstractItemView::initViewItemOption
+    // 的方式把视图塞进 option.widget，让像素断言在默认样式下也能反映真实表格的绘制结果。
+    QTableView view;
+    view.setModel(&model);
     // 需用带空格的多词文本：QCommonStyle 的 WrapText 是词边界折行（WordWrap），
     // 无空格的超长单词不会断行（与 Excel 一致）
     const QString longText = QStringLiteral("alpha beta gamma delta epsilon zeta eta theta");
@@ -2166,6 +2178,7 @@ void DATableDataTest::testStyleDelegateWrapTextPixels()
         opt.rect  = QRect(0, 0, cellW, cellH);
         opt.font  = QApplication::font();
         opt.state = QStyle::State_Enabled;
+        opt.widget = &view;
         dlg.paint(&p, opt, model.index(0, 0));
         opt.rect = QRect(cellW, 0, cellW, cellH);
         dlg.paint(&p, opt, model.index(0, 1));
