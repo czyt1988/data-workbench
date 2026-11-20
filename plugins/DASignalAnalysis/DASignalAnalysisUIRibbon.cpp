@@ -384,7 +384,7 @@ void DASignalAnalysisUI::buildSignalContextCategory()
     mContextDisplayPage->setObjectName(QString::fromUtf8(cContextDisplayPageObjectName));
     // D9：只给本页开启面板标题（SARibbonBar 在两行/单行紧凑样式下会强制关闭全部页的标题，
     // 样式切换后由 ribbonStyleChanged 重新下发，见 applyDisplayPagePanelTitles()）
-    mContextDisplayPage->setEnableShowPanelTitle(true);
+    // mContextDisplayPage->setEnableShowPanelTitle(true);
 
     // ---------- 时频图设置：显示模式 + 当前帧标记 ----------
     // 二维/三维/隐藏互斥：右下单元格在二维云图与三维瀑布之间切换（D12）
@@ -399,9 +399,9 @@ void DASignalAnalysisUI::buildSignalContextCategory()
     actionWaterfall3D->setActionGroup(mWaterfallModeGroup);
     actionWaterfallHide->setActionGroup(mWaterfallModeGroup);
     actionWaterfall2D->setChecked(true);  // 默认二维（D12）
-    mPanelTimeFreqView->addMediumAction(actionWaterfall2D);
-    mPanelTimeFreqView->addMediumAction(actionWaterfall3D);
-    mPanelTimeFreqView->addMediumAction(actionWaterfallHide);
+    mPanelTimeFreqView->addSmallAction(actionWaterfall2D);
+    mPanelTimeFreqView->addSmallAction(actionWaterfall3D);
+    mPanelTimeFreqView->addSmallAction(actionWaterfallHide);
     // 当前帧标记：二维云图的半透明虚线竖线 + 三维瀑布的当前迹线高亮，独立开关（默认开）
     actionTimeCursor = createIconAction("actionSignalTimeCursor", signalAppIcon("chart-vline-marker.svg"), true);
     connect(actionTimeCursor, &QAction::toggled, this, &DASignalAnalysisUI::onTimeCursorToggled);
